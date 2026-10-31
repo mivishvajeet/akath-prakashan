@@ -457,9 +457,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     />
                     <div>
                       <span className="font-bold text-[#252832] block">
-                        कासव + द्वि-चक्र + उघडलेले पुस्तक
+                        {lang === 'mr'
+                          ? 'कासव + द्वि-चक्र + उघडलेले पुस्तक'
+                          : 'Tortoise + Dual Spiral + Open Book'}
                       </span>
-                      <span>अकथ प्रकाशन अधिकृत बोधचिन्ह</span>
+                      <span>
+                        {lang === 'mr'
+                          ? 'अकथ प्रकाशन अधिकृत बोधचिन्ह'
+                          : 'Official Akath Prakashan Emblem'}
+                      </span>
                     </div>
                   </div>
                   <button
@@ -540,14 +546,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
                               isSelected ? 'text-[#FFD966]' : 'text-[#243B8A]'
                             }`}
                           >
-                            टप्पा {cap.step}
+                            {lang === 'mr' ? `टप्पा ${cap.step}` : `Stage ${cap.step}`}
                           </span>
                           <span
                             className={`text-[11px] ${
                               isSelected ? 'text-[#FFFDF7]/80' : 'text-[#525665]'
                             }`}
                           >
-                            {cap.titleEnglish}
+                            {lang === 'mr' ? cap.titleEnglish : cap.titleMarathi}
                           </span>
                         </div>
                         <p
@@ -555,11 +561,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
                             isSelected ? 'text-[#FFFDF7]' : 'text-[#252832]'
                           }`}
                         >
-                          {cap.titleMarathi}
+                          {lang === 'mr' ? cap.titleMarathi : cap.titleEnglish}
                         </p>
                         {isSelected && (
                           <p className="mt-1.5 text-[13px] text-[#FFFDF7]/85 leading-relaxed">
-                            {cap.description}
+                            {lang === 'mr' ? cap.description : cap.descriptionEnglish}
                           </p>
                         )}
                       </motion.button>

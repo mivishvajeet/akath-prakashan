@@ -88,7 +88,7 @@ export const CartView: React.FC<CartViewProps> = ({
         <div className="pb-6 border-b border-[#E6E1D6] flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <p className="text-[12px] font-semibold text-[#243B8A] mb-1">
-              अकथ प्रकाशन · {t.nav.cart}
+              {lang === 'mr' ? 'अकथ प्रकाशन' : 'Akath Prakashan'} · {t.nav.cart}
             </p>
             <h1 className="type-page-heading text-[#252832]">{t.cart.title}</h1>
           </div>
@@ -219,7 +219,15 @@ export const CartView: React.FC<CartViewProps> = ({
                 <div className="flex items-center justify-between text-[14px]">
                   <span className="font-semibold text-[#252832] flex items-center gap-2">
                     <Truck className="w-4 h-4 text-[#243B8A] shrink-0" />
-                    <span>{cartQuote?.shippingRuleNote}</span>
+                    <span>
+                      {subtotal >= 600
+                        ? lang === 'mr'
+                          ? '₹६००+ ऑर्डर: संपूर्ण भारतात मोफत स्पीड पोस्ट वितरण लागू!'
+                          : '₹600+ order: Free India Post Speed Post shipping unlocked!'
+                        : lang === 'mr'
+                        ? `मोफत वितरणासाठी अजून ₹${Math.max(0, 600 - subtotal)} ची पुस्तके जोडा (सध्या ₹45 स्पीड पोस्ट शुल्क).`
+                        : `Add ₹${Math.max(0, 600 - subtotal)} more for free shipping (currently ₹45 India Post dispatch).`}
+                    </span>
                   </span>
                   <span className="text-[12px] font-bold text-[#243B8A]">
                     {freeShippingProgress}%
@@ -723,7 +731,9 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
               <CheckCircle2 className="w-8 h-8 shrink-0" />
               <div>
                 <p className="text-[12px] font-bold uppercase tracking-wider">
-                  अकथ प्रकाशन · पावती
+                  {lang === 'mr'
+                    ? 'अकथ प्रकाशन · पावती'
+                    : 'Akath Prakashan · Order Receipt'}
                 </p>
                 <h1 className="type-section-heading text-slate-900">
                   {lang === 'mr'
@@ -1607,7 +1617,7 @@ export const PolicyDocumentView: React.FC<{
           className="inline-flex items-center gap-2 text-[14px] font-semibold text-slate-600 hover:text-slate-900"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>अकथ प्रकाशन</span>
+          <span>{lang === 'mr' ? 'अकथ प्रकाशन' : 'Akath Prakashan'}</span>
         </button>
 
         <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-8 sm:p-10 space-y-5">

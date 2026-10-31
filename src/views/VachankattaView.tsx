@@ -582,7 +582,9 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
           <div className="mt-12 pt-6">
             <ArchitecturalDivider />
             <p className="mt-3 text-center text-[12px] text-[#5A5F72] font-medium">
-              अकथ प्रकाशन · वाचनकट्टा संपादकीय मुद्रा
+              {lang === 'mr'
+                ? 'अकथ प्रकाशन · वाचनकट्टा संपादकीय मुद्रा'
+                : 'Akath Prakashan · Vachankatta Editorial Imprint'}
             </p>
           </div>
         </motion.div>

@@ -34,6 +34,13 @@ export interface BookCoverStyle {
   emblemText: string;
 }
 
+export interface BookGalleryImage {
+  id: string;
+  url: string;
+  caption: string;
+  altText: string;
+}
+
 export interface BookRecord {
   id: string;
   slug: string;
@@ -53,8 +60,12 @@ export interface BookRecord {
   pageCount?: number;
   format: string;
   price: number;
+  listPrice?: number;
+  discountPercent?: number;
   currency: 'INR';
   stock: number;
+  reservedStock?: number;
+  lowStockThreshold?: number;
   availability: BookAvailability;
   shippingNote: string;
   description: string;
@@ -63,6 +74,7 @@ export interface BookRecord {
   isFeatured: boolean;
   isNewRelease: boolean;
   isEditorSelection: boolean;
+  collections?: string[];
   editorSelectionNote?: {
     personalNote: string;
     whySelected: string;
@@ -77,14 +89,20 @@ export interface BookRecord {
   verificationStatus: VerificationProvenance;
   provenanceLabel: string;
   coverStyle: BookCoverStyle;
+  coverImageUrl?: string;
+  galleryImages?: BookGalleryImage[];
+  seoTitle?: string;
+  seoDescription?: string;
   ownerUserId?: string;
   publicationStatus?: BookPublicationStatus;
   moderationFeedback?: string;
+  updatedAt?: string;
   coverUploadMeta?: {
     fileName: string;
     mimeType: string;
     sizeBytes: number;
     uploadedAt: string;
+    dataUrl?: string;
   };
 }
 
@@ -104,6 +122,18 @@ export interface AuthorRecord {
   verificationStatus: VerificationProvenance;
   provenanceLabel: string;
   ownerUserId?: string;
+  portraitUrl?: string;
+}
+
+export interface ArticleMediaBlock {
+  id: string;
+  url: string;
+  caption: string;
+  credit: string;
+  altText: string;
+  cropAspect?: '16:9' | '4:3' | '1:1' | '3:4';
+  widthPercent?: 100 | 75 | 50;
+  alignment?: 'center' | 'wide' | 'left' | 'right';
 }
 
 export interface ArticleSection {
@@ -111,6 +141,26 @@ export interface ArticleSection {
   heading: string;
   paragraphs: string[];
   pullQuote?: string;
+  bulletList?: string[];
+  links?: { label: string; url: string }[];
+  media?: ArticleMediaBlock;
+}
+
+export interface ArticleRevisionSnapshot {
+  versionId: string;
+  savedAt: string;
+  actorEmail: string;
+  note: string;
+  title: string;
+  subtitle: string;
+  summary: string;
+  leadParagraph: string;
+  sections: ArticleSection[];
+  workflowStatus: EditorialWorkflowStatus;
+  heroImage?: ArticleMediaBlock;
+  tags: string[];
+  seoTitle?: string;
+  seoDescription?: string;
 }
 
 export interface EditorialArticle {
@@ -122,21 +172,28 @@ export interface EditorialArticle {
   authorId: string;
   contributorName: string;
   contributorRole: string;
+  contributorEmail?: string;
   categorySlug: EditorialCategorySlug;
   categoryMarathi: string;
   tags: string[];
   publishedAt: string;
   updatedAt?: string;
+  scheduledFor?: string;
   readingTimeMinutes: number;
   summary: string;
   leadParagraph: string;
   sections: ArticleSection[];
+  heroImage?: ArticleMediaBlock;
+  seoTitle?: string;
+  seoDescription?: string;
+  moderationNote?: string;
   workflowStatus: EditorialWorkflowStatus;
   relatedBookIds: string[];
   relatedAuthorIds: string[];
   relatedArticleIds: string[];
   verificationStatus: VerificationProvenance;
   provenanceLabel: string;
+  revisions?: ArticleRevisionSnapshot[];
 }
 
 export interface FirstPageReactionCounts {
@@ -191,6 +248,7 @@ export interface ValidatedCartLine {
   authorName: string;
   format: string;
   unitPrice: number;
+  listPrice?: number;
   requestedQuantity: number;
   approvedQuantity: number;
   lineTotal: number;
@@ -201,6 +259,8 @@ export interface ValidatedCartLine {
 export interface CartQuoteResponse {
   items: ValidatedCartLine[];
   subtotal: number;
+  discountAmount?: number;
+  appliedCouponCode?: string;
   shippingCost: number;
   shippingRuleNote: string;
   grandTotal: number;
@@ -216,6 +276,7 @@ export type OrderStatus =
   | 'shipped'
   | 'delivered'
   | 'cancelled'
+  | 'returned'
   | 'refunded'
   | 'payment_failed';
 
@@ -250,19 +311,168 @@ export interface OrderRecord {
   };
   items: ValidatedCartLine[];
   subtotal: number;
+  discountAmount?: number;
+  appliedCouponCode?: string;
   shippingCost: number;
   grandTotal: number;
   currency: 'INR';
   paymentMethod: 'upi_verified' | 'razorpay_standard' | 'institutional_invoice';
   paymentStatus: 'unverified' | 'verified' | 'failed' | 'refunded';
   paymentReference?: string;
+  refundReason?: string;
+  refundedAmount?: number;
+  invoiceNumber?: string;
   orderStatus: OrderStatus;
   fulfilment: {
     courierPartner?: string;
     trackingNumber?: string;
     dispatchedAt?: string;
+    deliveredAt?: string;
   };
   auditTrail: OrderAuditEvent[];
+}
+
+export interface InventoryMovementRecord {
+  id: string;
+  timestamp: string;
+  bookId: string;
+  bookTitle: string;
+  isbn?: string;
+  type:
+    | 'stock_in'
+    | 'stock_out'
+    | 'adjustment'
+    | 'order_reserved'
+    | 'order_fulfilled'
+    | 'return_restock';
+  delta: number;
+  previousStock: number;
+  newStock: number;
+  reason: string;
+  actorEmail: string;
+  orderNumber?: string;
+}
+
+export interface MediaAssetRecord {
+  id: string;
+  fileName: string;
+  title: string;
+  altText: string;
+  caption: string;
+  credit: string;
+  mimeType: string;
+  sizeBytes: number;
+  url: string;
+  folder: 'book_covers' | 'article_media' | 'site_banners' | 'author_portraits';
+  cropAspect?: '3:4' | '16:9' | '4:3' | '1:1';
+  uploadedBy: string;
+  uploadedAt: string;
+}
+
+export interface PromotionRecord {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  discountType: 'percentage' | 'fixed_amount';
+  discountValue: number;
+  minOrderSubtotal: number;
+  maxDiscountAmount?: number;
+  active: boolean;
+  startsAt: string;
+  expiresAt?: string;
+  usageLimit?: number;
+  usedCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SiteSectionId =
+  | 'promo_banner'
+  | 'hero'
+  | 'featured_catalogue'
+  | 'first_page_excerpt'
+  | 'turtle_philosophy'
+  | 'vachankatta_journal'
+  | 'authors_showcase'
+  | 'newsletter';
+
+export interface SiteConfigSnapshot {
+  versionId: string;
+  savedAt: string;
+  actorEmail: string;
+  note: string;
+  hero: SiteConfigRecord['hero'];
+  promoBanner: SiteConfigRecord['promoBanner'];
+  featuredBookIds: string[];
+  highlightedCategories: SiteConfigRecord['highlightedCategories'];
+  sectionOrder: SiteSectionId[];
+  lowStockGlobalThreshold: number;
+  freeShippingThreshold: number;
+  standardShippingFee: number;
+  seoDefaults: SiteConfigRecord['seoDefaults'];
+}
+
+export interface SiteConfigRecord {
+  hero: {
+    eyebrowMarathi: string;
+    eyebrowEnglish: string;
+    headlineMarathi: string;
+    headlineEnglish: string;
+    subheadlineMarathi: string;
+    subheadlineEnglish: string;
+    leadMarathi: string;
+    leadEnglish: string;
+    primaryCtaMarathi: string;
+    primaryCtaEnglish: string;
+    secondaryCtaMarathi: string;
+    secondaryCtaEnglish: string;
+    heroBannerImageUrl?: string;
+  };
+  promoBanner: {
+    enabled: boolean;
+    badgeText: string;
+    messageMarathi: string;
+    messageEnglish: string;
+    couponCode?: string;
+    ctaLink: string;
+  };
+  featuredBookIds: string[];
+  highlightedCategories: {
+    slug: string;
+    labelMarathi: string;
+    labelEnglish: string;
+    featured: boolean;
+  }[];
+  sectionOrder: SiteSectionId[];
+  lowStockGlobalThreshold: number;
+  freeShippingThreshold: number;
+  standardShippingFee: number;
+  seoDefaults: {
+    siteTitle: string;
+    metaDescription: string;
+    ogImageUrl?: string;
+  };
+  status: 'draft' | 'published';
+  updatedAt: string;
+  updatedBy: string;
+  history: SiteConfigSnapshot[];
+}
+
+export interface AdminNotificationRecord {
+  id: string;
+  createdAt: string;
+  type:
+    | 'article_moderation'
+    | 'author_application'
+    | 'low_stock_alert'
+    | 'order_event'
+    | 'system_backup';
+  recipientEmail?: string;
+  title: string;
+  message: string;
+  read: boolean;
+  targetPath?: string;
 }
 
 export interface ManuscriptSubmission {
@@ -343,7 +553,12 @@ export type Permission =
   | 'admin:users:manage'
   | 'admin:authors:approve'
   | 'admin:books:moderate'
+  | 'admin:articles:manage'
   | 'admin:orders:manage'
+  | 'admin:inventory:manage'
+  | 'admin:media:manage'
+  | 'admin:promotions:manage'
+  | 'admin:site:edit'
   | 'admin:audit:view';
 
 export interface NotificationPreferences {
@@ -378,6 +593,7 @@ export interface PublicUserProfile {
   city?: string;
   bio?: string;
   role: Exclude<UserRole, 'guest'>;
+  staffPermissions?: Permission[];
   accountStatus: AccountStatus;
   emailVerified: boolean;
   linkedAuthorId?: string;
@@ -435,6 +651,8 @@ export interface BookReviewRecord {
   title: string;
   comment: string;
   status: 'published' | 'pending_moderation' | 'hidden';
+  abuseReportCount?: number;
+  abuseReportReason?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -447,7 +665,19 @@ export interface SecurityAuditEvent {
   actorRole: UserRole;
   ipAddress: string;
   action: string;
-  targetType: 'user' | 'book' | 'order' | 'author_application' | 'session' | 'review' | 'system';
+  targetType:
+    | 'user'
+    | 'book'
+    | 'article'
+    | 'order'
+    | 'inventory'
+    | 'media'
+    | 'promotion'
+    | 'site_config'
+    | 'author_application'
+    | 'session'
+    | 'review'
+    | 'system';
   targetId?: string;
   outcome: 'success' | 'denied' | 'failure';
   details: string;
@@ -473,4 +703,3 @@ export interface AnalyticsEvent {
   entitySlug?: string;
   metadata?: Record<string, string | number | boolean>;
 }
-

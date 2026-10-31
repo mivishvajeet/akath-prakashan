@@ -187,9 +187,16 @@ export default function App() {
 
   const handleQuickPersonaSwitch = useCallback(
     async (
-      persona: 'reader' | 'author' | 'admin',
+      persona: 'reader' | 'author' | 'admin' | 'guest',
       targetPath?: string
     ) => {
+      if (persona === 'guest') {
+        setAuthSessionTokens(null, null);
+        setAuthUser(null);
+        setCsrfToken(null);
+        navigate(targetPath || '/');
+        return;
+      }
       try {
         const res = await fetch('/api/auth/sandbox-persona', {
           method: 'POST',

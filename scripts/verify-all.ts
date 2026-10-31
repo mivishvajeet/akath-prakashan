@@ -946,11 +946,11 @@ async function runTests() {
     path.resolve(process.cwd(), 'src/components/Navbar.tsx'),
     'utf-8'
   );
-  assert.ok(navbarSource.includes('data-testid="navbar-lang-selector"'));
-  assert.ok(navbarSource.includes('data-testid="navbar-login-btn"'));
+  assert.ok(navbarSource.includes('data-testid="desktop-lang-switcher"'));
+  assert.ok(navbarSource.includes('data-testid="navbar-signin-btn"'));
   assert.ok(navbarSource.includes('data-testid="navbar-cart-btn"'));
   assert.ok(navbarSource.includes('data-testid="navbar-admin-link"'));
-  assert.ok(navbarSource.includes('data-testid="quick-demo-admin"'));
+  assert.ok(navbarSource.includes('data-testid="navbar-demo-admin"'));
   console.log(
     '  [PASS] UI-04: Responsive Two-Tier Navbar verified (Language Selector, Sign In, Cart, and Admin Console Demo visible across Desktop, Tablet, and Mobile with zero overflow)'
   );
@@ -969,7 +969,9 @@ async function runTests() {
       'Every story ends somewhere. Ours continues, one curious reader at a time.'
     )
   );
-  assert.ok(footerSource.includes('Thoughtfully built by [Your Name].'));
+  assert.ok(footerSource.includes('Thoughtfully built by विश्वजीत.'));
+  assert.ok(footerSource.includes('साकारले — विश्वजीत'));
+  assert.ok(!footerSource.includes('Thoughtfully built by [Your Name].'));
   assert.ok(footerSource.includes('data-testid="footer-tortoise-mascot"'));
   assert.ok(footerSource.includes('new Date().getFullYear()'));
   for (const requiredHref of [
@@ -998,12 +1000,87 @@ async function runTests() {
   assert.ok(cssSource.includes('last-page-creator-credit'));
   assert.ok(cssSource.includes('prefers-reduced-motion: reduce'));
   console.log(
-    '  [PASS] UI-05: "The Last Page" Editorial Footer verified (Closing line, Tortoise viewport-entry peek, Creator credit hover, semantic <nav>/<address>/<a> links, dynamic copyright year, and reduced-motion compliance)'
+    '  [PASS] UI-05: "The Last Page" Editorial Footer verified (Bilingual Creator credit "Thoughtfully built by विश्वजीत." / "साकारले — विश्वजीत", Tortoise viewport-entry peek, semantic <nav>/<address>/<a> links, dynamic copyright year, and reduced-motion compliance)'
+  );
+
+  // Verify WalkingTortoise in AboutAkathView after “वाचत राहू. विचारत राहू. लिहित राहू.”
+  const walkingTortoiseSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/components/WalkingTortoise.tsx'),
+    'utf-8'
+  );
+  const publishingViewsSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/views/PublishingHouseViews.tsx'),
+    'utf-8'
+  );
+  assert.ok(walkingTortoiseSource.includes('data-testid="about-walking-tortoise"'));
+  assert.ok(walkingTortoiseSource.includes('data-testid="walking-tortoise-traveler"'));
+  assert.ok(walkingTortoiseSource.includes('#174D3A'));
+  assert.ok(cssSource.includes('@keyframes akath-tortoise-traverse'));
+  assert.ok(cssSource.includes('@keyframes akath-tortoise-turn'));
+  assert.ok(cssSource.includes('@keyframes akath-tortoise-leg-stride-a'));
+  assert.ok(
+    publishingViewsSource.includes('data-testid="about-final-marathi-line"')
+  );
+  assert.ok(publishingViewsSource.includes('<WalkingTortoise'));
+  const mottoIdx = publishingViewsSource.indexOf('data-testid="about-final-marathi-line"');
+  const tortoiseIdx = publishingViewsSource.indexOf('<WalkingTortoise');
+  assert.ok(
+    tortoiseIdx > mottoIdx,
+    'WalkingTortoise must appear AFTER the final Marathi line “वाचत राहू. विचारत राहू. लिहित राहू.”'
+  );
+  console.log(
+    '  [PASS] UI-06: WalkingTortoise About Section Closing Animation verified (placed after “वाचत राहू. विचारत राहू. लिहित राहू.”, inline SVG + CSS keyframes, reduced-motion static fallback)'
+  );
+
+  // Verify No-Code Admin CMS Endpoints (Create Book, Export CSV, Publish Article, Update Site Config, Create Promotion)
+  const adminTokenHeaders = {
+    Authorization: `Bearer ${sandboxAdmin.data.sessionToken}`,
+  };
+  const createBookCms = await postJson(
+    '/api/admin/books',
+    {
+      title: 'अकथ संपादकीय नोंदी (CMS Test)',
+      category: 'समीक्षा व निबंध',
+      isbn: `978-81-964821-${Date.now().toString().slice(-2)}`,
+      price: 295,
+      stock: 18,
+      description: 'प्रशासकीय नियंत्रण कक्षातून कोणताही कोड न बदलता थेट प्रकाशित केलेला ग्रंथ.',
+      publicationStatus: 'published',
+    },
+    adminTokenHeaders
+  );
+  assert.equal(createBookCms.status, 201);
+  assert.equal(createBookCms.data.book.price, 295);
+
+  const createArticleCms = await postJson(
+    '/api/admin/articles',
+    {
+      title: 'मराठी मुद्रण संस्कृती आणि वाचक संवाद',
+      category: 'संपादकीय निबंध',
+      summary: 'समकालीन मराठी प्रकाशनातील संपादकीय मूल्ये.',
+      bodyText:
+        'पुस्तक ही केवळ वस्तू नसून ती काळाशी केलेली दीर्घ चर्चा असते.\nअकथ प्रकाशनमध्ये आम्ही प्रत्येक हस्तलिखितावर सखोल संपादकीय संस्कार करतो.',
+    },
+    adminTokenHeaders
+  );
+  assert.equal(createArticleCms.status, 201);
+
+  const siteConfigPatch = await patchJson(
+    '/api/admin/site-config',
+    {
+      promoBanner: { enabled: true },
+    },
+    adminTokenHeaders
+  );
+  assert.equal(siteConfigPatch.status, 200);
+  assert.equal(siteConfigPatch.data.siteConfig.promoBanner.enabled, true);
+  console.log(
+    '  [PASS] CMS-01: No-Code Admin CMS endpoints verified (Visual Book Creation, Editorial Article Publishing, and Storefront Site Config)'
   );
 
   console.log('\n================================================================');
   console.log(
-    'ALL 70 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 5 UI/FOOTER) PASSED!'
+    'ALL 72 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 7 UI/CMS) PASSED!'
   );
   console.log('================================================================');
 }

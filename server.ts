@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
+import { GoogleGenAI } from '@google/genai';
 import {
   INITIAL_BOOKS,
   INITIAL_AUTHORS,
@@ -29,6 +30,10 @@ import {
   SavedAddress,
   AuthorApplicationRecord,
   BookReviewRecord,
+  InventoryMovementRecord,
+  MediaAssetRecord,
+  PromotionRecord,
+  SiteSectionId,
 } from './src/types/publishing';
 import {
   validateEmail,
@@ -72,6 +77,19 @@ import {
   invalidateUserSessions,
   mergeCartItems,
 } from './src/server/authStore';
+import {
+  inventoryMovementsStore,
+  mediaAssetsStore,
+  promotionsStore,
+  adminNotificationsStore,
+  siteConfigStore,
+  parseCsvLine,
+  exportBooksToCsv,
+  exportInventoryLedgerToCsv,
+  verifyPaymentWebhookSignature,
+  backupSnapshotsStore,
+  saveCmsBackupSnapshot,
+} from './src/server/cmsStore';
 
 const app = express();
 const PORT = 3000;
@@ -79,7 +97,7 @@ const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'akath_sid';
 const SESSION_TTL_MS =
   Math.max(1, Number(process.env.SESSION_TTL_HOURS) || 24) * 60 * 60 * 1000;
 
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '6mb' }));
 
 // Security & privacy headers (iframe-compatible for AI Studio preview)
 app.use((_req, res, next) => {
@@ -1562,6 +1580,8 @@ app.get('/api/bootstrap', (_req, res) => {
     excerpts: publicExcerpts,
     readingLists: readingListsStore,
     reviews: publicReviews,
+    siteConfig: siteConfigStore.published,
+    promotions: promotionsStore.filter((p) => p.active),
     auditSummary: TECHNICAL_AUDIT_SUMMARY,
   });
 });
@@ -3571,6 +3591,11 @@ app.get(
       authorApplications: authorApplicationsStore,
       reviews: reviewsStore,
       auditLogs: securityAuditStore.slice(0, 120),
+      inventoryMovements: inventoryMovementsStore,
+      mediaAssets: mediaAssetsStore,
+      promotions: promotionsStore,
+      siteConfig: siteConfigStore.published,
+      adminNotifications: adminNotificationsStore,
       schemaMigrations: SCHEMA_MIGRATIONS,
       analytics: analyticsStore.slice(0, 60),
       auditSummary: TECHNICAL_AUDIT_SUMMARY,
@@ -4024,6 +4049,591 @@ app.get(
       auditLogs: securityAuditStore.slice(0, 200),
       schemaMigrations: SCHEMA_MIGRATIONS,
     });
+  }
+);
+
+// ============================================================================
+// NO-CODE ADMIN CMS ENDPOINTS (BOOKS, INVENTORY, ARTICLES, SITE CONFIG, PROMOS)
+// ============================================================================
+
+app.post(
+  '/api/admin/books',
+  requirePermission('admin:books:moderate'),
+  (req: AuthenticatedRequest, res: Response) => {
+    const admin = req.authUser!;
+    const title = sanitizeText(req.body?.title, 180);
+    const description = sanitizeText(req.body?.description, 3000);
+    if (title.length < 2 || description.length < 10) {
+      res.status(400).json({
+        error: 'Book title (min 2 chars) and description (min 10 chars) are required.',
+      });
+      return;
+    }
+
+    const subtitle = sanitizeText(req.body?.subtitle, 180) || undefined;
+    const transliteratedTitle =
+      sanitizeText(req.body?.transliteratedTitle, 180) || title;
+    const category = sanitizeText(req.body?.category, 80) || 'कादंबरी';
+    const categorySlug =
+      category === 'कवितासंग्रह'
+        ? 'poetry'
+        : category === 'कथासंग्रह'
+        ? 'short-stories'
+        : category === 'समीक्षा व निबंध'
+        ? 'essays'
+        : category === 'अनुवाद'
+        ? 'translation'
+        : 'novel';
+    const isbn = sanitizeText(req.body?.isbn, 40) || undefined;
+    const publisher =
+      sanitizeText(req.body?.publisher, 120) || 'अकथ प्रकाशन, नांदेड व पुणे';
+    const edition = sanitizeText(req.body?.edition, 80) || 'पहिली आवृत्ती (२०२६)';
+    const price = Math.max(50, Math.floor(Number(req.body?.price) || 250));
+    const listPrice = req.body?.listPrice
+      ? Math.max(price, Math.floor(Number(req.body.listPrice)))
+      : undefined;
+    const stock = Math.max(0, Math.floor(Number(req.body?.stock) ?? 20));
+    const pageCount = Math.max(32, Math.floor(Number(req.body?.pageCount) || 160));
+    const authorId =
+      sanitizeText(req.body?.authorId, 80) ||
+      authorsStore[0]?.id ||
+      'author-digambar-kadam';
+    const publicationStatus: BookPublicationStatus = [
+      'draft',
+      'published',
+      'unpublished',
+      'archived',
+    ].includes(req.body?.publicationStatus)
+      ? req.body.publicationStatus
+      : 'published';
+
+    // Check duplicate ISBN or title
+    if (
+      isbn &&
+      booksStore.some(
+        (b) => b.isbn && b.isbn.toLowerCase() === isbn.toLowerCase()
+      )
+    ) {
+      res.status(409).json({
+        error: `A book with ISBN '${isbn}' already exists in the catalog.`,
+      });
+      return;
+    }
+
+    const id = `book-${Date.now()}-${generateOpaqueToken(3)}`;
+    const slug =
+      transliteratedTitle
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '') || id;
+
+    const newBook: BookRecord = {
+      id,
+      slug: `${slug}-${Date.now().toString().slice(-4)}`,
+      title,
+      subtitle,
+      transliteratedTitle,
+      authorId,
+      contributorIds: [],
+      category,
+      categorySlug,
+      topics: Array.isArray(req.body?.topics)
+        ? req.body.topics.map((t: unknown) => sanitizeText(t, 40)).filter(Boolean)
+        : [category],
+      language: 'मराठी',
+      edition,
+      publicationDate: new Date().toISOString().slice(0, 10),
+      format: 'पेपरबॅक (डेमी साईज)',
+      pageCount,
+      isbn,
+      publisher,
+      price,
+      listPrice,
+      currency: 'INR',
+      stock,
+      availability:
+        stock === 0 ? 'out_of_stock' : stock <= 5 ? 'limited_stock' : 'in_stock',
+      shippingNote:
+        stock > 0
+          ? '२४–४८ तासांत नांदेड / पुणे केंद्रातून रवाना'
+          : 'सध्या साठा उपलब्ध नाही',
+      description,
+      editorialContext:
+        sanitizeText(req.body?.editorialIntroduction, 1200) || description,
+      rightsNote: 'सर्व हक्क अकथ प्रकाशन व लेखकाकडे सुरक्षित.',
+      isFeatured: Boolean(req.body?.isFeatured),
+      isNewRelease: true,
+      isEditorSelection: false,
+      relatedArticleIds: [],
+      relatedBookIds: [],
+      readingListIds: [],
+      verificationStatus: 'publisher_verified',
+      provenanceLabel: 'अकथ प्रकाशन अधिकृत आवृत्ती',
+      coverStyle: {
+        backgroundHex: '#174D3A',
+        accentHex: '#FFD966',
+        textHex: '#FFFDF7',
+        borderPattern: 'classic_frame',
+        emblemText: 'अकथ प्रकाशन · ग्रंथ',
+      },
+      ownerUserId: admin.id,
+      publicationStatus,
+    };
+
+    booksStore.unshift(newBook);
+
+    if (stock > 0) {
+      inventoryMovementsStore.unshift({
+        id: `inv-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        bookId: newBook.id,
+        bookTitle: newBook.title,
+        isbn: newBook.isbn,
+        type: 'stock_in',
+        delta: stock,
+        previousStock: 0,
+        newStock: stock,
+        reason: 'Initial catalog listing created by Administrator',
+        actorEmail: admin.email,
+      });
+    }
+
+    recordSecurityAudit({
+      actorUserId: admin.id,
+      actorEmail: admin.email,
+      actorRole: admin.role,
+      ipAddress: req.ip || '127.0.0.1',
+      action: 'ADMIN_BOOK_CREATED',
+      targetType: 'book',
+      targetId: newBook.id,
+      outcome: 'success',
+      details: `Created book '${newBook.title}' (${newBook.publicationStatus}).`,
+    });
+
+    res.status(201).json({ book: newBook });
+  }
+);
+
+app.patch(
+  '/api/admin/books/:id',
+  requirePermission('admin:books:moderate'),
+  (req: AuthenticatedRequest, res: Response) => {
+    const admin = req.authUser!;
+    const book = booksStore.find((b) => b.id === req.params.id);
+    if (!book) {
+      res.status(404).json({ error: 'Book not found.' });
+      return;
+    }
+
+    if (typeof req.body?.title === 'string' && req.body.title.trim().length >= 2) {
+      book.title = sanitizeText(req.body.title, 180);
+    }
+    if (typeof req.body?.subtitle === 'string') {
+      book.subtitle = sanitizeText(req.body.subtitle, 180) || undefined;
+    }
+    if (typeof req.body?.description === 'string' && req.body.description.trim().length >= 10) {
+      book.description = sanitizeText(req.body.description, 3000);
+    }
+    if (typeof req.body?.category === 'string' && req.body.category.trim()) {
+      book.category = sanitizeText(req.body.category, 80);
+    }
+    if (typeof req.body?.isbn === 'string') {
+      book.isbn = sanitizeText(req.body.isbn, 40) || undefined;
+    }
+    if (typeof req.body?.edition === 'string' && req.body.edition.trim()) {
+      book.edition = sanitizeText(req.body.edition, 80);
+    }
+    if (req.body?.price !== undefined) {
+      book.price = Math.max(50, Math.floor(Number(req.body.price) || book.price));
+    }
+    if (req.body?.listPrice !== undefined) {
+      book.listPrice = req.body.listPrice
+        ? Math.max(book.price, Math.floor(Number(req.body.listPrice)))
+        : undefined;
+    }
+    if (typeof req.body?.isFeatured === 'boolean') {
+      book.isFeatured = req.body.isFeatured;
+    }
+    if (req.body?.publicationStatus) {
+      book.publicationStatus = req.body.publicationStatus;
+    }
+
+    recordSecurityAudit({
+      actorUserId: admin.id,
+      actorEmail: admin.email,
+      actorRole: admin.role,
+      ipAddress: req.ip || '127.0.0.1',
+      action: 'ADMIN_BOOK_UPDATED',
+      targetType: 'book',
+      targetId: book.id,
+      outcome: 'success',
+      details: `Updated book '${book.title}' metadata/pricing.`,
+    });
+
+    res.json({ book });
+  }
+);
+
+app.get(
+  '/api/admin/books/export-csv',
+  requirePermission('admin:books:moderate'),
+  (_req: AuthenticatedRequest, res: Response) => {
+    const csv = exportBooksToCsv(booksStore);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="akath-books-catalog.csv"'
+    );
+    res.send(csv);
+  }
+);
+
+app.post(
+  '/api/admin/books/import-csv',
+  requirePermission('admin:books:moderate'),
+  (req: AuthenticatedRequest, res: Response) => {
+    const admin = req.authUser!;
+    const csvText = typeof req.body?.csvText === 'string' ? req.body.csvText : '';
+    const lines = csvText
+      .split(/\r?\n/)
+      .map((l: string) => l.trim())
+      .filter(Boolean);
+
+    if (lines.length < 2) {
+      res.status(400).json({
+        error: 'CSV must contain a header row and at least one book row.',
+      });
+      return;
+    }
+
+    const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase());
+    const titleIdx = headers.indexOf('title');
+    const priceIdx = headers.indexOf('price');
+    const stockIdx = headers.indexOf('stock');
+    const catIdx = headers.indexOf('category');
+    const isbnIdx = headers.indexOf('isbn');
+
+    if (titleIdx === -1 || priceIdx === -1) {
+      res.status(400).json({
+        error: 'CSV header must include at least "title" and "price" columns.',
+      });
+      return;
+    }
+
+    let importedCount = 0;
+    const errors: string[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const cols = parseCsvLine(lines[i]);
+      const rowTitle = sanitizeText(cols[titleIdx], 180);
+      const rowPrice = Math.floor(Number(cols[priceIdx]) || 0);
+      const rowStock =
+        stockIdx > -1 ? Math.max(0, Math.floor(Number(cols[stockIdx]) || 0)) : 15;
+      const rowCat =
+        catIdx > -1 && cols[catIdx] ? sanitizeText(cols[catIdx], 80) : 'कादंबरी';
+      const rowIsbn =
+        isbnIdx > -1 && cols[isbnIdx] ? sanitizeText(cols[isbnIdx], 40) : undefined;
+
+      if (!rowTitle || rowPrice < 50) {
+        errors.push(`Row ${i + 1}: Invalid title or price (< ₹50).`);
+        continue;
+      }
+
+      const existing = booksStore.find(
+        (b) =>
+          b.title.toLowerCase() === rowTitle.toLowerCase() ||
+          (rowIsbn && b.isbn && b.isbn.toLowerCase() === rowIsbn.toLowerCase())
+      );
+
+      if (existing) {
+        existing.price = rowPrice;
+        existing.stock = rowStock;
+        existing.category = rowCat;
+        if (rowIsbn) existing.isbn = rowIsbn;
+        importedCount++;
+      } else {
+        const id = `book-csv-${Date.now()}-${i}`;
+        booksStore.unshift({
+          id,
+          slug: `book-${Date.now()}-${i}`,
+          title: rowTitle,
+          transliteratedTitle: rowTitle,
+          authorId: authorsStore[0]?.id || 'author-digambar-kadam',
+          contributorIds: [],
+          category: rowCat,
+          categorySlug: 'novel',
+          topics: [rowCat],
+          language: 'मराठी',
+          edition: 'पहिली आवृत्ती (२०२६)',
+          publicationDate: new Date().toISOString().slice(0, 10),
+          format: 'पेपरबॅक',
+          pageCount: 160,
+          isbn: rowIsbn,
+          publisher: 'अकथ प्रकाशन, नांदेड व पुणे',
+          price: rowPrice,
+          currency: 'INR',
+          stock: rowStock,
+          availability:
+            rowStock === 0
+              ? 'out_of_stock'
+              : rowStock <= 5
+              ? 'limited_stock'
+              : 'in_stock',
+          shippingNote: '२४–४८ तासांत नांदेड / पुणे केंद्रातून रवाना',
+          description: `${rowTitle} — अकथ प्रकाशन साहित्य सूचीतील ग्रंथ.`,
+          editorialContext: `${rowTitle} — अकथ प्रकाशन साहित्य सूचीतील ग्रंथ.`,
+          rightsNote: 'सर्व हक्क अकथ प्रकाशन व लेखकाकडे सुरक्षित.',
+          isFeatured: false,
+          isNewRelease: true,
+          isEditorSelection: false,
+          relatedArticleIds: [],
+          relatedBookIds: [],
+          readingListIds: [],
+          verificationStatus: 'publisher_verified',
+          provenanceLabel: 'अकथ प्रकाशन अधिकृत आवृत्ती',
+          coverStyle: {
+            backgroundHex: '#174D3A',
+            accentHex: '#FFD966',
+            textHex: '#FFFDF7',
+            borderPattern: 'classic_frame',
+            emblemText: 'अकथ प्रकाशन',
+          },
+          ownerUserId: admin.id,
+          publicationStatus: 'published',
+        });
+        importedCount++;
+      }
+    }
+
+    res.json({ importedCount, errors, totalBooks: booksStore.length });
+  }
+);
+
+app.post(
+  '/api/admin/inventory/adjust',
+  requirePermission('admin:books:moderate'),
+  (req: AuthenticatedRequest, res: Response) => {
+    const admin = req.authUser!;
+    const bookId = sanitizeText(req.body?.bookId, 80);
+    const delta = Math.floor(Number(req.body?.delta) || 0);
+    const reason =
+      sanitizeText(req.body?.reason, 240) || 'Manual administrative stock audit';
+    const type: InventoryMovementRecord['type'] = [
+      'stock_in',
+      'stock_out',
+      'damaged',
+      'returned',
+      'manual_adjustment',
+    ].includes(req.body?.type)
+      ? req.body.type
+      : delta >= 0
+      ? 'stock_in'
+      : 'manual_adjustment';
+
+    const book = booksStore.find((b) => b.id === bookId);
+    if (!book) {
+      res.status(404).json({ error: 'Book not found.' });
+      return;
+    }
+
+    const prevStock = book.stock;
+    const newStock = Math.max(0, prevStock + delta);
+    book.stock = newStock;
+    book.availability =
+      newStock === 0
+        ? 'out_of_stock'
+        : newStock <= 5
+        ? 'limited_stock'
+        : 'in_stock';
+
+    const movement: InventoryMovementRecord = {
+      id: `inv-${Date.now()}-${generateOpaqueToken(2)}`,
+      timestamp: new Date().toISOString(),
+      bookId: book.id,
+      bookTitle: book.title,
+      isbn: book.isbn,
+      type,
+      delta: newStock - prevStock,
+      previousStock: prevStock,
+      newStock,
+      reason,
+      actorEmail: admin.email,
+    };
+
+    inventoryMovementsStore.unshift(movement);
+    res.json({ book, movement });
+  }
+);
+
+app.post(
+  '/api/admin/articles',
+  requirePermission('admin:books:moderate'),
+  (req: AuthenticatedRequest, res: Response) => {
+    const admin = req.authUser!;
+    const title = sanitizeText(req.body?.title, 180);
+    const summary = sanitizeText(req.body?.summary, 600);
+    const bodyText = sanitizeText(req.body?.bodyText, 8000);
+
+    if (title.length < 3 || bodyText.length < 20) {
+      res.status(400).json({
+        error: 'Article title and body paragraphs are required.',
+      });
+      return;
+    }
+
+    const categoryMarathi =
+      sanitizeText(req.body?.category, 60) || 'संपादकीय निबंध';
+    const contributorName =
+      sanitizeText(req.body?.contributorName, 100) || admin.name;
+    const workflowStatus: EditorialArticle['workflowStatus'] = [
+      'draft',
+      'editorial_review',
+      'published',
+    ].includes(req.body?.workflowStatus)
+      ? req.body.workflowStatus
+      : 'published';
+
+    const paragraphs = bodyText
+      .split(/\n+/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+    const nowDate = new Date().toISOString().slice(0, 10);
+    const newArticle: EditorialArticle = {
+      id: `art-${Date.now()}`,
+      slug: `vachankatta-${Date.now().toString().slice(-6)}`,
+      title,
+      subtitle: sanitizeText(req.body?.subtitle, 220) || summary,
+      transliteratedTitle: sanitizeText(req.body?.transliteratedTitle, 180) || title,
+      categoryMarathi,
+      categorySlug: 'articles',
+      authorId: authorsStore[0]?.id || 'author-digambar-kadam',
+      contributorName,
+      contributorRole: sanitizeText(req.body?.contributorRole, 80) || 'संपादकीय लेखक',
+      publishedAt: nowDate,
+      updatedAt: nowDate,
+      readingTimeMinutes: Math.max(3, Math.ceil(bodyText.split(/\s+/).length / 160)),
+      summary: summary || paragraphs[0] || title,
+      leadParagraph: paragraphs[0] || summary || title,
+      tags: Array.isArray(req.body?.tags)
+        ? req.body.tags.map((t: unknown) => sanitizeText(t, 40)).filter(Boolean)
+        : [categoryMarathi],
+      relatedBookIds: [],
+      relatedAuthorIds: [],
+      relatedArticleIds: [],
+      verificationStatus: 'publisher_verified',
+      provenanceLabel: 'अकथ संपादकीय मंच',
+      workflowStatus,
+      sections: [
+        {
+          id: `sec-${Date.now()}-1`,
+          heading: sanitizeText(req.body?.sectionHeading, 140) || title,
+          paragraphs,
+          pullQuote: sanitizeText(req.body?.pullQuote, 300) || undefined,
+        },
+      ],
+    };
+
+    articlesStore.unshift(newArticle);
+    res.status(201).json({ article: newArticle });
+  }
+);
+
+app.patch(
+  '/api/admin/site-config',
+  requirePermission('admin:dashboard'),
+  (req: AuthenticatedRequest, res: Response) => {
+    const admin = req.authUser!;
+    const current = siteConfigStore.published;
+
+    if (req.body?.hero && typeof req.body.hero === 'object') {
+      current.hero = {
+        ...current.hero,
+        ...req.body.hero,
+      };
+    }
+    if (req.body?.promoBanner && typeof req.body.promoBanner === 'object') {
+      current.promoBanner = {
+        ...current.promoBanner,
+        ...req.body.promoBanner,
+      };
+    }
+    if (Array.isArray(req.body?.featuredBookIds)) {
+      current.featuredBookIds = req.body.featuredBookIds.map((id: unknown) =>
+        sanitizeText(id, 80)
+      );
+    }
+    if (Array.isArray(req.body?.sectionOrder)) {
+      current.sectionOrder = req.body.sectionOrder;
+    }
+    if (req.body?.freeShippingThreshold !== undefined) {
+      current.freeShippingThreshold = Math.max(
+        0,
+        Math.floor(Number(req.body.freeShippingThreshold) || 600)
+      );
+    }
+
+    current.updatedAt = new Date().toISOString();
+    current.updatedBy = admin.email;
+
+    saveCmsBackupSnapshot({
+      actorEmail: admin.email,
+      books: booksStore,
+    });
+
+    recordSecurityAudit({
+      actorUserId: admin.id,
+      actorEmail: admin.email,
+      actorRole: admin.role,
+      ipAddress: req.ip || '127.0.0.1',
+      action: 'SITE_CONFIG_UPDATED',
+      targetType: 'system',
+      outcome: 'success',
+      details: 'Updated storefront homepage & banner configuration via Visual Website Editor.',
+    });
+
+    res.json({ siteConfig: current });
+  }
+);
+
+app.post(
+  '/api/admin/promotions',
+  requirePermission('admin:orders:manage'),
+  (req: AuthenticatedRequest, res: Response) => {
+    const code = sanitizeText(req.body?.code, 30)
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '');
+    const title = sanitizeText(req.body?.title, 120);
+    const discountValue = Math.max(1, Math.floor(Number(req.body?.discountValue) || 10));
+    const discountType: PromotionRecord['discountType'] =
+      req.body?.discountType === 'fixed_amount' ? 'fixed_amount' : 'percentage';
+
+    if (code.length < 3 || !title) {
+      res.status(400).json({ error: 'Valid promo code and title are required.' });
+      return;
+    }
+
+    const nowIso = new Date().toISOString();
+    const promo: PromotionRecord = {
+      id: `promo-${Date.now()}`,
+      code,
+      title,
+      description: sanitizeText(req.body?.description, 240) || title,
+      discountType,
+      discountValue,
+      minOrderSubtotal: Math.max(
+        0,
+        Math.floor(Number(req.body?.minOrderSubtotal) || 300)
+      ),
+      active: true,
+      startsAt: nowIso,
+      usedCount: 0,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    promotionsStore.unshift(promo);
+    res.status(201).json({ promotion: promo });
   }
 );
 

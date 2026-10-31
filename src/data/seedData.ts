@@ -28,23 +28,35 @@ export const PUBLISHER_IDENTITY = {
   editorialPrinciples: [
     {
       title: 'संपादकीय स्वातंत्र्य आणि वाङ्मयीन कस',
+      titleEnglish: 'Editorial Independence & Literary Rigor',
       description:
         'तात्कालिक बाजारी लाटांपेक्षा आशयघनता, भाषिक नेमकेपणा आणि दीर्घकाळ टिकणाऱ्या साहित्यमूल्यांना प्राधान्य.',
+      descriptionEnglish:
+        'Prioritizing substantive depth, linguistic precision, and enduring literary value over fleeting commercial trends.',
     },
     {
       title: 'मराठी भाषेचे समकालीन भान',
+      titleEnglish: 'Contemporary Marathi Sensibility',
       description:
         'प्रमाण भाषेसोबतच मराठवाडा व महाराष्ट्रातील विविध बोली, प्रादेशिक अनुभवविश्व आणि नव्या संवेदनांचा सन्मान.',
+      descriptionEnglish:
+        'Honoring standard Marathi alongside the diverse regional dialects, lived realities, and emerging sensibilities of Marathwada and Maharashtra.',
     },
     {
       title: 'नव्या आणि गंभीर आवाजांना व्यासपीठ',
+      titleEnglish: 'A Home for Serious & Emerging Voices',
       description:
         'पहिल्या पुस्तकाच्या लेखकापासून ते अनुभवी अभ्यासकांपर्यंत प्रत्येक हस्तलिखितावर सखोल संपादकीय संवाद.',
+      descriptionEnglish:
+        'Sustained, thoughtful editorial dialogue on every manuscript—from debut writers to seasoned literary scholars.',
     },
     {
       title: 'पारदर्शक लेखक-प्रकाशक व्यवहार',
+      titleEnglish: 'Transparent Author–Publisher Partnership',
       description:
         'हस्तलिखित निवडीपासून संपादन, मुद्रण, विक्री अहवाल आणि मानधनापर्यंत स्पष्ट व विश्वासार्ह कार्यपद्धती.',
+      descriptionEnglish:
+        'Clear, trustworthy workflows from manuscript evaluation and editing to print production, sales reporting, and royalties.',
     },
   ],
   preservedCapabilities: [
@@ -54,6 +66,8 @@ export const PUBLISHER_IDENTITY = {
       titleEnglish: 'Editing & Proofreading',
       description:
         'मराठी, हिंदी आणि इंग्रजी भाषेतील हस्तलिखितांचे आशयसंपादन, वाक्यरचना सुधारणा आणि अचूक मुद्रितशोधन.',
+      descriptionEnglish:
+        'Substantive developmental editing, structural refinement, and meticulous proofreading across Marathi, Hindi, and English manuscripts.',
     },
     {
       step: '02',
@@ -61,6 +75,8 @@ export const PUBLISHER_IDENTITY = {
       titleEnglish: 'Story-Led Cover Design',
       description:
         'पुस्तकाच्या अंतरंगाशी सुसंगत, वाचकाचे लक्ष वेधून घेणारी आणि साहित्यिक गांभीर्य जपणारी मुखपृष्ठ मांडणी.',
+      descriptionEnglish:
+        'Bespoke cover art direction that reflects the inner soul of the book while preserving literary dignity.',
     },
     {
       step: '03',
@@ -68,6 +84,8 @@ export const PUBLISHER_IDENTITY = {
       titleEnglish: 'Layout & Typesetting',
       description:
         'दीर्घ वाचनासाठी डोळ्यांना सुखद वाटणारी देवनागरी अक्षरजुळणी, समास आणि कागद-अनुकूल पृष्ठरचना.',
+      descriptionEnglish:
+        'Eye-friendly Devanagari typesetting, generous margins, and paper-conscious page architecture crafted for long-form reading.',
     },
     {
       step: '04',
@@ -75,6 +93,8 @@ export const PUBLISHER_IDENTITY = {
       titleEnglish: 'ISBN & Copyright Documentation',
       description:
         'कायदेशीर प्रताधिकार लेखकाच्या नावे सुरक्षित ठेवून अधिकृत ISBN व ग्रंथसूची नोंदणीची पूर्ण जबाबदारी.',
+      descriptionEnglish:
+        'Complete management of official ISBN registration and bibliographic cataloguing while safeguarding copyright in the author’s name.',
     },
     {
       step: '05',
@@ -82,6 +102,8 @@ export const PUBLISHER_IDENTITY = {
       titleEnglish: 'Archival Printing & Binding',
       description:
         'पेपरबॅक आणि हार्डबाउंड आवृत्त्यांसाठी टिकाऊ कागद, स्पष्ट छपाई आणि मजबूत पुस्तक बांधणी.',
+      descriptionEnglish:
+        'Acid-free natural shade paper, crisp presswork, and durable binding for both paperback and hardbound editions.',
     },
     {
       step: '06',
@@ -89,8 +111,13 @@ export const PUBLISHER_IDENTITY = {
       titleEnglish: 'Distribution & eBook Reach',
       description:
         'नांदेडच्या पलीकडे महाराष्ट्रभरातील स्वतंत्र पुस्तकांची दुकाने, वाचनालये आणि थेट ऑनलाइन वाचकांपर्यंत पोहोच.',
+      descriptionEnglish:
+        'Reaching independent bookstores, institutional libraries, and direct online readers across Maharashtra and India.',
     },
   ],
+  closingMottoMarathi: 'वाचत राहू. विचारत राहू. लिहित राहू.',
+  closingMottoEnglish:
+    'Let us keep reading. Let us keep questioning. Let us keep writing.',
 };
 
 export const PHASE_0_AUDIT_REPORT = {

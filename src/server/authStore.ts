@@ -94,6 +94,14 @@ export const SCHEMA_MIGRATIONS: SchemaMigrationRecord[] = [
     rollbackDescription:
       'Drops saved_addresses, book_reviews, security_audit_logs and removes guestAccessToken/userId from orders.',
   },
+  {
+    version: '20261031_005',
+    name: 'add_no_code_admin_cms_media_inventory_promotions_and_site_config',
+    appliedAt: '2026-10-31T02:30:00.000Z',
+    reversible: true,
+    rollbackDescription:
+      'Drops media_assets, inventory_movements, promotions, site_configs, article_revisions, and admin_notifications tables.',
+  },
 ];
 
 export interface InternalUserRecord extends PublicUserProfile {
@@ -375,6 +383,7 @@ export function toPublicUserProfile(user: InternalUserRecord): PublicUserProfile
     city: user.city,
     bio: user.bio,
     role: user.role,
+    staffPermissions: user.staffPermissions ? [...user.staffPermissions] : undefined,
     accountStatus: user.accountStatus,
     emailVerified: user.emailVerified,
     linkedAuthorId: user.linkedAuthorId,

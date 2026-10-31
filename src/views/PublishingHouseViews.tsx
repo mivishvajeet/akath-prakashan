@@ -11,6 +11,7 @@ import {
   TortoiseStageIllustration,
   AnimatedTortoiseEmblem,
 } from '../components/SarvamIllustrations';
+import { WalkingTortoise } from '../components/WalkingTortoise';
 import { PUBLISHER_IDENTITY } from '../data/seedData';
 import { useLanguage } from '../i18n/translations';
 import { validateEmail, validateIndianPhone } from '../utils/validation';
@@ -283,7 +284,11 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({ onNavigate }) =>
                 variant="indigo"
                 animate={true}
               />
-              <span>अकथ प्रकाशन · नांदेड / पुणे · महाराष्ट्र</span>
+              <span>
+                {lang === 'mr'
+                  ? 'अकथ प्रकाशन · नांदेड / पुणे · महाराष्ट्र'
+                  : 'Akath Prakashan · Nanded / Pune · Maharashtra'}
+              </span>
             </div>
 
             <h1 className="type-page-heading text-[#252832]">
@@ -332,7 +337,11 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({ onNavigate }) =>
                 variant="cerulean"
                 animate={false}
               />
-              <span>कासव आणि उघडलेले पुस्तक — अकथ प्रकाशन मुद्रा</span>
+              <span>
+                {lang === 'mr'
+                  ? 'कासव आणि उघडलेले पुस्तक — अकथ प्रकाशन मुद्रा'
+                  : 'The Tortoise & Open Book — Official Akath Imprint'}
+              </span>
             </div>
           </div>
         </motion.div>
@@ -341,7 +350,9 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({ onNavigate }) =>
         <section className="space-y-6">
           <div>
             <p className="text-[12px] font-semibold text-[#243B8A]">
-              02 · संपादकीय आणि मुद्रण प्रक्रिया
+              {lang === 'mr'
+                ? '02 · संपादकीय आणि मुद्रण प्रक्रिया'
+                : '02 · Editorial & Print Production Process'}
             </p>
             <h2 className="type-section-heading text-[#252832] mt-1">
               {lang === 'mr'
@@ -364,29 +375,33 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({ onNavigate }) =>
                   <span className="font-mono font-bold px-2 py-0.5 rounded bg-[#FFD966] text-[#252832]">
                     {cap.step}
                   </span>
-                  <span className="text-[#5A5F72]">{cap.titleEnglish}</span>
+                  <span className="text-[#5A5F72]">
+                    {lang === 'mr' ? cap.titleEnglish : cap.titleMarathi}
+                  </span>
                 </div>
                 <h3 className="type-book-title text-[#252832]">
-                  {cap.titleMarathi}
+                  {lang === 'mr' ? cap.titleMarathi : cap.titleEnglish}
                 </h3>
                 <p className="text-[14px] text-[#5A5F72] leading-relaxed">
-                  {cap.description}
+                  {lang === 'mr'
+                    ? cap.description
+                    : cap.descriptionEnglish || cap.description}
                 </p>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* 5 Editorial Principles */}
+        {/* Editorial Principles */}
         <section className="bg-white rounded-[32px] border border-[#E6DFCE] p-8 sm:p-10 space-y-6">
           <div>
             <p className="text-[12px] font-semibold text-[#243B8A]">
-              03 · संपादकीय मूल्ये
+              {lang === 'mr' ? '03 · संपादकीय मूल्ये' : '03 · Editorial Principles'}
             </p>
             <h2 className="type-section-heading text-[#252832] mt-1">
               {lang === 'mr'
                 ? 'अकथ प्रकाशनाची पंचसूत्री'
-                : 'Five Editorial Principles of Akath Prakashan'}
+                : 'Core Editorial Principles of Akath Prakashan'}
             </h2>
           </div>
 
@@ -401,15 +416,50 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({ onNavigate }) =>
                 </span>
                 <div className="space-y-1">
                   <h3 className="font-serif text-[16px] font-bold text-[#252832]">
-                    {principle.title}
+                    {lang === 'mr'
+                      ? principle.title
+                      : principle.titleEnglish || principle.title}
                   </h3>
                   <p className="text-[14px] text-[#5A5F72] leading-relaxed">
-                    {principle.description}
+                    {lang === 'mr'
+                      ? principle.description
+                      : principle.descriptionEnglish || principle.description}
                   </p>
                 </div>
               </div>
             ))}
           </div>
+        </section>
+
+        {/* ===================================================================
+            CLOSING LITERARY SIGNATURE & WALKING TORTOISE COLOPHON
+            Placed after all About section text, immediately before the footer.
+            =================================================================== */}
+        <section
+          data-testid="about-closing-colophon"
+          aria-label={
+            lang === 'mr'
+              ? 'अकथ प्रकाशन समारोप ब्रीदवाक्य आणि चालणारे कासव'
+              : 'Akath Prakashan closing literary signature and walking tortoise'
+          }
+          className="pt-12 pb-10 sm:pt-16 sm:pb-12 border-t border-[#E6DFCE]/80 text-center space-y-6"
+        >
+          <div className="max-w-2xl mx-auto space-y-2.5 px-2">
+            <p
+              data-testid="about-final-marathi-line"
+              className="font-serif text-[22px] sm:text-[26px] font-bold text-[#174D3A] leading-snug tracking-normal"
+            >
+              “वाचत राहू. विचारत राहू. लिहित राहू.”
+            </p>
+            {lang === 'en' && (
+              <p className="font-serif text-[15px] sm:text-[16.5px] italic text-[#5A5F72]">
+                “{PUBLISHER_IDENTITY.closingMottoEnglish}”
+              </p>
+            )}
+          </div>
+
+          {/* Walking Tortoise Closing Animation */}
+          <WalkingTortoise className="mt-4" />
         </section>
       </div>
     </div>
@@ -750,13 +800,23 @@ export const SubmitManuscriptView: React.FC<SubmitManuscriptViewProps> = ({
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFCE] text-[15px] bg-white"
                 >
-                  <option value="कादंबरी">कादंबरी (Novel)</option>
-                  <option value="कथासंग्रह">कथासंग्रह (Short Stories)</option>
-                  <option value="कवितासंग्रह">कवितासंग्रह (Poetry)</option>
-                  <option value="समीक्षा व निबंध">
-                    समीक्षा व निबंध (Criticism / Essays)
+                  <option value="कादंबरी">
+                    {lang === 'mr' ? 'कादंबरी' : 'Novel (कादंबरी)'}
                   </option>
-                  <option value="अनुवाद">अनुवाद (Translation)</option>
+                  <option value="कथासंग्रह">
+                    {lang === 'mr' ? 'कथासंग्रह' : 'Short Stories (कथासंग्रह)'}
+                  </option>
+                  <option value="कवितासंग्रह">
+                    {lang === 'mr' ? 'कवितासंग्रह' : 'Poetry (कवितासंग्रह)'}
+                  </option>
+                  <option value="समीक्षा व निबंध">
+                    {lang === 'mr'
+                      ? 'समीक्षा व निबंध'
+                      : 'Criticism & Essays (समीक्षा व निबंध)'}
+                  </option>
+                  <option value="अनुवाद">
+                    {lang === 'mr' ? 'अनुवाद' : 'Translation (अनुवाद)'}
+                  </option>
                 </select>
               </div>
             </div>
@@ -1082,13 +1142,21 @@ export const ContactView: React.FC<ContactViewProps> = ({ onSubmitContact }) => 
                 onChange={(e) => setRole(e.target.value as typeof role)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFCE] text-[15px] bg-white"
               >
-                <option value="Reader">वाचक (Reader)</option>
-                <option value="Author">लेखक (Author)</option>
+                <option value="Reader">
+                  {lang === 'mr' ? 'वाचक' : 'Reader'}
+                </option>
+                <option value="Author">
+                  {lang === 'mr' ? 'लेखक' : 'Author'}
+                </option>
                 <option value="Bookstore_Institution">
-                  ग्रंथालय / पुस्तक विक्रेता (Bookstore / Library)
+                  {lang === 'mr'
+                    ? 'ग्रंथालय / पुस्तक विक्रेता'
+                    : 'Bookstore / Library'}
                 </option>
                 <option value="Contributor">
-                  समीक्षक / पत्रकार (Reviewer / Media)
+                  {lang === 'mr'
+                    ? 'समीक्षक / पत्रकार'
+                    : 'Reviewer / Media'}
                 </option>
               </select>
             </div>

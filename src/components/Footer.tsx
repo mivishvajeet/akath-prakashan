@@ -298,7 +298,9 @@ export const Footer: React.FC<FooterProps> = ({
                   अकथ प्रकाशन
                 </span>
                 <span className="text-[12px] text-[#FFD966] font-medium block">
-                  Akath Prakashan · स्वतंत्र मराठी साहित्य आणि प्रकाशन गृह
+                  {lang === 'mr'
+                    ? 'Akath Prakashan · स्वतंत्र मराठी साहित्य आणि प्रकाशन गृह'
+                    : 'Akath Prakashan · Independent Marathi Literary Publishing House'}
                 </span>
               </div>
             </a>
@@ -574,7 +576,9 @@ export const Footer: React.FC<FooterProps> = ({
                   aria-hidden="true"
                 />
                 <span>
-                  नांदेड (४३१६०२) व सदाशिव पेठ, पुणे (४११०३०), महाराष्ट्र
+                  {lang === 'mr'
+                    ? 'नांदेड (४३१६०२) व सदाशिव पेठ, पुणे (४११०३०), महाराष्ट्र'
+                    : 'Nanded (431602) & Sadashiv Peth, Pune (411030), Maharashtra'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
@@ -654,20 +658,23 @@ export const Footer: React.FC<FooterProps> = ({
             </p>
           </div>
 
-          {/* Creator Credit with Gentle Hover Interaction */}
+          {/* Creator Credit with Gentle Hover Interaction (No external/profile link, no invented surname) */}
           <p className="text-[13px] text-[#FFFDF7]/90">
-            <a
-              href="/about"
-              onClick={(e) => handleNavClick(e, '/about')}
+            <span
               data-testid="footer-creator-credit"
+              tabIndex={0}
               className="last-page-creator-credit font-serif text-[#FFFDF7] rounded px-1 py-0.5"
             >
               <Feather
                 className="w-3.5 h-3.5 text-[#FFD966] last-page-creator-mark"
                 aria-hidden="true"
               />
-              <span>Thoughtfully built by [Your Name].</span>
-            </a>
+              <span>
+                {lang === 'mr'
+                  ? 'साकारले — विश्वजीत'
+                  : 'Thoughtfully built by विश्वजीत.'}
+              </span>
+            </span>
           </p>
         </div>
 

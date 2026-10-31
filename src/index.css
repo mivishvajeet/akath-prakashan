@@ -48,7 +48,6 @@
     color: var(--color-ink);
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
     letter-spacing: 0;
   }
 
@@ -582,6 +581,118 @@
   outline-offset: 3px;
 }
 
+/* =========================================================================
+   WalkingTortoise — About Section Closing Colophon Animation
+   Calm, patient left-to-right walk, brief pause, smooth turn, and return.
+   ========================================================================= */
+
+@keyframes akath-tortoise-traverse {
+  0% {
+    transform: translate3d(4%, 0, 0);
+  }
+  43% {
+    transform: translate3d(245%, 0, 0);
+  }
+  50% {
+    transform: translate3d(245%, 0, 0);
+  }
+  93% {
+    transform: translate3d(4%, 0, 0);
+  }
+  100% {
+    transform: translate3d(4%, 0, 0);
+  }
+}
+
+@keyframes akath-tortoise-turn {
+  0%,
+  44% {
+    transform: scaleX(1);
+  }
+  48%,
+  94% {
+    transform: scaleX(-1);
+  }
+  98%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes akath-tortoise-leg-stride-a {
+  0%,
+  100% {
+    transform: rotate(-7deg) translateY(0px);
+  }
+  50% {
+    transform: rotate(7deg) translateY(-1.2px);
+  }
+}
+
+@keyframes akath-tortoise-leg-stride-b {
+  0%,
+  100% {
+    transform: rotate(7deg) translateY(-1.2px);
+  }
+  50% {
+    transform: rotate(-7deg) translateY(0px);
+  }
+}
+
+@keyframes akath-tortoise-body-sway {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-1.3px);
+  }
+}
+
+@keyframes akath-tortoise-head-nod {
+  0%,
+  100% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+  50% {
+    transform: translate(1px, -0.8px) rotate(-1.5deg);
+  }
+}
+
+.akath-walking-tortoise-traveler {
+  animation: akath-tortoise-traverse 32s ease-in-out infinite;
+  will-change: transform;
+}
+
+.akath-walking-tortoise-turner {
+  animation: akath-tortoise-turn 32s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+.akath-walking-tortoise-leg-a {
+  animation: akath-tortoise-leg-stride-a 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: top center;
+}
+
+.akath-walking-tortoise-leg-b {
+  animation: akath-tortoise-leg-stride-b 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: top center;
+}
+
+.akath-walking-tortoise-body {
+  animation: akath-tortoise-body-sway 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+.akath-walking-tortoise-head {
+  animation: akath-tortoise-head-nod 3.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+
 /* Respect reduced motion preferences (WCAG 2.1 SC 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -627,13 +738,20 @@
   .last-page-creator-credit:hover,
   .last-page-creator-credit:focus-visible,
   .last-page-creator-credit::after,
-  .last-page-creator-mark {
+  .last-page-creator-mark,
+  .akath-walking-tortoise-traveler,
+  .akath-walking-tortoise-turner,
+  .akath-walking-tortoise-leg-a,
+  .akath-walking-tortoise-leg-b,
+  .akath-walking-tortoise-body,
+  .akath-walking-tortoise-head {
     animation: none !important;
     transition: none !important;
     transform: none !important;
     will-change: auto;
   }
+
+  .akath-walking-tortoise-track {
+    justify-content: center;
+  }
 }
-
-
-

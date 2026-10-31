@@ -56,7 +56,12 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     'admin:users:manage',
     'admin:authors:approve',
     'admin:books:moderate',
+    'admin:articles:manage',
     'admin:orders:manage',
+    'admin:inventory:manage',
+    'admin:media:manage',
+    'admin:promotions:manage',
+    'admin:site:edit',
     'admin:audit:view',
   ],
 };
@@ -68,15 +73,19 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
 export function hasPermission(
   role: UserRole | undefined | null,
   accountStatus: AccountStatus | undefined | null,
-  permission: Permission
+  permission: Permission,
+  staffPermissions?: readonly Permission[]
 ): boolean {
   const effectiveRole: UserRole = role || 'guest';
   if (effectiveRole !== 'guest' && accountStatus !== 'active') {
     return ROLE_PERMISSIONS.guest.includes(permission);
   }
   const allowed = ROLE_PERMISSIONS[effectiveRole];
-  if (!allowed) return false;
-  return allowed.includes(permission);
+  if (allowed && allowed.includes(permission)) return true;
+  if (Array.isArray(staffPermissions) && staffPermissions.includes(permission)) {
+    return true;
+  }
+  return false;
 }
 
 // ============================================================================

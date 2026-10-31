@@ -145,7 +145,7 @@ export const AccessDeniedView: React.FC<{
 
         <div className="space-y-2">
           <span className="inline-block px-3 py-1 rounded-lg bg-[#FFD966] text-[#252832] text-[12px] font-bold uppercase tracking-wide">
-            403 · प्रवेश प्रतिबंधित (Access Restricted)
+            {lang === 'mr' ? '403 · प्रवेश प्रतिबंधित' : '403 · Access Restricted'}
           </span>
           <h1 className="type-section-heading text-[#252832]">
             {lang === 'mr'
@@ -633,7 +633,9 @@ export const AuthPageView: React.FC<{
             />
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-[#FFD966]">
-                अकथ प्रकाशन · सुरक्षित ओळख प्रणाली
+                {lang === 'mr'
+                  ? 'अकथ प्रकाशन · सुरक्षित ओळख प्रणाली'
+                  : 'Akath Prakashan · Unified Identity System'}
               </p>
               <h2 className="font-serif text-[22px] font-bold text-[#FFFDF7]">
                 {lang === 'mr'
@@ -1856,7 +1858,8 @@ export const ReaderAccountView: React.FC<{
                             .join(', ')}
                         </p>
                         <p className="text-[12.5px] text-[#5A5F72]">
-                          {ord.createdAt.slice(0, 10)} · एकूण: ₹{ord.grandTotal}
+                          {ord.createdAt.slice(0, 10)} ·{' '}
+                          {lang === 'mr' ? 'एकूण' : 'Total'}: ₹{ord.grandTotal}
                         </p>
                       </div>
                       {ord.fulfilment.trackingNumber && (
@@ -2508,7 +2511,8 @@ export const AuthorPortalView: React.FC<{
                   </div>
                   {app.moderationNote && (
                     <p className="text-[13.5px] text-[#5A5F72]">
-                      संपादकीय टीप: {app.moderationNote}
+                      {lang === 'mr' ? 'संपादकीय टीप:' : 'Editorial Note:'}{' '}
+                      {app.moderationNote}
                     </p>
                   )}
                 </div>
@@ -2644,20 +2648,24 @@ export const AuthorPortalView: React.FC<{
           {royalties && (
             <div className="grid grid-cols-3 gap-3 bg-[#1B2D6B] p-3.5 rounded-2xl border border-white/15 text-center">
               <div>
-                <p className="text-[11px] text-[#FFD966]">विक्री प्रती</p>
+                <p className="text-[11px] text-[#FFD966]">
+                  {lang === 'mr' ? 'विक्री प्रती' : 'Copies Sold'}
+                </p>
                 <p className="text-[18px] font-bold tabular-nums">
                   {royalties.totalCopiesSold}
                 </p>
               </div>
               <div>
-                <p className="text-[11px] text-[#FFD966]">एकूण उलाढाल</p>
+                <p className="text-[11px] text-[#FFD966]">
+                  {lang === 'mr' ? 'एकूण उलाढाल' : 'Gross Revenue'}
+                </p>
                 <p className="text-[18px] font-bold tabular-nums">
                   ₹{royalties.grossBookRevenue}
                 </p>
               </div>
               <div>
                 <p className="text-[11px] text-[#FFD966]">
-                  मानधन ({royalties.royaltyRatePercent}%)
+                  {lang === 'mr' ? 'मानधन' : 'Royalties'} ({royalties.royaltyRatePercent}%)
                 </p>
                 <p className="text-[18px] font-bold tabular-nums">
                   ₹{royalties.estimatedRoyaltyInr}
@@ -2730,7 +2738,11 @@ export const AuthorPortalView: React.FC<{
 
                     {book.moderationFeedback && (
                       <p className="text-[12.5px] bg-[#FFD966]/25 border border-[#FFD966] rounded-xl px-3 py-2 text-[#252832]">
-                        <strong>संपादकीय अभिप्राय:</strong>{' '}
+                        <strong>
+                          {lang === 'mr'
+                            ? 'संपादकीय अभिप्राय:'
+                            : 'Editorial Feedback:'}
+                        </strong>{' '}
                         {book.moderationFeedback}
                       </p>
                     )}
@@ -2847,15 +2859,23 @@ export const AuthorPortalView: React.FC<{
                   onChange={(e) => setDraftCategory(e.target.value)}
                   className="w-full px-2.5 py-2.5 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] text-[13.5px]"
                 >
-                  <option value="कादंबरी">कादंबरी</option>
-                  <option value="कथासंग्रह">कथासंग्रह</option>
-                  <option value="कवितासंग्रह">कवितासंग्रह</option>
-                  <option value="समीक्षा व निबंध">समीक्षा व निबंध</option>
+                  <option value="कादंबरी">
+                    {lang === 'mr' ? 'कादंबरी' : 'Novel (कादंबरी)'}
+                  </option>
+                  <option value="कथासंग्रह">
+                    {lang === 'mr' ? 'कथासंग्रह' : 'Short Stories (कथासंग्रह)'}
+                  </option>
+                  <option value="कवितासंग्रह">
+                    {lang === 'mr' ? 'कवितासंग्रह' : 'Poetry (कवितासंग्रह)'}
+                  </option>
+                  <option value="समीक्षा व निबंध">
+                    {lang === 'mr' ? 'समीक्षा व निबंध' : 'Essays & Criticism (समीक्षा व निबंध)'}
+                  </option>
                 </select>
               </div>
               <div>
                 <label htmlFor="dr-price" className="block ui-label mb-1">
-                  किंमत (₹)
+                  {lang === 'mr' ? 'किंमत (₹)' : 'Price (₹)'}
                 </label>
                 <input
                   id="dr-price"
@@ -2867,7 +2887,7 @@ export const AuthorPortalView: React.FC<{
               </div>
               <div>
                 <label htmlFor="dr-pages" className="block ui-label mb-1">
-                  पृष्ठे
+                  {lang === 'mr' ? 'पृष्ठे' : 'Pages'}
                 </label>
                 <input
                   id="dr-pages"

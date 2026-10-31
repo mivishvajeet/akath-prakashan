@@ -54,8 +54,8 @@ export const AdminDashboardView: React.FC<{
 }) => {
   const { lang } = useLanguage();
   const [activeTab, setActiveTab] = useState<
-    'users' | 'authors' | 'books' | 'orders' | 'manuscripts' | 'audit'
-  >(activeSubRoute === 'overview' ? 'users' : activeSubRoute);
+    'users' | 'authors' | 'books' | 'orders' | 'cms' | 'manuscripts' | 'audit'
+  >(activeSubRoute === 'overview' ? 'books' : activeSubRoute);
 
   const [userSearch, setUserSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
@@ -68,6 +68,29 @@ export const AdminDashboardView: React.FC<{
   } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // No-Code Book Creation & CSV state
+  const [showAddBookForm, setShowAddBookForm] = useState(false);
+  const [newBookTitle, setNewBookTitle] = useState('');
+  const [newBookCategory, setNewBookCategory] = useState('कादंबरी');
+  const [newBookIsbn, setNewBookIsbn] = useState('');
+  const [newBookPrice, setNewBookPrice] = useState('280');
+  const [newBookStock, setNewBookStock] = useState('25');
+  const [newBookDescription, setNewBookDescription] = useState('');
+  const [csvImportText, setCsvImportText] = useState('');
+  const [showCsvPanel, setShowCsvPanel] = useState(false);
+
+  // No-Code Editorial Article & Site Config state
+  const [newArticleTitle, setNewArticleTitle] = useState('');
+  const [newArticleCategory, setNewArticleCategory] = useState('संपादकीय निबंध');
+  const [newArticleSummary, setNewArticleSummary] = useState('');
+  const [newArticleBody, setNewArticleBody] = useState('');
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [promoTitleInput, setPromoTitleInput] = useState('');
+  const [promoDiscountInput, setPromoDiscountInput] = useState('15');
+  const [heroSubheadlineMr, setHeroSubheadlineMr] = useState('');
+  const [heroSubheadlineEn, setHeroSubheadlineEn] = useState('');
+  const [promoBannerEnabled, setPromoBannerEnabled] = useState(true);
+
   const [dashboard, setDashboard] = useState<{
     books: BookRecord[];
     articles: EditorialArticle[];
@@ -79,6 +102,35 @@ export const AdminDashboardView: React.FC<{
     authorApplications: AuthorApplicationRecord[];
     reviews: BookReviewRecord[];
     auditLogs: SecurityAuditEvent[];
+    inventoryMovements?: Array<{
+      id: string;
+      timestamp: string;
+      bookTitle: string;
+      delta: number;
+      newStock: number;
+      reason: string;
+      actorEmail: string;
+    }>;
+    promotions?: Array<{
+      id: string;
+      code: string;
+      title: string;
+      discountType: string;
+      discountValue: number;
+      active: boolean;
+    }>;
+    siteConfig?: {
+      hero: {
+        subheadlineMarathi: string;
+        subheadlineEnglish: string;
+      };
+      promoBanner: {
+        enabled: boolean;
+        badgeText: string;
+        messageMarathi: string;
+        messageEnglish: string;
+      };
+    };
   } | null>(null);
 
   useEffect(() => {
@@ -95,6 +147,11 @@ export const AdminDashboardView: React.FC<{
       if (res.ok) {
         const data = await res.json();
         setDashboard(data);
+        if (data.siteConfig) {
+          setHeroSubheadlineMr(data.siteConfig.hero?.subheadlineMarathi || '');
+          setHeroSubheadlineEn(data.siteConfig.hero?.subheadlineEnglish || '');
+          setPromoBannerEnabled(Boolean(data.siteConfig.promoBanner?.enabled));
+        }
       } else {
         const errData = await res.json().catch(() => ({}));
         setLoadError(
@@ -115,7 +172,9 @@ export const AdminDashboardView: React.FC<{
     return (
       <AccessDeniedView
         user={user}
-        requiredRoleLabel="Administrator (प्रशासक)"
+        requiredRoleLabel={
+          lang === 'mr' ? 'प्रशासक (Administrator)' : 'Administrator'
+        }
         reasonMessage={
           lang === 'mr'
             ? 'प्रशासकीय नियंत्रण कक्षात प्रवेश करण्यासाठी सर्व्हर-प्रमाणित Administrator अधिकार आवश्यक आहेत.'
@@ -277,6 +336,181 @@ export const AdminDashboardView: React.FC<{
     onRefreshBootstrap();
   };
 
+  const handleCreateBook = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionBanner(null);
+    const res = await authFetch(
+      '/api/admin/books',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          title: newBookTitle,
+          category: newBookCategory,
+          isbn: newBookIsbn || undefined,
+          price: Number(newBookPrice) || 250,
+          stock: Number(newBookStock) || 20,
+          description: newBookDescription,
+          publicationStatus: 'published',
+        }),
+      },
+      csrfToken
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      setActionBanner({
+        type: 'error',
+        text: data.error || 'Could not create book.',
+      });
+      return;
+    }
+    setNewBookTitle('');
+    setNewBookIsbn('');
+    setNewBookDescription('');
+    setShowAddBookForm(false);
+    await fetchDashboard();
+    onRefreshBootstrap();
+    setActionBanner({
+      type: 'success',
+      text:
+        lang === 'mr'
+          ? `नवीन पुस्तक '${data.book.title}' दुकानात प्रकाशित झाले!`
+          : `New book '${data.book.title}' published to storefront!`,
+    });
+  };
+
+  const handleImportCsv = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionBanner(null);
+    const res = await authFetch(
+      '/api/admin/books/import-csv',
+      {
+        method: 'POST',
+        body: JSON.stringify({ csvText: csvImportText }),
+      },
+      csrfToken
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      setActionBanner({
+        type: 'error',
+        text: data.error || 'CSV import failed.',
+      });
+      return;
+    }
+    setCsvImportText('');
+    setShowCsvPanel(false);
+    await fetchDashboard();
+    onRefreshBootstrap();
+    setActionBanner({
+      type: 'success',
+      text: `Imported/updated ${data.importedCount} book(s) via CSV.`,
+    });
+  };
+
+  const handleCreateArticle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionBanner(null);
+    const res = await authFetch(
+      '/api/admin/articles',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          title: newArticleTitle,
+          category: newArticleCategory,
+          summary: newArticleSummary,
+          bodyText: newArticleBody,
+          workflowStatus: 'published',
+        }),
+      },
+      csrfToken
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      setActionBanner({
+        type: 'error',
+        text: data.error || 'Could not publish article.',
+      });
+      return;
+    }
+    setNewArticleTitle('');
+    setNewArticleSummary('');
+    setNewArticleBody('');
+    await fetchDashboard();
+    onRefreshBootstrap();
+    setActionBanner({
+      type: 'success',
+      text:
+        lang === 'mr'
+          ? `लेख '${data.article.title}' वाचनकट्ट्यावर प्रकाशित झाला!`
+          : `Article '${data.article.title}' published to Vachankatta!`,
+    });
+  };
+
+  const handleSaveSiteConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionBanner(null);
+    const res = await authFetch(
+      '/api/admin/site-config',
+      {
+        method: 'PATCH',
+        body: JSON.stringify({
+          hero: {
+            subheadlineMarathi: heroSubheadlineMr,
+            subheadlineEnglish: heroSubheadlineEn,
+          },
+          promoBanner: {
+            enabled: promoBannerEnabled,
+          },
+        }),
+      },
+      csrfToken
+    );
+    if (res.ok) {
+      await fetchDashboard();
+      onRefreshBootstrap();
+      setActionBanner({
+        type: 'success',
+        text:
+          lang === 'mr'
+            ? 'मुख्यपृष्ठ आणि प्रचार पट्टी सेटिंग्ज जतन केल्या!'
+            : 'Homepage & Promotional Banner settings saved!',
+      });
+    }
+  };
+
+  const handleCreatePromotion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionBanner(null);
+    const res = await authFetch(
+      '/api/admin/promotions',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          code: promoCodeInput,
+          title: promoTitleInput,
+          discountValue: Number(promoDiscountInput) || 10,
+          discountType: 'percentage',
+        }),
+      },
+      csrfToken
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      setActionBanner({
+        type: 'error',
+        text: data.error || 'Could not create promotion.',
+      });
+      return;
+    }
+    setPromoCodeInput('');
+    setPromoTitleInput('');
+    await fetchDashboard();
+    setActionBanner({
+      type: 'success',
+      text: `Created active promo code '${data.promotion.code}'.`,
+    });
+  };
+
   if (!dashboard) {
     return (
       <div className="max-w-[1200px] mx-auto px-4 py-16 text-center space-y-4">
@@ -338,19 +572,24 @@ export const AdminDashboardView: React.FC<{
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-2.5 py-0.5 rounded bg-[#FFD966] text-[#252832] text-[11px] font-bold uppercase tracking-wider">
-                अकथ प्रकाशन · RBAC Admin Console
+                {lang === 'mr'
+                  ? 'अकथ प्रकाशन · RBAC प्रशासक कक्ष'
+                  : 'Akath Prakashan · RBAC Admin Console'}
               </span>
               <span className="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 text-[11px] font-semibold">
-                Server-Verified Session Active
+                {lang === 'mr'
+                  ? 'सर्व्हर-प्रमाणित सत्र सक्रिय'
+                  : 'Server-Verified Session Active'}
               </span>
             </div>
             <h1 className="type-section-heading text-[#FFFDF7]">
               {lang === 'mr'
                 ? 'प्रशासकीय नियंत्रण, संपादकीय परीक्षण व सुरक्षा कक्ष'
-                : 'Platform Administration, Catalog Moderation & Security Audit'}
+                : 'No-Code Storefront Administration, Editorial CMS & Security Audit'}
             </h1>
             <p className="text-[13px] text-[#FFFDF7]/80">
-              Signed in as: <strong className="text-[#FFD966]">{user.name}</strong> ({user.email})
+              {lang === 'mr' ? 'सक्रिय प्रशासक:' : 'Signed in as:'}{' '}
+              <strong className="text-[#FFD966]">{user.name}</strong> ({user.email})
             </p>
           </div>
 
@@ -392,9 +631,16 @@ export const AdminDashboardView: React.FC<{
           </div>
         </div>
 
-        {/* Executive KPI Summary Strip (Responsive 1 -> 2 -> 4 Grid) */}
+        {/* Clickable Executive KPI Summary Strip (Responsive 1 -> 2 -> 4 Grid) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-2xl border border-[#E6DFCE] p-4 sm:p-5 space-y-1">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('users');
+              onNavigate('/admin/users');
+            }}
+            className="text-left bg-white hover:border-[#243B8A] rounded-2xl border border-[#E6DFCE] p-4 sm:p-5 space-y-1 transition-colors"
+          >
             <p className="text-[12px] font-semibold uppercase text-[#5A5F72]">
               {lang === 'mr' ? 'एकूण नोंदणीकृत वापरकर्ते' : 'Registered Users'}
             </p>
@@ -402,18 +648,21 @@ export const AdminDashboardView: React.FC<{
               {dashboard.users.length}
             </p>
             <p className="text-[12px] text-[#5A5F72]">
-              {
-                dashboard.users.filter((u) => u.role === 'author').length
-              }{' '}
-              Authors ·{' '}
-              {
-                dashboard.users.filter((u) => u.role === 'reader').length
-              }{' '}
-              Readers
+              {dashboard.users.filter((u) => u.role === 'author').length}{' '}
+              {lang === 'mr' ? 'लेखक' : 'Authors'} ·{' '}
+              {dashboard.users.filter((u) => u.role === 'reader').length}{' '}
+              {lang === 'mr' ? 'वाचक' : 'Readers'}
             </p>
-          </div>
+          </button>
 
-          <div className="bg-white rounded-2xl border border-[#E6DFCE] p-4 sm:p-5 space-y-1">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('books');
+              onNavigate('/admin/books');
+            }}
+            className="text-left bg-white hover:border-[#243B8A] rounded-2xl border border-[#E6DFCE] p-4 sm:p-5 space-y-1 transition-colors"
+          >
             <p className="text-[12px] font-semibold uppercase text-[#5A5F72]">
               {lang === 'mr' ? 'प्रकाशन सूची व साठा' : 'Catalog & Inventory'}
             </p>
@@ -422,12 +671,23 @@ export const AdminDashboardView: React.FC<{
             </p>
             <p className="text-[12px] text-[#5A5F72]">
               {lowStockBooks > 0
-                ? `${lowStockBooks} titles low stock`
+                ? lang === 'mr'
+                  ? `${lowStockBooks} पुस्तकांचा साठा कमी`
+                  : `${lowStockBooks} titles low stock`
+                : lang === 'mr'
+                ? 'सर्व पुस्तकांचा पुरेसा साठा उपलब्ध'
                 : 'All titles adequately stocked'}
             </p>
-          </div>
+          </button>
 
-          <div className="bg-white rounded-2xl border border-[#E6DFCE] p-4 sm:p-5 space-y-1">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('orders');
+              onNavigate('/admin/orders');
+            }}
+            className="text-left bg-white hover:border-[#243B8A] rounded-2xl border border-[#E6DFCE] p-4 sm:p-5 space-y-1 transition-colors"
+          >
             <p className="text-[12px] font-semibold uppercase text-[#5A5F72]">
               {lang === 'mr' ? 'ऑर्डर्स व महसूल' : 'Orders & Gross Value'}
             </p>
@@ -438,9 +698,16 @@ export const AdminDashboardView: React.FC<{
               {dashboard.orders.length}{' '}
               {lang === 'mr' ? 'एकूण ऑर्डर्स' : 'Total Orders'}
             </p>
-          </div>
+          </button>
 
-          <div className="bg-white rounded-2xl border border-[#E6DFCE] p-4 sm:p-5 space-y-1">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('authors');
+              onNavigate('/admin');
+            }}
+            className="text-left bg-white hover:border-[#243B8A] rounded-2xl border border-[#E6DFCE] p-4 sm:p-5 space-y-1 transition-colors"
+          >
             <p className="text-[12px] font-semibold uppercase text-[#5A5F72]">
               {lang === 'mr'
                 ? 'प्रलंबित अर्ज व हस्तलिखिते'
@@ -450,15 +717,44 @@ export const AdminDashboardView: React.FC<{
               {pendingAuthorApps + dashboard.manuscripts.length}
             </p>
             <p className="text-[12px] text-[#5A5F72]">
-              {pendingAuthorApps} Author Apps · {dashboard.manuscripts.length}{' '}
-              Manuscripts
+              {pendingAuthorApps}{' '}
+              {lang === 'mr' ? 'लेखक अर्ज' : 'Author Apps'} ·{' '}
+              {dashboard.manuscripts.length}{' '}
+              {lang === 'mr' ? 'हस्तलिखिते' : 'Manuscripts'}
             </p>
-          </div>
+          </button>
         </div>
 
         {/* Navigation Tabs */}
         <div className="flex flex-wrap gap-2 border-b border-[#E6DFCE] pb-3">
           {[
+            {
+              id: 'books',
+              path: '/admin/books',
+              label:
+                lang === 'mr'
+                  ? `पुस्तक व्यवस्थापन व साठा (${dashboard.books.length})`
+                  : `Books & Inventory (${dashboard.books.length})`,
+              icon: BookOpen,
+            },
+            {
+              id: 'cms',
+              path: '/admin',
+              label:
+                lang === 'mr'
+                  ? `वाचनकट्टा व मुख्यपृष्ठ संपादक (${dashboard.articles.length})`
+                  : `Editorial & Website CMS (${dashboard.articles.length})`,
+              icon: Sparkles,
+            },
+            {
+              id: 'orders',
+              path: '/admin/orders',
+              label:
+                lang === 'mr'
+                  ? `ऑर्डर्स (${dashboard.orders.length})`
+                  : `Orders (${dashboard.orders.length})`,
+              icon: Package,
+            },
             {
               id: 'users',
               path: '/admin/users',
@@ -476,24 +772,6 @@ export const AdminDashboardView: React.FC<{
                   ? `लेखक अर्ज (${dashboard.authorApplications.length})`
                   : `Author Applications (${dashboard.authorApplications.length})`,
               icon: Feather,
-            },
-            {
-              id: 'books',
-              path: '/admin/books',
-              label:
-                lang === 'mr'
-                  ? `पुस्तक परीक्षण व साठा (${dashboard.books.length})`
-                  : `Catalog & Moderation (${dashboard.books.length})`,
-              icon: BookOpen,
-            },
-            {
-              id: 'orders',
-              path: '/admin/orders',
-              label:
-                lang === 'mr'
-                  ? `ऑर्डर्स (${dashboard.orders.length})`
-                  : `Orders (${dashboard.orders.length})`,
-              icon: Package,
             },
             {
               id: 'manuscripts',
@@ -579,7 +857,9 @@ export const AdminDashboardView: React.FC<{
                 onChange={(e) => setRoleFilter(e.target.value)}
                 className="px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] text-[14px]"
               >
-                <option value="">सर्व भूमिका (All Roles)</option>
+                <option value="">
+                  {lang === 'mr' ? 'सर्व भूमिका' : 'All Roles'}
+                </option>
                 <option value="reader">Reader</option>
                 <option value="author">Author</option>
                 <option value="admin">Admin</option>
@@ -609,7 +889,7 @@ export const AdminDashboardView: React.FC<{
                       </span>
                     </div>
                     <p className="text-[13px] text-[#5A5F72] break-all sm:break-normal">
-                      {u.email} · {u.city || 'महाराष्ट्र'}
+                      {u.email} · {u.city || (lang === 'mr' ? 'महाराष्ट्र' : 'Maharashtra')}
                     </p>
                   </div>
 
@@ -640,7 +920,7 @@ export const AdminDashboardView: React.FC<{
                           }
                           className="px-3.5 py-1.5 rounded-xl border border-red-200 text-[#B42318] text-[12.5px] font-semibold"
                         >
-                          Suspend
+                          {lang === 'mr' ? 'निलंबित करा' : 'Suspend'}
                         </button>
                       ) : (
                         <button
@@ -648,7 +928,7 @@ export const AdminDashboardView: React.FC<{
                           onClick={() => handleUpdateUserStatus(u.id, 'active')}
                           className="px-3.5 py-1.5 rounded-xl bg-emerald-700 text-white text-[12.5px] font-semibold"
                         >
-                          Reactivate
+                          {lang === 'mr' ? 'पुन्हा सक्रिय करा' : 'Reactivate'}
                         </button>
                       )}
                     </div>
@@ -704,7 +984,11 @@ export const AdminDashboardView: React.FC<{
                             [app.id]: e.target.value,
                           }))
                         }
-                        placeholder="संपादकीय निर्णय टीप..."
+                        placeholder={
+                          lang === 'mr'
+                            ? 'संपादकीय निर्णय टीप...'
+                            : 'Editorial decision note...'
+                        }
                         className="flex-1 min-w-[200px] px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] text-[13.5px]"
                       />
                       <button
@@ -714,7 +998,7 @@ export const AdminDashboardView: React.FC<{
                         }
                         className="px-4 py-2 rounded-xl bg-emerald-700 text-white text-[13px] font-semibold"
                       >
-                        Approve as Author
+                        {lang === 'mr' ? 'लेखक म्हणून मंजूर करा' : 'Approve as Author'}
                       </button>
                       <button
                         type="button"
@@ -723,7 +1007,7 @@ export const AdminDashboardView: React.FC<{
                         }
                         className="px-4 py-2 rounded-xl bg-[#B42318] text-white text-[13px] font-semibold"
                       >
-                        Reject
+                        {lang === 'mr' ? 'अस्वीकृत करा' : 'Reject'}
                       </button>
                     </div>
                   )}
@@ -733,84 +1017,489 @@ export const AdminDashboardView: React.FC<{
           </div>
         )}
 
-        {/* TAB 3: CATALOG & BOOK MODERATION */}
+        {/* TAB 3: CATALOG, VISUAL BOOK CREATION, CSV & INVENTORY */}
         {activeTab === 'books' && (
-          <div className="bg-white rounded-3xl border border-[#E6DFCE] divide-y divide-[#E6DFCE]">
-            {dashboard.books.map((b) => {
-              const pubStatus = b.publicationStatus || 'published';
-              return (
-                <div
-                  key={b.id}
-                  className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+          <div className="space-y-6">
+            {/* Quick Actions Bar */}
+            <div className="bg-white rounded-3xl border border-[#E6DFCE] p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="font-serif text-[20px] font-bold text-[#252832]">
+                  {lang === 'mr'
+                    ? 'पुस्तक सूची, साठा आणि CSV व्यवस्थापन'
+                    : 'Visual Book Catalog, Inventory & CSV Operations'}
+                </h2>
+                <p className="text-[13px] text-[#5A5F72]">
+                  {lang === 'mr'
+                    ? 'कोणत्याही कोडशिवाय नवीन पुस्तके जोडा, साठा अद्ययावत करा किंवा CSV आयात/निर्यात करा.'
+                    : 'Add new books, adjust stock, or import/export CSV without touching code.'}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <button
+                  type="button"
+                  data-testid="admin-toggle-add-book-btn"
+                  onClick={() => setShowAddBookForm((v) => !v)}
+                  className="px-4 py-2 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7] text-[13px] font-semibold transition-colors"
                 >
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <p className="font-serif font-bold text-[19px] text-[#252832]">
-                        {b.title}
-                      </p>
-                      <span
-                        className={`px-2.5 py-0.5 rounded text-[11px] font-bold uppercase ${
-                          pubStatus === 'published'
-                            ? 'bg-emerald-100 text-emerald-900'
-                            : pubStatus === 'submitted_for_review'
-                            ? 'bg-[#FFD966] text-[#252832]'
-                            : 'bg-[#243B8A]/10 text-[#243B8A]'
-                        }`}
-                      >
-                        {pubStatus}
-                      </span>
-                    </div>
-                    <p className="text-[13px] text-[#5A5F72]">
-                      {b.category} · ₹{b.price} · Stock: {b.stock}
-                    </p>
+                  {showAddBookForm
+                    ? lang === 'mr'
+                      ? 'फॉर्म बंद करा'
+                      : 'Close Book Form'
+                    : lang === 'mr'
+                    ? '+ नवीन पुस्तक प्रकाशित करा'
+                    : '+ Add New Book'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCsvPanel((v) => !v)}
+                  className="px-3.5 py-2 rounded-xl bg-[#FFFDF7] border border-[#E6DFCE] text-[#252832] text-[13px] font-semibold"
+                >
+                  {lang === 'mr' ? 'CSV आयात / निर्यात' : 'CSV Import / Export'}
+                </button>
+              </div>
+            </div>
+
+            {showAddBookForm && (
+              <form
+                onSubmit={handleCreateBook}
+                data-testid="admin-add-book-form"
+                className="bg-white rounded-3xl border border-[#E6DFCE] p-5 sm:p-6 space-y-4"
+              >
+                <h3 className="font-serif text-[19px] font-bold text-[#252832]">
+                  {lang === 'mr'
+                    ? 'नवीन पुस्तक थेट दुकानात जोडा'
+                    : 'Add & Publish Book to Storefront'}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block ui-label mb-1">
+                      {lang === 'mr' ? 'पुस्तकाचे शीर्षक *' : 'Book Title *'}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newBookTitle}
+                      onChange={(e) => setNewBookTitle(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7]"
+                    />
                   </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div>
+                    <label className="block ui-label mb-1">
+                      {lang === 'mr' ? 'साहित्य प्रकार' : 'Category'}
+                    </label>
                     <select
-                      value={pubStatus}
-                      onChange={(e) =>
-                        handleModerateBook(
-                          b.id,
-                          e.target.value as BookPublicationStatus
-                        )
-                      }
-                      aria-label={`Moderation status for ${b.title}`}
-                      className="px-3 py-1.5 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] text-[13px] font-semibold"
+                      value={newBookCategory}
+                      onChange={(e) => setNewBookCategory(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7]"
                     >
-                      <option value="draft">draft</option>
-                      <option value="submitted_for_review">
-                        submitted_for_review
+                      <option value="कादंबरी">
+                        {lang === 'mr' ? 'कादंबरी' : 'Novel (कादंबरी)'}
                       </option>
-                      <option value="revision_requested">
-                        revision_requested
+                      <option value="कवितासंग्रह">
+                        {lang === 'mr' ? 'कवितासंग्रह' : 'Poetry (कवितासंग्रह)'}
                       </option>
-                      <option value="published">published</option>
-                      <option value="unpublished">unpublished</option>
-                      <option value="archived">archived</option>
+                      <option value="कथासंग्रह">
+                        {lang === 'mr' ? 'कथासंग्रह' : 'Short Stories (कथासंग्रह)'}
+                      </option>
+                      <option value="समीक्षा व निबंध">
+                        {lang === 'mr' ? 'समीक्षा व निबंध' : 'Essays & Criticism'}
+                      </option>
                     </select>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleUpdateStock(b.id, Math.max(0, b.stock - 1), b.price)
-                      }
-                      className="px-3 py-1.5 rounded-xl border border-[#E6DFCE] text-[12.5px]"
-                    >
-                      −1 Stock
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleUpdateStock(b.id, b.stock + 5, b.price)
-                      }
-                      className="px-3 py-1.5 rounded-xl border border-[#E6DFCE] text-[12.5px]"
-                    >
-                      +5 Stock
-                    </button>
+                  </div>
+                  <div>
+                    <label className="block ui-label mb-1">ISBN</label>
+                    <input
+                      type="text"
+                      value={newBookIsbn}
+                      onChange={(e) => setNewBookIsbn(e.target.value)}
+                      placeholder="978-81-964821-9-0"
+                      className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7]"
+                    />
                   </div>
                 </div>
-              );
-            })}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block ui-label mb-1">
+                      {lang === 'mr' ? 'किंमत (₹)' : 'Selling Price (₹)'}
+                    </label>
+                    <input
+                      type="number"
+                      value={newBookPrice}
+                      onChange={(e) => setNewBookPrice(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block ui-label mb-1">
+                      {lang === 'mr' ? 'प्रारंभिक साठा (प्रती)' : 'Initial Stock Quantity'}
+                    </label>
+                    <input
+                      type="number"
+                      value={newBookStock}
+                      onChange={(e) => setNewBookStock(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7]"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block ui-label mb-1">
+                    {lang === 'mr' ? 'पुस्तक परिचय *' : 'Book Description *'}
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={newBookDescription}
+                    onChange={(e) => setNewBookDescription(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7]"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-[#243B8A] text-[#FFFDF7] text-[13.5px] font-semibold"
+                >
+                  {lang === 'mr'
+                    ? 'पुस्तक जतन आणि प्रकाशित करा'
+                    : 'Save & Publish Book'}
+                </button>
+              </form>
+            )}
+
+            {showCsvPanel && (
+              <form
+                onSubmit={handleImportCsv}
+                className="bg-white rounded-3xl border border-[#E6DFCE] p-5 sm:p-6 space-y-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-serif text-[18px] font-bold text-[#252832]">
+                    {lang === 'mr' ? 'CSV पुस्तक आयात (Bulk Import)' : 'Bulk CSV Book Import'}
+                  </h3>
+                  <a
+                    href="/api/admin/books/export-csv"
+                    download="akath-books-catalog.csv"
+                    className="text-[13px] font-semibold text-[#243B8A] underline"
+                  >
+                    {lang === 'mr' ? 'सध्याची सूची CSV डाउनलोड करा' : 'Download Current Catalog CSV'}
+                  </a>
+                </div>
+                <textarea
+                  rows={3}
+                  value={csvImportText}
+                  onChange={(e) => setCsvImportText(e.target.value)}
+                  placeholder={'title,price,stock,category,isbn\nनवीन मराठी कादंबरी,320,25,कादंबरी,978-81-964821-8-8'}
+                  className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] font-mono text-[12.5px]"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-[#243B8A] text-[#FFFDF7] text-[13px] font-semibold"
+                >
+                  {lang === 'mr' ? 'CSV आयात करा' : 'Import CSV Rows'}
+                </button>
+              </form>
+            )}
+
+            <div className="bg-white rounded-3xl border border-[#E6DFCE] divide-y divide-[#E6DFCE]">
+              {dashboard.books.map((b) => {
+                const pubStatus = b.publicationStatus || 'published';
+                return (
+                  <div
+                    key={b.id}
+                    className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <p className="font-serif font-bold text-[19px] text-[#252832]">
+                          {b.title}
+                        </p>
+                        <span
+                          className={`px-2.5 py-0.5 rounded text-[11px] font-bold uppercase ${
+                            pubStatus === 'published'
+                              ? 'bg-emerald-100 text-emerald-900'
+                              : pubStatus === 'submitted_for_review'
+                              ? 'bg-[#FFD966] text-[#252832]'
+                              : 'bg-[#243B8A]/10 text-[#243B8A]'
+                          }`}
+                        >
+                          {pubStatus}
+                        </span>
+                      </div>
+                      <p className="text-[13px] text-[#5A5F72]">
+                        {b.category} · ₹{b.price} ·{' '}
+                        {lang === 'mr' ? 'साठा' : 'Stock'}: {b.stock}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        value={pubStatus}
+                        onChange={(e) =>
+                          handleModerateBook(
+                            b.id,
+                            e.target.value as BookPublicationStatus
+                          )
+                        }
+                        aria-label={`Moderation status for ${b.title}`}
+                        className="px-3 py-1.5 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] text-[13px] font-semibold"
+                      >
+                        <option value="draft">draft</option>
+                        <option value="submitted_for_review">
+                          submitted_for_review
+                        </option>
+                        <option value="revision_requested">
+                          revision_requested
+                        </option>
+                        <option value="published">published</option>
+                        <option value="unpublished">unpublished</option>
+                        <option value="archived">archived</option>
+                      </select>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleUpdateStock(
+                            b.id,
+                            Math.max(0, b.stock - 1),
+                            b.price
+                          )
+                        }
+                        className="px-3 py-1.5 rounded-xl border border-[#E6DFCE] text-[12.5px]"
+                      >
+                        −1 {lang === 'mr' ? 'साठा' : 'Stock'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleUpdateStock(b.id, b.stock + 5, b.price)
+                        }
+                        className="px-3 py-1.5 rounded-xl border border-[#E6DFCE] text-[12.5px]"
+                      >
+                        +5 {lang === 'mr' ? 'साठा' : 'Stock'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3B: EDITORIAL & WEBSITE CMS (ARTICLES, HOMEPAGE HERO, PROMOTIONS) */}
+        {activeTab === 'cms' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left 7 Cols: Rich Editorial Article Publisher */}
+            <div className="lg:col-span-7 space-y-6">
+              <form
+                onSubmit={handleCreateArticle}
+                data-testid="admin-create-article-form"
+                className="bg-white rounded-3xl border border-[#E6DFCE] p-5 sm:p-6 space-y-4"
+              >
+                <h2 className="font-serif text-[20px] font-bold text-[#252832]">
+                  {lang === 'mr'
+                    ? 'वाचनकट्टा संपादकीय लेख प्रकाशित करा'
+                    : 'Publish New Vachankatta Editorial Essay'}
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block ui-label mb-1">
+                      {lang === 'mr' ? 'लेखाचे शीर्षक *' : 'Article Title *'}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newArticleTitle}
+                      onChange={(e) => setNewArticleTitle(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block ui-label mb-1">
+                      {lang === 'mr' ? 'विभाग' : 'Editorial Section'}
+                    </label>
+                    <select
+                      value={newArticleCategory}
+                      onChange={(e) => setNewArticleCategory(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7]"
+                    >
+                      <option value="संपादकीय निबंध">
+                        {lang === 'mr' ? 'संपादकीय निबंध' : 'Editorial Essay'}
+                      </option>
+                      <option value="पुस्तक समीक्षा">
+                        {lang === 'mr' ? 'पुस्तक समीक्षा' : 'Book Review'}
+                      </option>
+                      <option value="लेखक संवाद">
+                        {lang === 'mr' ? 'लेखक संवाद' : 'Author Conversation'}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block ui-label mb-1">
+                    {lang === 'mr' ? 'थोडक्यात गोषवारा' : 'Editorial Summary'}
+                  </label>
+                  <input
+                    type="text"
+                    value={newArticleSummary}
+                    onChange={(e) => setNewArticleSummary(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7]"
+                  />
+                </div>
+                <div>
+                  <label className="block ui-label mb-1">
+                    {lang === 'mr' ? 'संपूर्ण लेख मजकूर *' : 'Article Body Paragraphs *'}
+                  </label>
+                  <textarea
+                    rows={5}
+                    required
+                    value={newArticleBody}
+                    onChange={(e) => setNewArticleBody(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7]"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-[#243B8A] text-[#FFFDF7] text-[13.5px] font-semibold"
+                >
+                  {lang === 'mr'
+                    ? 'वाचनकट्ट्यावर लेख प्रकाशित करा'
+                    : 'Publish Article to Vachankatta'}
+                </button>
+              </form>
+
+              <div className="bg-white rounded-3xl border border-[#E6DFCE] p-5 space-y-3">
+                <h3 className="font-serif text-[18px] font-bold text-[#252832]">
+                  {lang === 'mr'
+                    ? `प्रकाशित लेख (${dashboard.articles.length})`
+                    : `Published Vachankatta Articles (${dashboard.articles.length})`}
+                </h3>
+                <div className="divide-y divide-[#E6DFCE]">
+                  {dashboard.articles.map((art) => (
+                    <div
+                      key={art.id}
+                      className="py-3 flex flex-wrap items-center justify-between gap-2"
+                    >
+                      <div>
+                        <p className="font-serif font-bold text-[16px] text-[#252832]">
+                          {art.title}
+                        </p>
+                        <p className="text-[12.5px] text-[#5A5F72]">
+                          {art.categoryMarathi} · {art.contributorName}
+                        </p>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-900 text-[11px] font-bold uppercase">
+                        {art.workflowStatus}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right 5 Cols: Visual Website Editor & Promotions */}
+            <div className="lg:col-span-5 space-y-6">
+              <form
+                onSubmit={handleSaveSiteConfig}
+                data-testid="admin-site-config-form"
+                className="bg-white rounded-3xl border border-[#E6DFCE] p-5 sm:p-6 space-y-4"
+              >
+                <h2 className="font-serif text-[20px] font-bold text-[#252832]">
+                  {lang === 'mr'
+                    ? 'मुख्यपृष्ठ आणि बॅनर संपादक'
+                    : 'Visual Storefront Homepage Editor'}
+                </h2>
+                <div>
+                  <label className="block ui-label mb-1">
+                    {lang === 'mr'
+                      ? 'मुख्यपृष्ठ उपशीर्षक (मराठी)'
+                      : 'Hero Subheadline (Marathi)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={heroSubheadlineMr}
+                    onChange={(e) => setHeroSubheadlineMr(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7]"
+                  />
+                </div>
+                <div>
+                  <label className="block ui-label mb-1">
+                    {lang === 'mr'
+                      ? 'मुख्यपृष्ठ उपशीर्षक (English)'
+                      : 'Hero Subheadline (English)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={heroSubheadlineEn}
+                    onChange={(e) => setHeroSubheadlineEn(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7]"
+                  />
+                </div>
+                <label className="flex items-center gap-2.5 text-[13.5px] font-semibold text-[#252832]">
+                  <input
+                    type="checkbox"
+                    checked={promoBannerEnabled}
+                    onChange={(e) => setPromoBannerEnabled(e.target.checked)}
+                    className="w-4 h-4 rounded"
+                  />
+                  <span>
+                    {lang === 'mr'
+                      ? 'प्रचार पट्टी (Promo Banner) मुख्यपृष्ठावर दर्शवा'
+                      : 'Show Promotional Dispatch Banner on Storefront'}
+                  </span>
+                </label>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-[#EF6855] text-[#FFFDF7] text-[13.5px] font-semibold"
+                >
+                  {lang === 'mr'
+                    ? 'संकेतस्थळ बदल जतन करा'
+                    : 'Save Storefront Changes'}
+                </button>
+              </form>
+
+              <form
+                onSubmit={handleCreatePromotion}
+                className="bg-white rounded-3xl border border-[#E6DFCE] p-5 sm:p-6 space-y-4"
+              >
+                <h3 className="font-serif text-[18px] font-bold text-[#252832]">
+                  {lang === 'mr'
+                    ? 'सवलत कूपन (Promotions) तयार करा'
+                    : 'Create Discount Coupon'}
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    required
+                    value={promoCodeInput}
+                    onChange={(e) => setPromoCodeInput(e.target.value)}
+                    placeholder="DIWALI20"
+                    className="px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] font-mono text-[13px]"
+                  />
+                  <input
+                    type="number"
+                    value={promoDiscountInput}
+                    onChange={(e) => setPromoDiscountInput(e.target.value)}
+                    placeholder="15%"
+                    className="px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] text-[13px]"
+                  />
+                </div>
+                <input
+                  type="text"
+                  required
+                  value={promoTitleInput}
+                  onChange={(e) => setPromoTitleInput(e.target.value)}
+                  placeholder={
+                    lang === 'mr'
+                      ? 'सवलतीचे नाव (उदा. दिवाळी वाचक सवलत)'
+                      : 'Promotion Title (e.g. Festival Reader Discount)'
+                  }
+                  className="w-full px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] text-[13px]"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-[#243B8A] text-[#FFFDF7] text-[13px] font-semibold"
+                >
+                  {lang === 'mr' ? 'कूपन सक्रिय करा' : 'Activate Coupon'}
+                </button>
+              </form>
+            </div>
           </div>
         )}
 
