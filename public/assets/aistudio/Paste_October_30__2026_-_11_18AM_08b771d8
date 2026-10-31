@@ -1,0 +1,756 @@
+# Akath Prakashan — Complete UI Redesign, Marathi Typography & Cart Reliability
+
+## Role
+
+Act as a senior product designer, editorial art director, Marathi typography specialist, and experienced full-stack engineer.
+
+Redesign and improve the existing Akath Prakashan website into a distinctive, modern, production-ready independent Marathi literary publishing platform.
+
+This is an improvement of an existing application, not a new project.
+
+**Existing Google AI Studio application:**  
+https://aistudio.google.com/apps/d885a1fd-1951-4f15-bdee-2d07b6d9f5bb?showPreview=true&showAssistant=true&fullscreenApplet=true
+
+Brand: Akath Prakashan (अकथ प्रकाशन)
+
+The current output feels generic, overly AI-generated, and visually unconvincing. The Marathi typography does not feel right. The visual theme needs a complete rethink, and the cart and checkout must be tested properly.
+
+Your job is to improve the actual application, not merely describe a redesign or produce a static mockup.
+
+## 1. Start by auditing the existing application
+
+Before changing anything:
+
+1. Inspect the complete existing codebase and application structure.
+2. Identify the framework, styling system, components, routes, data model, and existing integrations.
+3. Review every available page in both English and Marathi.
+4. Inspect the language toggle and verify what actually changes when it is used.
+5. Inspect the catalogue, book detail pages, cart, checkout, forms, navigation, and responsive layouts.
+6. Identify duplicated components, inconsistent styling, broken interactions, placeholder content, and validation gaps.
+7. Trace the entire add-to-cart-to-order journey, including how totals, quantities, and order data are calculated.
+8. Identify which features are functional, which are simulated, and which are incomplete.
+
+Produce a concise list of problems and an implementation plan. Then proceed with the improvements without waiting for additional approval unless a genuinely blocking business decision or credential is missing.
+
+Preserve the existing working functionality, genuine content, and useful components. Avoid an unnecessary rewrite of the entire application.
+
+## 2. Design direction: modern independent literary publisher
+
+The website should feel like a contemporary Marathi literary journal that also happens to publish and sell books.
+
+It should communicate cultural depth, editorial confidence, warmth, and credibility.
+
+Think in terms of:
+- A thoughtfully designed independent literary magazine.
+- A contemporary book publisher with a recognizable visual identity.
+- A carefully curated collection rather than an enormous online marketplace.
+- An editorial website designed by a human art director.
+
+Do not copy another publisher's website. Develop a consistent visual language specifically for Akath.
+
+### Eliminate these design patterns
+
+- Generic AI-generated landing page layouts.
+- The same rounded rectangular card repeated across every section.
+- Excessive pill-shaped buttons and badges.
+- Purple, blue, or multicolor gradients without a brand reason.
+- Large decorative icons that communicate nothing.
+- Random floating elements and unnecessary glassmorphism.
+- Excessive shadows, borders, and oversized corner radii.
+- Generic stock photos of people reading books.
+- Artificial counters such as “10,000 happy readers.”
+- Fake testimonials, ratings, reviews, or bestseller labels.
+- Repeated marketing slogans that sound generated.
+- Large blocks of centered text with no editorial hierarchy.
+- Excessive animations that slow down browsing.
+- Placeholder sections that make the site appear unfinished.
+
+Do not make the site look like a SaaS dashboard, a generic Shopify theme, or a template generated from a single design prompt.
+
+## 3. Build a coherent visual system
+
+Create design tokens for color, typography, spacing, layout, borders, buttons, inputs, and responsive breakpoints.
+
+### Proposed color direction
+
+Use these as a starting point and test the resulting interface before finalizing the palette.
+
+- Paper: `#F5F1E8`
+- Ink: `#24241F`
+- Deep forest: `#354437`
+- Muted terracotta: `#A85E46`
+- Secondary text: `#706D65`
+- Subtle divider: `#DCD5C9`
+- White: `#FFFFFF`
+
+The palette should feel like printed paper, ink, book cloth, and a small amount of warm pigment.
+
+Rules:
+- Use the paper color for editorial surfaces.
+- Use ink for primary text.
+- Use forest for important navigation and primary actions.
+- Use terracotta sparingly for meaningful emphasis.
+- Use white for appropriate functional surfaces, including forms and checkout sections.
+- Maintain accessible text contrast.
+- Do not assign a new color to every section.
+
+The final result should be quiet, confident, and recognizable.
+
+### Layout principles
+
+- Establish a clear grid and consistent spacing system.
+- Use generous whitespace without wasting screen space.
+- Combine left-aligned editorial sections with carefully composed book imagery.
+- Use asymmetric layouts only when they improve the composition.
+- Keep long-form text within comfortable reading widths.
+- Avoid placing every section inside a separate bordered container.
+- Make book covers prominent and preserve their original aspect ratios.
+- Ensure mobile layouts are intentionally designed, not merely compressed desktop layouts.
+
+## 4. Fix Marathi typography properly
+
+Typography is one of the highest-priority changes.
+
+Do not simply replace the existing font with another font and declare the issue fixed.
+
+### Evaluate real Devanagari fonts
+
+Test these options against actual Marathi content:
+
+1. **Noto Serif Devanagari** — evaluate for literary headlines, book titles, quotations, and long-form editorial reading.
+2. **Mukta** — evaluate for navigation, interface controls, forms, buttons, metadata, and mixed English-Marathi interfaces.
+3. Other appropriate, properly licensed Devanagari typefaces may be considered if they materially improve readability and brand character.
+
+These are candidates, not mandatory selections. Choose the combination that looks best in the actual application.
+
+Do not assume the same font must be used for every purpose.
+
+### Typography hierarchy
+
+Establish separate styles for:
+
+- Brand wordmark.
+- Large Marathi editorial headline.
+- Section headings.
+- Book titles.
+- Author names.
+- Article headlines.
+- Body paragraphs.
+- Navigation.
+- Form labels.
+- Product metadata.
+- Prices and checkout totals.
+- Captions and secondary information.
+
+Use deliberate font weights. Avoid bolding everything.
+
+### Test actual Marathi text
+
+Use representative strings, including:
+
+- “अकथ प्रकाशन”
+- “मराठी साहित्य. नवे आवाज. दीर्घ संवाद.”
+- “काही पुस्तकं संपतात. काही वाचकांसोबत राहतात.”
+- “पुस्तकं शोधा”
+- “तुमचा ऑर्डर तपशील”
+- “वाचायला सुरुवात करा”
+
+These are typography test samples, not mandatory final marketing copy.
+
+Check:
+- Matras and conjuncts render correctly.
+- Letters do not collide or become visually congested.
+- Headline line breaks look intentional.
+- Long Marathi titles wrap naturally.
+- Body text remains readable at normal desktop and mobile sizes.
+- Buttons have adequate vertical space.
+- Marathi and English fonts look harmonious when used together.
+- Font weights do not make complex letterforms appear crowded.
+- No text is clipped or vertically misaligned.
+
+Avoid applying arbitrary letter spacing to Devanagari. Do not treat Devanagari like Latin text.
+
+### Suggested starting sizes
+
+Use a responsive type scale rather than fixed sizes everywhere.
+
+- Editorial hero: approximately 42–60 px on desktop, scaling down on mobile.
+- Page headings: approximately 30–42 px.
+- Section headings: approximately 24–32 px.
+- Book titles: approximately 18–24 px depending on context.
+- Body text: approximately 17–19 px for Marathi editorial reading.
+- Interface labels: approximately 14–16 px.
+
+These are starting points. Refine them after testing actual Marathi text and the existing layout.
+
+Use an appropriate line-height for Devanagari. Avoid tight line-height settings that clip matras or make paragraphs difficult to scan.
+
+### Font implementation
+
+- Load fonts efficiently.
+- Prefer appropriate variable-font files where supported.
+- Provide reliable fallback fonts.
+- Avoid unnecessary font weights and duplicate font downloads.
+- Use local or trusted font assets where appropriate.
+- Ensure the site remains usable if an external font fails to load.
+
+## 5. Make the English / मराठी toggle genuinely bilingual
+
+The existing language toggle must remain available and become a reliable, first-class feature.
+
+Do not remove it, hide it inside a menu unnecessarily, or replace it with a different interaction.
+
+### Expected behaviour
+
+When the user switches from English to Marathi:
+- Navigation changes language.
+- Buttons and links change language.
+- Bookstore interface labels change language.
+- Cart and checkout labels change language.
+- Validation errors change language.
+- Empty states and confirmation messages change language.
+- Article and book interface metadata changes language.
+- Relevant page content switches to its actual Marathi translation when available.
+
+When the user switches to English, the equivalent English interface must be displayed.
+
+Do not translate the same string differently on different pages.
+
+### Language architecture
+
+- Use a centralized internationalization system appropriate to the existing framework.
+- Maintain organized English and Marathi translation dictionaries.
+- Avoid scattered inline language conditionals throughout components.
+- Preserve the user's language preference across navigation and page refreshes where appropriate.
+- Use the browser's language preference only as a sensible initial default.
+- Ensure language switching preserves the current page, search context, and cart contents.
+- Provide correct document language metadata, such as `lang="mr"` and `lang="en"`.
+- Handle missing translations gracefully.
+- Preserve valid URLs and avoid broken routes when changing languages.
+
+If translated book descriptions or editorial articles do not exist, do not invent translations and present them as publisher-approved copy. Make the available language clear or retain the original content with an appropriate explanation.
+
+The switch should feel like a polished part of the header, not an afterthought.
+
+## 6. Redesign the homepage
+
+Create an editorial homepage with a strong opening, thoughtful pacing, and genuine content.
+
+### Header
+
+Design a compact, distinctive header containing:
+
+- Akath wordmark in Marathi.
+- Primary navigation.
+- English / मराठी toggle.
+- Search.
+- Cart icon with an accurate item count.
+
+Keep the header usable on mobile. Avoid an oversized header that pushes all meaningful content below the fold.
+
+### Hero
+
+Use an editorial layout rather than the conventional centered AI-generated hero.
+
+Include:
+- A strong Marathi headline.
+- A short, natural explanation of Akath.
+- One primary action to explore books.
+- One secondary action to discover the publication.
+- A genuine book cover, a small collection of actual publications, or real editorial imagery.
+
+Avoid exaggerated brand claims and generic phrases such as “Unlock a world of possibilities.”
+
+### Selected books
+
+Present a small curated collection using real book information.
+
+Vary the composition thoughtfully instead of rendering every book as an identical card.
+
+Each book should have:
+- Accurate cover image.
+- Title.
+- Author.
+- Price where available.
+- Availability.
+- A clear link to its detail page.
+
+### वाचनकट्टा
+
+Present essays, reviews, interviews, and reading lists as editorial features.
+
+Use strong headlines, meaningful excerpts, and appropriate typography. The section should feel like a literary publication, not a list of SEO blog cards.
+
+### Publisher identity
+
+Explain what Akath publishes, why it exists, and what distinguishes its editorial approach.
+
+Use concise, human-written copy. Avoid repeating the same mission statement in multiple sections.
+
+### Footer
+
+Include practical links, contact information, policies, language support, and relevant social links.
+
+Do not display invented awards, partners, or publication statistics.
+
+## 7. Improve the catalogue and book detail pages
+
+### Catalogue
+
+Provide:
+- Search by title and author.
+- Relevant categories.
+- Curated collections.
+- Clear book covers.
+- Accurate pricing.
+- Availability indicators.
+- Responsive sorting and filtering.
+
+Support Marathi Unicode search and reasonable normalization of Devanagari text without altering the original displayed titles.
+
+Provide useful loading, empty, and error states.
+
+### Book details
+
+Each detail page should display available, accurate information:
+
+- Book title and subtitle.
+- Author and contributors.
+- Cover image.
+- Editorial description.
+- Price and availability.
+- ISBN, edition, and publication date where available.
+- Language and subject.
+- Approved sample excerpt where available.
+- Shipping information.
+- Add-to-cart action.
+- Relevant author profile and editorial content.
+
+Avoid invented metadata and fabricated social proof.
+
+Make the add-to-cart interaction immediate and clear. Show confirmation and update the cart count without requiring a full page refresh unless the existing architecture makes that impractical.
+
+## 8. Redesign the cart page from the ground up
+
+The cart is a functional requirement, not just a visual component.
+
+Design a clean, reassuring shopping experience with an obvious distinction between the items selected and the order total.
+
+### Cart layout
+
+For desktop, use a balanced layout with:
+- Main column: selected books and quantity controls.
+- Secondary column: order summary and checkout action.
+
+For mobile:
+- Stack content in a logical order.
+- Keep the total and primary action easy to find.
+- Avoid horizontal overflow.
+- Ensure touch targets are comfortable to use.
+
+### Each cart item must display
+
+- Actual book cover.
+- Title.
+- Author.
+- Unit price.
+- Quantity selector.
+- Line total.
+- Remove action.
+- Availability status where relevant.
+
+### Quantity controls
+
+- Decrease and increase quantity with working controls.
+- Prevent quantities below one.
+- Allow removal through an explicit action.
+- Validate inventory limits.
+- Update line totals, subtotal, discounts where supported, and final totals correctly.
+- Prevent repeated rapid clicks from producing inconsistent state.
+- Keep cart contents synchronized across navigation and refresh where supported.
+- Show appropriate feedback if the requested quantity is unavailable.
+
+Do not allow a user to purchase more copies than available stock.
+
+### Order summary
+
+Display:
+- Subtotal.
+- Applicable discount.
+- Shipping charge, if known.
+- Taxes where applicable.
+- Final payable amount.
+
+Do not invent shipping costs, tax calculations, discounts, or free-shipping promises.
+
+If shipping depends on the delivery address, clearly state that it will be calculated at checkout.
+
+The total displayed on the cart must match the server-calculated total at checkout.
+
+### Empty cart
+
+Create a designed empty state that feels consistent with the brand.
+
+Include:
+- A natural message.
+- A link back to the catalogue.
+- An optional selection of real books, if useful.
+
+Do not display a blank screen or a fake cart with sample items.
+
+### Cart edge cases
+
+Test:
+- Adding the same book multiple times.
+- Removing one of several items.
+- Removing the final item.
+- Changing quantities rapidly.
+- Refreshing the page.
+- Navigating away and returning.
+- Updating inventory while a book is in the cart.
+- An unavailable or discontinued book.
+- Failed cart persistence.
+- Network failure during an update.
+- A price changing between cart and checkout.
+- Empty and malformed cart data.
+
+The server must remain authoritative for price, stock, discount, shipping, and order calculations.
+
+## 9. Implement proper email and Indian phone validation
+
+Apply validation consistently to the checkout and every other relevant form.
+
+Use friendly, specific, bilingual validation messages.
+
+### Email validation
+
+Requirements:
+- Trim leading and trailing whitespace.
+- Reject empty values when the field is required.
+- Reject obviously malformed addresses.
+- Check for a valid email structure without using an excessively restrictive regular expression.
+- Handle accidental spaces and common typing mistakes appropriately.
+- Use `type="email"` and suitable mobile input behaviour.
+- Disable automatic capitalization and autocorrection where appropriate.
+- Do not reject legitimate email addresses merely because they use a less common but valid format.
+- Validate again on the server.
+- Do not claim an email address exists unless a genuine verification mechanism confirms it.
+
+Example English messages:
+- “Enter your email address.”
+- “Check the email address format.”
+- “This email address could not be verified.” — use only if a verification process actually ran.
+
+Example Marathi messages:
+- “कृपया ईमेल पत्ता भरा.”
+- “ईमेल पत्त्याचा फॉरमॅट तपासा.”
+
+### Phone validation
+
+Assume Indian domestic phone numbers are the primary requirement unless the existing business explicitly supports international orders.
+
+Requirements:
+- Allow a valid 10-digit Indian mobile number.
+- Accept reasonable formatting, such as spaces or hyphens, by normalizing input before validation.
+- If `+91` is entered, normalize and validate it consistently.
+- Avoid treating an 11- or 12-digit value as valid simply because it contains 10 digits somewhere within it.
+- Validate the normalized number on the server.
+- Use a suitable mobile input mode and an appropriate telephone input type.
+- Preserve the user's entered value when validation fails.
+- Clearly identify the problem.
+- Do not silently rewrite a user's number into an incorrect format.
+
+For a domestic Indian mobile-number field, validate the normalized number against the expected 10-digit mobile-number format, including the appropriate leading-digit rule.
+
+Example English messages:
+- “Enter your mobile number.”
+- “Enter a valid 10-digit Indian mobile number.”
+- “Include +91 only if you are entering the country code.”
+
+Example Marathi messages:
+- “कृपया मोबाईल क्रमांक भरा.”
+- “वैध १० अंकी भारतीय मोबाईल क्रमांक टाका.”
+
+If international shipping is genuinely supported, implement country-aware phone validation rather than applying Indian-only rules to every country.
+
+### Validation behaviour
+
+- Use persistent labels above inputs.
+- Mark required and optional fields clearly.
+- Validate at an appropriate point during entry and on submission.
+- Avoid displaying errors before the user has had a reasonable chance to enter a value.
+- Provide specific, actionable inline error messages.
+- Move focus to the first invalid field on submission.
+- Preserve all previously entered information after an error.
+- Announce errors accessibly.
+- Use clear success feedback when a form is accepted.
+- Avoid relying on color alone to communicate an error.
+- Perform authoritative server-side validation before accepting an order.
+
+Do not use a frontend-only validation implementation.
+
+## 10. Improve checkout and order confirmation
+
+Create a straightforward checkout flow with as few unnecessary steps as possible.
+
+### Contact and delivery information
+
+Collect only the information genuinely needed to fulfil the order.
+
+Provide:
+- Full name.
+- Email.
+- Mobile number.
+- Delivery address.
+- City.
+- State.
+- Postal PIN code.
+- Additional address details only where necessary.
+
+Use browser autofill appropriately. Keep labels visible, mark required fields, and use a logical single-column form structure on mobile.
+
+### Delivery and payment
+
+- Explain the available delivery options.
+- Show the complete order summary.
+- Display shipping and taxes transparently.
+- Integrate the payment provider already configured in the project, if one exists.
+- Verify payment status on the server.
+- Handle payment failures without losing the cart or contact information.
+- Prevent duplicate order submissions.
+- Never store raw payment-card details.
+- Do not mark an order as paid solely because the browser reaches a success URL.
+
+### Order confirmation
+
+Show:
+- Order reference.
+- Items purchased.
+- Final amount.
+- Delivery details.
+- Payment status.
+- Expected delivery information only when genuinely available.
+- Support contact information.
+
+Use bilingual confirmation and error messages.
+
+## 11. Functional interactions across the entire website
+
+Audit every visible interactive element.
+
+For each button, link, icon, menu, toggle, form, filter, and quantity control, define and verify its actual behaviour.
+
+Required:
+- Responsive navigation.
+- Working language toggle.
+- Search.
+- Catalogue filters.
+- Book-detail navigation.
+- Add-to-cart.
+- Cart updates.
+- Remove-from-cart.
+- Checkout validation.
+- Payment integration or a clearly labelled non-production payment state.
+- Newsletter submission.
+- Manuscript/contact forms.
+- Accessible loading and error states.
+
+Do not leave decorative buttons that appear functional but do nothing.
+
+If a feature requires a backend or external service that is not configured, document the missing dependency and implement a safe, explicit state rather than pretending the feature works.
+
+## 12. Responsive design and accessibility
+
+Test the actual application at:
+- 360 px mobile width.
+- 390 px mobile width.
+- 768 px tablet width.
+- 1024 px laptop/tablet width.
+- 1440 px desktop width.
+
+Verify:
+- No horizontal overflow.
+- No clipped Devanagari characters.
+- No overlapping header elements.
+- No hidden primary actions.
+- Correct book-cover proportions.
+- Readable paragraph widths.
+- Functional language switching.
+- Comfortable touch targets.
+- Accessible form labels and errors.
+- Visible keyboard focus.
+- Reduced-motion support.
+- Adequate color contrast.
+
+Target WCAG 2.2 AA where feasible.
+
+## 13. Technical quality and production safety
+
+Keep the existing framework and architecture unless a change is justified by a real limitation.
+
+- Reuse existing components where appropriate.
+- Centralize design tokens and translation dictionaries.
+- Avoid duplicated business logic.
+- Validate all critical input on the server.
+- Keep secrets in environment variables.
+- Protect administrative routes.
+- Handle API and network failures gracefully.
+- Ensure cart and order data are consistent.
+- Use proper loading, error, and empty states.
+- Avoid unnecessary libraries and dependencies.
+- Do not introduce a new backend, database, or payment provider without evaluating the current implementation.
+- Do not remove existing data or functionality without understanding its purpose.
+
+## 14. Mandatory testing plan
+
+Do not declare the task complete merely because the redesigned screens look attractive.
+
+### A. Visual testing
+
+Check all major pages in English and Marathi at desktop and mobile widths.
+
+Compare:
+- Typography.
+- Spacing.
+- Heading hierarchy.
+- Button consistency.
+- Header behaviour.
+- Book-cover rendering.
+- Responsive layouts.
+- Error and empty states.
+
+### B. Cart test matrix
+
+Run and record these cases:
+
+1. Add one book to the cart.
+2. Add the same book again.
+3. Increase and decrease quantity.
+4. Attempt to decrease quantity below one.
+5. Remove an item.
+6. Remove the last item.
+7. Refresh the page and verify persistence.
+8. Navigate between pages and return to the cart.
+9. Attempt to exceed available stock.
+10. Simulate an unavailable book.
+11. Simulate a network failure during a cart update.
+12. Confirm all totals are correct.
+13. Attempt to submit an empty cart.
+14. Change the price or inventory server-side and confirm the checkout recalculates.
+15. Double-click the checkout action and confirm that duplicate orders are not created.
+16. Simulate payment success, payment failure, and a delayed response.
+17. Verify that an unpaid order is never presented as paid.
+18. Complete a successful order using a supported test payment environment.
+19. Verify the order confirmation and resulting order record.
+20. Switch languages during the shopping journey and confirm that cart data is preserved.
+
+### C. Email test cases
+
+Test:
+- Empty required field.
+- Valid standard email.
+- Leading and trailing spaces.
+- Missing `@`.
+- Missing domain.
+- Malformed address.
+- Legitimate address with a plus sign.
+- Address using a less common but valid domain format.
+- Invalid submission followed by correction.
+- Server rejection.
+- Language switching while errors are visible.
+
+### D. Phone test cases
+
+Test:
+- Empty required field.
+- Valid 10-digit Indian mobile number.
+- Valid number with spaces.
+- Valid number with hyphens.
+- Valid number prefixed by `+91`.
+- Too few digits.
+- Too many digits.
+- Invalid leading digit.
+- Alphabetic characters.
+- Repeated submission.
+- Server-side rejection.
+- Corrected input after an error.
+- International numbers only if international orders are supported.
+
+Use valid and invalid test fixtures appropriate to the rules; do not use real customer contact details.
+
+### E. Regression testing
+
+Ensure that the redesign does not break:
+- Existing routes.
+- Existing book content.
+- Existing author information.
+- Language persistence.
+- Search.
+- Navigation.
+- Existing integrations.
+- Cart persistence.
+- Order handling.
+- Mobile layouts.
+
+Use automated tests where available, and perform browser-level testing of the critical user journeys.
+
+Report actual results. Do not claim that a test passed if it was not executed.
+
+## 15. Execution sequence
+
+Implement the work in this order:
+
+**Priority 1 — Visual identity**
+- Typography evaluation.
+- Color system.
+- Layout and spacing.
+- Header and navigation.
+- Homepage.
+- Book cards and detail pages.
+
+**Priority 2 — Bilingual experience**
+- Centralized translations.
+- Language-toggle consistency.
+- Marathi typography corrections.
+- Cart and checkout translations.
+
+**Priority 3 — Commerce reliability**
+- Cart calculations.
+- Quantity and inventory checks.
+- Email validation.
+- Phone validation.
+- Checkout error handling.
+- Payment and order-state verification.
+
+**Priority 4 — Responsive and accessibility work**
+- Mobile refinement.
+- Keyboard and screen-reader behaviour.
+- Focus states.
+- Error feedback.
+- Performance improvements.
+
+**Priority 5 — Verification**
+- Execute the cart test matrix.
+- Execute email and phone validation tests.
+- Run regression tests.
+- Fix all critical and high-priority defects.
+- Summarize any remaining limitations.
+
+## Final acceptance criteria
+
+The redesigned application must:
+
+1. Look like a distinctive, human-designed Marathi literary publisher rather than a generic AI template.
+2. Use a carefully selected and tested Devanagari type system.
+3. Maintain a fully usable English / Marathi toggle.
+4. Present accurate book information and consistent visual hierarchy.
+5. Have a genuinely functional cart and checkout.
+6. Validate email and Indian mobile numbers correctly.
+7. Preserve user-entered information after recoverable errors.
+8. Calculate prices and validate stock authoritatively on the server.
+9. Handle payment and order states safely.
+10. Work on mobile, tablet, and desktop.
+11. Pass the defined functional tests, with actual results documented.
+12. Preserve existing working functionality and avoid fabricated content.
+
+**The guiding principle:** Make the interface feel edited, not generated. Every font, color, line break, image, and interaction must have a reason to exist. The result should have the personality of Akath Prakashan, with the technical reliability expected from a real bookstore.

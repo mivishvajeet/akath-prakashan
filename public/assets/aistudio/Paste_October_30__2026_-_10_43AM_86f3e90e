@@ -1,0 +1,1012 @@
+# MASTER PROMPT: AKATH PRAKASHAN — INDEPENDENT MARATHI LITERARY PUBLISHING PLATFORM
+
+## 1. Project Overview
+
+Transform the existing Akath Prakashan website into a distinctive, production-ready independent Marathi publishing platform that combines:
+
+1. A professional literary publishing house.
+2. An editorial platform for Marathi readers.
+3. A direct-to-reader online bookstore.
+4. A connected ecosystem for authors, books, essays, and literary discussions.
+
+Existing website:
+https://akathpublication.arthsankalp.com/#top
+
+This is an existing project, not a greenfield redesign. Begin by auditing the current website, repository, framework, routes, components, assets, integrations, and deployment configuration.
+
+Do not immediately rewrite the entire application. Understand the current implementation first, preserve working functionality, and propose a structured implementation plan before making significant changes.
+
+The objective is to develop Akath into a recognizable independent Marathi literary publisher, not another generic publishing-services website or online book marketplace.
+
+## 2. Strategic Positioning
+
+Brand: Akath Prakashan (अकथ प्रकाशन)
+
+Proposed positioning:
+
+“An independent Marathi literary publisher that discovers distinctive writing, gives it the editorial attention it deserves, and builds lasting relationships between books, writers, and readers.”
+
+Suggested Marathi brand line:
+
+“मराठी साहित्य. नवे आवाज. दीर्घ संवाद.”
+
+Treat this as proposed brand copy. Review the existing brand identity before finalizing it.
+
+### Brand principles
+
+- Editorial independence and literary quality.
+- Strong Marathi-language identity.
+- Support for emerging writers.
+- Thoughtful engagement with society, culture, history, ideas, and lived experience.
+- Professional editing, design, production, and publishing operations.
+- Transparent relationships with authors.
+- Meaningful book discovery for readers.
+- Sustainable publishing economics.
+- Long-term relationships between authors, books, and readers.
+
+Do not position Akath as a mass-market marketplace competing primarily on discounts or catalogue size.
+
+## 3. Target Audiences
+
+Design distinct journeys for four audiences.
+
+### A. Readers
+
+People who read Marathi literature, fiction, poetry, essays, social thought, literary criticism, and translations.
+
+Their needs:
+- Discover books that match their interests.
+- Read original Marathi essays and reviews.
+- Explore unfamiliar authors.
+- Preview books before purchasing.
+- Buy books through a reliable online store.
+- Receive thoughtful recommendations and literary updates.
+
+### B. Authors
+
+Established writers, emerging authors, poets, translators, essayists, and researchers.
+
+Their needs:
+- Understand Akath's editorial philosophy.
+- Find manuscript submission guidelines.
+- Understand the selection and publishing process.
+- Learn about editorial development and production.
+- Access clear contractual terms and project updates.
+- Understand sales reporting and royalty arrangements where applicable.
+
+### C. Book buyers and institutional partners
+
+Independent bookstores, libraries, colleges, reading groups, and cultural organisations.
+
+Their needs:
+- Access an accurate catalogue.
+- Find ISBNs, editions, prices, and availability.
+- Understand ordering terms.
+- Request bulk or institutional orders.
+- Contact the publishing team.
+
+### D. Literary contributors
+
+Reviewers, interviewers, translators, researchers, and guest writers.
+
+Their needs:
+- Understand the editorial direction.
+- Discover contribution guidelines.
+- Find the right contact route.
+- Understand the review and publication process.
+
+## 4. Information Architecture
+
+Create one coherent website with four connected areas.
+
+### Main navigation
+
+- मुखपृष्ठ — Home
+- अकथविषयी — About Akath
+- पुस्तके — Books
+- वाचनकट्टा — Reader's Room
+- लेखक — Authors
+- लेखक व्हा — Submit a Manuscript
+- Search
+- Cart
+
+Use natural Marathi labels throughout the primary experience. Use English selectively where it improves usability.
+
+The navigation should be compact, responsive, keyboard-accessible, and easy to understand.
+
+### Area 1: Publication House
+
+Routes should include:
+
+- `/` — Home
+- `/about` — About Akath
+- `/books` — Catalogue
+- `/books/[slug]` — Individual book
+- `/authors` — Author directory
+- `/authors/[slug]` — Author profile
+- `/publish-with-us` — Editorial philosophy and manuscript submissions
+- `/publishing-process` — Publishing workflow
+- `/contact` — Contact
+
+Adapt route conventions to the existing framework and SEO requirements. Do not introduce duplicate or conflicting routes.
+
+### Area 2: वाचनकट्टा — Reader's Room
+
+Suggested routes:
+
+- `/vachankatta` — Editorial landing page
+- `/vachankatta/articles`
+- `/vachankatta/reviews`
+- `/vachankatta/interviews`
+- `/vachankatta/reading-lists`
+- `/vachankatta/first-page`
+- `/vachankatta/[slug]` — Individual editorial content
+
+Editorial content must be connected to relevant books, authors, topics, and reading lists.
+
+### Area 3: पुस्तकपेढी — Bookstore
+
+Suggested routes:
+
+- `/store` — Store landing page
+- `/store/categories/[slug]`
+- `/cart`
+- `/checkout`
+- `/order-confirmation`
+- `/account/orders` — Optional account-based order history
+- `/shipping-policy`
+- `/returns-policy`
+- `/privacy-policy`
+- `/terms`
+
+A customer must be able to purchase a book without creating an account unless the chosen payment or commerce architecture has a legitimate requirement otherwise.
+
+### Area 4: Reader Community
+
+Build the initial community around:
+
+- Newsletter subscriptions.
+- Curated reading lists.
+- Monthly editor's selection.
+- Reader discussions and book-club events.
+- Approved reader reviews where useful.
+
+Do not build a large social network, public posting system, or complex membership platform in the initial release.
+
+## 5. Homepage: Publication House First
+
+The homepage must introduce Akath as a literary institution before presenting it as a store.
+
+Do not begin with a large product grid, generic service cards, or aggressive sales banners.
+
+### Section 1: Editorial hero
+
+Create an elegant Marathi-first hero with:
+
+- Akath identity and editorial positioning.
+- A strong Marathi headline.
+- A concise description of the publishing philosophy.
+- A carefully selected visual featuring actual books, literary materials, or the publishing process.
+- Primary CTA: “आमची पुस्तके”
+- Secondary CTA: “अकथविषयी”
+
+Use restrained animation, if any. The headline and primary actions must remain readable on small screens.
+
+### Section 2: The story behind Akath
+
+Explain:
+
+- Why the publishing house exists.
+- What kinds of writing it wants to publish.
+- What it values in a manuscript.
+- How it approaches authors and readers.
+- What makes its editorial identity distinct.
+
+Use genuine information supplied by the publisher. Do not invent history, awards, achievements, staff, or publication statistics.
+
+### Section 3: Selected publications
+
+Show a small selection of real books.
+
+Each card should contain:
+- Actual book cover.
+- Marathi title.
+- Author.
+- Price, if available.
+- Availability.
+- A link to the detailed book page.
+
+Feature a deliberate editorial selection rather than a generic grid of every title.
+
+Never invent books, covers, authors, prices, or reviews.
+
+### Section 4: वाचनकट्टा
+
+Show three editorial features, where available:
+
+- One essay or literary argument.
+- One book review.
+- One author conversation.
+
+Each feature should have an editorial image or typographic treatment, category, title, short summary, and reading link.
+
+Do not fill the section with placeholders that appear to be published content.
+
+### Section 5: Meet the authors
+
+Display real author profiles and connect each author to their books, interviews, and published contributions.
+
+Do not display empty author statistics or fabricated biographies.
+
+### Section 6: पहिलं पान
+
+Introduce the signature discovery experience: readers can explore approved book excerpts before deciding whether to purchase.
+
+Explain the experience simply and link to the dedicated feature.
+
+### Section 7: Publishing with Akath
+
+Provide a concise explanation of the manuscript assessment and publishing process.
+
+Link to detailed editorial policies and submission guidelines.
+
+Keep this section visible without allowing it to dominate the reader-facing homepage.
+
+### Section 8: Editor's selection
+
+Feature one book or literary work selected by the editorial team.
+
+Include:
+- A short personal editorial note.
+- Why it was selected.
+- Who may find it interesting.
+- A link to read more or purchase it.
+
+Selection must be managed through content data, not hardcoded into the UI.
+
+### Section 9: Newsletter
+
+Introduce the newsletter as a literary letter rather than generic marketing.
+
+Possible content:
+- One thoughtful essay.
+- One book recommendation.
+- One author conversation.
+- Publication announcements.
+
+Provide clear consent language, email validation, unsubscribe support, and secure subscriber management.
+
+### Section 10: Footer
+
+Include:
+- About Akath.
+- Catalogue.
+- Reader's Room.
+- Authors.
+- Publishing process.
+- Contact.
+- Newsletter.
+- Shipping and returns.
+- Privacy policy.
+- Terms.
+- Relevant social channels.
+
+Do not display social links, awards, partnerships, or claims unless they are real.
+
+## 6. Signature Feature: पहिलं पान
+
+Develop this as a distinctive reader-discovery experience.
+
+Purpose: Help readers discover Marathi writing through the text itself rather than relying only on a cover, author reputation, or bestseller ranking.
+
+### Reader experience
+
+1. Display a selected, authorized excerpt.
+2. Provide a comfortable reading layout optimized for Devanagari.
+3. Optionally hide the author and cover until the reader finishes the excerpt, if the editorial team enables this mode.
+4. Allow an optional reaction such as:
+   - मला पुढे वाचायचं आहे.
+   - या ओळीने लक्ष वेधलं.
+   - मला अजून संदर्भ हवा आहे.
+5. Reveal the book title, author, and relevant information.
+6. Provide a link to the book page and purchase flow if the title is available.
+7. Offer a related article or reading recommendation.
+
+### Editorial and technical requirements
+
+- Excerpts require appropriate permission.
+- Store excerpt text, source attribution, rights status, and publication approval.
+- Support accessible HTML reading pages.
+- Do not expose unpublished manuscripts or private editorial material.
+- Do not publicly label books as inferior based on reader reactions.
+- Track engagement with privacy-conscious analytics.
+- Allow the editor to choose and schedule featured excerpts.
+
+Launch with a small, manually curated selection. Do not build a complex recommendation engine initially.
+
+## 7. Signature Feature: The Literary Index
+
+Build a structured content model that connects:
+
+- Books.
+- Authors.
+- Articles.
+- Reviews.
+- Interviews.
+- Excerpts.
+- Reading lists.
+- Topics and literary themes.
+
+For example, a book detail page should link to the author's profile, an interview, a review, related essays, and relevant reading lists.
+
+An author profile should show the author's books and editorial contributions.
+
+An article should link to relevant books and authors where appropriate.
+
+A reading list should reference real catalogue items.
+
+Implement this using normalized data structures and reusable content components. Avoid maintaining the same book or author information independently across multiple pages.
+
+Begin with manually curated relationships. Do not introduce AI-generated relationships or recommendations unless their value is demonstrated and the results can be verified.
+
+## 8. Reader's Room: Editorial Product
+
+The Reader's Room should feel like a serious Marathi literary journal, not a generic SEO blog.
+
+### Content categories
+
+1. लेख आणि विचार — Essays and ideas.
+2. पुस्तक परीक्षण — Book reviews.
+3. लेखकांशी संवाद — Author interviews.
+4. पुस्तकाचे काही पाने — Book excerpts.
+5. काय वाचावं? — Curated reading lists.
+6. साहित्यविश्व — Literary events and cultural coverage.
+
+### Article page requirements
+
+Each article page should include:
+
+- Title in Marathi.
+- Author or contributor.
+- Publication date and update date where relevant.
+- Estimated reading time.
+- Category and tags.
+- Featured image or editorial illustration.
+- Accessible Devanagari body typography.
+- Table of contents for long articles.
+- Related articles.
+- Related books and author profiles.
+- Share links.
+- Canonical URL and appropriate metadata.
+
+Use semantic HTML and an accessible heading hierarchy.
+
+Do not insert unrelated product advertisements into long-form reading content.
+
+### Editorial workflow
+
+Support:
+
+- Draft.
+- Editorial review.
+- Revision.
+- Approved.
+- Scheduled.
+- Published.
+- Archived.
+
+Content must have clear ownership, publication status, and author attribution.
+
+Implement editorial permissions appropriate to the existing stack.
+
+Do not build a complex multi-user publishing system unless the project actually needs it.
+
+## 9. Bookstore and Product Experience
+
+The bookstore should be fully functional, accurate, and operationally reliable.
+
+### Catalogue
+
+Support:
+- Search by title and author.
+- Categories and editorial collections.
+- New releases.
+- Featured books.
+- Related books.
+- Availability and price filters.
+- Sorting by relevant criteria.
+- Pagination or efficient incremental loading.
+
+Search must support Marathi Unicode text and Devanagari titles.
+
+Normalize text consistently for searching without changing the original displayed title.
+
+Where appropriate, support author-name variants and transliterated queries.
+
+Do not implement fuzzy search that produces unpredictable or misleading results.
+
+### Book detail page
+
+Every book should support:
+
+- High-quality front-cover image.
+- Title and subtitle.
+- Author and contributors.
+- Book description.
+- Editorial context.
+- Approved sample excerpt.
+- Language.
+- Genre or subject.
+- Publisher.
+- ISBN where applicable.
+- Edition.
+- Publication date.
+- Page count and format where known.
+- Actual selling price.
+- Availability and stock status.
+- Shipping information.
+- Add-to-cart action.
+- Related books.
+- Author profile.
+- Related articles and interviews.
+
+Do not display unavailable metadata as fabricated facts.
+
+### Cart
+
+Implement:
+- Add and remove items.
+- Quantity updates.
+- Inventory validation.
+- Price calculation.
+- Shipping estimate where supported.
+- Persistent cart where appropriate.
+- Clear error and empty states.
+
+Recalculate prices and inventory on the server. Never trust prices, discounts, or stock quantities supplied by the browser.
+
+### Checkout
+
+Support the chosen payment provider and fulfilment model.
+
+Requirements:
+- Guest checkout where feasible.
+- Shipping address validation.
+- Final price and delivery-cost summary.
+- Secure payment initiation.
+- Verified payment status.
+- Idempotent payment and order handling.
+- Clear success and failure states.
+- Order confirmation.
+- Transactional notifications.
+- Duplicate-submission protection.
+
+Never mark an order as paid based only on a frontend redirect.
+
+Use verified payment webhooks or the payment provider's authoritative verification flow.
+
+Do not collect or store raw card details.
+
+### Order management
+
+Provide an appropriate administrative workflow for:
+- Viewing orders.
+- Confirming payment status.
+- Managing order fulfilment.
+- Recording shipment details.
+- Updating tracking information.
+- Handling cancellations.
+- Processing refunds.
+- Managing stock.
+- Reviewing failed orders.
+
+Keep an auditable record of important order-state changes.
+
+### Commerce policies
+
+Before launch, provide accurate and legally reviewed:
+- Shipping policy.
+- Returns and damaged-book policy.
+- Cancellation policy.
+- Privacy policy.
+- Terms and conditions.
+- Payment and refund information.
+
+Confirm applicable Indian consumer-protection, tax, privacy, and payment-provider requirements.
+
+Do not promise COD, international shipping, free shipping, or a particular delivery time unless the actual operations support it.
+
+## 10. Author Relationships and Editorial Credibility
+
+Akath's core publishing model is independent literary publishing.
+
+Do not make paid acceptance the default acquisitions model.
+
+### Publishing information
+
+Explain:
+- Editorial mission.
+- Genres and categories considered.
+- Manuscript submission requirements.
+- Review process.
+- Expected response process, based on actual capacity.
+- Rights and contract principles.
+- Editing and production stages.
+- Distribution approach.
+- Marketing support.
+- Royalty reporting where applicable.
+
+Do not promise guaranteed sales, bestseller status, awards, or distribution coverage.
+
+### Manuscript submission
+
+If submissions are supported online, provide:
+- Author details.
+- Manuscript title and category.
+- Short synopsis.
+- Relevant sample or manuscript upload.
+- Rights and permissions confirmation.
+- Privacy notice.
+- Submission acknowledgement.
+- Internal review status.
+
+Protect uploaded files, validate file types and sizes, restrict access, and avoid exposing manuscript URLs publicly.
+
+Do not ask for unnecessary personal information.
+
+### Author dashboard
+
+Consider a later-stage author dashboard for:
+- Project milestones.
+- Editorial feedback status.
+- Approved production files.
+- Sales statements.
+- Royalty statements where contractually applicable.
+
+Do not expose confidential commercial information or other authors' data.
+
+Begin with a secure internal workflow and reliable statements before building a large self-service portal.
+
+## 11. Visual Design System
+
+The design should feel like a carefully edited literary publication: contemporary, calm, tactile, and rooted in Marathi language and book culture.
+
+Avoid:
+- Generic SaaS dashboard styling.
+- Excessive rounded cards.
+- Gradient-heavy backgrounds.
+- Neon accents.
+- Unnecessary animations.
+- Giant decorative icons.
+- Fake statistics.
+- Generic stock imagery.
+- Excessive promotional banners.
+- Overly dense navigation.
+
+### Suggested palette
+
+Treat these as starting values to test against the existing brand:
+
+- Warm paper: `#F3EEE4`
+- Deep forest: `#343D32`
+- Terracotta accent: `#B65E43`
+- Ink: `#242420`
+- Muted secondary text: an accessible neutral chosen after contrast testing.
+
+Use color consistently. Do not make every section a different color.
+
+### Typography
+
+Use high-quality Devanagari fonts and test them with actual Marathi prose.
+
+Potential starting point:
+- Noto Serif Devanagari for long-form literary reading.
+- A complementary Devanagari sans-serif for interface controls and metadata.
+
+Choose fonts based on visual testing, loading performance, available weights, and licensing.
+
+Verify conjuncts, matras, punctuation, line-height, and wrapping on mobile and desktop.
+
+### Layout
+
+Use:
+- Generous whitespace.
+- Strong editorial hierarchy.
+- Restrained borders and dividers.
+- Thoughtful book-cover grids.
+- Readable article widths.
+- Responsive navigation.
+- Consistent spacing and image ratios.
+
+Use real book covers, real author photographs, and genuine publishing material wherever available.
+
+Do not generate fictional cover art and present it as an actual published book.
+
+### Interaction
+
+Use motion only when it improves comprehension or provides useful feedback.
+
+All controls must work. All buttons must have a defined action.
+
+Implement:
+- Visible hover and focus states.
+- Keyboard navigation.
+- Loading states.
+- Empty states.
+- Error states.
+- Success feedback.
+- Responsive menus.
+- Accessible form validation.
+
+Do not add decorative buttons that do nothing.
+
+## 12. Content Management and Data Architecture
+
+Audit the existing backend and database before selecting or introducing new infrastructure.
+
+The content model should support:
+
+### Books
+- Stable identifier.
+- Slug.
+- Title and subtitle.
+- Description.
+- Author and contributor references.
+- Cover assets.
+- ISBN and edition information where applicable.
+- Categories and topics.
+- Price and currency.
+- Inventory and availability.
+- Publication status and date.
+- Rights information.
+- Related editorial content.
+
+### Authors
+- Stable identifier.
+- Name in Marathi.
+- Optional alternative display name or transliteration.
+- Biography.
+- Approved photograph.
+- Books.
+- Editorial contributions.
+- Public profile status.
+
+### Articles
+- Stable identifier.
+- Slug.
+- Title.
+- Body.
+- Author or contributor.
+- Category.
+- Tags.
+- Featured image.
+- Publication status.
+- Publication and update dates.
+- Related books and authors.
+- SEO metadata.
+
+### Commerce
+- Products and prices.
+- Inventory.
+- Carts where supported.
+- Orders.
+- Payment records.
+- Shipping information.
+- Refunds.
+- Audit events.
+
+### Newsletter
+- Subscriber record.
+- Consent status.
+- Subscription source.
+- Subscription timestamp.
+- Unsubscribe status.
+
+Use the existing database and architecture where appropriate. Introduce new tables, services, or migrations only when required.
+
+Keep private data separate from publicly accessible catalogue content.
+
+## 13. SEO, Accessibility and Performance
+
+### SEO
+
+Implement:
+- Unique titles and descriptions.
+- Canonical URLs.
+- XML sitemap.
+- Robots configuration.
+- Open Graph metadata.
+- Appropriate structured data for books, products, articles, and authors where supported by the relevant schema.
+- Clean URLs.
+- Descriptive image alternatives.
+- Internal links between related books and articles.
+- Correct handling of missing and redirected routes.
+
+Do not add fabricated reviews, ratings, availability, or structured-data claims.
+
+### Accessibility
+
+Target WCAG 2.2 AA where feasible.
+
+Include:
+- Semantic HTML.
+- Keyboard access.
+- Visible focus states.
+- Accessible form labels.
+- Sufficient color contrast.
+- Screen-reader-friendly validation and status messages.
+- Alternative text for meaningful images.
+- Responsive text sizing.
+- Reduced-motion support.
+- Accessible Devanagari reading layouts.
+
+### Performance
+
+Implement:
+- Responsive images.
+- Appropriate image formats.
+- Lazy loading below the fold.
+- Font optimization.
+- Caching where appropriate.
+- Efficient queries.
+- Server-side pagination for larger catalogues.
+- Minimal unnecessary client-side JavaScript.
+- Appropriate loading and error states.
+
+Measure performance on real mobile-sized viewports and representative low-bandwidth conditions.
+
+## 14. Analytics and Business Intelligence
+
+Instrument the website around the publishing business rather than vanity metrics.
+
+Track meaningful events such as:
+- Catalogue search.
+- Book detail view.
+- Excerpt opened and completed.
+- Article read engagement.
+- Newsletter subscription.
+- Add to cart.
+- Checkout initiated.
+- Purchase completed.
+- Payment failure.
+- Refund.
+- Manuscript inquiry submitted.
+- Contact form completed.
+
+Do not send sensitive manuscript contents, payment details, passwords, or unnecessary personal data to analytics tools.
+
+Build an internal dashboard only after the event model is defined and validated.
+
+### Suggested business dashboard
+
+Show:
+- Sales by title and channel.
+- Copies sold.
+- Revenue and contribution where cost data is available.
+- Inventory ageing.
+- Reprint candidates.
+- Returning customers.
+- Article-to-book conversion.
+- Newsletter engagement.
+- Manuscript pipeline.
+- Publishing milestone delays.
+
+Do not label gross revenue as profit or infer profitability without accounting for costs.
+
+## 15. Security and Operational Reliability
+
+Treat the website as a production application.
+
+Implement or verify:
+- HTTPS.
+- Secure authentication for administrative functions.
+- Role-based access controls.
+- Server-side input validation.
+- Rate limiting on sensitive endpoints.
+- Secure upload handling.
+- Secret management through environment variables.
+- Dependency and vulnerability checks.
+- Database backups.
+- Restore testing.
+- Audit logs for administrative and commerce actions.
+- Payment webhook verification.
+- Idempotent order operations.
+- Error monitoring.
+- Operational alerts.
+- Data retention and deletion procedures.
+- Protection against common web vulnerabilities.
+
+Do not log passwords, payment secrets, access tokens, private manuscript contents, or unnecessary personal data.
+
+Use structured logs and appropriate monitoring without collecting more information than necessary.
+
+## 16. Technology and Implementation Constraints
+
+First inspect the current stack.
+
+Do not change the framework, database, deployment model, or package manager without a clear technical reason.
+
+Prefer maintainable architecture over unnecessary complexity.
+
+Use:
+- Reusable components.
+- Strong typing where supported.
+- Clear separation between presentation, business logic, and data access.
+- Server-side validation for critical operations.
+- Database migrations.
+- Automated tests.
+- Documented environment configuration.
+- Clear development and production setup.
+
+Do not introduce microservices, a vector database, an AI recommendation system, or a complex distributed architecture without a demonstrated need.
+
+If the current backend cannot support secure commerce or content management, document the limitations and propose the smallest appropriate architectural change.
+
+Do not invent API keys, credentials, payment integrations, or service connections.
+
+Do not hardcode production secrets.
+
+## 17. Prioritized Implementation Roadmap
+
+### Phase 0 — Audit and technical plan
+
+Before coding:
+- Inspect the repository and live website.
+- Map existing routes and components.
+- Identify broken, duplicated, and incomplete functionality.
+- Review the existing data model.
+- Identify available assets and actual content.
+- Review deployment and environment configuration.
+- Identify commerce and payment integration constraints.
+- Produce a prioritized implementation plan.
+
+Deliverable: A concise technical audit, risk register, proposed architecture, and phased task list.
+
+Do not make destructive changes during the audit.
+
+### Phase 1 — Brand and publication foundation
+
+Implement:
+- Design system.
+- Main navigation.
+- Publication-house homepage.
+- About page.
+- Catalogue.
+- Author profiles.
+- Publishing philosophy.
+- Manuscript submission information.
+- Responsive and accessible layouts.
+
+Do not invent missing content. Record what must be supplied by the publisher.
+
+### Phase 2 — Reader's Room
+
+Implement:
+- Editorial landing page.
+- Article pages.
+- Reviews and interviews.
+- Reading lists.
+- Related book and author links.
+- Content management.
+- Search and metadata.
+- Newsletter subscription.
+
+Add the first-page discovery feature when approved excerpts and editorial content are available.
+
+### Phase 3 — Store and fulfilment
+
+Implement:
+- Product catalogue.
+- Product detail pages.
+- Cart.
+- Checkout.
+- Payment verification.
+- Inventory management.
+- Order administration.
+- Shipping and returns information.
+- Transactional notifications.
+
+Test the complete purchase lifecycle before accepting real orders.
+
+### Phase 4 — Editorial and commerce integration
+
+Implement:
+- Literary Index relationships.
+- Editor's selection.
+- Excerpt-to-book journeys.
+- Curated collections.
+- Relevant book bundles.
+- Analytics.
+- Internal reporting.
+
+### Phase 5 — Optimization and growth
+
+Implement selectively:
+- Reader wishlists.
+- Genuine reviews.
+- Reading events.
+- Bookstore and institutional order workflows.
+- Translation-rights catalogue.
+- Advanced recommendations only when justified.
+
+Do not implement all future features at once.
+
+## 18. Testing and Definition of Done
+
+The website is not production-ready merely because the pages look complete.
+
+Verify:
+
+### Functional testing
+- Every navigation link works.
+- Search returns relevant results.
+- Filters and pagination behave correctly.
+- Article and author relationships resolve correctly.
+- Cart updates are accurate.
+- Inventory and pricing are validated server-side.
+- Payment success and failure are handled correctly.
+- Duplicate submissions do not create duplicate orders.
+- Refund and cancellation workflows work as designed.
+- Newsletter consent and unsubscribe flows work.
+- Manuscript uploads are protected.
+- Administrative permissions are enforced.
+
+### Content testing
+- Actual Marathi content renders correctly.
+- Book covers and metadata are accurate.
+- No fabricated books, reviews, ratings, statistics, or authors appear.
+- Empty states are intentional and polished.
+- No placeholder text leaks into production.
+
+### Accessibility and responsive testing
+- Mobile, tablet, and desktop layouts work.
+- Navigation is keyboard accessible.
+- Focus indicators are visible.
+- Forms have accessible labels and errors.
+- Marathi text is readable across supported browsers.
+
+### Operational testing
+- Environment variables are documented.
+- Database migrations are repeatable.
+- Backups and restoration are tested.
+- Logs and error reporting work.
+- Secrets are not exposed.
+- Payment verification is tested.
+- Deployment and rollback procedures are documented.
+
+### Final acceptance criteria
+
+The project should be considered complete only when:
+
+1. Akath has a coherent, recognizable literary identity.
+2. Readers can discover and read editorial content comfortably.
+3. Books and authors are connected through reusable, accurate data.
+4. The bookstore can process real orders securely once payment and fulfilment providers are configured.
+5. Authors have clear, transparent publishing information.
+6. The website works across mobile and desktop.
+7. Critical user journeys are covered by tests.
+8. The operational setup is documented.
+9. No broken links, nonfunctional controls, fake data, or unresolved critical security issues remain.
+
+## 19. How to Execute This Prompt
+
+Work in the following order:
+
+1. Audit the current implementation.
+2. Present the current-state findings and prioritized plan.
+3. Identify missing content, credentials, business decisions, and integrations.
+4. Implement the highest-priority changes incrementally.
+5. Test each meaningful change.
+6. Preserve existing working functionality.
+7. Document architectural decisions and operational requirements.
+8. Report what is implemented, what remains, and what requires human approval.
+
+Do not rebuild everything in one uncontrolled pass.
+
+Do not remove existing content without reviewing its purpose.
+
+Do not replace genuine Marathi text with generic placeholder copy.
+
+Do not claim a feature is complete when it is only a visual mockup.
+
+The goal is not simply to redesign a website. The goal is to establish the digital foundation for Akath Prakashan as a distinctive, sustainable independent Marathi literary publisher — one that takes its authors seriously, helps readers discover meaningful writing, and builds a long-term relationship between literature and commerce.

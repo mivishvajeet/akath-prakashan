@@ -1,0 +1,639 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* =========================================================================
+       AKATH PRAKASHAN COLOR SCHEMA
+       - Midnight Cobalt (#243B8A): Primary brand, header, footer
+       - Butter Yellow (#FFD966): Highlights, badges, playful accents
+       - Warm White (#FFFDF7): Main background
+       - Coral Red (#EF6855): Purchase buttons, sale indicators
+       - Ink (#252832): Body text
+       ========================================================================= */
+    --bg-canvas: #FFFDF7;
+    --bg-surface: #FFFFFF;
+    --bg-subtle: #F7F3E8;
+    --color-ink: #252832;
+    --color-ink-muted: #525665;
+    --color-primary: #243B8A; /* Midnight Cobalt */
+    --color-accent: #FFD966; /* Butter Yellow */
+    --color-cta: #EF6855; /* Coral Red */
+    --color-cerulean: #243B8A; /* Midnight Cobalt Emblem */
+    --color-warm-touch: #EF6855; /* Coral Red */
+    --border-hairline: #E6E1D6;
+    --color-error: #D93829;
+    --color-success: #15803D;
+
+    /* 2+1 Font System: Settled Serif Display + Crisp Geometric/Devanagari Sans + Tabular Mono */
+    --font-serif: "Noto Serif Devanagari", "Playfair Display", Georgia, serif;
+    --font-sans: "Plus Jakarta Sans", "Mukta", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
+  }
+
+  html {
+    background-color: var(--bg-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.7;
+    letter-spacing: 0;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--bg-canvas);
+    color: var(--color-ink);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    letter-spacing: 0;
+  }
+
+  ::selection {
+    background-color: #FFD966;
+    color: #252832;
+  }
+
+  /* Critical for Devanagari: never apply negative letter-spacing or cramped line-height */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    color: var(--color-ink);
+    letter-spacing: 0 !important;
+    text-wrap: balance;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+
+  p, li, blockquote, label, input, textarea, select, button {
+    letter-spacing: 0;
+  }
+
+  /* Accessible visible focus ring */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* Archival Frosted-Glass Paper Overlay & Drawer Surface (Warm White + Midnight Cobalt + Butter Yellow) */
+.archival-frosted-overlay {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 253, 247, 0.78) 0%,
+      rgba(255, 217, 102, 0.14) 55%,
+      rgba(36, 59, 138, 0.18) 100%
+    );
+  backdrop-filter: blur(14px) saturate(125%);
+  -webkit-backdrop-filter: blur(14px) saturate(125%);
+}
+
+.archival-drawer-surface {
+  background-color: #FFFDF7;
+  background-image: radial-gradient(
+    circle at 100% 0%,
+    rgba(255, 217, 102, 0.18) 0%,
+    rgba(36, 59, 138, 0.05) 45%,
+    transparent 65%
+  );
+  box-shadow:
+    -16px 0 48px -12px rgba(36, 59, 138, 0.22),
+    -1px 0 0 0 #E6E1D6;
+}
+
+/* Subtle Architectural Grid & Ambient Aura (Midnight Cobalt + Butter Yellow + Warm White) */
+.sarvam-aura {
+  background-image:
+    radial-gradient(circle at 16% 10%, rgba(36, 59, 138, 0.07) 0%, transparent 46%),
+    radial-gradient(circle at 84% 18%, rgba(255, 217, 102, 0.18) 0%, transparent 44%),
+    radial-gradient(circle at 50% 90%, rgba(239, 104, 85, 0.05) 0%, transparent 50%);
+}
+
+.sarvam-grid-lines {
+  background-size: 64px 64px;
+  background-image:
+    linear-gradient(to right, rgba(36, 59, 138, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(36, 59, 138, 0.04) 1px, transparent 1px);
+}
+
+/* Architectural Card Elevation Utility */
+.akath-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E6E1D6;
+  box-shadow:
+    0 1px 2px rgba(37, 40, 50, 0.03),
+    0 12px 32px -12px rgba(36, 59, 138, 0.07);
+  transition:
+    border-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.akath-card:hover {
+  border-color: rgba(36, 59, 138, 0.36);
+  box-shadow:
+    0 4px 12px rgba(37, 40, 50, 0.04),
+    0 20px 44px -16px rgba(36, 59, 138, 0.12);
+}
+
+/* Responsive Typography Scale for Marathi & Bilingual Hierarchy */
+.type-brand {
+  font-family: var(--font-serif);
+  font-size: clamp(1.35rem, 1.9vw, 1.58rem);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.type-hero-headline {
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 4.1vw, 3.55rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.type-page-heading {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 2.85vw, 2.4rem);
+  font-weight: 600;
+  line-height: 1.32;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.type-section-heading {
+  font-family: var(--font-serif);
+  font-size: clamp(1.25rem, 2.05vw, 1.55rem);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.type-book-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.125rem, 1.5vw, 1.28rem);
+  font-weight: 600;
+  line-height: 1.42;
+  letter-spacing: 0;
+}
+
+.type-article-headline {
+  font-family: var(--font-serif);
+  font-size: clamp(1.65rem, 2.8vw, 2.3rem);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+/* Long-form Marathi reading prose (60-68ch measure) */
+.prose-marathi {
+  font-family: var(--font-serif);
+  font-size: clamp(1.0625rem, 1.15vw, 1.14rem);
+  line-height: 1.88;
+  color: var(--color-ink);
+  max-width: 66ch;
+  letter-spacing: 0;
+}
+
+/* Functional UI text & labels */
+.ui-label {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--color-ink);
+}
+
+.ui-meta {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================================
+   CSS-Based Subtle Floating Animation for the Akath 'Tortoise' Logo Emblem
+   ========================================================================= */
+@keyframes tortoise-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -3.5px, 0);
+  }
+}
+
+@keyframes tortoise-body-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes tortoise-flipper-left {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+
+@keyframes tortoise-flipper-right {
+  0%,
+  100% {
+    transform: rotate(2deg);
+  }
+  50% {
+    transform: rotate(-2.5deg);
+  }
+}
+
+@keyframes tortoise-book-breathe {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(1.022);
+  }
+}
+
+.tortoise-float {
+  animation: tortoise-float 4.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  will-change: transform;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .tortoise-float,
+.tortoise-float:hover {
+  animation-play-state: paused;
+  transform: translate3d(0, -2px, 0) scale(1.03);
+}
+
+.tortoise-emblem-body {
+  animation: tortoise-body-float 4.2s ease-in-out infinite;
+  transform-origin: 60px 42px;
+}
+
+.tortoise-head {
+  transform-origin: 60px 21px;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tortoise-flipper-l {
+  animation: tortoise-flipper-left 3.6s ease-in-out infinite;
+  transform-origin: 41px 28px;
+}
+
+.tortoise-flipper-r {
+  animation: tortoise-flipper-right 3.6s ease-in-out infinite;
+  transform-origin: 79px 28px;
+}
+
+.tortoise-flipper-rl {
+  transform-origin: 45px 57px;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tortoise-flipper-rr {
+  transform-origin: 75px 57px;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tortoise-tail {
+  transform-origin: 60px 63px;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tortoise-shell-group {
+  transform-origin: 60px 42px;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tortoise-book-wave {
+  animation: tortoise-book-breathe 4.2s ease-in-out infinite;
+  transform-origin: 60px 85px;
+}
+
+/* ==========================================================================
+   TORTOISE 'HIDE-AND-SEEK' MICRO-INTERACTION (Footer Emblem Hover)
+   Builds upon the tortoise keyframe foundation: when hovered, the tortoise
+   momentarily retracts its head, flippers, and tail into its carapace,
+   pauses inside the shell, and gently peeks back out.
+   ========================================================================== */
+@keyframes tortoise-head-hide-seek {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  24%,
+  54% {
+    transform: translateY(15px) scale(0.72);
+  }
+  74% {
+    transform: translateY(4.5px) scale(0.92);
+  }
+  88% {
+    transform: translateY(-0.8px) scale(1.02);
+  }
+}
+
+@keyframes tortoise-flipper-fl-hide-seek {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  24%,
+  54% {
+    transform: translate(16px, 11px) rotate(-28deg) scale(0.68);
+  }
+  75% {
+    transform: translate(4px, 3px) rotate(-7deg) scale(0.93);
+  }
+}
+
+@keyframes tortoise-flipper-fr-hide-seek {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  24%,
+  54% {
+    transform: translate(-16px, 11px) rotate(28deg) scale(0.68);
+  }
+  75% {
+    transform: translate(-4px, 3px) rotate(7deg) scale(0.93);
+  }
+}
+
+@keyframes tortoise-flipper-rl-hide-seek {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  24%,
+  54% {
+    transform: translate(13px, -11px) rotate(24deg) scale(0.7);
+  }
+  75% {
+    transform: translate(3.5px, -3px) rotate(6deg) scale(0.93);
+  }
+}
+
+@keyframes tortoise-flipper-rr-hide-seek {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  24%,
+  54% {
+    transform: translate(-13px, -11px) rotate(-24deg) scale(0.7);
+  }
+  75% {
+    transform: translate(-3.5px, -3px) rotate(-6deg) scale(0.93);
+  }
+}
+
+@keyframes tortoise-tail-hide-seek {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  22%,
+  56% {
+    transform: translateY(-10px) scale(0.65);
+  }
+  76% {
+    transform: translateY(-2.5px) scale(0.9);
+  }
+}
+
+@keyframes tortoise-shell-hide-seek {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  24%,
+  54% {
+    transform: translateY(1.5px) scale(1.04);
+  }
+  75% {
+    transform: translateY(0.5px) scale(1.012);
+  }
+}
+
+.group:hover .tortoise-hide-seek .tortoise-head,
+.tortoise-hide-seek:hover .tortoise-head {
+  animation: tortoise-head-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
+}
+
+.group:hover .tortoise-hide-seek .tortoise-flipper-l,
+.tortoise-hide-seek:hover .tortoise-flipper-l {
+  animation: tortoise-flipper-fl-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
+}
+
+.group:hover .tortoise-hide-seek .tortoise-flipper-r,
+.tortoise-hide-seek:hover .tortoise-flipper-r {
+  animation: tortoise-flipper-fr-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
+}
+
+.group:hover .tortoise-hide-seek .tortoise-flipper-rl,
+.tortoise-hide-seek:hover .tortoise-flipper-rl {
+  animation: tortoise-flipper-rl-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
+}
+
+.group:hover .tortoise-hide-seek .tortoise-flipper-rr,
+.tortoise-hide-seek:hover .tortoise-flipper-rr {
+  animation: tortoise-flipper-rr-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
+}
+
+.group:hover .tortoise-hide-seek .tortoise-tail,
+.tortoise-hide-seek:hover .tortoise-tail {
+  animation: tortoise-tail-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
+}
+
+.group:hover .tortoise-hide-seek .tortoise-shell-group,
+.tortoise-hide-seek:hover .tortoise-shell-group {
+  animation: tortoise-shell-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
+}
+
+/* ==========================================================================
+   "THE LAST PAGE" EDITORIAL FOOTER — ONE-TIME ENTRANCE & CREATOR CREDIT
+   - Triggered once when the footer enters the viewport via IntersectionObserver
+   - Uses only compositor-friendly transform and opacity properties
+   - Respects prefers-reduced-motion and remains visible if JS is unavailable
+   ========================================================================== */
+@keyframes last-page-tortoise-walk-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(-28px, 4px, 0) scale(0.94);
+  }
+  55% {
+    opacity: 1;
+    transform: translate3d(-6px, -2px, 0) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate3d(2px, 0, 0) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes last-page-text-reveal {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.last-page-tortoise-peek {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.last-page-tortoise-peek.is-entering {
+  animation: last-page-tortoise-walk-in 1.15s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+.last-page-closing-quote {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.last-page-closing-quote.is-entering {
+  animation: last-page-text-reveal 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
+}
+
+.last-page-creator-credit {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition:
+    color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.last-page-creator-credit::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background-color: #FFD966;
+  transform: scaleX(0.28);
+  transform-origin: left center;
+  opacity: 0.55;
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.last-page-creator-credit:hover,
+.last-page-creator-credit:focus-visible {
+  color: #FFD966;
+  transform: translate3d(0, -1px, 0);
+}
+
+.last-page-creator-credit:hover::after,
+.last-page-creator-credit:focus-visible::after {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+.last-page-creator-mark {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.last-page-creator-credit:hover .last-page-creator-mark,
+.last-page-creator-credit:focus-visible .last-page-creator-mark {
+  transform: translate3d(2px, 0, 0) scale(1.08);
+}
+
+/* High-contrast focus ring inside the dark Midnight Cobalt footer */
+.last-page-footer a:focus-visible,
+.last-page-footer button:focus-visible,
+.last-page-footer input:focus-visible {
+  outline: 2px solid #FFD966;
+  outline-offset: 3px;
+}
+
+/* Respect reduced motion preferences (WCAG 2.1 SC 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .tortoise-float,
+  .group:hover .tortoise-float,
+  .tortoise-float:hover,
+  .tortoise-emblem-body,
+  .tortoise-head,
+  .tortoise-flipper-l,
+  .tortoise-flipper-r,
+  .tortoise-flipper-rl,
+  .tortoise-flipper-rr,
+  .tortoise-tail,
+  .tortoise-shell-group,
+  .tortoise-book-wave,
+  .group:hover .tortoise-hide-seek .tortoise-head,
+  .tortoise-hide-seek:hover .tortoise-head,
+  .group:hover .tortoise-hide-seek .tortoise-flipper-l,
+  .tortoise-hide-seek:hover .tortoise-flipper-l,
+  .group:hover .tortoise-hide-seek .tortoise-flipper-r,
+  .tortoise-hide-seek:hover .tortoise-flipper-r,
+  .group:hover .tortoise-hide-seek .tortoise-flipper-rl,
+  .tortoise-hide-seek:hover .tortoise-flipper-rl,
+  .group:hover .tortoise-hide-seek .tortoise-flipper-rr,
+  .tortoise-hide-seek:hover .tortoise-flipper-rr,
+  .group:hover .tortoise-hide-seek .tortoise-tail,
+  .tortoise-hide-seek:hover .tortoise-tail,
+  .group:hover .tortoise-hide-seek .tortoise-shell-group,
+  .tortoise-hide-seek:hover .tortoise-shell-group,
+  .last-page-tortoise-peek,
+  .last-page-tortoise-peek.is-entering,
+  .last-page-closing-quote,
+  .last-page-closing-quote.is-entering,
+  .last-page-creator-credit,
+  .last-page-creator-credit:hover,
+  .last-page-creator-credit:focus-visible,
+  .last-page-creator-credit::after,
+  .last-page-creator-mark {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    will-change: auto;
+  }
+}
+
+
+

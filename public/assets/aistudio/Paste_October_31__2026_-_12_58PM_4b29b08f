@@ -1,0 +1,663 @@
+# Feature Implementation: Production-Ready Authentication, Role-Based Access Control & End-to-End Testing
+
+## 1. Objective
+
+Implement a complete, secure, production-ready authentication and authorization system for the existing book-selling website.
+
+The platform supports four access levels:
+
+1. Guest
+2. Reader / Registered User
+3. Author
+4. Administrator
+
+This is an enhancement to the existing application, not a new project. First inspect the existing repository, application architecture, routes, database schema, UI components, design system, and current features.
+
+Preserve all existing functionality, book content, branding, tortoise mascot, animations, color palette, responsive layouts, and working components. Do not rebuild working features unnecessarily.
+
+The implementation must include frontend, backend, database changes, security controls, role-based access, automated tests, and a complete end-to-end testing report.
+
+**Do not stop after creating login and registration pages. Implement and verify the entire authentication lifecycle and the permissions associated with every role.**
+
+---
+
+## 2. Core Access Model
+
+### A. Guest — no account required
+
+Visitors should be able to explore and shop without creating an account.
+
+Publicly accessible features:
+
+- Homepage and featured collections.
+- Book catalog, categories, search, filters, and sorting.
+- Individual book details, descriptions, covers, prices, and availability.
+- Author biographies and public author pages.
+- Public reviews and ratings, if already supported.
+- Shopping cart and quantity updates.
+- Add or remove items from the cart.
+- Guest checkout.
+- Shipping information and contact details required to fulfill an order.
+- Payment and order confirmation, subject to the existing payment integration.
+- Public informational pages, FAQs, policies, and contact forms.
+
+Guest restrictions:
+
+- Cannot access registered-user profiles or private account data.
+- Cannot access another customer's order history.
+- Cannot submit authenticated reviews or access account-only features.
+- Cannot access author dashboards, publishing tools, or administrative functions.
+- Cannot access private API endpoints by manually entering their URLs.
+
+Do not redirect visitors to login simply because they browse books, add products to their cart, or initiate guest checkout.
+
+For features that genuinely require an account, show a contextual login or registration prompt and explain why authentication is necessary.
+
+### B. Reader — registered customer
+
+Readers can access all public guest features, plus:
+
+- Register and log in.
+- Verify their email address.
+- Log out securely.
+- View and update their own profile.
+- Manage saved addresses.
+- View their own order history and order details.
+- Track orders when supported by the existing order system.
+- Maintain a wishlist and reading lists.
+- Submit, edit, or delete their own reviews, subject to moderation rules.
+- Manage notification preferences.
+- Change their password.
+- Request a password reset.
+- View and manage their sessions, where supported.
+- Request account deletion through a secure workflow.
+
+Authorization requirements:
+
+- Readers may access only their own private account information.
+- Readers must never view another reader's profile, addresses, orders, or private activity by changing a URL, request parameter, or resource ID.
+- Readers cannot publish books or access author-management functionality unless separately approved for the author role.
+- Readers cannot access administrative routes or APIs.
+
+Preserve the reader's shopping cart when signing in, where compatible with the existing cart architecture.
+
+### C. Author — publishing and catalog management
+
+Implement an author onboarding workflow.
+
+Recommended lifecycle:
+
+`Guest → Reader Account → Author Application → Admin Approval → Author Access`
+
+Authors can access all public features and permitted reader functionality, plus:
+
+- Create and maintain their author profile.
+- Submit an author application.
+- Create book listings or drafts.
+- Upload book covers and permitted supporting materials.
+- Edit their own unpublished books.
+- Submit books for review.
+- View publication status and moderation feedback.
+- Manage permitted metadata, descriptions, categories, and pricing.
+- View sales and royalty reports if these capabilities exist or are implemented.
+- View notifications related to publishing and moderation.
+- Manage their own submissions and drafts.
+
+Publishing permissions:
+
+- New authors must not automatically receive unrestricted publishing privileges.
+- The default author approval policy should require administrative approval.
+- Only authorized authors may create or modify their own permitted resources.
+- Authors cannot modify books owned by another author.
+- Authors cannot change their own role or grant roles to others.
+- Authors cannot bypass moderation by directly calling publishing APIs.
+- Published book updates must follow the platform's configured moderation policy.
+- Authors cannot access reader addresses, payment details, or unrelated customer information.
+- Authors cannot access administrative analytics or user-management endpoints.
+
+If direct publishing is already an established product feature, preserve it while enforcing the existing business rules.
+
+### D. Administrator — complete platform management
+
+Create a protected administration dashboard with the following capabilities, where supported by the application:
+
+**User management**
+- View and search registered users.
+- View user roles and account status.
+- Suspend or reactivate accounts.
+- Review author applications.
+- Approve or reject author applications.
+- Assign or revoke permitted roles through controlled administrative workflows.
+
+**Catalog management**
+- Create, update, publish, unpublish, or archive books.
+- Review submitted books.
+- Manage categories and featured collections.
+- Moderate book metadata and reviews.
+- Manage inventory and pricing where supported.
+
+**Order management**
+- View and manage orders according to the business workflow.
+- Update fulfillment and shipping statuses.
+- Review refunds and cancellations through authorized workflows.
+- Access customer information only when required for legitimate order administration.
+
+**Platform management**
+- View relevant sales and catalog analytics.
+- Manage site configuration and promotional content.
+- Review audit logs and security events.
+- Manage moderation queues and operational alerts.
+
+Security requirements:
+
+- Administrative access must be granted only through a trusted, server-controlled process.
+- Never provide a public registration form that allows users to select the administrator role.
+- Never create a default administrator account with a hardcoded password.
+- Never trust role names supplied by the frontend, URL, request body, or local storage.
+- Role changes require server-side authorization and must be recorded in an audit log.
+- High-impact operations should require additional confirmation and, where appropriate, recent authentication.
+- If multiple administrator permission levels are needed, implement explicit least-privilege permissions rather than granting every administrator unrestricted access.
+
+---
+
+## 3. Authentication and Registration UX
+
+Create a polished authentication experience that follows the existing website's design system.
+
+### Login entry points
+
+Provide clear entry points for:
+
+- Reader login / registration.
+- Author login / application.
+- Administrator login.
+
+All roles should use the same underlying identity system wherever practical. Separate entry points may offer different branding, instructions, and destinations, but must not create inconsistent security policies.
+
+The login screen must not trust a user merely because they selected "Author" or "Admin." The backend must determine the authenticated account's actual permissions.
+
+### Registration
+
+Implement:
+
+- Name.
+- Email address.
+- Password and confirmation.
+- Password visibility toggle.
+- Password strength and validation feedback.
+- Terms and privacy consent, where required.
+- Email verification.
+- Clear success and failure states.
+- Duplicate-account handling.
+- Accessible inline validation.
+
+For authors, provide an author application workflow instead of granting publishing permissions during ordinary registration.
+
+For administrators, provide a protected account-provisioning mechanism rather than public signup.
+
+### Password and session management
+
+Implement:
+
+- Secure password hashing using an appropriate modern password-hashing algorithm.
+- Secure password-reset tokens with expiration and single-use enforcement.
+- Email verification tokens with expiration and single-use enforcement.
+- Session expiration and secure logout.
+- Appropriate session invalidation after password changes, account suspension, or role changes.
+- Login throttling and protection against brute-force attempts.
+- Generic authentication error messages where detailed responses could reveal whether an account exists.
+- Secure cookie settings when cookie-based sessions are used.
+- CSRF protection when applicable to the chosen authentication architecture.
+- Safe redirect handling to prevent open redirects.
+- Secure handling of authentication tokens and secrets.
+
+Do not store plaintext passwords or sensitive authentication tokens in browser storage.
+
+Use the existing authentication provider if one is already integrated and suitable. Do not introduce a second identity system unnecessarily.
+
+---
+
+## 4. Authorization Architecture
+
+Implement role-based access control (RBAC) at the backend and enforce resource ownership separately.
+
+Create a centralized permission model instead of scattering role checks throughout the application.
+
+Example conceptual permissions:
+
+| Permission | Guest | Reader | Author | Admin |
+|---|---|---|---|---|
+| Browse catalog | Yes | Yes | Yes | Yes |
+| Guest checkout | Yes | Yes | Yes | Yes |
+| View own orders | No account history | Yes | Yes | Yes, authorized workflow |
+| Manage own profile | No | Yes | Yes | Yes |
+| Submit author application | Optional public flow | Yes | Already approved | Admin workflow |
+| Create book draft | No | No | Yes | Yes |
+| Publish or moderate books | No | No | Only if authorized | Yes |
+| Manage other users | No | No | No | Yes, authorized workflow |
+| Assign administrator role | No | No | No | Protected provisioning only |
+
+Treat this table as a starting point. Map permissions to the existing business logic and explicitly document any exceptions.
+
+### Mandatory implementation rules
+
+- Authenticate protected requests on the server.
+- Authorize every protected API endpoint.
+- Check resource ownership on every relevant read and write.
+- Apply authorization to both frontend routes and backend APIs.
+- Default to denying access when permissions are missing or ambiguous.
+- Validate input schemas and resource identifiers.
+- Prevent insecure direct object reference (IDOR) vulnerabilities.
+- Prevent mass-assignment vulnerabilities by allowing only approved fields.
+- Prevent privilege escalation and role tampering.
+- Protect file uploads against unauthorized access and unsafe file types.
+- Keep secrets in environment variables or the application's secret-management mechanism.
+- Never expose private user, order, or administrative data through public API responses.
+- Use transactions or equivalent consistency controls for sensitive multi-step operations.
+
+Do not implement security by merely hiding menu items or redirecting users away from dashboards.
+
+---
+
+## 5. Guest Checkout and Account Linking
+
+Guest checkout is a core requirement and must continue working without forced registration.
+
+Implement or preserve the following behavior:
+
+1. Guest browses the catalog.
+2. Guest adds one or more books to the cart.
+3. Guest proceeds to checkout.
+4. Guest provides required contact and shipping details.
+5. Guest completes payment through the existing payment integration.
+6. Guest receives an order confirmation and an appropriate order reference.
+7. The order is saved and associated with a guest identity or secure guest-order mechanism.
+8. Guest can access the order through the supported confirmation or tracking mechanism without exposing private information.
+
+Security requirements:
+
+- Do not expose guest orders using predictable order IDs alone.
+- Use secure, unguessable order-access tokens or an equivalent verified ownership mechanism when guest order lookup is supported.
+- Avoid putting sensitive personal information in URLs.
+- Rate-limit order lookup and verification endpoints.
+- Do not reveal whether arbitrary email addresses have placed orders.
+- Do not expose payment credentials or sensitive payment-provider data.
+
+Offer account creation after checkout as an optional convenience.
+
+If a guest later registers or logs in, provide a safe way to associate eligible guest orders with the verified account. Validate ownership and avoid merging orders solely because a user enters someone else's email address.
+
+Preserve cart contents across authentication when feasible. Define how to merge guest and account carts without duplicating items or discarding quantities.
+
+If payment processing is not implemented, do not simulate successful real payments. Clearly separate development/test payment flows from production payment processing.
+
+---
+
+## 6. Route Protection and Navigation
+
+Audit all existing frontend routes and backend endpoints.
+
+Define and document:
+
+- Public routes.
+- Reader-only routes.
+- Author-only routes.
+- Admin-only routes.
+- Shared routes with resource-level permissions.
+- Authentication callback routes.
+- Password-reset and email-verification routes.
+
+Example route structure, adapted to the existing framework:
+
+- `/login`
+- `/register`
+- `/account`
+- `/account/orders`
+- `/account/wishlist`
+- `/author/apply`
+- `/author/dashboard`
+- `/author/books`
+- `/admin`
+- `/admin/users`
+- `/admin/books`
+- `/admin/orders`
+
+Do not blindly create duplicate pages if equivalent routes already exist.
+
+Expected behavior:
+
+- Guests can access all public pages.
+- Unauthenticated visitors requesting protected pages receive a clear login prompt or safe redirect.
+- Authenticated users without the required permission receive an appropriate access-denied response.
+- Successful login redirects users to the intended safe destination or their role-appropriate dashboard.
+- Suspended, disabled, or unverified accounts follow the configured access policy.
+- Logout clears the session and prevents reuse of invalidated credentials.
+- Direct API requests are subject to the same security rules as browser navigation.
+
+Use correct HTTP status codes for APIs, such as 401 for unauthenticated requests and 403 for authenticated users lacking permission, while avoiding information leakage.
+
+---
+
+## 7. Database and Data Integrity
+
+Inspect the current schema before introducing migrations.
+
+Implement the minimum necessary data structures for:
+
+- User identities.
+- User roles and permissions.
+- Account status and verification status.
+- Author applications and approval status.
+- Author profiles.
+- Book ownership and publication status.
+- Sessions or refresh-token records, if applicable.
+- Password-reset and verification-token records, or a secure equivalent.
+- Guest orders and order ownership.
+- Audit events.
+- Relevant account preferences.
+
+Use the existing database and migration framework.
+
+Requirements:
+
+- Enforce unique identity constraints.
+- Use foreign keys and suitable indexes.
+- Validate allowed account and publication states.
+- Add timestamps and appropriate ownership fields.
+- Avoid storing redundant authorization state that can become inconsistent.
+- Ensure role changes and approval workflows remain consistent under concurrent requests.
+- Do not delete order or audit history merely because an account is deactivated.
+- Provide reversible migrations where practical and safe.
+- Document any data migration and backup requirements.
+
+Never reset, truncate, or overwrite production data to make authentication work.
+
+---
+
+## 8. UI Requirements
+
+The authentication and role-specific dashboards must feel like part of the existing bookstore.
+
+Preserve the current branding, tortoise mascot, typography, animation language, and color system.
+
+Create:
+
+- Responsive login and registration forms.
+- Password visibility controls.
+- Loading states and disabled submission states.
+- Clear validation and server-error messages.
+- Empty states for orders, wishlists, drafts, and moderation queues.
+- Accessible dialogs and confirmation flows.
+- Role-aware navigation.
+- A profile and account menu.
+- Secure logout confirmation where appropriate.
+- A clear access-denied page.
+- Author approval and rejection status screens.
+- Admin management tables with search, filters, pagination, and confirmation dialogs.
+- Mobile-friendly author and admin dashboards.
+
+Do not display sensitive data in notifications, error messages, or browser logs.
+
+Animations must never block form submission, conceal errors, interfere with keyboard navigation, or delay essential shopping and checkout actions.
+
+Respect reduced-motion preferences.
+
+---
+
+## 9. Comprehensive Testing Strategy
+
+Thoroughly test the functionality using automated tests and browser-level end-to-end tests. Do not mark a feature complete merely because its page renders.
+
+Use the repository's existing test framework where practical. If the project lacks appropriate coverage, add suitable unit, API integration, security, and end-to-end testing tools.
+
+### A. Authentication tests
+
+Test:
+
+- Successful registration.
+- Successful login.
+- Invalid credentials.
+- Incorrect password.
+- Duplicate registration.
+- Invalid email and password formats.
+- Password visibility toggle.
+- Email verification.
+- Expired and reused verification tokens.
+- Password-reset request.
+- Invalid, expired, and reused reset tokens.
+- Password change.
+- Logout.
+- Expired sessions.
+- Revoked sessions.
+- Suspended and disabled accounts.
+- Login throttling and rate limiting.
+- Session fixation and session invalidation behavior.
+- Safe redirect validation.
+- Keyboard navigation and form accessibility.
+
+### B. Role-based authorization tests
+
+For each of the four roles, test every relevant protected route and API endpoint.
+
+**Guest**
+- Can browse the complete public catalog.
+- Can search, filter, view book details, and manage the cart.
+- Can complete the supported guest checkout flow.
+- Cannot retrieve private profiles or account history.
+- Cannot access author or administrator resources.
+
+**Reader**
+- Can access their own profile, orders, wishlist, and permitted reviews.
+- Cannot access another reader's private resources.
+- Cannot create or publish books through unauthorized APIs.
+- Cannot access administrative operations.
+
+**Author**
+- Can create and edit permitted drafts.
+- Can submit books for review.
+- Cannot edit another author's drafts.
+- Cannot publish without the required approval.
+- Cannot access private customer information.
+- Cannot approve their own author application.
+- Cannot assign themselves administrative permissions.
+
+**Admin**
+- Can perform explicitly authorized management operations.
+- Can approve and reject author applications.
+- Can moderate and manage catalog resources.
+- Can suspend and reactivate users according to policy.
+- Cannot bypass required validation or audit logging.
+- Cannot use public registration or untrusted client input to elevate privileges.
+
+Test unauthorized access through direct URL navigation, browser refresh, manually constructed API requests, modified resource IDs, and altered request bodies.
+
+### C. Guest checkout tests
+
+Test the complete workflow:
+
+1. Browse as a guest.
+2. Add multiple books to the cart.
+3. Update quantities and remove items.
+4. Continue to checkout without logging in.
+5. Validate contact and shipping information.
+6. Exercise successful and failed test-payment scenarios.
+7. Verify order creation and inventory consistency.
+8. Verify order confirmation.
+9. Verify secure guest order access.
+10. Log in or register after checkout and validate the eligible order-linking flow.
+11. Verify that guest and account carts merge correctly.
+12. Confirm that no duplicate orders or unintended charges are created by repeated submissions.
+
+Test abandoned checkout, expired payment sessions, invalid products, unavailable inventory, and network failures.
+
+### D. Security tests
+
+Include targeted tests for:
+
+- Broken access control.
+- IDOR and cross-account data access.
+- Privilege escalation.
+- Role tampering.
+- SQL injection where relevant.
+- Cross-site scripting (XSS).
+- CSRF where applicable.
+- Brute-force login attempts.
+- Password-reset abuse.
+- Session replay and logout invalidation.
+- Unsafe redirects.
+- Mass assignment.
+- Unauthorized file uploads.
+- Sensitive-data exposure.
+- Rate-limit bypass.
+- Insecure error responses.
+- Audit-log integrity and sensitive-data leakage.
+
+Use controlled test accounts and synthetic data. Never run destructive security tests against production.
+
+### E. Browser end-to-end tests
+
+Use Playwright or the existing equivalent to test the actual UI.
+
+Create separate browser contexts for guest, reader, author, and admin accounts.
+
+Verify:
+
+- Correct menus and dashboards for each role.
+- Correct login and logout transitions.
+- Correct access-denied behavior.
+- Responsive layouts on desktop and mobile.
+- Validation messages and loading states.
+- Cart and checkout continuity.
+- Book publishing and moderation workflows.
+- Persistence after page refresh.
+- Browser back/forward navigation.
+- No unauthorized access through direct navigation.
+- No uncaught frontend errors or failed required network requests.
+
+Run tests against an isolated test database and test configuration.
+
+---
+
+## 10. Test Matrix and Acceptance Criteria
+
+Create a role-by-feature test matrix with the following statuses:
+
+- PASS
+- FAIL
+- BLOCKED
+- NOT IMPLEMENTED
+- NOT APPLICABLE
+
+Each test must include:
+
+- Test ID.
+- Role.
+- Feature.
+- Preconditions.
+- Test steps.
+- Expected result.
+- Actual result.
+- Pass/fail status.
+- Evidence or relevant logs.
+- Defect reference, if applicable.
+
+Release acceptance criteria:
+
+1. Guest browsing and guest checkout remain functional.
+2. All four access levels have the intended permissions.
+3. Protected APIs enforce server-side authorization.
+4. Cross-user resource access is blocked.
+5. Author approval and publishing restrictions work correctly.
+6. Administrative permissions cannot be obtained through public registration or client-side manipulation.
+7. Login, logout, email verification, and password reset behave correctly.
+8. Relevant automated tests pass.
+9. Security tests have no unresolved critical or high-severity findings.
+10. Existing bookstore functionality remains intact.
+11. No secrets or sensitive personal data are exposed.
+12. Database migrations and deployment configuration are documented.
+13. All known failures and unimplemented requirements are explicitly reported.
+
+Do not claim 100% coverage or successful testing unless the results substantiate that claim.
+
+---
+
+## 11. Implementation Workflow
+
+Execute the work in these phases.
+
+**Phase 1 — Repository audit**
+- Identify the frontend, backend, database, framework, existing authentication, and current test infrastructure.
+- Inventory existing routes, APIs, data models, and shopping workflows.
+- Document existing functionality and potential regression risks.
+- Produce an implementation plan before making significant changes.
+
+**Phase 2 — Architecture and data model**
+- Define roles, permissions, resource ownership rules, and account states.
+- Design the minimal schema changes and migration plan.
+- Decide how guest checkout and order linking will work.
+- Document authentication and session handling.
+
+**Phase 3 — Backend implementation**
+- Implement or integrate secure authentication.
+- Implement centralized authorization middleware or equivalent policies.
+- Protect APIs and enforce resource ownership.
+- Implement author approval and admin provisioning workflows.
+- Add validation, rate limits, and audit logging.
+
+**Phase 4 — Frontend implementation**
+- Implement login, registration, and account recovery.
+- Implement role-aware navigation and protected routes.
+- Implement reader, author, and admin interfaces.
+- Preserve guest browsing and checkout.
+- Apply the existing design system and responsive behavior.
+
+**Phase 5 — Automated testing**
+- Add unit and integration tests.
+- Add role-permission and cross-account access tests.
+- Add guest checkout tests.
+- Add Playwright end-to-end scenarios.
+- Add regression tests for existing features.
+
+**Phase 6 — Security and regression verification**
+- Execute the full test suite.
+- Review authorization bypass attempts.
+- Verify database migrations and session invalidation.
+- Check accessibility, responsiveness, and browser errors.
+- Fix failures and rerun affected tests.
+
+**Phase 7 — Delivery**
+Provide a final implementation report containing:
+- Features implemented.
+- Architecture and files changed.
+- Database migrations.
+- Environment variables required, with example placeholders only.
+- Commands to install, configure, migrate, run, and test.
+- Test results and coverage summary.
+- Known limitations and unresolved defects.
+- Deployment and rollback instructions.
+- Recommended next steps.
+
+---
+
+## 12. Engineering Constraints
+
+- Inspect the codebase before selecting libraries or changing architecture.
+- Reuse existing components, services, database models, and design tokens wherever possible.
+- Do not replace working features with mockups or placeholder pages.
+- Do not hardcode credentials, API keys, secrets, or privileged accounts.
+- Do not grant permissions based on frontend state.
+- Do not weaken existing security to make a test pass.
+- Do not remove existing content or redesign unrelated pages.
+- Do not introduce unnecessary dependencies or duplicate authentication systems.
+- Do not use production data in automated tests.
+- Do not simulate a successful implementation when the underlying functionality is absent.
+- Keep changes modular, documented, maintainable, and testable.
+- If a required external service is unavailable, document the dependency and provide a safe local testing alternative.
+
+## Final instruction
+
+Begin by auditing the existing repository and producing a concise implementation plan with the current stack, existing capabilities, gaps, and proposed changes.
+
+Then implement the feature end to end, run the tests, fix the defects you find, and provide the evidence-based final report.
+
+Prioritize correct permissions, guest shopping continuity, account security, and regression prevention over visual polish. The result must be a working, tested authentication and authorization system integrated into the existing bookstore—not merely a set of attractive login pages.
