@@ -786,39 +786,41 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
       className={
         variant === 'home'
           ? 'py-16 sm:py-24 bg-[#F7F3E8]/85 border-b border-[#E6E1D6] relative overflow-hidden'
-          : 'py-8 sm:py-10 relative'
+          : 'py-12 sm:py-16 relative'
       }
     >
       <div className={variant === 'home' ? 'max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12' : ''}>
-        {/* Section Header Bar — Scroll Reveal */}
+        {/* Editorial Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.25 }}
-          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8 border-b border-[#E6E1D6]"
         >
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-sm bg-[#243B8A]/8 border border-[#243B8A]/20 mb-3">
+          <div className="max-w-3xl space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-[#243B8A]/10 border border-[#243B8A]/20">
               <span className="w-2 h-2 rounded-full bg-[#EF6855]" />
-              <span className="text-xs font-bold tracking-wider uppercase text-[#243B8A]">
+              <span className="text-xs font-semibold tracking-wider uppercase text-[#243B8A]">
                 {lang === 'mr'
-                  ? 'अकथ प्रकाशन कार्यपद्धती • संहिता ते मुद्रित ग्रंथ'
-                  : 'Akath Publishing Craft • Manuscript to Bound Edition'}
+                  ? 'अकथ संपादकीय आणि मुद्रण कार्यपद्धती • संहिता ते ग्रंथ'
+                  : 'Akath Editorial & Bookmaking Architecture • Manuscript to Bound Edition'}
               </span>
             </div>
+
             <h2
               id={`six-editorial-stages-heading-${variant}`}
-              className="type-page-heading text-[#252832]"
+              className="text-2xl sm:text-4xl font-serif font-bold text-[#252832] leading-tight"
             >
               {lang === 'mr'
                 ? 'हस्तलिखितापासून मुद्रित पुस्तकापर्यंतचे सहा संपादकीय टप्पे'
                 : 'Six Editorial Stages from Manuscript to Printed Book'}
             </h2>
-            <p className="mt-2.5 text-sm sm:text-base text-[#525665] leading-relaxed max-w-2xl">
+
+            <p className="text-sm sm:text-base text-[#525665] leading-relaxed">
               {lang === 'mr'
-                ? 'अकथ प्रकाशनमध्ये कोणतेही पुस्तक घाईघाईने छापले जात नाही. प्रत्येक हस्तलिखितावर खालील सहा प्रमाणित संपादकीय व मुद्रण संस्कार केले जातात.'
-                : 'At Akath Prakashan, no book is rushed to press. Every accepted manuscript undergoes six rigorous editorial, typographic, and archival production stages.'}
+                ? 'एक चांगले पुस्तक घाईत घडत नाही. लेखकाच्या मूळ हस्तलिखितापासून वाचकाच्या हातात पडणाऱ्या संग्रहणीय प्रतीपर्यंत आम्ही प्रत्येक टप्प्यावर शांतपणे आणि काटेकोरपणे काम करतो.'
+                : 'An enduring book is never rushed. From the raw manuscript to the thread-sewn edition in a reader’s hands, every Akath title moves through six deliberate stages of editorial and typographic craft.'}
             </p>
           </div>
 
@@ -838,12 +840,16 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
               {isAutoPlaying ? (
                 <>
                   <Pause className="w-3.5 h-3.5 text-[#FFD966]" />
-                  <span>{lang === 'mr' ? 'स्वयं-प्रवास सुरू' : 'Auto-Tour Active'}</span>
+                  <span>
+                    {lang === 'mr' ? 'स्वयं-प्रवास सुरू' : 'Auto-Tour Active'}
+                  </span>
                 </>
               ) : (
                 <>
                   <Play className="w-3.5 h-3.5 text-[#243B8A]" />
-                  <span>{lang === 'mr' ? 'क्रमवार पहा' : 'Play Stage Tour'}</span>
+                  <span>
+                    {lang === 'mr' ? 'क्रमवार पहा' : 'Play Stage Tour'}
+                  </span>
                 </>
               )}
             </button>
@@ -872,9 +878,9 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
           </div>
         </motion.div>
 
-        {/* Unified Archival Bookmaking Folio: Left 6-Stage Spine Ledger + Right Open Bookplate Theatre */}
-        <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
-          {/* Left 5 Columns: Sequential 6-Stage Spine Index (No duplicate boxes below) */}
+        {/* Unified Archival Bookmaking Folio: Left 6-Stage Spine Index + Right Open Bookplate Theatre */}
+        <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
+          {/* Left 5 Columns: 6-Stage Vertical Literary Spine Index */}
           <motion.div
             data-testid="editorial-stages-spine-index"
             variants={stepperContainerVariants}
@@ -895,13 +901,13 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
                   onClick={() => handleSelectStage(idx)}
                   className={`akath-seq-step group relative text-left p-4 rounded-sm border transition-all cursor-pointer overflow-hidden ${
                     isCurrent
-                      ? 'bg-[#FFFDF7] border-[#243B8A] shadow-md'
+                      ? 'bg-[#FFFDF7] border-[#243B8A] shadow-sm'
                       : isCompleted
                       ? 'bg-[#FFFDF7]/90 border-[#174D3A]/35 hover:border-[#243B8A]'
                       : 'bg-[#FFFDF7]/65 border-[#E6E1D6] hover:bg-[#FFFDF7] hover:border-[#243B8A]/45'
                   }`}
                 >
-                  {/* Fluid Animated Active Spine Indicator */}
+                  {/* Active Spine Indicator Bar */}
                   {isCurrent && (
                     <motion.div
                       layoutId="akath-stage-active-spine"
@@ -910,22 +916,22 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
                     />
                   )}
 
-                  <div className="flex items-center justify-between gap-3 pl-1">
+                  <div className="flex items-center justify-between gap-3 pl-1.5">
                     <div className="flex items-center gap-3.5 min-w-0">
                       <div
                         className={`w-11 h-11 rounded-sm shrink-0 flex items-center justify-center border transition-colors ${
                           isCurrent
                             ? 'bg-[#FFD966]/35 border-[#243B8A]'
-                            : 'bg-[#F7F3E8] border-[#E6E1D6] group-hover:border-[#243B8A]/40'
+                            : 'bg-[#F7F3E8] border-[#E6E1D6] group-hover:border-[#243B8A]/35'
                         }`}
                       >
                         <StageMiniIcon stepIndex={idx} isActive={isCurrent} />
                       </div>
 
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
+                        <div className="flex items-center gap-2">
                           <span
-                            className={`font-mono text-[11px] font-bold px-2 py-0.5 rounded-sm ${
+                            className={`font-mono text-[11px] font-bold px-1.5 py-0.5 rounded-sm ${
                               isCurrent
                                 ? 'bg-[#243B8A] text-[#FFD966]'
                                 : isCompleted
@@ -933,14 +939,15 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
                                 : 'bg-[#F7F3E8] text-[#525665]'
                             }`}
                           >
-                            {stage.step}
+                            {stage.step} · {stage.roman}
                           </span>
                           <span className="text-[11px] font-mono font-semibold text-[#174D3A] truncate">
                             {lang === 'mr' ? stage.pillarMr : stage.pillarEn}
                           </span>
                         </div>
+
                         <p
-                          className={`text-sm sm:text-base font-serif font-bold truncate ${
+                          className={`mt-1 text-sm sm:text-base font-serif font-bold truncate ${
                             isCurrent ? 'text-[#243B8A]' : 'text-[#252832]'
                           }`}
                         >
@@ -953,7 +960,7 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
                       className={`w-4 h-4 shrink-0 transition-transform ${
                         isCurrent
                           ? 'text-[#EF6855] translate-x-0.5'
-                          : 'text-[#525665]/60 group-hover:text-[#243B8A] group-hover:translate-x-0.5'
+                          : 'text-[#525665]/50 group-hover:text-[#243B8A] group-hover:translate-x-0.5'
                       }`}
                     />
                   </div>
@@ -965,11 +972,11 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
           {/* Right 7 Columns: Open Archival Bookplate Stage Theatre */}
           <motion.div
             data-testid="editorial-stage-spotlight"
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.15 }}
-            transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-7 rounded-sm bg-[#FFFDF7] border border-[#243B8A]/25 shadow-sm overflow-hidden flex flex-col justify-between"
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="lg:col-span-7 rounded-sm bg-[#FFFDF7] border border-[#243B8A]/25 shadow-xs overflow-hidden flex flex-col justify-between"
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -983,12 +990,13 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
                 {/* Top Blueprint Illustration Deck */}
                 <div className="bg-[#F7F3E8]/80 border-b border-[#E6E1D6] p-6 sm:p-8 relative sarvam-grid-lines">
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-[#FFFDF7] border border-[#E6E1D6] font-mono text-[11px] font-semibold text-[#243B8A]">
-                      <Sparkles className="w-3 h-3 text-[#EF6855]" />
-                      {activeStage.specCode} • FOLIO {activeStage.roman}
-                    </span>
-                    <span className="text-xs font-mono font-bold text-[#174D3A] bg-[#FFD966]/45 px-2.5 py-1 rounded-sm">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-[#FFFDF7] border border-[#E6E1D6] font-mono text-xs font-semibold text-[#243B8A]">
+                      <Sparkles className="w-3.5 h-3.5 text-[#EF6855]" />
                       {lang === 'mr' ? activeStage.phaseMr : activeStage.phaseEn}
+                    </span>
+
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-[#FFD966]/45 border border-[#243B8A]/20 font-mono text-xs font-bold text-[#252832]">
+                      <span>FOLIO SPEC: {activeStage.specCode}</span>
                     </span>
                   </div>
 
@@ -998,25 +1006,24 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
                 </div>
 
                 {/* Bottom Editorial Specification & Checkpoints */}
-                <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between bg-[#FFFDF7]">
-                  <div>
-                    <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-                      <span className="px-2.5 py-0.5 rounded-sm bg-[#243B8A] text-[#FFD966] font-mono text-xs font-bold">
-                        {lang === 'mr' ? `टप्पा ${activeStage.step}` : `STAGE ${activeStage.step}`}
-                      </span>
-                      <span className="text-xs font-serif font-semibold text-[#174D3A]">
-                        {lang === 'mr' ? activeStage.pillarMr : activeStage.pillarEn}
-                      </span>
+                <div className="p-6 sm:p-8 space-y-6 flex-1 flex flex-col justify-between bg-[#FFFDF7]">
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <span className="px-2.5 py-1 rounded-sm bg-[#243B8A] text-[#FFD966] font-mono text-xs font-bold">
+                          {lang === 'mr' ? `टप्पा ${activeStage.step}` : `STAGE ${activeStage.step}`}
+                        </span>
+                        <span className="text-xs font-mono uppercase tracking-wider text-[#174D3A] font-semibold">
+                          {lang === 'mr' ? activeStage.pillarMr : activeStage.pillarEn}
+                        </span>
+                      </div>
                     </div>
 
-                    <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#252832] leading-snug">
+                    <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#252832]">
                       {lang === 'mr' ? activeStage.titleMr : activeStage.titleEn}
                     </h3>
-                    <p className="text-xs font-mono uppercase tracking-wider text-[#525665] mt-1">
-                      {lang === 'mr' ? activeStage.titleEn : activeStage.titleMr}
-                    </p>
 
-                    <p className="mt-4 text-base text-[#252832] leading-relaxed">
+                    <p className="text-sm sm:text-base text-[#252832] leading-relaxed">
                       {lang === 'mr' ? activeStage.descMr : activeStage.descEn}
                     </p>
 
@@ -1025,14 +1032,14 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
                       variants={gridContainerVariants}
                       initial="hidden"
                       animate="visible"
-                      className="mt-6 pt-5 border-t border-[#E6E1D6]"
+                      className="pt-3 border-t border-[#E6E1D6] space-y-2.5"
                     >
-                      <p className="text-xs font-bold uppercase tracking-wider text-[#243B8A] mb-3">
+                      <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#243B8A]">
                         {lang === 'mr'
-                          ? 'संपादकीय व मुद्रण गुणवत्ता निकष'
-                          : 'Editorial & Production Quality Standards'}
+                          ? 'संपादकीय गुणवत्ता निकष'
+                          : 'Editorial Quality Checkpoints'}
                       </p>
-                      <ul className="space-y-2.5">
+                      <ul className="space-y-2">
                         {(lang === 'mr'
                           ? activeStage.checkpointsMr
                           : activeStage.checkpointsEn
@@ -1040,9 +1047,9 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
                           <motion.li
                             key={i}
                             variants={stepperNodeVariants}
-                            className="flex items-start gap-2.5 text-sm text-[#252832] leading-relaxed"
+                            className="flex items-start gap-2.5 text-xs sm:text-sm text-[#252832] leading-relaxed"
                           >
-                            <CheckCircle2 className="w-4 h-4 text-[#174D3A] shrink-0 mt-1" />
+                            <CheckCircle2 className="w-4 h-4 text-[#174D3A] shrink-0 mt-0.5" />
                             <span>{point}</span>
                           </motion.li>
                         ))}
@@ -1050,38 +1057,40 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
                     </motion.div>
                   </div>
 
-                  {/* Stage Footer Deliverable & Publishing Actions */}
-                  <div className="mt-8 pt-5 border-t border-[#E6E1D6] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  {/* Stage Deliverable & Navigation Bar */}
+                  <div className="pt-5 border-t border-[#E6E1D6] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <span className="block text-[11px] uppercase tracking-wider text-[#525665]">
-                        {lang === 'mr' ? 'प्रमाणित निष्पत्ती' : 'Stage Deliverable'}
+                      <span className="block text-[11px] font-mono uppercase tracking-wider text-[#525665]">
+                        {lang === 'mr' ? 'या टप्प्याची निष्पत्ती' : 'Stage Deliverable'}
                       </span>
-                      <span className="text-sm font-serif font-semibold text-[#243B8A]">
-                        {lang === 'mr' ? activeStage.deliverableMr : activeStage.deliverableEn}
+                      <span className="text-xs sm:text-sm font-serif font-semibold text-[#243B8A]">
+                        {lang === 'mr'
+                          ? activeStage.deliverableMr
+                          : activeStage.deliverableEn}
                       </span>
                     </div>
 
                     {onNavigate && (
-                      <div className="flex flex-wrap items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-2.5">
                         <button
                           type="button"
                           onClick={() => onNavigate('/submit-manuscript')}
-                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-sm bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] text-xs font-semibold transition-colors cursor-pointer"
                         >
-                          <FileText className="w-4 h-4" />
+                          <FileText className="w-3.5 h-3.5" />
                           <span>
-                            {lang === 'mr' ? 'संहिता पाठवा' : 'Submit a Manuscript'}
+                            {lang === 'mr' ? 'संहिता पाठवा' : 'Submit Manuscript'}
                           </span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                         <button
                           type="button"
                           onClick={() => onNavigate('/books')}
-                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-sm bg-[#FFFDF7] hover:bg-[#F7F3E8] text-[#243B8A] border border-[#243B8A]/30 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-sm bg-[#FFFDF7] hover:bg-[#F7F3E8] text-[#243B8A] border border-[#243B8A]/30 text-xs font-semibold transition-colors cursor-pointer"
                         >
-                          <BookOpen className="w-4 h-4" />
+                          <BookOpen className="w-3.5 h-3.5" />
                           <span>
-                            {lang === 'mr' ? 'प्रकाशित ग्रंथ पहा' : 'Inspect Published Books'}
+                            {lang === 'mr' ? 'प्रकाशित ग्रंथ पहा' : 'Published Books'}
                           </span>
                         </button>
                       </div>
