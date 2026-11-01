@@ -969,9 +969,13 @@ async function runTests() {
       'Every story ends somewhere. Ours continues, one curious reader at a time.'
     )
   );
-  assert.ok(footerSource.includes('Thoughtfully built by विश्वजीत.'));
+  assert.ok(footerSource.includes('built by Mivishvajeet'));
   assert.ok(footerSource.includes('साकारले — विश्वजीत'));
   assert.ok(!footerSource.includes('Thoughtfully built by [Your Name].'));
+  assert.ok(
+    footerSource.includes('data-testid="footer-animated-book-constellation"')
+  );
+  assert.ok(footerSource.includes('data-testid="footer-live-datetime"'));
   assert.ok(footerSource.includes('data-testid="footer-tortoise-mascot"'));
   assert.ok(footerSource.includes('new Date().getFullYear()'));
   for (const requiredHref of [
@@ -998,9 +1002,11 @@ async function runTests() {
   }
   assert.ok(cssSource.includes('last-page-tortoise-walk-in'));
   assert.ok(cssSource.includes('last-page-creator-credit'));
+  assert.ok(cssSource.includes('akath-footer-wing-left'));
+  assert.ok(cssSource.includes('akath-footer-wing-right'));
   assert.ok(cssSource.includes('prefers-reduced-motion: reduce'));
   console.log(
-    '  [PASS] UI-05: "The Last Page" Editorial Footer verified (Bilingual Creator credit "Thoughtfully built by विश्वजीत." / "साकारले — विश्वजीत", Tortoise viewport-entry peek, semantic <nav>/<address>/<a> links, dynamic copyright year, and reduced-motion compliance)'
+    '  [PASS] UI-05: "The Last Page" Editorial Footer verified ("built by Mivishvajeet", animated Open Book & Starlight Constellation, live IST Date/Time stamp, Tortoise viewport-entry peek, semantic <nav>/<address>/<a> links, dynamic copyright year, and reduced-motion compliance)'
   );
 
   // Verify WalkingTortoise in AboutAkathView after “वाचत राहू. विचारत राहू. लिहित राहू.”
@@ -1030,6 +1036,63 @@ async function runTests() {
   );
   console.log(
     '  [PASS] UI-06: WalkingTortoise About Section Closing Animation verified (placed after “वाचत राहू. विचारत राहू. लिहित राहू.”, inline SVG + CSS keyframes, reduced-motion static fallback)'
+  );
+
+  // Verify SixEditorialStages component, HomeView layout, and redesigned AboutAkathView
+  const sixStagesSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/components/SixEditorialStages.tsx'),
+    'utf-8'
+  );
+  const homeViewSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/views/HomeView.tsx'),
+    'utf-8'
+  );
+  assert.ok(sixStagesSource.includes('data-testid="editorial-stages-autoplay-toggle"'));
+  assert.ok(sixStagesSource.includes('data-testid="editorial-stage-spotlight"'));
+  assert.ok(sixStagesSource.includes('data-testid="editorial-stages-spine-index"'));
+  assert.ok(!sixStagesSource.includes('data-testid="editorial-stages-grid"'));
+  assert.ok(!/weeks|आठवडे/i.test(sixStagesSource));
+  assert.ok(sixStagesSource.includes('stepperContainerVariants'));
+  assert.ok(sixStagesSource.includes('akath-seq-step'));
+  assert.ok(sixStagesSource.includes('akath-stage-loupe'));
+  assert.ok(sixStagesSource.includes('akath-stage-caliper'));
+  assert.ok(sixStagesSource.includes('akath-stage-book'));
+  assert.ok(homeViewSource.includes('data-testid="home-publishing-hero"'));
+  assert.ok(!homeViewSource.includes('Four Production Pillars of Every Akath Edition'));
+  assert.ok(!homeViewSource.includes('data-testid="home-publishing-standards"'));
+  assert.ok(!homeViewSource.includes('data-testid="home-section-gateway"'));
+  assert.ok(!homeViewSource.includes('80 GSM'));
+  assert.ok(!homeViewSource.includes('Acid-Free Bookpaper'));
+  assert.ok(homeViewSource.includes('data-testid="home-manuscript-desk"'));
+  assert.ok(homeViewSource.includes('<SixEditorialStages variant="home"'));
+  assert.ok(homeViewSource.includes('data-testid="home-published-books"'));
+  assert.ok(
+    homeViewSource.indexOf('data-testid="home-manuscript-desk"') <
+      homeViewSource.indexOf('<SixEditorialStages variant="home"'),
+    'Open Editorial Desk must appear ABOVE Six Editorial Stages on HomeView'
+  );
+  assert.ok(!publishingViewsSource.includes('<SixEditorialStages'));
+  assert.ok(publishingViewsSource.includes('data-testid="about-archival-dateline"'));
+  assert.ok(publishingViewsSource.includes('data-testid="about-live-date"'));
+  assert.ok(publishingViewsSource.includes('data-testid="about-live-time"'));
+  assert.ok(publishingViewsSource.includes('aboutSectionSequentialVariants'));
+  assert.ok(
+    publishingViewsSource.includes('काही पुस्तकं वाचून संपतात. काही आपल्यासोबत राहतात.')
+  );
+  assert.ok(
+    publishingViewsSource.includes('Some books end at the last page. Others stay with us.')
+  );
+  assert.ok(publishingViewsSource.includes('The language we live in'));
+  assert.ok(publishingViewsSource.includes('Books take more than words'));
+  assert.ok(publishingViewsSource.includes('A book is only the beginning'));
+  assert.ok(publishingViewsSource.includes('Why the tortoise?'));
+  assert.ok(
+    publishingViewsSource.includes(
+      'Akath Prakashan is our attempt to do just that — one manuscript, one book, one reader at a time.'
+    )
+  );
+  console.log(
+    '  [PASS] UI-07: Unified 2-Column SixEditorialStages Folio (zero extra boxes, zero weeks), Open Editorial Desk placed above, Four Pillars & Hero 3-metric boxes removed, and redesigned About Monograph with live IST Date/Time verified'
   );
 
   // Verify No-Code Admin CMS Endpoints (Create Book, Export CSV, Publish Article, Update Site Config, Create Promotion)
@@ -1080,7 +1143,7 @@ async function runTests() {
 
   console.log('\n================================================================');
   console.log(
-    'ALL 72 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 7 UI/CMS) PASSED!'
+    'ALL 73 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 8 UI/CMS) PASSED!'
   );
   console.log('================================================================');
 }

@@ -10,6 +10,7 @@ import {
   Phone,
   BookOpen,
   Feather,
+  Clock,
 } from 'lucide-react';
 import {
   HorizonArchIllustration,
@@ -40,11 +41,41 @@ export const Footer: React.FC<FooterProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [hasEnteredView, setHasEnteredView] = useState(false);
+  const [now, setNow] = useState<Date>(() => new Date());
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const footerRef = useRef<HTMLElement>(null);
 
   const currentYear = new Date().getFullYear();
+
+  // Live ticking IST clock for the Colophon folio header
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const colophonDateTime = (() => {
+    try {
+      const dateStr = new Intl.DateTimeFormat(lang === 'mr' ? 'mr-IN' : 'en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'Asia/Kolkata',
+      }).format(now);
+      const timeStr = new Intl.DateTimeFormat(lang === 'mr' ? 'mr-IN' : 'en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata',
+      }).format(now);
+      return `${dateStr} • ${timeStr} IST`;
+    } catch {
+      return now.toLocaleTimeString();
+    }
+  })();
 
   // Trigger a one-time, restrained entrance animation when the footer enters the viewport
   useEffect(() => {
@@ -192,7 +223,7 @@ export const Footer: React.FC<FooterProps> = ({
             SECTION I: "THE LAST PAGE" — RUNNING BOOK HEADER & EPILOGUE FOLIO
             ===================================================================== */}
         <div className="pb-12 sm:pb-14 border-b border-[#FFFDF7]/15">
-          {/* Running Book Header / Folio Bar */}
+          {/* Running Book Header / Folio Bar with Live IST Date & Time */}
           <div className="flex flex-wrap items-center justify-between gap-3 pb-8 border-b border-[#FFFDF7]/12 text-[11.5px] font-mono uppercase tracking-[0.14em] text-[#FFD966]/90">
             <span className="inline-flex items-center gap-2">
               <BookOpen className="w-3.5 h-3.5 text-[#FFD966]" aria-hidden="true" />
@@ -202,15 +233,126 @@ export const Footer: React.FC<FooterProps> = ({
                   : 'THE LAST PAGE · शेवटचे पान — COLOPHON & ENDPAPER'}
               </span>
             </span>
-            <span className="tabular-nums text-[#FFFDF7]/75">
-              {lang === 'mr'
-                ? 'पृष्ठ क्र. ∞ · अकथ ग्रंथमाला'
-                : 'FOLIO № ∞ · AKATH LITERARY EDITIONS'}
-            </span>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <span
+                data-testid="footer-live-datetime"
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-sm bg-[#1B2D6B]/90 border border-[#FFD966]/25 text-[#FFD966] tabular-nums"
+              >
+                <Clock className="w-3 h-3 text-[#FFD966]" aria-hidden="true" />
+                <span>{colophonDateTime}</span>
+              </span>
+              <span className="tabular-nums text-[#FFFDF7]/75 hidden sm:inline">
+                {lang === 'mr'
+                  ? 'पृष्ठ क्र. ∞ · अकथ ग्रंथमाला'
+                  : 'FOLIO № ∞ · AKATH LITERARY EDITIONS'}
+              </span>
+            </div>
           </div>
 
-          {/* Centerpiece Epilogue Quote & Peeking Tortoise Mascot */}
+          {/* Centerpiece Epilogue Quote, Animated Book-Starlight Emblem & Peeking Tortoise Mascot */}
           <div className="pt-10 sm:pt-12 max-w-4xl mx-auto text-center space-y-6">
+            {/* Animated Open Book & Floating Golden Ink Starlight Vignette */}
+            <div
+              data-testid="footer-animated-book-constellation"
+              aria-hidden="true"
+              className="flex justify-center"
+            >
+              <svg
+                viewBox="0 0 240 84"
+                className="w-48 sm:w-56 h-auto overflow-visible"
+              >
+                {/* Subtle golden horizon arc */}
+                <path
+                  d="M28 66 Q120 46 212 66"
+                  stroke="#FFD966"
+                  strokeOpacity="0.32"
+                  strokeWidth="1.2"
+                  strokeDasharray="3 4"
+                  fill="none"
+                />
+
+                {/* Floating golden ink motes */}
+                <circle
+                  cx="66"
+                  cy="44"
+                  r="2.4"
+                  fill="#FFD966"
+                  className="akath-footer-mote-a"
+                />
+                <circle
+                  cx="120"
+                  cy="28"
+                  r="3"
+                  fill="#EF6855"
+                  className="akath-footer-mote-b"
+                />
+                <circle
+                  cx="174"
+                  cy="42"
+                  r="2.2"
+                  fill="#FFD966"
+                  className="akath-footer-mote-c"
+                />
+
+                {/* Central pulsing literary star */}
+                <g className="akath-footer-star">
+                  <path
+                    d="M120 10 L122.5 18.5 L131 21 L122.5 23.5 L120 32 L117.5 23.5 L109 21 L117.5 18.5 Z"
+                    fill="#FFD966"
+                  />
+                </g>
+
+                {/* Left fluttering open book wing */}
+                <g className="akath-footer-wing-left">
+                  <path
+                    d="M120 62 C102 52 78 50 58 56 L62 40 C82 34 104 38 120 48 Z"
+                    fill="#FFFDF7"
+                    fillOpacity="0.92"
+                    stroke="#FFD966"
+                    strokeWidth="1.4"
+                  />
+                  <path
+                    d="M72 46 Q94 42 112 50"
+                    stroke="#243B8A"
+                    strokeWidth="1.1"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                </g>
+
+                {/* Right fluttering open book wing */}
+                <g className="akath-footer-wing-right">
+                  <path
+                    d="M120 62 C138 52 162 50 182 56 L178 40 C158 34 136 38 120 48 Z"
+                    fill="#FFFDF7"
+                    fillOpacity="0.92"
+                    stroke="#FFD966"
+                    strokeWidth="1.4"
+                  />
+                  <path
+                    d="M168 46 Q146 42 128 50"
+                    stroke="#243B8A"
+                    strokeWidth="1.1"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                </g>
+
+                {/* Book spine & bookmark tassel */}
+                <line
+                  x1="120"
+                  y1="46"
+                  x2="120"
+                  y2="65"
+                  stroke="#EF6855"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                />
+                <circle cx="120" cy="67" r="2.5" fill="#FFD966" />
+              </svg>
+            </div>
+
             <blockquote
               data-testid="footer-closing-line"
               className={`last-page-closing-quote ${
@@ -258,7 +400,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <AnimatedTortoiseEmblem
                   className="w-9 h-9 shrink-0"
                   variant="light"
-                  animate={false}
+                  animate={true}
                   hideAndSeekOnHover={true}
                 />
 
@@ -658,7 +800,7 @@ export const Footer: React.FC<FooterProps> = ({
             </p>
           </div>
 
-          {/* Creator Credit with Gentle Hover Interaction (No external/profile link, no invented surname) */}
+          {/* Creator Credit with Gentle Hover Interaction */}
           <p className="text-[13px] text-[#FFFDF7]/90">
             <span
               data-testid="footer-creator-credit"
@@ -671,8 +813,8 @@ export const Footer: React.FC<FooterProps> = ({
               />
               <span>
                 {lang === 'mr'
-                  ? 'साकारले — विश्वजीत'
-                  : 'Thoughtfully built by विश्वजीत.'}
+                  ? 'built by Mivishvajeet · साकारले — विश्वजीत'
+                  : 'built by Mivishvajeet'}
               </span>
             </span>
           </p>

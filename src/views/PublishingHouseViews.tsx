@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   AuthorRecord,
@@ -21,6 +21,12 @@ import {
   AlertCircle,
   CheckCircle2,
   Upload,
+  Clock,
+  Calendar,
+  MapPin,
+  BookOpen,
+  Feather,
+  Compass,
 } from 'lucide-react';
 
 // ============================================================================
@@ -257,210 +263,770 @@ export const AuthorDetailView: React.FC<AuthorDetailViewProps> = ({
 };
 
 // ============================================================================
-// 3. ABOUT AKATH PRAKASHAN VIEW (/about) — WITH ANIMATED TORTOISE & 6-STEP CRAFT
+// 3. ABOUT AKATH PRAKASHAN VIEW (/about) — ARCHIVAL BROADSHEET MONOGRAPH,
+//    LIVE THEMATIC DATE & TIME MASTHEAD, SEQUENTIAL SCROLL REVEAL &
+//    WALKING TORTOISE COLOPHON (NO 6-STEPS DUPLICATION)
 // ============================================================================
 
 interface AboutAkathViewProps {
   onNavigate: (path: string) => void;
 }
 
+const aboutSectionSequentialVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const aboutItemSequentialVariants = {
+  hidden: { opacity: 0, y: 18 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.52,
+      ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+    },
+  },
+};
+
 export const AboutAkathView: React.FC<AboutAkathViewProps> = ({ onNavigate }) => {
   const { lang, t } = useLanguage();
+  const [now, setNow] = useState<Date>(() => new Date());
+
+  // Live ticking editorial clock (updates every second)
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  // Format current Date & Time in Indian Standard Time (Asia/Kolkata) per theme
+  const formattedDate = (() => {
+    try {
+      return new Intl.DateTimeFormat(lang === 'mr' ? 'mr-IN' : 'en-IN', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'Asia/Kolkata',
+      }).format(now);
+    } catch {
+      return now.toLocaleDateString();
+    }
+  })();
+
+  const formattedTime = (() => {
+    try {
+      return new Intl.DateTimeFormat(lang === 'mr' ? 'mr-IN' : 'en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata',
+      }).format(now);
+    } catch {
+      return now.toLocaleTimeString();
+    }
+  })();
+
+  // Determine thematic literary hour ("वाचन प्रहर" / "Reading Watch") in IST
+  const istHour = (() => {
+    try {
+      const hourStr = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        hour12: false,
+        timeZone: 'Asia/Kolkata',
+      }).format(now);
+      return parseInt(hourStr, 10) || now.getHours();
+    } catch {
+      return now.getHours();
+    }
+  })();
+
+  const literaryWatchLabel =
+    istHour >= 5 && istHour < 12
+      ? lang === 'mr'
+        ? 'प्रभात वाचन प्रहर'
+        : 'Morning Reading Watch'
+      : istHour >= 12 && istHour < 17
+      ? lang === 'mr'
+        ? 'दुपारचा संपादन प्रहर'
+        : 'Editorial Desk Hours'
+      : istHour >= 17 && istHour < 21
+      ? lang === 'mr'
+        ? 'सायं साहित्य प्रहर'
+        : 'Evening Literary Hour'
+      : lang === 'mr'
+      ? 'रात्रीचा चिंतन प्रहर'
+      : 'Quiet Night Reading Watch';
+
+  const monographChapters = [
+    {
+      id: 'about-chapter-01',
+      roman: 'I',
+      code: '01 · IMPRINT ORIGINS',
+      titleEn: "We don't think literature always needs to be loud to matter.",
+      titleMr: 'आवाज मोठा नसला तरी साहित्य अर्थपूर्ण असू शकते',
+    },
+    {
+      id: 'about-chapter-02',
+      roman: 'II',
+      code: '02 · LIVING LANGUAGE',
+      titleEn: 'The language we live in',
+      titleMr: 'आपण ज्या भाषेत जगतो',
+    },
+    {
+      id: 'about-chapter-03',
+      roman: 'III',
+      code: '03 · EDITORIAL CRAFT',
+      titleEn: 'Books take more than words',
+      titleMr: 'पुस्तक घडण्यासाठी केवळ शब्द पुरेसे नसतात',
+    },
+    {
+      id: 'about-chapter-04',
+      roman: 'IV',
+      code: '04 · BEYOND THE PRESS',
+      titleEn: 'A book is only the beginning',
+      titleMr: 'पुस्तक ही केवळ सुरुवात आहे',
+    },
+    {
+      id: 'about-chapter-05',
+      roman: 'V',
+      code: '05 · THE COLOPHON',
+      titleEn: 'Why the tortoise?',
+      titleMr: 'कासवच का?',
+    },
+  ];
 
   return (
-    <div className="bg-[#FFFDF7] text-[#252832] min-h-screen py-12 lg:py-16">
-      <div className="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        {/* Top Monumental Card with Animated Tortoise Stage */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="bg-white rounded-[32px] border border-[#E6DFCE] p-8 sm:p-12 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center sarvam-aura"
+    <div className="bg-[#FFFDF7] text-[#252832] min-h-screen pb-14 lg:pb-24">
+      {/* ===================================================================
+          0. ARCHIVAL IMPRINT DATELINE & LIVE HOROLOGY MASTHEAD
+          =================================================================== */}
+      <div
+        data-testid="about-archival-dateline"
+        className="bg-[#243B8A] text-[#FFFDF7] border-b border-[#1B2D6B]"
+      >
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+          {/* Left: Imprint Folio & Location */}
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 font-mono font-bold uppercase tracking-wider text-[#FFD966]">
+              <BookOpen className="w-3.5 h-3.5 text-[#FFD966]" />
+              <span>
+                {lang === 'mr'
+                  ? 'अकथ प्रकाशन जाहीरनामा • संग्रह प्रत'
+                  : 'AKATH MONOGRAPH • ARCHIVAL EDITION'}
+              </span>
+            </span>
+            <span className="hidden sm:inline text-[#FFFDF7]/35">|</span>
+            <span className="inline-flex items-center gap-1.5 text-[#FFFDF7]/90">
+              <MapPin className="w-3.5 h-3.5 text-[#EF6855]" />
+              <span>
+                {lang === 'mr'
+                  ? 'नांदेड • पुणे, महाराष्ट्र (IST)'
+                  : 'Nanded • Pune, Maharashtra (IST)'}
+              </span>
+            </span>
+          </div>
+
+          {/* Right: Live Date & Current Time per Theme */}
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 font-mono">
+            <span
+              data-testid="about-live-date"
+              className="inline-flex items-center gap-1.5 text-[#FFFDF7]/90"
+            >
+              <Calendar className="w-3.5 h-3.5 text-[#FFD966]" />
+              <span>{formattedDate}</span>
+            </span>
+
+            <span className="text-[#FFFDF7]/30">•</span>
+
+            <span
+              data-testid="about-live-time"
+              className="inline-flex items-center gap-2 px-2.5 py-1 rounded-sm bg-[#1B2D6B] border border-[#FFD966]/35 text-[#FFD966] font-semibold tabular-nums"
+            >
+              <span className="w-2 h-2 rounded-full bg-[#FFD966] animate-pulse" />
+              <Clock className="w-3.5 h-3.5 text-[#FFD966]" />
+              <span>{formattedTime} IST</span>
+            </span>
+
+            <span className="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-sm bg-[#FFFDF7]/10 text-[#FFFDF7]/90 font-serif text-[11px]">
+              {literaryWatchLabel}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 space-y-14 sm:space-y-20">
+        {/* ===================================================================
+            1. MONUMENTAL BROADSHEET HERO MANIFESTO (SEQUENTIAL SCROLL REVEAL)
+            =================================================================== */}
+        <motion.section
+          data-testid="about-hero-manifesto"
+          variants={aboutSectionSequentialVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+          className="bg-white rounded-sm border border-[#E6E1D6] overflow-hidden shadow-2xs sarvam-aura"
         >
-          <div className="lg:col-span-7 space-y-5">
-            <div className="inline-flex items-center gap-2.5 text-[13px] font-semibold text-[#243B8A]">
-              <AnimatedTortoiseEmblem
-                className="w-8 h-8"
-                variant="indigo"
-                animate={true}
-              />
-              <span>
-                {lang === 'mr'
-                  ? 'अकथ प्रकाशन · नांदेड / पुणे · महाराष्ट्र'
-                  : 'Akath Prakashan · Nanded / Pune · Maharashtra'}
+          {/* Top Broadsheet Masthead Strip */}
+          <div className="px-6 sm:px-10 lg:px-14 py-4 bg-[#F7F3E8]/90 border-b border-[#E6E1D6] flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-[#525665]">
+            <div className="flex items-center gap-2.5">
+              <span className="px-2 py-0.5 rounded-sm bg-[#243B8A] text-[#FFD966] font-bold">
+                FOLIO I
+              </span>
+              <span className="font-bold uppercase tracking-widest text-[#174D3A]">
+                About Akath Prakashan
               </span>
             </div>
-
-            <h1 className="type-page-heading text-[#252832]">
+            <span>
               {lang === 'mr'
-                ? 'कमी पुस्तके, पण पिढ्यानपिढ्या टिकणारी पुस्तके.'
-                : 'Fewer Books, Crafted to Endure for Generations.'}
-            </h1>
-
-            <p className="prose-marathi text-[#5A5F72]">
-              {lang === 'mr'
-                ? PUBLISHER_IDENTITY.positioningMarathi
-                : PUBLISHER_IDENTITY.positioningEnglish}
-            </p>
-
-            <blockquote className="p-5 rounded-2xl bg-[#FFD966]/20 border border-[#FFD966] font-serif text-[18px] text-[#252832] leading-relaxed">
-              “
-              {lang === 'mr'
-                ? PUBLISHER_IDENTITY.turtlePhilosophyMarathi
-                : PUBLISHER_IDENTITY.turtlePhilosophyEnglish}
-              ”
-            </blockquote>
-
-            <div className="pt-2 flex flex-wrap gap-3.5">
-              <button
-                type="button"
-                onClick={() => onNavigate('/books')}
-                className="px-6 py-3 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7] text-[15px] font-semibold transition-colors whitespace-nowrap shrink-0"
-              >
-                {t.home.ctaExploreBooks}
-              </button>
-              <button
-                type="button"
-                onClick={() => onNavigate('/submit-manuscript')}
-                className="px-6 py-3 rounded-xl bg-white border border-[#E6DFCE] text-[#252832] text-[15px] font-semibold hover:bg-[#FFD966]/35 whitespace-nowrap shrink-0 transition-colors"
-              >
-                {t.nav.submitManuscript}
-              </button>
-            </div>
+                ? 'स्वतंत्र मराठी साहित्य आणि बहुभाषिक प्रकाशन गृह'
+                : 'Independent Literary Publishing House · Nanded & Pune'}
+            </span>
           </div>
 
-          <div className="lg:col-span-5 flex flex-col items-center text-[#243B8A]">
-            <TortoiseStageIllustration className="w-full max-w-[360px] h-auto" />
-            <div className="mt-4 flex items-center gap-2.5 text-[12px] text-[#5A5F72]">
-              <AnimatedTortoiseEmblem
-                className="w-7 h-7 shrink-0"
-                variant="cerulean"
-                animate={false}
-              />
-              <span>
-                {lang === 'mr'
-                  ? 'कासव आणि उघडलेले पुस्तक — अकथ प्रकाशन मुद्रा'
-                  : 'The Tortoise & Open Book — Official Akath Imprint'}
-              </span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* 6-Step Publishing Craft Grid */}
-        <section className="space-y-6">
-          <div>
-            <p className="text-[12px] font-semibold text-[#243B8A]">
-              {lang === 'mr'
-                ? '02 · संपादकीय आणि मुद्रण प्रक्रिया'
-                : '02 · Editorial & Print Production Process'}
-            </p>
-            <h2 className="type-section-heading text-[#252832] mt-1">
-              {lang === 'mr'
-                ? 'अकथ प्रकाशनची ६-टप्प्यांची पुस्तक निर्मिती'
-                : 'Akath’s Six-Stage Bookmaking Craft'}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {PUBLISHER_IDENTITY.preservedCapabilities.map((cap, idx) => (
+          <div className="p-7 sm:p-11 lg:p-14 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            {/* Left 7 Columns: Primary Literary Manifesto */}
+            <div className="lg:col-span-7 space-y-6">
               <motion.div
-                key={cap.step}
-                initial={{ opacity: 0, y: 14 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: idx * 0.05 }}
-                className="bg-white rounded-2xl border border-[#E6DFCE] p-6 space-y-2.5"
+                variants={aboutItemSequentialVariants}
+                className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-sm bg-[#243B8A]/8 border border-[#243B8A]/20 text-xs font-bold tracking-wider uppercase text-[#243B8A]"
               >
-                <div className="flex items-center justify-between text-[12px]">
-                  <span className="font-mono font-bold px-2 py-0.5 rounded bg-[#FFD966] text-[#252832]">
-                    {cap.step}
-                  </span>
-                  <span className="text-[#5A5F72]">
-                    {lang === 'mr' ? cap.titleEnglish : cap.titleMarathi}
-                  </span>
-                </div>
-                <h3 className="type-book-title text-[#252832]">
-                  {lang === 'mr' ? cap.titleMarathi : cap.titleEnglish}
-                </h3>
-                <p className="text-[14px] text-[#5A5F72] leading-relaxed">
+                <AnimatedTortoiseEmblem
+                  className="w-6 h-6"
+                  variant="indigo"
+                  animate={true}
+                />
+                <span>
                   {lang === 'mr'
-                    ? cap.description
-                    : cap.descriptionEnglish || cap.description}
+                    ? 'अकथ प्रकाशनची भूमिका · संथ आणि सखोल ग्रंथनिर्मिती'
+                    : 'The Akath Imprint Manifesto · Patience Over Haste'}
+                </span>
+              </motion.div>
+
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="space-y-3 border-b border-[#E6E1D6] pb-6"
+              >
+                <h1 className="type-page-heading text-[#252832] leading-[1.22]">
+                  काही पुस्तकं वाचून संपतात. काही आपल्यासोबत राहतात.
+                </h1>
+                <p className="font-serif italic text-xl sm:text-2xl text-[#243B8A] font-medium">
+                  Some books end at the last page. Others stay with us.
                 </p>
               </motion.div>
-            ))}
-          </div>
-        </section>
 
-        {/* Editorial Principles */}
-        <section className="bg-white rounded-[32px] border border-[#E6DFCE] p-8 sm:p-10 space-y-6">
-          <div>
-            <p className="text-[12px] font-semibold text-[#243B8A]">
-              {lang === 'mr' ? '03 · संपादकीय मूल्ये' : '03 · Editorial Principles'}
-            </p>
-            <h2 className="type-section-heading text-[#252832] mt-1">
-              {lang === 'mr'
-                ? 'अकथ प्रकाशनाची पंचसूत्री'
-                : 'Core Editorial Principles of Akath Prakashan'}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {PUBLISHER_IDENTITY.editorialPrinciples.map((principle, idx) => (
-              <div
-                key={idx}
-                className="p-4 rounded-2xl bg-[#FFFDF7] border border-[#E6DFCE] flex items-start gap-3"
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="space-y-4 text-[16px] sm:text-[17px] text-[#252832] leading-[1.85] font-serif"
               >
-                <span className="font-mono text-[12px] font-bold px-1.5 py-0.5 rounded bg-[#FFD966]/75 text-[#252832] mt-0.5">
-                  0{idx + 1}.
-                </span>
-                <div className="space-y-1">
-                  <h3 className="font-serif text-[16px] font-bold text-[#252832]">
+                <p className="first-letter:float-left first-letter:font-serif first-letter:text-4xl sm:first-letter:text-5xl first-letter:font-bold first-letter:text-[#243B8A] first-letter:mr-3 first-letter:leading-none">
+                  Akath Prakashan grew out of a simple feeling: there are books worth bringing into the world, and there should be people willing to take the time to do it properly.
+                </p>
+                <p className="text-[#525665]">
+                  A manuscript is a strange, wonderful thing. Sometimes it arrives as a finished story. Sometimes it is a collection of scattered thoughts, a voice still finding its shape, or an experience that has waited years to be put into words. Before it becomes a book, it needs someone willing to read it carefully, ask the right questions, and understand what the writer is trying to say.
+                </p>
+                <div className="p-4 rounded-sm bg-[#F7F3E8] border-l-4 border-[#174D3A] font-semibold text-[#174D3A] text-base sm:text-lg">
+                  That is the kind of work we want to do.
+                </div>
+                {lang === 'mr' && (
+                  <p className="text-sm text-[#525665] pt-1">
+                    अकथ प्रकाशन एका साध्या जाणिवेतून उभे राहिले: जगात आणण्यासारखी काही पुस्तके असतात आणि ती योग्य वेळ देऊन, निगुतीने घडवणारी माणसे असायला हवीत. हस्तलिखित ही एक अद्भुत गोष्ट आहे—पुस्तक होण्यापूर्वी त्याला काळजीपूर्वक वाचणाऱ्या, योग्य प्रश्न विचारणाऱ्या आणि लेखकाचे म्हणणे समजून घेणाऱ्या संपादकीय दृष्टीची गरज असते.
+                  </p>
+                )}
+              </motion.div>
+
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="pt-2 flex flex-wrap gap-3.5"
+              >
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/books')}
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-sm bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-sm sm:text-[15px] font-semibold transition-colors cursor-pointer shadow-2xs"
+                >
+                  <BookOpen className="w-4 h-4 text-[#FFD966]" />
+                  <span>{t.home.ctaExploreBooks}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/submit-manuscript')}
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-sm bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7] text-sm sm:text-[15px] font-semibold transition-colors cursor-pointer shadow-2xs"
+                >
+                  <Feather className="w-4 h-4" />
+                  <span>{t.nav.submitManuscript}</span>
+                </button>
+              </motion.div>
+            </div>
+
+            {/* Right 5 Columns: Archival Imprint Specimen & Tortoise Emblem */}
+            <motion.div
+              variants={aboutItemSequentialVariants}
+              className="lg:col-span-5"
+            >
+              <div className="rounded-sm bg-[#F7F3E8]/90 border border-[#E6E1D6] p-6 sm:p-8 flex flex-col items-center text-center space-y-5">
+                <div className="w-full flex items-center justify-between text-[11px] font-mono text-[#525665] pb-3 border-b border-[#E6E1D6]">
+                  <span>PLATE № 01 · AKATH SEAL</span>
+                  <span className="text-[#174D3A] font-semibold">
+                    नांदेड • पुणे
+                  </span>
+                </div>
+
+                <TortoiseStageIllustration className="w-full max-w-[330px] h-auto" />
+
+                <div className="w-full pt-4 border-t border-[#E6E1D6] space-y-2">
+                  <div className="inline-flex items-center gap-2 text-xs font-serif font-bold text-[#243B8A]">
+                    <AnimatedTortoiseEmblem
+                      className="w-6 h-6 shrink-0"
+                      variant="cerulean"
+                      animate={false}
+                    />
+                    <span>
+                      {lang === 'mr'
+                        ? 'कासव आणि उघडलेले पुस्तक — अकथ प्रकाशन मुद्रा'
+                        : 'The Tortoise & Open Book — Official Akath Imprint'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#525665] font-serif italic leading-relaxed">
                     {lang === 'mr'
-                      ? principle.title
-                      : principle.titleEnglish || principle.title}
-                  </h3>
-                  <p className="text-[14px] text-[#5A5F72] leading-relaxed">
-                    {lang === 'mr'
-                      ? principle.description
-                      : principle.descriptionEnglish || principle.description}
+                      ? '“संथ गती, पण ठाम पावलांनी टिकणारे साहित्य घडवणे हाच आमचा धर्म.”'
+                      : '“Getting somewhere slowly, thoughtfully, and with enduring craft.”'}
                   </p>
                 </div>
               </div>
-            ))}
+            </motion.div>
+          </div>
+        </motion.section>
+
+        {/* ===================================================================
+            2. TWO-COLUMN ARCHIVAL MONOGRAPH: STICKY INDEX + 5 LITERARY CHAPTERS
+            =================================================================== */}
+        <section
+          data-testid="about-editorial-essay"
+          aria-label="About Akath Prakashan Editorial Narrative"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start"
+        >
+          {/* Left 4 Columns: Sticky Monograph Chapter Index & Core Principles Ledger */}
+          <aside className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
+            {/* Chapter Table of Contents */}
+            <div className="bg-white rounded-sm border border-[#E6E1D6] p-6 shadow-2xs">
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#E6E1D6]">
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#243B8A]">
+                  {lang === 'mr' ? 'निबंध अनुक्रमणिका' : 'Monograph Contents'}
+                </span>
+                <span className="font-mono text-[11px] text-[#525665]">
+                  I — V
+                </span>
+              </div>
+
+              <nav aria-label="About Monograph Chapters" className="space-y-2">
+                {monographChapters.map((chap) => (
+                  <button
+                    key={chap.id}
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById(chap.id);
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    className="w-full text-left p-2.5 rounded-sm hover:bg-[#F7F3E8] border border-transparent hover:border-[#E6E1D6] transition-all flex items-start gap-3 group cursor-pointer"
+                  >
+                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-sm bg-[#243B8A]/10 text-[#243B8A] group-hover:bg-[#243B8A] group-hover:text-[#FFD966] transition-colors shrink-0 mt-0.5">
+                      {chap.roman}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-serif text-sm font-bold text-[#252832] group-hover:text-[#243B8A] transition-colors leading-snug">
+                        {lang === 'mr' ? chap.titleMr : chap.titleEn}
+                      </p>
+                      <span className="block font-mono text-[10px] text-[#525665] mt-0.5">
+                        {chap.code}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {/* Core Editorial Principles Card */}
+            <div className="bg-[#F7F3E8]/90 rounded-sm border border-[#E6E1D6] p-6 space-y-4">
+              <div className="pb-3 border-b border-[#E6E1D6]">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#174D3A]">
+                  {lang === 'mr' ? 'संपादकीय मूल्ये' : 'Editorial Principles'}
+                </span>
+                <h2 className="font-serif text-lg font-bold text-[#252832] mt-0.5">
+                  {lang === 'mr'
+                    ? 'अकथ प्रकाशनाची चतुःसूत्री'
+                    : 'Core Editorial Principles'}
+                </h2>
+              </div>
+
+              <div className="space-y-3">
+                {PUBLISHER_IDENTITY.editorialPrinciples.map((principle, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3.5 rounded-sm bg-[#FFFDF7] border border-[#E6E1D6] space-y-1"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded-sm bg-[#FFD966]/75 text-[#252832]">
+                        0{idx + 1}
+                      </span>
+                      <h3 className="font-serif text-sm font-bold text-[#252832]">
+                        {lang === 'mr'
+                          ? principle.title
+                          : principle.titleEnglish || principle.title}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-[#525665] leading-relaxed pl-7">
+                      {lang === 'mr'
+                        ? principle.description
+                        : principle.descriptionEnglish || principle.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </aside>
+
+          {/* Right 8 Columns: Continuous 5-Chapter Literary Monograph */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* Chapter 01: Independent Imprint in Nanded & Pune */}
+            <motion.article
+              id="about-chapter-01"
+              variants={aboutSectionSequentialVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              className="akath-seq-step bg-white rounded-sm border border-[#E6E1D6] p-7 sm:p-10 lg:p-12 shadow-2xs"
+            >
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-6 border-b border-[#E6E1D6]"
+              >
+                <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-sm bg-[#243B8A] text-[#FFD966]">
+                  01 · IMPRINT ORIGINS
+                </span>
+                <span className="text-xs font-mono text-[#525665]">
+                  {lang === 'mr'
+                    ? 'नांदेड आणि पुणे · स्वतंत्र प्रकाशन'
+                    : 'Nanded & Pune · Independent Literary House'}
+                </span>
+              </motion.div>
+
+              <motion.div variants={aboutItemSequentialVariants} className="mb-5">
+                <h2 className="type-section-heading text-[#252832]">
+                  {lang === 'mr'
+                    ? 'आवाज मोठा नसला तरी साहित्य अर्थपूर्ण असू शकते'
+                    : "We don't think literature always needs to be loud to matter."}
+                </h2>
+                <p className="mt-1.5 text-xs font-mono text-[#174D3A]">
+                  {lang === 'mr'
+                    ? 'कथा · कविता · निबंध · समीक्षा · अनुवाद'
+                    : 'Fiction · Poetry · Essays · Criticism · Translations'}
+                </p>
+              </motion.div>
+
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="space-y-4 font-serif text-[16px] sm:text-[17px] text-[#252832] leading-[1.85]"
+              >
+                <p>
+                  Based in Nanded and Pune, Akath Prakashan is an independent publishing house devoted to Marathi literature and writing across languages. We work with fiction, poetry, essays, criticism, and translations — not because every category needs to be represented, but because good writing can come from anywhere and speak to anyone.
+                </p>
+                <p className="text-[#525665]">
+                  We are interested in writing that notices what others overlook. Stories that make familiar places feel different. Poems that find words for things we have felt but never quite known how to express. Essays that leave us with better questions than the ones we started with.
+                </p>
+                <blockquote className="p-4 rounded-sm bg-[#F7F3E8] border-l-3 border-[#243B8A] font-semibold text-[#243B8A]">
+                  We don&apos;t think literature always needs to be loud to matter.
+                </blockquote>
+                {lang === 'mr' && (
+                  <p className="text-sm text-[#525665] pt-2 border-t border-[#E6E1D6]">
+                    नांदेड आणि पुणे येथून कार्यरत असलेले अकथ प्रकाशन हे मराठी साहित्याला आणि बहुभाषिक लेखनाला वाहिलेले स्वतंत्र प्रकाशन गृह आहे. इतरांच्या नजरेतून सुटणाऱ्या सूक्ष्म गोष्टी टिपणारे लेखन, परिचित जागांकडे नव्याने पाहायला लावणाऱ्या कथा आणि अधिक चांगले प्रश्न मागे ठेवणारे निबंध यांत आम्हाला रस आहे.
+                  </p>
+                )}
+              </motion.div>
+            </motion.article>
+
+            {/* Chapter 02: The language we live in */}
+            <motion.article
+              id="about-chapter-02"
+              variants={aboutSectionSequentialVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              className="akath-seq-step bg-white rounded-sm border border-[#E6E1D6] p-7 sm:p-10 lg:p-12 shadow-2xs"
+            >
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-6 border-b border-[#E6E1D6]"
+              >
+                <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-sm bg-[#174D3A] text-[#FFFDF7]">
+                  02 · LIVING LANGUAGE
+                </span>
+                <span className="text-xs font-mono text-[#525665]">
+                  {lang === 'mr'
+                    ? 'आपण ज्या भाषेत जगतो'
+                    : 'Marathi, Regional Cadence & Translation'}
+                </span>
+              </motion.div>
+
+              <motion.div variants={aboutItemSequentialVariants} className="mb-5">
+                <h3 className="type-section-heading text-[#252832]">
+                  The language we live in
+                </h3>
+                <p className="mt-1 font-serif text-sm text-[#174D3A] font-semibold">
+                  आपण ज्या भाषेत जगतो
+                </p>
+              </motion.div>
+
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="space-y-4 font-serif text-[16px] sm:text-[17px] text-[#252832] leading-[1.85]"
+              >
+                <p>
+                  Marathi carries many worlds within it. The language of a city is not always the language of a village. The words spoken at home may be different from those found in a classroom or a book. Marathwada has its own rhythms, memories, humour, silences, and ways of looking at life.
+                </p>
+                <p className="font-semibold text-[#243B8A] bg-[#243B8A]/5 p-4 rounded-sm border-l-3 border-[#243B8A]">
+                  We want those differences to find their way into print without being unnecessarily polished away.
+                </p>
+                <p className="text-[#525665]">
+                  For us, publishing in Marathi is not simply about preserving a language. It is about making room for the people who speak it, the lives they lead, the questions they ask, and the worlds they are still imagining.
+                </p>
+                <p className="text-[#525665]">
+                  We are equally curious about what happens when one language meets another — through translation, conversation, and the exchange of ideas.
+                </p>
+                {lang === 'mr' && (
+                  <p className="text-sm text-[#525665] pt-2 border-t border-[#E6E1D6]">
+                    मराठी भाषेत अनेक विश्वे सामावलेली आहेत. शहराची भाषा आणि गावाची भाषा नेहमीच एक नसते. मराठवाड्याची स्वतःची अशी लय, आठवणी, नर्मविनोद, शांतता आणि आयुष्याकडे पाहण्याची दृष्टी आहे. हे वेगळेपण अनावश्यकपणे गुळगुळीत न करता तसेच मुद्रित रूपात यावे, अशी आमची इच्छा आहे.
+                  </p>
+                )}
+              </motion.div>
+            </motion.article>
+
+            {/* Chapter 03: Books take more than words */}
+            <motion.article
+              id="about-chapter-03"
+              variants={aboutSectionSequentialVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              className="akath-seq-step bg-white rounded-sm border border-[#E6E1D6] p-7 sm:p-10 lg:p-12 shadow-2xs"
+            >
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-6 border-b border-[#E6E1D6]"
+              >
+                <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-sm bg-[#243B8A] text-[#FFD966]">
+                  03 · EDITORIAL CRAFT
+                </span>
+                <span className="text-xs font-mono text-[#525665]">
+                  {lang === 'mr'
+                    ? 'पुस्तक घडण्यासाठी केवळ शब्द पुरेसे नसतात'
+                    : 'Typography, Paper, Binding & Trust'}
+                </span>
+              </motion.div>
+
+              <motion.div variants={aboutItemSequentialVariants} className="mb-5">
+                <h3 className="type-section-heading text-[#252832]">
+                  Books take more than words
+                </h3>
+                <p className="mt-1 font-serif text-sm text-[#243B8A] font-semibold">
+                  पुस्तक घडण्यासाठी केवळ शब्द पुरेसे नसतात
+                </p>
+              </motion.div>
+
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="space-y-4 font-serif text-[16px] sm:text-[17px] text-[#252832] leading-[1.85]"
+              >
+                <p>
+                  There is a particular kind of care that goes into making a book. The sentence that needs another look. The comma that changes the rhythm. The cover that finally feels right. The Devanagari typeface that remains comfortable after a hundred pages. The paper, the binding, the quiet satisfaction of holding a finished book for the first time.
+                </p>
+                <p className="italic text-[#174D3A] font-semibold bg-[#F7F3E8] p-4 rounded-sm border-l-3 border-[#174D3A]">
+                  These things may go unnoticed by a reader. That is partly the point.
+                </p>
+                <p className="text-[#525665]">
+                  We want the work behind a book to serve the writing, not compete with it. We want authors to be heard, questions to be discussed honestly, and decisions to be made with care. Publishing should be a relationship built on trust, not a transaction that ends when a manuscript is accepted.
+                </p>
+                <p className="text-[#525665]">
+                  Not every manuscript will be right for us. But every decision deserves thought, and every author deserves clarity about the process.
+                </p>
+              </motion.div>
+            </motion.article>
+
+            {/* Chapter 04: A book is only the beginning */}
+            <motion.article
+              id="about-chapter-04"
+              variants={aboutSectionSequentialVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              className="akath-seq-step bg-white rounded-sm border border-[#E6E1D6] p-7 sm:p-10 lg:p-12 shadow-2xs"
+            >
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-6 border-b border-[#E6E1D6]"
+              >
+                <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-sm bg-[#F7F3E8] text-[#243B8A] border border-[#243B8A]/20">
+                  04 · BEYOND THE PRESS
+                </span>
+                <span className="text-xs font-mono text-[#525665]">
+                  पुस्तक ही केवळ सुरुवात आहे
+                </span>
+              </motion.div>
+
+              <motion.div variants={aboutItemSequentialVariants} className="mb-5">
+                <h3 className="type-section-heading text-[#252832]">
+                  A book is only the beginning
+                </h3>
+                <p className="mt-1 font-serif text-sm text-[#243B8A] font-semibold">
+                  पुस्तक ही केवळ सुरुवात आहे
+                </p>
+              </motion.div>
+
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="space-y-4 font-serif text-[16px] sm:text-[17px] text-[#252832] leading-[1.85]"
+              >
+                <p>
+                  We don&apos;t want our relationship with a book to end when it leaves the printing press.
+                </p>
+                <p className="text-[#525665]">
+                  Through our bookstore and <em>Vachankatta</em>, we hope to make space for the things that grow around reading: an excerpt that makes someone curious, a review that changes their mind, an essay that sends them looking for another book, or a conversation that continues long after everyone has gone home.
+                </p>
+                <p className="text-[#525665]">
+                  Perhaps someone will discover a writer they have never heard of. Perhaps a young reader will find a book that puts an old feeling into words. Perhaps a book published in a small room in Maharashtra will find its way to someone who needs it, somewhere far away.
+                </p>
+                <p className="font-medium text-[#174D3A]">
+                  We cannot promise what a book will mean to every reader. We can only give it the attention, honesty, and care it deserves before letting it find its way.
+                </p>
+              </motion.div>
+
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="mt-6 pt-4 border-t border-[#E6E1D6] flex items-center justify-between"
+              >
+                <span className="inline-flex items-center gap-1.5 text-xs font-mono text-[#525665]">
+                  <Compass className="w-3.5 h-3.5 text-[#243B8A]" />
+                  <span>{lang === 'mr' ? 'वाचनकट्टा व ग्रंथदालन' : 'Bookstore & Vachankatta'}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/vachankatta')}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#243B8A] hover:text-[#EF6855] transition-colors cursor-pointer"
+                >
+                  <span>{lang === 'mr' ? 'वाचनकट्टा पहा' : 'Visit Vachankatta'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </motion.div>
+            </motion.article>
+
+            {/* Chapter 05: Why the tortoise? */}
+            <motion.article
+              id="about-chapter-05"
+              variants={aboutSectionSequentialVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              className="akath-seq-step bg-[#F7F3E8]/90 rounded-sm border border-[#174D3A]/35 p-7 sm:p-10 lg:p-12 shadow-2xs"
+            >
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-6 border-b border-[#E6E1D6]"
+              >
+                <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-sm bg-[#174D3A] text-[#FFFDF7]">
+                  05 · THE COLOPHON
+                </span>
+                <span className="text-xs font-mono text-[#174D3A] font-semibold">
+                  कासवच का?
+                </span>
+              </motion.div>
+
+              <motion.div variants={aboutItemSequentialVariants} className="mb-5">
+                <h3 className="type-section-heading text-[#252832]">
+                  Why the tortoise?
+                </h3>
+                <p className="mt-1 font-serif text-sm text-[#174D3A] font-semibold">
+                  कासवच का? — आमच्या बोधचिन्हामागील विचार
+                </p>
+              </motion.div>
+
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="space-y-4 font-serif text-[16px] sm:text-[17px] text-[#252832] leading-[1.85]"
+              >
+                <p className="font-semibold text-[#174D3A]">
+                  We chose a tortoise for a reason.
+                </p>
+                <p>
+                  It isn&apos;t in a hurry. It carries its home with it. And it reminds us that getting somewhere slowly is still getting somewhere.
+                </p>
+                <p className="text-[#525665]">
+                  Publishing has its own pressures to move faster, publish more, and follow what is already selling. We understand those realities. But we also believe there is value in pausing over a sentence, taking another look at a manuscript, and making a book we can stand behind years later.
+                </p>
+                <p className="text-[#525665]">
+                  We would rather build a small list of books we believe in than fill a catalogue simply to make it bigger.
+                </p>
+                <div className="p-5 rounded-sm bg-[#FFFDF7] border-l-4 border-[#243B8A] shadow-2xs font-bold text-[#243B8A] text-base sm:text-lg">
+                  Akath Prakashan is our attempt to do just that — one manuscript, one book, one reader at a time.
+                </div>
+              </motion.div>
+
+              <motion.div
+                variants={aboutItemSequentialVariants}
+                className="mt-6 pt-4 border-t border-[#E6E1D6] flex items-center justify-between text-xs text-[#525665]"
+              >
+                <span>
+                  {lang === 'mr'
+                    ? PUBLISHER_IDENTITY.turtlePhilosophyMarathi
+                    : PUBLISHER_IDENTITY.turtlePhilosophyEnglish}
+                </span>
+              </motion.div>
+            </motion.article>
           </div>
         </section>
 
         {/* ===================================================================
-            CLOSING LITERARY SIGNATURE & WALKING TORTOISE COLOPHON
+            3. CLOSING LITERARY SIGNATURE & WALKING TORTOISE COLOPHON
             Placed after all About section text, immediately before the footer.
             =================================================================== */}
-        <section
+        <motion.section
           data-testid="about-closing-colophon"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           aria-label={
             lang === 'mr'
               ? 'अकथ प्रकाशन समारोप ब्रीदवाक्य आणि चालणारे कासव'
               : 'Akath Prakashan closing literary signature and walking tortoise'
           }
-          className="pt-12 pb-10 sm:pt-16 sm:pb-12 border-t border-[#E6DFCE]/80 text-center space-y-6"
+          className="pt-12 pb-10 sm:pt-16 sm:pb-12 border-t border-[#E6E1D6] text-center space-y-6"
         >
           <div className="max-w-2xl mx-auto space-y-2.5 px-2">
+            <p className="font-serif italic text-base sm:text-lg text-[#243B8A] font-medium">
+              अकथ प्रकाशन
+            </p>
             <p
               data-testid="about-final-marathi-line"
               className="font-serif text-[22px] sm:text-[26px] font-bold text-[#174D3A] leading-snug tracking-normal"
             >
               “वाचत राहू. विचारत राहू. लिहित राहू.”
             </p>
-            {lang === 'en' && (
-              <p className="font-serif text-[15px] sm:text-[16.5px] italic text-[#5A5F72]">
-                “{PUBLISHER_IDENTITY.closingMottoEnglish}”
-              </p>
-            )}
+            <p className="font-serif text-[15px] sm:text-[16.5px] italic text-[#525665]">
+              “{PUBLISHER_IDENTITY.closingMottoEnglish}”
+            </p>
           </div>
 
           {/* Walking Tortoise Closing Animation */}
           <WalkingTortoise className="mt-4" />
-        </section>
+        </motion.section>
       </div>
     </div>
   );
