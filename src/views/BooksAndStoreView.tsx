@@ -47,7 +47,7 @@ export const BooksCatalogueView: React.FC<BooksCatalogueViewProps> = ({
   recentlyAddedBookId,
   initialCategory = 'all',
 }) => {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [inStockOnly, setInStockOnly] = useState(false);
@@ -268,26 +268,45 @@ export const BooksCatalogueView: React.FC<BooksCatalogueViewProps> = ({
             </button>
           </div>
         ) : (
-          <motion.div
-            layout
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-7"
-          >
-            {filteredBooks.map((book) => {
-              const author = authors.find((a) => a.id === book.authorId);
-              return (
-                <BookCard
-                  key={book.id}
-                  book={book}
-                  author={author}
-                  onSelectBook={(slug) => onNavigate(`/books/${slug}`)}
-                  onSelectAuthor={(slug) => onNavigate(`/authors/${slug}`)}
-                  onAddToCart={(id) => onAddToCart(id, 1)}
-                  onOpenExcerpt={() => onNavigate('/vachankatta/first-page')}
-                  justAdded={recentlyAddedBookId === book.id}
-                />
-              );
-            })}
-          </motion.div>
+          <div className="space-y-3">
+            {/* Mobile Horizontal Swipe Indicator Bar */}
+            <div className="flex sm:hidden items-center justify-between px-3 py-1.5 rounded-lg bg-[#F7F3E8] border border-[#E6E1D6] text-[11px] font-mono text-[#252832]">
+              <span className="font-semibold text-[#243B8A]">
+                {lang === 'mr'
+                  ? '← ग्रंथसूची पाहण्यासाठी आडवे स्वाइप करा →'
+                  : '← Swipe horizontally to explore catalogue →'}
+              </span>
+              <span className="tabular-nums font-bold px-2 py-0.5 rounded bg-[#FFD966]/70 text-[#252832]">
+                {filteredBooks.length} {lang === 'mr' ? 'पुस्तके' : 'Books'}
+              </span>
+            </div>
+
+            <motion.div
+              layout
+              data-testid="catalogue-mobile-horizontal-scroll"
+              className="flex flex-nowrap sm:grid sm:grid-cols-2 lg:grid-cols-4 overflow-x-auto sm:overflow-visible snap-x snap-mandatory scroll-smooth overscroll-x-contain gap-4 sm:gap-6 lg:gap-7 pb-4 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar"
+            >
+              {filteredBooks.map((book) => {
+                const author = authors.find((a) => a.id === book.authorId);
+                return (
+                  <div
+                    key={book.id}
+                    className="w-[82vw] max-w-[295px] sm:w-auto sm:max-w-none shrink-0 snap-center sm:snap-start"
+                  >
+                    <BookCard
+                      book={book}
+                      author={author}
+                      onSelectBook={(slug) => onNavigate(`/books/${slug}`)}
+                      onSelectAuthor={(slug) => onNavigate(`/authors/${slug}`)}
+                      onAddToCart={(id) => onAddToCart(id, 1)}
+                      onOpenExcerpt={() => onNavigate('/vachankatta/first-page')}
+                      justAdded={recentlyAddedBookId === book.id}
+                    />
+                  </div>
+                );
+              })}
+            </motion.div>
+          </div>
         )}
       </section>
     </div>
@@ -956,22 +975,26 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
         {/* Related Books */}
         {relatedBooks.length > 0 && (
           <div className="mt-16 pt-12 border-t border-[#E5E0D5]">
-            <h2 className="type-section-heading text-[#121316] mb-8">
+            <h2 className="type-section-heading text-[#121316] mb-6">
               {t.book.relatedBooks}
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-7">
+            <div className="flex flex-nowrap sm:grid sm:grid-cols-3 overflow-x-auto sm:overflow-visible snap-x snap-mandatory scroll-smooth overscroll-x-contain gap-4 sm:gap-7 pb-4 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar">
               {relatedBooks.map((rel) => {
                 const relAuthor = allAuthors.find((a) => a.id === rel.authorId);
                 return (
-                  <BookCard
+                  <div
                     key={rel.id}
-                    book={rel}
-                    author={relAuthor}
-                    onSelectBook={(slug) => onNavigate(`/books/${slug}`)}
-                    onSelectAuthor={(slug) => onNavigate(`/authors/${slug}`)}
-                    onAddToCart={(id) => onAddToCart(id, 1)}
-                    justAdded={recentlyAddedBookId === rel.id}
-                  />
+                    className="w-[82vw] max-w-[295px] sm:w-auto sm:max-w-none shrink-0 snap-center sm:snap-start"
+                  >
+                    <BookCard
+                      book={rel}
+                      author={relAuthor}
+                      onSelectBook={(slug) => onNavigate(`/books/${slug}`)}
+                      onSelectAuthor={(slug) => onNavigate(`/authors/${slug}`)}
+                      onAddToCart={(id) => onAddToCart(id, 1)}
+                      justAdded={recentlyAddedBookId === rel.id}
+                    />
+                  </div>
                 );
               })}
             </div>

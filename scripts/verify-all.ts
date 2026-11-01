@@ -950,9 +950,10 @@ async function runTests() {
   assert.ok(navbarSource.includes('data-testid="navbar-signin-btn"'));
   assert.ok(navbarSource.includes('data-testid="navbar-cart-btn"'));
   assert.ok(navbarSource.includes('data-testid="navbar-admin-link"'));
-  assert.ok(navbarSource.includes('data-testid="navbar-demo-admin"'));
+  assert.ok(!navbarSource.includes('data-testid="navbar-demo-admin"'));
+  assert.ok(!navbarSource.includes('data-testid="navbar-demo-switcher"'));
   console.log(
-    '  [PASS] UI-04: Responsive Two-Tier Navbar verified (Language Selector, Sign In, Cart, and Admin Console Demo visible across Desktop, Tablet, and Mobile with zero overflow)'
+    '  [PASS] UI-04: Responsive Two-Tier Navbar verified (Language Selector, Sign In, and Cart visible across Desktop, Tablet, and Mobile; front-end Demo buttons cleanly removed)'
   );
 
   const footerSource = fs.readFileSync(
@@ -964,20 +965,18 @@ async function runTests() {
     'utf-8'
   );
   assert.ok(footerSource.includes('data-testid="the-last-page-footer"'));
-  assert.ok(
-    footerSource.includes(
-      'Every story ends somewhere. Ours continues, one curious reader at a time.'
-    )
-  );
-  assert.ok(footerSource.includes('built by Mivishvajeet'));
-  assert.ok(footerSource.includes('साकारले — विश्वजीत'));
-  assert.ok(!footerSource.includes('Thoughtfully built by [Your Name].'));
+  assert.ok(footerSource.includes('data-testid="footer-monumental-wordmark"'));
+  assert.ok(!footerSource.includes('AKATH PRAKASHAN · AKATH PUBLICATION'));
+  assert.ok(footerSource.includes('Every story leaves a mark.'));
+  assert.ok(footerSource.includes('Thoughtfully crafted by'));
+  assert.ok(footerSource.includes('mivishvajeet'));
+  assert.ok(footerSource.includes('Akath Prakashan · 2026'));
+  assert.ok(!footerSource.includes('The Patient Tortoise'));
+  assert.ok(!footerSource.includes('data-testid="footer-tortoise-mascot"'));
+  assert.ok(!footerSource.includes('data-testid="footer-live-datetime"'));
   assert.ok(
     footerSource.includes('data-testid="footer-animated-book-constellation"')
   );
-  assert.ok(footerSource.includes('data-testid="footer-live-datetime"'));
-  assert.ok(footerSource.includes('data-testid="footer-tortoise-mascot"'));
-  assert.ok(footerSource.includes('new Date().getFullYear()'));
   for (const requiredHref of [
     'href="/books"',
     'href="/authors"',
@@ -1000,16 +999,15 @@ async function runTests() {
       `Footer missing required working link: ${requiredHref}`
     );
   }
-  assert.ok(cssSource.includes('last-page-tortoise-walk-in'));
   assert.ok(cssSource.includes('last-page-creator-credit'));
   assert.ok(cssSource.includes('akath-footer-wing-left'));
   assert.ok(cssSource.includes('akath-footer-wing-right'));
   assert.ok(cssSource.includes('prefers-reduced-motion: reduce'));
   console.log(
-    '  [PASS] UI-05: "The Last Page" Editorial Footer verified ("built by Mivishvajeet", animated Open Book & Starlight Constellation, live IST Date/Time stamp, Tortoise viewport-entry peek, semantic <nav>/<address>/<a> links, dynamic copyright year, and reduced-motion compliance)'
+    '  [PASS] UI-05: "The Last Page" Editorial Footer verified (Monumental "अकथ प्रकाशन" wordmark, "Every story leaves a mark. / Thoughtfully crafted by mivishvajeet ↗ / Akath Prakashan · 2026", Tortoise & date removed, semantic <nav>/<address>/<a> links, and reduced-motion compliance)'
   );
 
-  // Verify WalkingTortoise in AboutAkathView after “वाचत राहू. विचारत राहू. लिहित राहू.”
+  // Verify Researched Tortoise Colophon Seal in AboutAkathView after “वाचत राहू. विचारत राहू. लिहित राहू.”
   const walkingTortoiseSource = fs.readFileSync(
     path.resolve(process.cwd(), 'src/components/WalkingTortoise.tsx'),
     'utf-8'
@@ -1019,11 +1017,12 @@ async function runTests() {
     'utf-8'
   );
   assert.ok(walkingTortoiseSource.includes('data-testid="about-walking-tortoise"'));
-  assert.ok(walkingTortoiseSource.includes('data-testid="walking-tortoise-traveler"'));
+  assert.ok(walkingTortoiseSource.includes('data-testid="about-tortoise-colophon-seal"'));
+  assert.ok(!walkingTortoiseSource.includes('data-testid="walking-tortoise-traveler"'));
   assert.ok(walkingTortoiseSource.includes('#174D3A'));
-  assert.ok(cssSource.includes('@keyframes akath-tortoise-traverse'));
-  assert.ok(cssSource.includes('@keyframes akath-tortoise-turn'));
-  assert.ok(cssSource.includes('@keyframes akath-tortoise-leg-stride-a'));
+  assert.ok(cssSource.includes('@keyframes akath-colophon-orbit'));
+  assert.ok(cssSource.includes('@keyframes akath-colophon-page-breathe-left'));
+  assert.ok(cssSource.includes('@keyframes akath-colophon-shell-breathe'));
   assert.ok(
     publishingViewsSource.includes('data-testid="about-final-marathi-line"')
   );
@@ -1032,13 +1031,13 @@ async function runTests() {
   const tortoiseIdx = publishingViewsSource.indexOf('<WalkingTortoise');
   assert.ok(
     tortoiseIdx > mottoIdx,
-    'WalkingTortoise must appear AFTER the final Marathi line “वाचत राहू. विचारत राहू. लिहित राहू.”'
+    'WalkingTortoise Colophon Seal must appear AFTER the final Marathi line “वाचत राहू. विचारत राहू. लिहित राहू.”'
   );
   console.log(
-    '  [PASS] UI-06: WalkingTortoise About Section Closing Animation verified (placed after “वाचत राहू. विचारत राहू. लिहित राहू.”, inline SVG + CSS keyframes, reduced-motion static fallback)'
+    '  [PASS] UI-06: Researched Tortoise Colophon Seal Animation verified on About page (placed after “वाचत राहू. विचारत राहू. लिहित राहू.”, open Smyth-sewn breathing manuscript + astrolabe ring + Devanagari ink-sparks, reduced-motion static fallback)'
   );
 
-  // Verify SixEditorialStages component, HomeView layout, and redesigned AboutAkathView
+  // Verify SixEditorialStages component, HomeView layout, Mobile Horizontal Catalog Scroll, and redesigned 60-68ch AboutAkathView with physics-based breathe animation
   const sixStagesSource = fs.readFileSync(
     path.resolve(process.cwd(), 'src/components/SixEditorialStages.tsx'),
     'utf-8'
@@ -1047,7 +1046,12 @@ async function runTests() {
     path.resolve(process.cwd(), 'src/views/HomeView.tsx'),
     'utf-8'
   );
+  const booksAndStoreSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/views/BooksAndStoreView.tsx'),
+    'utf-8'
+  );
   assert.ok(sixStagesSource.includes('data-testid="editorial-stages-autoplay-toggle"'));
+  assert.ok(sixStagesSource.includes('data-testid="editorial-stages-mobile-tabs"'));
   assert.ok(sixStagesSource.includes('data-testid="editorial-stage-spotlight"'));
   assert.ok(sixStagesSource.includes('data-testid="editorial-stages-spine-index"'));
   assert.ok(!sixStagesSource.includes('data-testid="editorial-stages-grid"'));
@@ -1058,6 +1062,9 @@ async function runTests() {
   assert.ok(sixStagesSource.includes('akath-stage-caliper'));
   assert.ok(sixStagesSource.includes('akath-stage-book'));
   assert.ok(homeViewSource.includes('data-testid="home-publishing-hero"'));
+  assert.ok(!homeViewSource.includes('Manuscript to Archival Edition'));
+  assert.ok(!homeViewSource.includes('Smyth-Sewn Binding'));
+  assert.ok(!homeViewSource.includes('Official ISBN-13 Registration'));
   assert.ok(!homeViewSource.includes('Four Production Pillars of Every Akath Edition'));
   assert.ok(!homeViewSource.includes('data-testid="home-publishing-standards"'));
   assert.ok(!homeViewSource.includes('data-testid="home-section-gateway"'));
@@ -1066,6 +1073,8 @@ async function runTests() {
   assert.ok(homeViewSource.includes('data-testid="home-manuscript-desk"'));
   assert.ok(homeViewSource.includes('<SixEditorialStages variant="home"'));
   assert.ok(homeViewSource.includes('data-testid="home-published-books"'));
+  assert.ok(homeViewSource.includes('data-testid="home-catalog-horizontal-scroll"'));
+  assert.ok(booksAndStoreSource.includes('data-testid="catalogue-mobile-horizontal-scroll"'));
   assert.ok(
     homeViewSource.indexOf('data-testid="home-manuscript-desk"') <
       homeViewSource.indexOf('<SixEditorialStages variant="home"'),
@@ -1075,7 +1084,15 @@ async function runTests() {
   assert.ok(publishingViewsSource.includes('data-testid="about-archival-dateline"'));
   assert.ok(publishingViewsSource.includes('data-testid="about-live-date"'));
   assert.ok(publishingViewsSource.includes('data-testid="about-live-time"'));
+  assert.ok(publishingViewsSource.includes('data-testid="about-prose-measure"'));
+  assert.ok(publishingViewsSource.includes('max-w-[65ch]'));
   assert.ok(publishingViewsSource.includes('aboutSectionSequentialVariants'));
+  assert.ok(publishingViewsSource.includes('data-testid="about-headline-breathe"'));
+  assert.ok(publishingViewsSource.includes('data-testid="about-prose-breathe-block"'));
+  assert.ok(publishingViewsSource.includes('akath-about-headline-breathe'));
+  assert.ok(publishingViewsSource.includes('akath-about-prose-breathe'));
+  assert.ok(cssSource.includes('@keyframes akath-headline-harmonic-breathe'));
+  assert.ok(cssSource.includes('@keyframes akath-prose-harmonic-breathe'));
   assert.ok(
     publishingViewsSource.includes('काही पुस्तकं वाचून संपतात. काही आपल्यासोबत राहतात.')
   );
@@ -1092,7 +1109,7 @@ async function runTests() {
     )
   );
   console.log(
-    '  [PASS] UI-07: Unified 2-Column SixEditorialStages Folio (zero extra boxes, zero weeks), Open Editorial Desk placed above, Four Pillars & Hero 3-metric boxes removed, and redesigned About Monograph with live IST Date/Time verified'
+    '  [PASS] UI-07: Mobile & Desktop SixEditorialStages UI, Mobile Horizontal Catalog Scroll, Removed Top Metadata Strip, and 60–68ch Marathi/English About Monograph with Physics-Based Breathe Animation verified'
   );
 
   // Verify No-Code Admin CMS Endpoints (Create Book, Export CSV, Publish Article, Update Site Config, Create Promotion)

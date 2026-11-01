@@ -12,7 +12,6 @@ import {
   User,
   Shield,
   LogOut,
-  Sparkles,
 } from 'lucide-react';
 import { useLanguage } from '../i18n/translations';
 import { AppLanguage } from '../utils/validation';
@@ -39,25 +38,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSearch,
   user,
   onLogout,
-  onQuickPersonaSwitch,
 }) => {
   const { lang, setLang, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [switchingPersona, setSwitchingPersona] = useState<string | null>(null);
-
-  const handlePersonaClick = async (
-    persona: 'reader' | 'author' | 'admin' | 'guest',
-    targetPath?: string
-  ) => {
-    if (!onQuickPersonaSwitch || switchingPersona) return;
-    setSwitchingPersona(persona);
-    try {
-      await onQuickPersonaSwitch(persona, targetPath);
-      setMobileMenuOpen(false);
-    } finally {
-      setSwitchingPersona(null);
-    }
-  };
 
   // Close mobile drawer on Escape key and lock background scroll while open
   useEffect(() => {
@@ -399,72 +382,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Instant 1-Click Role & Admin Console Demo Switcher */}
-          {onQuickPersonaSwitch && (
-            <div
-              data-testid="navbar-demo-switcher"
-              className="flex items-center gap-1.5 bg-[#1B2D6B] px-2.5 py-1 rounded-xl border border-white/15 shrink-0"
+          {/* Editorial Submission CTA on Desktop Tier 2 */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => handleNav('/submit-manuscript')}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#1B2D6B] hover:bg-[#152354] border border-[#FFD966]/30 text-[#FFD966] text-[12px] font-semibold transition-colors whitespace-nowrap cursor-pointer"
             >
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#FFD966] whitespace-nowrap">
-                <Sparkles className="w-3 h-3 text-[#FFD966]" />
-                <span>{lang === 'mr' ? 'डेमो मोड:' : 'Demo Role:'}</span>
-              </span>
-
-              <button
-                type="button"
-                data-testid="navbar-demo-reader"
-                disabled={Boolean(switchingPersona)}
-                onClick={() => handlePersonaClick('reader', '/account')}
-                className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                  user?.role === 'reader'
-                    ? 'bg-[#FFD966] text-[#252832]'
-                    : 'text-[#FFFDF7]/85 hover:text-[#FFD966] hover:bg-white/10'
-                }`}
-              >
-                {lang === 'mr' ? 'वाचक' : 'Reader'}
-              </button>
-
-              <button
-                type="button"
-                data-testid="navbar-demo-author"
-                disabled={Boolean(switchingPersona)}
-                onClick={() => handlePersonaClick('author', '/author/dashboard')}
-                className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                  user?.role === 'author'
-                    ? 'bg-[#FFD966] text-[#252832]'
-                    : 'text-[#FFFDF7]/85 hover:text-[#FFD966] hover:bg-white/10'
-                }`}
-              >
-                {lang === 'mr' ? 'लेखक' : 'Author'}
-              </button>
-
-              <button
-                type="button"
-                data-testid="navbar-demo-admin"
-                disabled={Boolean(switchingPersona)}
-                onClick={() => handlePersonaClick('admin', '/admin')}
-                className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold transition-colors whitespace-nowrap cursor-pointer ${
-                  user?.role === 'admin'
-                    ? 'bg-[#FFD966] text-[#252832] shadow-2xs'
-                    : 'bg-[#EF6855] text-[#FFFDF7] hover:bg-[#DE5542]'
-                }`}
-              >
-                {lang === 'mr' ? 'प्रशासक कक्ष' : 'Admin Console'}
-              </button>
-
-              {user && (
-                <button
-                  type="button"
-                  data-testid="navbar-demo-guest"
-                  disabled={Boolean(switchingPersona)}
-                  onClick={() => handlePersonaClick('guest', '/')}
-                  className="px-1.5 py-0.5 rounded-lg text-[10.5px] font-medium text-[#FFFDF7]/75 hover:text-[#FFFDF7] whitespace-nowrap cursor-pointer"
-                >
-                  {lang === 'mr' ? 'अतिथी' : 'Guest'}
-                </button>
-              )}
-            </div>
-          )}
+              <Feather className="w-3.5 h-3.5 text-[#EF6855]" />
+              <span>{t.nav.submitManuscript}</span>
+            </button>
+          </div>
         </div>
 
         {/* ===================================================================
@@ -549,33 +477,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
 
-          {/* Compact Role Demo Switcher on Mobile/Tablet */}
-          {onQuickPersonaSwitch && (
-            <div className="flex items-center gap-1 ml-auto">
-              <button
-                type="button"
-                onClick={() => handlePersonaClick('admin', '/admin')}
-                className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-colors whitespace-nowrap ${
-                  user?.role === 'admin'
-                    ? 'bg-[#FFD966] text-[#252832]'
-                    : 'bg-[#EF6855] text-[#FFFDF7]'
-                }`}
-              >
-                {lang === 'mr' ? 'प्रशासक डेमो' : 'Admin Demo'}
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePersonaClick('author', '/author/dashboard')}
-                className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-colors whitespace-nowrap ${
-                  user?.role === 'author'
-                    ? 'bg-[#FFD966] text-[#252832]'
-                    : 'bg-[#1B2D6B] text-[#FFFDF7] border border-white/15'
-                }`}
-              >
-                {lang === 'mr' ? 'लेखक' : 'Author'}
-              </button>
-            </div>
-          )}
+          {/* Compact Quick Links on Mobile/Tablet */}
+          <div className="flex items-center gap-1.5 ml-auto">
+            <button
+              type="button"
+              onClick={() => handleNav('/books')}
+              className="px-2.5 py-1 rounded-lg bg-[#1B2D6B] text-[#FFFDF7] border border-white/15 text-[11px] font-semibold whitespace-nowrap cursor-pointer"
+            >
+              {t.nav.books}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleNav('/submit-manuscript')}
+              className="px-2.5 py-1 rounded-lg bg-[#EF6855] text-[#FFFDF7] text-[11px] font-semibold whitespace-nowrap cursor-pointer"
+            >
+              {t.nav.submitManuscript}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -786,45 +704,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </span>
                       <ArrowUpRight className="w-4 h-4" />
                     </button>
-                  )}
-
-                  {/* Instant Demo Role Switcher inside Mobile Drawer */}
-                  {onQuickPersonaSwitch && (
-                    <div className="mt-2 p-3 rounded-2xl bg-[#243B8A] text-[#FFFDF7] space-y-2">
-                      <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#FFD966]">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>
-                          {lang === 'mr'
-                            ? '१-क्लिक डेमो भूमिका चाचणी:'
-                            : '1-Click Role Demo:'}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handlePersonaClick('reader', '/account')}
-                          className="px-2 py-1.5 rounded-lg bg-white/10 hover:bg-[#FFD966] hover:text-[#252832] text-[11px] font-semibold transition-colors"
-                        >
-                          {lang === 'mr' ? 'वाचक' : 'Reader'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handlePersonaClick('author', '/author/dashboard')
-                          }
-                          className="px-2 py-1.5 rounded-lg bg-white/10 hover:bg-[#FFD966] hover:text-[#252832] text-[11px] font-semibold transition-colors"
-                        >
-                          {lang === 'mr' ? 'लेखक' : 'Author'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handlePersonaClick('admin', '/admin')}
-                          className="px-2 py-1.5 rounded-lg bg-[#FFD966] text-[#252832] text-[11px] font-bold transition-colors"
-                        >
-                          {lang === 'mr' ? 'प्रशासक' : 'Admin'}
-                        </button>
-                      </div>
-                    </div>
                   )}
                 </div>
               </div>

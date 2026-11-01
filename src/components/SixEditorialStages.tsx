@@ -785,23 +785,23 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
       aria-labelledby={`six-editorial-stages-heading-${variant}`}
       className={
         variant === 'home'
-          ? 'py-16 sm:py-24 bg-[#F7F3E8]/85 border-b border-[#E6E1D6] relative overflow-hidden'
-          : 'py-12 sm:py-16 relative'
+          ? 'py-12 sm:py-16 bg-[#F7F3E8]/85 border-b border-[#E6E1D6] relative overflow-hidden'
+          : 'py-10 sm:py-14 relative'
       }
     >
       <div className={variant === 'home' ? 'max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12' : ''}>
-        {/* Editorial Section Header */}
+        {/* Compact Editorial Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 18 }}
+          initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8 border-b border-[#E6E1D6]"
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-5"
         >
-          <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-[#243B8A]/10 border border-[#243B8A]/20">
+          <div className="max-w-3xl space-y-1.5">
+            <div className="inline-flex items-center gap-2 text-[11px] font-mono font-bold tracking-[0.14em] uppercase text-[#243B8A]">
               <span className="w-2 h-2 rounded-full bg-[#EF6855]" />
-              <span className="text-xs font-semibold tracking-wider uppercase text-[#243B8A]">
+              <span>
                 {lang === 'mr'
                   ? 'अकथ संपादकीय आणि मुद्रण कार्यपद्धती • संहिता ते ग्रंथ'
                   : 'Akath Editorial & Bookmaking Architecture • Manuscript to Bound Edition'}
@@ -810,27 +810,27 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
 
             <h2
               id={`six-editorial-stages-heading-${variant}`}
-              className="text-2xl sm:text-4xl font-serif font-bold text-[#252832] leading-tight"
+              className="text-2xl sm:text-3xl lg:text-[2.15rem] font-serif font-bold text-[#252832] leading-tight"
             >
               {lang === 'mr'
                 ? 'हस्तलिखितापासून मुद्रित पुस्तकापर्यंतचे सहा संपादकीय टप्पे'
                 : 'Six Editorial Stages from Manuscript to Printed Book'}
             </h2>
 
-            <p className="text-sm sm:text-base text-[#525665] leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#525665] leading-relaxed max-w-[65ch]">
               {lang === 'mr'
                 ? 'एक चांगले पुस्तक घाईत घडत नाही. लेखकाच्या मूळ हस्तलिखितापासून वाचकाच्या हातात पडणाऱ्या संग्रहणीय प्रतीपर्यंत आम्ही प्रत्येक टप्प्यावर शांतपणे आणि काटेकोरपणे काम करतो.'
-                : 'An enduring book is never rushed. From the raw manuscript to the thread-sewn edition in a reader’s hands, every Akath title moves through six deliberate stages of editorial and typographic craft.'}
+                : 'An enduring book is never rushed. From raw manuscript to thread-sewn edition, every Akath title moves through six deliberate stages of editorial and typographic craft.'}
             </p>
           </div>
 
           {/* Interactive Playback & Step Controls */}
-          <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-end">
+          <div className="flex flex-wrap items-center gap-2 self-start lg:self-end shrink-0">
             <button
               type="button"
               data-testid="editorial-stages-autoplay-toggle"
               onClick={() => setIsAutoPlaying((prev) => !prev)}
-              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-sm text-xs font-semibold border transition-colors cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-semibold border transition-colors cursor-pointer ${
                 isAutoPlaying
                   ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A]'
                   : 'bg-[#FFFDF7] text-[#252832] border-[#E6E1D6] hover:border-[#243B8A]'
@@ -859,18 +859,18 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
                 type="button"
                 onClick={handlePrev}
                 aria-label={lang === 'mr' ? 'मागील संपादकीय टप्पा' : 'Previous editorial stage'}
-                className="p-2 text-[#252832] hover:text-[#243B8A] hover:bg-[#F7F3E8] rounded-sm transition-colors cursor-pointer"
+                className="p-1.5 text-[#252832] hover:text-[#243B8A] hover:bg-[#F7F3E8] rounded-sm transition-colors cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="px-3 text-xs font-mono font-bold text-[#243B8A] tabular-nums">
+              <span className="px-2.5 text-xs font-mono font-bold text-[#243B8A] tabular-nums">
                 {activeStage.step} / 06
               </span>
               <button
                 type="button"
                 onClick={handleNext}
                 aria-label={lang === 'mr' ? 'पुढील संपादकीय टप्पा' : 'Next editorial stage'}
-                className="p-2 text-[#252832] hover:text-[#243B8A] hover:bg-[#F7F3E8] rounded-sm transition-colors cursor-pointer"
+                className="p-1.5 text-[#252832] hover:text-[#243B8A] hover:bg-[#F7F3E8] rounded-sm transition-colors cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -878,204 +878,314 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
           </div>
         </motion.div>
 
-        {/* Unified Archival Bookmaking Folio: Left 6-Stage Spine Index + Right Open Bookplate Theatre */}
-        <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
-          {/* Left 5 Columns: 6-Stage Vertical Literary Spine Index */}
-          <motion.div
-            data-testid="editorial-stages-spine-index"
-            variants={stepperContainerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.15 }}
-            className="lg:col-span-5 flex flex-col justify-between gap-2.5"
-          >
-            {ENRICHED_STAGES.map((stage, idx) => {
-              const isCurrent = idx === activeIndex;
-              const isCompleted = idx < activeIndex;
-              return (
-                <motion.button
-                  key={stage.step}
-                  variants={stepperNodeVariants}
-                  type="button"
-                  data-testid={`editorial-stage-step-${stage.step}`}
-                  onClick={() => handleSelectStage(idx)}
-                  className={`akath-seq-step group relative text-left p-4 rounded-sm border transition-all cursor-pointer overflow-hidden ${
-                    isCurrent
-                      ? 'bg-[#FFFDF7] border-[#243B8A] shadow-sm'
-                      : isCompleted
-                      ? 'bg-[#FFFDF7]/90 border-[#174D3A]/35 hover:border-[#243B8A]'
-                      : 'bg-[#FFFDF7]/65 border-[#E6E1D6] hover:bg-[#FFFDF7] hover:border-[#243B8A]/45'
-                  }`}
-                >
-                  {/* Active Spine Indicator Bar */}
-                  {isCurrent && (
-                    <motion.div
-                      layoutId="akath-stage-active-spine"
-                      className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[#243B8A] via-[#174D3A] to-[#EF6855]"
-                      transition={{ type: 'spring', stiffness: 360, damping: 32 }}
-                    />
-                  )}
+        {/* ===================================================================
+            UNIFIED ARCHIVAL BOOKMAKING LEDGER FRAME (ZERO VERTICAL DEAD SPACE)
+            Connected 12-Col Architectural Grid:
+            Left 5 Cols: Connected 6-Row Spine Index (divide-y, no loose gaps)
+            Right 7 Cols: Side-by-Side Split Editorial Dossier & Tight Checkpoints
+            =================================================================== */}
+        <div className="rounded-sm border border-[#243B8A]/25 bg-[#FFFDF7] shadow-xs overflow-hidden">
+          {/* Top 6-Stage Continuous Progress Hairline */}
+          <div className="grid grid-cols-6 h-1 bg-[#E6E1D6]">
+            {ENRICHED_STAGES.map((s, idx) => (
+              <button
+                key={s.step}
+                type="button"
+                aria-label={`Stage ${s.step}`}
+                onClick={() => handleSelectStage(idx)}
+                className={`h-full transition-colors duration-300 cursor-pointer ${
+                  idx === activeIndex
+                    ? 'bg-[#EF6855]'
+                    : idx < activeIndex
+                    ? 'bg-[#243B8A]'
+                    : 'bg-transparent'
+                }`}
+              />
+            ))}
+          </div>
 
-                  <div className="flex items-center justify-between gap-3 pl-1.5">
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div
-                        className={`w-11 h-11 rounded-sm shrink-0 flex items-center justify-center border transition-colors ${
-                          isCurrent
-                            ? 'bg-[#FFD966]/35 border-[#243B8A]'
-                            : 'bg-[#F7F3E8] border-[#E6E1D6] group-hover:border-[#243B8A]/35'
+          {/* Mobile & Tablet (<lg): Compact Horizontal Stage Ribbon Inside Frame */}
+          <div className="lg:hidden bg-[#F7F3E8]/85 border-b border-[#E6E1D6] px-3 py-2.5">
+            <div
+              data-testid="editorial-stages-mobile-tabs"
+              className="flex overflow-x-auto snap-x snap-mandatory gap-2 no-scrollbar"
+            >
+              {ENRICHED_STAGES.map((stage, idx) => {
+                const isCurrent = idx === activeIndex;
+                return (
+                  <button
+                    key={stage.step}
+                    type="button"
+                    onClick={() => handleSelectStage(idx)}
+                    className={`snap-start shrink-0 min-w-[185px] max-w-[215px] text-left px-2.5 py-2 rounded-sm border transition-all cursor-pointer flex items-center gap-2.5 ${
+                      isCurrent
+                        ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A]'
+                        : 'bg-[#FFFDF7] text-[#252832] border-[#E6E1D6]'
+                    }`}
+                  >
+                    <span
+                      className={`font-mono text-[11px] font-bold px-1.5 py-0.5 rounded-sm shrink-0 tabular-nums ${
+                        isCurrent
+                          ? 'bg-[#FFD966] text-[#252832]'
+                          : 'bg-[#F7F3E8] text-[#243B8A]'
+                      }`}
+                    >
+                      {stage.step}
+                    </span>
+                    <div className="min-w-0">
+                      <span
+                        className={`block text-[9.5px] font-mono uppercase tracking-wider truncate ${
+                          isCurrent ? 'text-[#FFD966]' : 'text-[#174D3A]'
                         }`}
                       >
-                        <StageMiniIcon stepIndex={idx} isActive={isCurrent} />
-                      </div>
+                        {lang === 'mr' ? stage.pillarMr : stage.pillarEn}
+                      </span>
+                      <span className="block font-serif text-xs font-bold truncate">
+                        {lang === 'mr' ? stage.titleMr : stage.titleEn}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`font-mono text-[11px] font-bold px-1.5 py-0.5 rounded-sm ${
-                              isCurrent
-                                ? 'bg-[#243B8A] text-[#FFD966]'
-                                : isCompleted
-                                ? 'bg-[#174D3A] text-[#FFFDF7]'
-                                : 'bg-[#F7F3E8] text-[#525665]'
+          {/* Main 12-Column Connected Ledger */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 lg:divide-x divide-[#E6E1D6] items-start">
+            {/* Left 5 Columns (Desktop lg+): Tight Connected 6-Row Spine Index */}
+            <motion.div
+              data-testid="editorial-stages-spine-index"
+              variants={stepperContainerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.15 }}
+              className="hidden lg:flex lg:col-span-5 flex-col divide-y divide-[#E6E1D6] bg-[#FFFDF7]"
+            >
+              {ENRICHED_STAGES.map((stage, idx) => {
+                const isCurrent = idx === activeIndex;
+                const isCompleted = idx < activeIndex;
+                return (
+                  <motion.button
+                    key={stage.step}
+                    variants={stepperNodeVariants}
+                    type="button"
+                    data-testid={`editorial-stage-step-${stage.step}`}
+                    onClick={() => handleSelectStage(idx)}
+                    className={`akath-seq-step group relative text-left px-4 py-3 transition-colors cursor-pointer overflow-hidden ${
+                      isCurrent
+                        ? 'bg-[#F7F3E8]/95'
+                        : isCompleted
+                        ? 'bg-[#FFFDF7] hover:bg-[#F7F3E8]/55'
+                        : 'bg-[#FFFDF7] hover:bg-[#F7F3E8]/45'
+                    }`}
+                  >
+                    {/* Active Spine Indicator Bar */}
+                    {isCurrent && (
+                      <motion.div
+                        layoutId="akath-stage-active-spine"
+                        className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#243B8A] via-[#174D3A] to-[#EF6855]"
+                        transition={{ type: 'spring', stiffness: 360, damping: 32 }}
+                      />
+                    )}
+
+                    <div className="flex items-center justify-between gap-3 pl-1">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={`w-9 h-9 rounded-sm shrink-0 flex items-center justify-center border transition-colors ${
+                            isCurrent
+                              ? 'bg-[#FFD966]/45 border-[#243B8A]'
+                              : 'bg-[#F7F3E8] border-[#E6E1D6] group-hover:border-[#243B8A]/35'
+                          }`}
+                        >
+                          <StageMiniIcon stepIndex={idx} isActive={isCurrent} />
+                        </div>
+
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className={`font-mono text-[10.5px] font-bold tabular-nums ${
+                                isCurrent
+                                  ? 'text-[#243B8A]'
+                                  : isCompleted
+                                  ? 'text-[#174D3A]'
+                                  : 'text-[#525665]'
+                              }`}
+                            >
+                              {stage.step} · {stage.roman}
+                            </span>
+                            <span className="text-[#E6E1D6]">|</span>
+                            <span className="text-[10.5px] font-mono font-semibold text-[#174D3A] truncate">
+                              {lang === 'mr' ? stage.pillarMr : stage.pillarEn}
+                            </span>
+                          </div>
+
+                          <p
+                            className={`text-sm font-serif font-bold truncate leading-snug ${
+                              isCurrent ? 'text-[#243B8A]' : 'text-[#252832]'
                             }`}
                           >
-                            {stage.step} · {stage.roman}
+                            {lang === 'mr' ? stage.titleMr : stage.titleEn}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span
+                          className={`hidden xl:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded-sm border ${
+                            isCurrent
+                              ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A]'
+                              : 'bg-[#F7F3E8] text-[#525665] border-[#E6E1D6]'
+                          }`}
+                        >
+                          {stage.specCode}
+                        </span>
+                        <ArrowRight
+                          className={`w-3.5 h-3.5 shrink-0 transition-transform ${
+                            isCurrent
+                              ? 'text-[#EF6855] translate-x-0.5'
+                              : 'text-[#525665]/40 group-hover:text-[#243B8A] group-hover:translate-x-0.5'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </motion.div>
+
+            {/* Right 7 Columns: Compact Split-View Editorial Stage Spotlight */}
+            <motion.div
+              data-testid="editorial-stage-spotlight"
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="lg:col-span-7 bg-[#FFFDF7] flex flex-col"
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeStage.step}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex flex-col"
+                >
+                  {/* Top Dossier Metadata Strip */}
+                  <div className="px-4 sm:px-6 py-2.5 bg-[#F7F3E8]/80 border-b border-[#E6E1D6] flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold text-[#243B8A] uppercase tracking-wider">
+                        <Sparkles className="w-3.5 h-3.5 text-[#EF6855]" />
+                        {lang === 'mr' ? activeStage.phaseMr : activeStage.phaseEn}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[11px] font-mono">
+                      <span className="px-2 py-0.5 rounded-sm bg-[#FFD966]/45 text-[#252832] font-bold">
+                        {lang === 'mr'
+                          ? `टप्पा ${activeStage.step} / ०६`
+                          : `STAGE ${activeStage.step} / 06`}
+                      </span>
+                      <span className="text-[#525665] font-semibold">
+                        {activeStage.specCode}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Main Body: Side-by-Side Split Layout (Prose & Tight Checkpoints Left | Blueprint Right) */}
+                  <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+                    {/* Left 7 Cols inside Spotlight: Stage Title, Description & Tight Checkpoints Table */}
+                    <div className="md:col-span-7 space-y-3.5">
+                      <div className="space-y-1.5">
+                        <h3 className="text-lg sm:text-2xl font-serif font-bold text-[#252832] leading-snug">
+                          {lang === 'mr' ? activeStage.titleMr : activeStage.titleEn}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-[#525665] leading-relaxed">
+                          {lang === 'mr' ? activeStage.descMr : activeStage.descEn}
+                        </p>
+                      </div>
+
+                      {/* Zero-Gap Bordered Editorial Checkpoints Ledger */}
+                      <motion.div
+                        variants={gridContainerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="rounded-sm border border-[#E6E1D6] bg-[#F7F3E8]/45 overflow-hidden"
+                      >
+                        <div className="px-3 py-1.5 bg-[#F7F3E8] border-b border-[#E6E1D6] flex items-center justify-between">
+                          <span className="text-[10.5px] font-mono font-bold uppercase tracking-wider text-[#243B8A]">
+                            {lang === 'mr'
+                              ? 'संपादकीय गुणवत्ता निकष'
+                              : 'Editorial Quality Checkpoints'}
                           </span>
-                          <span className="text-[11px] font-mono font-semibold text-[#174D3A] truncate">
-                            {lang === 'mr' ? stage.pillarMr : stage.pillarEn}
+                          <span className="text-[10px] font-mono font-semibold text-[#174D3A]">
+                            {lang === 'mr' ? activeStage.pillarMr : activeStage.pillarEn}
                           </span>
                         </div>
 
-                        <p
-                          className={`mt-1 text-sm sm:text-base font-serif font-bold truncate ${
-                            isCurrent ? 'text-[#243B8A]' : 'text-[#252832]'
+                        <ul className="divide-y divide-[#E6E1D6]/80">
+                          {(lang === 'mr'
+                            ? activeStage.checkpointsMr
+                            : activeStage.checkpointsEn
+                          ).map((point, i) => (
+                            <motion.li
+                              key={i}
+                              variants={stepperNodeVariants}
+                              className="px-3 py-2 flex items-start gap-2 text-xs sm:text-[13px] text-[#252832] leading-snug"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#174D3A] shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                            </motion.li>
+                          ))}
+                        </ul>
+                      </motion.div>
+                    </div>
+
+                    {/* Right 5 Cols inside Spotlight: Compact Blueprint Specimen & Stage Deliverable */}
+                    <div className="md:col-span-5 flex flex-col gap-3">
+                      <div className="rounded-sm border border-[#E6E1D6] bg-[#F7F3E8]/75 p-3 sarvam-grid-lines flex items-center justify-center">
+                        <StageCraftIllustration stepIndex={activeIndex} lang={lang} />
+                      </div>
+
+                      <div className="rounded-sm border border-[#243B8A]/20 bg-[#243B8A]/5 px-3.5 py-2.5">
+                        <span className="block text-[10px] font-mono uppercase tracking-wider text-[#525665]">
+                          {lang === 'mr' ? 'या टप्प्याची निष्पत्ती' : 'Stage Deliverable'}
+                        </span>
+                        <span className="mt-0.5 block text-xs sm:text-[13px] font-serif font-bold text-[#243B8A] leading-snug">
+                          {lang === 'mr'
+                            ? activeStage.deliverableMr
+                            : activeStage.deliverableEn}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Compact Bottom Action & Quick-Jump Bar */}
+                  <div className="px-4 sm:px-6 py-3 bg-[#F7F3E8]/55 border-t border-[#E6E1D6] flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-1.5">
+                      {ENRICHED_STAGES.map((s, idx) => (
+                        <button
+                          key={s.step}
+                          type="button"
+                          onClick={() => handleSelectStage(idx)}
+                          aria-label={`Jump to stage ${s.step}`}
+                          className={`px-2 py-0.5 rounded-sm font-mono text-[11px] font-bold transition-colors cursor-pointer ${
+                            idx === activeIndex
+                              ? 'bg-[#243B8A] text-[#FFFDF7]'
+                              : 'bg-[#FFFDF7] text-[#525665] border border-[#E6E1D6] hover:border-[#243B8A]'
                           }`}
                         >
-                          {lang === 'mr' ? stage.titleMr : stage.titleEn}
-                        </p>
-                      </div>
-                    </div>
-
-                    <ArrowRight
-                      className={`w-4 h-4 shrink-0 transition-transform ${
-                        isCurrent
-                          ? 'text-[#EF6855] translate-x-0.5'
-                          : 'text-[#525665]/50 group-hover:text-[#243B8A] group-hover:translate-x-0.5'
-                      }`}
-                    />
-                  </div>
-                </motion.button>
-              );
-            })}
-          </motion.div>
-
-          {/* Right 7 Columns: Open Archival Bookplate Stage Theatre */}
-          <motion.div
-            data-testid="editorial-stage-spotlight"
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.15 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-7 rounded-sm bg-[#FFFDF7] border border-[#243B8A]/25 shadow-xs overflow-hidden flex flex-col justify-between"
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeStage.step}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                className="flex flex-col h-full justify-between"
-              >
-                {/* Top Blueprint Illustration Deck */}
-                <div className="bg-[#F7F3E8]/80 border-b border-[#E6E1D6] p-6 sm:p-8 relative sarvam-grid-lines">
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-[#FFFDF7] border border-[#E6E1D6] font-mono text-xs font-semibold text-[#243B8A]">
-                      <Sparkles className="w-3.5 h-3.5 text-[#EF6855]" />
-                      {lang === 'mr' ? activeStage.phaseMr : activeStage.phaseEn}
-                    </span>
-
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-[#FFD966]/45 border border-[#243B8A]/20 font-mono text-xs font-bold text-[#252832]">
-                      <span>FOLIO SPEC: {activeStage.specCode}</span>
-                    </span>
-                  </div>
-
-                  <div className="my-2 flex items-center justify-center">
-                    <StageCraftIllustration stepIndex={activeIndex} lang={lang} />
-                  </div>
-                </div>
-
-                {/* Bottom Editorial Specification & Checkpoints */}
-                <div className="p-6 sm:p-8 space-y-6 flex-1 flex flex-col justify-between bg-[#FFFDF7]">
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2.5">
-                        <span className="px-2.5 py-1 rounded-sm bg-[#243B8A] text-[#FFD966] font-mono text-xs font-bold">
-                          {lang === 'mr' ? `टप्पा ${activeStage.step}` : `STAGE ${activeStage.step}`}
-                        </span>
-                        <span className="text-xs font-mono uppercase tracking-wider text-[#174D3A] font-semibold">
-                          {lang === 'mr' ? activeStage.pillarMr : activeStage.pillarEn}
-                        </span>
-                      </div>
-                    </div>
-
-                    <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#252832]">
-                      {lang === 'mr' ? activeStage.titleMr : activeStage.titleEn}
-                    </h3>
-
-                    <p className="text-sm sm:text-base text-[#252832] leading-relaxed">
-                      {lang === 'mr' ? activeStage.descMr : activeStage.descEn}
-                    </p>
-
-                    {/* 3 Staggered Editorial Checkpoints */}
-                    <motion.div
-                      variants={gridContainerVariants}
-                      initial="hidden"
-                      animate="visible"
-                      className="pt-3 border-t border-[#E6E1D6] space-y-2.5"
-                    >
-                      <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#243B8A]">
-                        {lang === 'mr'
-                          ? 'संपादकीय गुणवत्ता निकष'
-                          : 'Editorial Quality Checkpoints'}
-                      </p>
-                      <ul className="space-y-2">
-                        {(lang === 'mr'
-                          ? activeStage.checkpointsMr
-                          : activeStage.checkpointsEn
-                        ).map((point, i) => (
-                          <motion.li
-                            key={i}
-                            variants={stepperNodeVariants}
-                            className="flex items-start gap-2.5 text-xs sm:text-sm text-[#252832] leading-relaxed"
-                          >
-                            <CheckCircle2 className="w-4 h-4 text-[#174D3A] shrink-0 mt-0.5" />
-                            <span>{point}</span>
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </motion.div>
-                  </div>
-
-                  {/* Stage Deliverable & Navigation Bar */}
-                  <div className="pt-5 border-t border-[#E6E1D6] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                      <span className="block text-[11px] font-mono uppercase tracking-wider text-[#525665]">
-                        {lang === 'mr' ? 'या टप्प्याची निष्पत्ती' : 'Stage Deliverable'}
-                      </span>
-                      <span className="text-xs sm:text-sm font-serif font-semibold text-[#243B8A]">
-                        {lang === 'mr'
-                          ? activeStage.deliverableMr
-                          : activeStage.deliverableEn}
-                      </span>
+                          {s.step}
+                        </button>
+                      ))}
                     </div>
 
                     {onNavigate && (
-                      <div className="flex flex-wrap items-center gap-2.5">
+                      <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
                           onClick={() => onNavigate('/submit-manuscript')}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] text-xs font-semibold transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-sm bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] text-xs font-semibold transition-colors cursor-pointer"
                         >
                           <FileText className="w-3.5 h-3.5" />
                           <span>
@@ -1086,7 +1196,7 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
                         <button
                           type="button"
                           onClick={() => onNavigate('/books')}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-sm bg-[#FFFDF7] hover:bg-[#F7F3E8] text-[#243B8A] border border-[#243B8A]/30 text-xs font-semibold transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-[#FFFDF7] hover:bg-[#F7F3E8] text-[#243B8A] border border-[#243B8A]/30 text-xs font-semibold transition-colors cursor-pointer"
                         >
                           <BookOpen className="w-3.5 h-3.5" />
                           <span>
@@ -1096,10 +1206,10 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
                       </div>
                     )}
                   </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </motion.div>
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
+          </div>
         </div>
       </div>
     </section>

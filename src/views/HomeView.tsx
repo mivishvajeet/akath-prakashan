@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ArrowRight,
   BookOpen,
@@ -22,6 +22,53 @@ import { AnimatedTortoiseEmblem } from '../components/SarvamIllustrations';
 import { SixEditorialStages } from '../components/SixEditorialStages';
 import { useLanguage } from '../i18n/translations';
 
+/**
+ * Custom IntersectionObserver hook for scroll-driven minimalist section fade-in reveals
+ */
+function useIntersectionReveal<T extends HTMLElement>(
+  options: IntersectionObserverInit = {
+    threshold: 0.12,
+    rootMargin: '0px 0px -32px 0px',
+  }
+): [React.RefObject<T | null>, boolean] {
+  const ref = useRef<T | null>(null);
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      setIsVisible(true);
+      return;
+    }
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+          break;
+        }
+      }
+    }, options);
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [options.threshold, options.rootMargin]);
+
+  return [ref, isVisible];
+}
+
 interface HomeViewProps {
   books: BookRecord[];
   authors: AuthorRecord[];
@@ -42,6 +89,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const { lang, t } = useLanguage();
   const [activeBookCategory, setActiveBookCategory] = useState<string>('सर्व');
   const [featuredBookIndex, setFeaturedBookIndex] = useState<number>(0);
+
+  const [heroSectionRef, isHeroVisible] = useIntersectionReveal<HTMLElement>({
+    threshold: 0.08,
+    rootMargin: '0px 0px -16px 0px',
+  });
+  const [deskSectionRef, isDeskVisible] = useIntersectionReveal<HTMLElement>({
+    threshold: 0.14,
+    rootMargin: '0px 0px -32px 0px',
+  });
+  const [stagesWrapperRef, isStagesVisible] = useIntersectionReveal<HTMLDivElement>({
+    threshold: 0.12,
+    rootMargin: '0px 0px -32px 0px',
+  });
+  const [catalogSectionRef, isCatalogVisible] = useIntersectionReveal<HTMLElement>({
+    threshold: 0.1,
+    rootMargin: '0px 0px -32px 0px',
+  });
 
   const featuredBooks = books.filter((b) => b.isFeatured);
   const spotlightBooks = featuredBooks.length > 0 ? featuredBooks : books.slice(0, 3);
@@ -99,12 +163,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
           1. PUBLISHING HOUSE HERO & FEATURED IMPRINT EDITION
           ===================================================================== */}
       <section
+        ref={heroSectionRef}
         data-testid="home-publishing-hero"
-        className="relative overflow-hidden sarvam-aura border-b border-[#E6E1D6] py-12 sm:py-16 lg:py-20"
+        className={`akath-io-section ${
+          isHeroVisible ? 'is-visible' : ''
+        } relative overflow-hidden sarvam-aura border-b border-[#E6E1D6] py-12 sm:py-16 lg:py-20`}
       >
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10">
           {/* Top Publishing House Imprint Ribbon */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-6 mb-8 border-b border-[#E6E1D6]/90">
+          <div className="akath-io-stagger-1 flex flex-wrap items-center justify-between gap-3 pb-6 mb-8 border-b border-[#E6E1D6]/90">
             <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-sm bg-[#FFFDF7] border border-[#E6E1D6]">
               <span className="w-2 h-2 rounded-full bg-[#243B8A]" />
               <span className="text-xs font-semibold text-[#243B8A] tracking-wide">
@@ -113,30 +180,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   : 'Akath Prakashan • Independent Marathi Literary Publishing House (Nanded • Pune)'}
               </span>
             </div>
-            <div className="hidden sm:flex items-center gap-4 text-xs text-[#525665]">
-              <span>
-                {lang === 'mr'
-                  ? 'संहिता ते मुद्रित ग्रंथ'
-                  : 'Manuscript to Archival Edition'}
-              </span>
-              <span className="text-[#E6E1D6]">·</span>
-              <span>
-                {lang === 'mr'
-                  ? 'धागा-शिलाई बांधणी'
-                  : 'Smyth-Sewn Binding'}
-              </span>
-              <span className="text-[#E6E1D6]">·</span>
-              <span>
-                {lang === 'mr'
-                  ? 'अधिकृत ISBN-13 नोंदणी'
-                  : 'Official ISBN-13 Registration'}
-              </span>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             {/* Left 7 Columns: Publishing House Identity & Primary Publishing CTAs */}
-            <div className="lg:col-span-7 space-y-6">
+            <div className="akath-io-stagger-2 lg:col-span-7 space-y-6">
               <div className="inline-flex items-center gap-3 px-3.5 py-1.5 rounded-sm bg-[#243B8A]/8 border border-[#243B8A]/20">
                 <AnimatedTortoiseEmblem
                   className="w-6 h-6"
@@ -216,7 +264,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             {/* Right 5 Columns: Featured Imprint Edition Dossier */}
             {activeHeroBook && (
-              <div className="lg:col-span-5">
+              <div className="akath-io-stagger-3 lg:col-span-5">
                 <div className="akath-card rounded-sm p-6 sm:p-8 bg-[#FFFDF7] relative">
                   <div className="flex items-center justify-between gap-2 pb-4 mb-5 border-b border-[#E6E1D6]">
                     <div className="flex items-center gap-2">
@@ -360,17 +408,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
           2. OPEN EDITORIAL DESK • FOR AUTHORS & TRANSLATORS (KEPT ABOVE)
           ===================================================================== */}
       <section
+        ref={deskSectionRef}
         data-testid="home-manuscript-desk"
-        className="py-12 sm:py-16 bg-[#FFFDF7] border-b border-[#E6E1D6]"
+        className={`akath-io-section ${
+          isDeskVisible ? 'is-visible' : ''
+        } py-12 sm:py-16 bg-[#FFFDF7] border-b border-[#E6E1D6]`}
       >
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-sm bg-[#243B8A] text-[#FFFDF7] p-8 sm:p-10 lg:p-12 relative overflow-hidden shadow-sm border border-[#1B2D6B]"
-          >
+          <div className="akath-io-stagger-1 rounded-sm bg-[#243B8A] text-[#FFFDF7] p-8 sm:p-10 lg:p-12 relative overflow-hidden shadow-sm border border-[#1B2D6B]">
             {/* Top Editorial Gold & Coral Ribbon */}
             <div
               aria-hidden="true"
@@ -435,7 +480,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
 
               {/* Right 6 Columns: Accepted Literary Genres & Submission Checklist */}
-              <div className="lg:col-span-6 bg-[#FFFDF7] text-[#252832] rounded-sm p-6 sm:p-8 border border-[#E6E1D6] space-y-5">
+              <div className="akath-io-stagger-2 lg:col-span-6 bg-[#FFFDF7] text-[#252832] rounded-sm p-6 sm:p-8 border border-[#E6E1D6] space-y-5">
                 <div className="flex items-center justify-between pb-3 border-b border-[#E6E1D6]">
                   <span className="text-xs font-bold uppercase tracking-wider text-[#243B8A]">
                     {lang === 'mr'
@@ -497,24 +542,32 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* =====================================================================
           3. SIX EDITORIAL STAGES FROM MANUSCRIPT TO PRINTED BOOK
           ===================================================================== */}
-      <SixEditorialStages variant="home" onNavigate={onNavigate} />
+      <div
+        ref={stagesWrapperRef}
+        className={`akath-io-section ${isStagesVisible ? 'is-visible' : ''}`}
+      >
+        <SixEditorialStages variant="home" onNavigate={onNavigate} />
+      </div>
 
       {/* =====================================================================
           4. PUBLISHED EDITIONS CATALOGUE (IMPRINT BOOKSHELF)
           ===================================================================== */}
       <section
+        ref={catalogSectionRef}
         data-testid="home-published-books"
-        className="py-16 sm:py-20 bg-[#F7F3E8]/55 border-b border-[#E6E1D6]"
+        className={`akath-io-section ${
+          isCatalogVisible ? 'is-visible' : ''
+        } py-16 sm:py-20 bg-[#F7F3E8]/55 border-b border-[#E6E1D6]`}
       >
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div className="akath-io-stagger-1 flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#243B8A]">
                 <BookOpen className="w-4 h-4" />
@@ -541,7 +594,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           {/* Genre Filter Bar */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 border-b border-[#E6E1D6] no-scrollbar">
+          <div className="akath-io-stagger-2 flex items-center gap-2 overflow-x-auto pb-4 mb-8 border-b border-[#E6E1D6] no-scrollbar">
             {categories.map((cat) => {
               const active = activeBookCategory === cat;
               return (
@@ -561,20 +614,39 @@ export const HomeView: React.FC<HomeViewProps> = ({
             })}
           </div>
 
-          {/* Published Books Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+          {/* Mobile Horizontal Swipe Indicator Bar */}
+          <div className="flex sm:hidden items-center justify-between px-3 py-1.5 rounded-sm bg-[#FFFDF7] border border-[#E6E1D6] text-[11px] font-mono text-[#252832] mb-3.5">
+            <span className="font-semibold text-[#243B8A]">
+              {lang === 'mr'
+                ? '← पुस्तके पाहण्यासाठी आडवे स्वाइप करा →'
+                : '← Swipe horizontally to browse editions →'}
+            </span>
+            <span className="tabular-nums font-bold px-2 py-0.5 rounded-sm bg-[#FFD966]/70 text-[#252832]">
+              {filteredBooks.length} {lang === 'mr' ? 'पुस्तके' : 'Books'}
+            </span>
+          </div>
+
+          {/* Published Books — Horizontal Swipeable Flexbox on Mobile, Grid on Tablet/Desktop */}
+          <div
+            data-testid="home-catalog-horizontal-scroll"
+            className="akath-io-stagger-3 flex flex-nowrap sm:grid sm:grid-cols-2 lg:grid-cols-3 overflow-x-auto sm:overflow-visible snap-x snap-mandatory scroll-smooth overscroll-x-contain gap-4 sm:gap-7 pb-4 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar"
+          >
             {filteredBooks.map((book) => {
               const bookAuthor = authors.find((a) => a.id === book.authorId);
               return (
-                <BookCard
+                <div
                   key={book.id}
-                  book={book}
-                  author={bookAuthor}
-                  onSelectBook={(slug) => onNavigate(`/books/${slug}`)}
-                  onSelectAuthor={(slug) => onNavigate(`/authors/${slug}`)}
-                  onAddToCart={(bookId) => onAddToCart(bookId)}
-                  justAdded={recentlyAddedBookId === book.id}
-                />
+                  className="w-[82vw] max-w-[295px] sm:w-auto sm:max-w-none shrink-0 snap-center sm:snap-start"
+                >
+                  <BookCard
+                    book={book}
+                    author={bookAuthor}
+                    onSelectBook={(slug) => onNavigate(`/books/${slug}`)}
+                    onSelectAuthor={(slug) => onNavigate(`/authors/${slug}`)}
+                    onAddToCart={(bookId) => onAddToCart(bookId)}
+                    justAdded={recentlyAddedBookId === book.id}
+                  />
+                </div>
               );
             })}
           </div>

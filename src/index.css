@@ -904,6 +904,414 @@
   transform-origin: center center;
 }
 
+/* =========================================================================
+   About Section Closing Colophon — Researched Tortoise & Book-Press Seal
+   ========================================================================= */
+@keyframes akath-colophon-orbit {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes akath-colophon-aura-pulse {
+  0%,
+  100% {
+    transform: scale(0.97);
+    opacity: 0.72;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes akath-colophon-page-breathe-left {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0px);
+  }
+  50% {
+    transform: rotate(-3.4deg) translateY(-1.5px);
+  }
+}
+
+@keyframes akath-colophon-page-breathe-right {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0px);
+  }
+  50% {
+    transform: rotate(3.4deg) translateY(-1.5px);
+  }
+}
+
+@keyframes akath-colophon-shell-breathe {
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-2.2px) scale(1.018);
+  }
+}
+
+@keyframes akath-colophon-head-watch {
+  0%,
+  100% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+  50% {
+    transform: translate(1.4px, -1.2px) rotate(-2.5deg);
+  }
+}
+
+@keyframes akath-colophon-glyph-rise {
+  0%,
+  100% {
+    transform: translateY(0px) scale(0.95);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translateY(-5.5px) scale(1.05);
+    opacity: 1;
+  }
+}
+
+.akath-colophon-orbit-ring {
+  animation: akath-colophon-orbit 38s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+.akath-colophon-aura {
+  animation: akath-colophon-aura-pulse 5.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+.akath-colophon-page-left {
+  animation: akath-colophon-page-breathe-left 4.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: right bottom;
+}
+
+.akath-colophon-page-right {
+  animation: akath-colophon-page-breathe-right 4.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: left bottom;
+}
+
+.akath-colophon-shell-pulse {
+  animation: akath-colophon-shell-breathe 4.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+.akath-colophon-head-nod {
+  animation: akath-colophon-head-watch 5.2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+
+.akath-colophon-glyph-a {
+  animation: akath-colophon-glyph-rise 4.2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+.akath-colophon-glyph-b {
+  animation: akath-colophon-glyph-rise 4.8s ease-in-out 1.1s infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+.akath-colophon-glyph-c {
+  animation: akath-colophon-glyph-rise 5.3s ease-in-out 2.2s infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+/* =========================================================================
+   Sarvam-Style Monumental Marathi Footer Wordmark ("अकथ प्रकाशन")
+   ========================================================================= */
+@keyframes akath-sarvam-wordmark-shimmer {
+  0%,
+  100% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 50% 38%;
+  }
+}
+
+@keyframes akath-shirorekha-beam-sweep {
+  0% {
+    transform: translateX(-110%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.95;
+  }
+  80% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateX(480%);
+    opacity: 0;
+  }
+}
+
+@keyframes akath-horizon-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.78;
+    transform: scaleY(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.06);
+  }
+}
+
+.akath-sarvam-wordmark-stage {
+  --wordmark-spot-x: 50%;
+  --wordmark-spot-y: 70%;
+}
+
+.akath-wordmark-shirorekha-beam {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 217, 102, 0) 0%,
+    rgba(255, 217, 102, 0.95) 45%,
+    rgba(239, 104, 85, 0.9) 70%,
+    rgba(255, 217, 102, 0) 100%
+  );
+  animation: akath-shirorekha-beam-sweep 7.5s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.akath-wordmark-grid-backdrop {
+  background-image:
+    linear-gradient(to right, rgba(255, 253, 247, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 253, 247, 0.08) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 75% 90% at 50% 100%, #000 20%, transparent 90%);
+}
+
+.akath-wordmark-horizon-glow {
+  background: radial-gradient(
+    68% 98% at 50% 100%,
+    rgba(255, 217, 102, 0.25) 0%,
+    rgba(239, 104, 85, 0.13) 44%,
+    rgba(36, 59, 138, 0) 100%
+  );
+  transform-origin: center bottom;
+  animation: akath-horizon-glow-breathe 6.2s ease-in-out infinite;
+}
+
+.akath-wordmark-cursor-spotlight {
+  background: radial-gradient(
+    460px circle at var(--wordmark-spot-x) var(--wordmark-spot-y),
+    rgba(255, 217, 102, 0.26) 0%,
+    rgba(239, 104, 85, 0.12) 38%,
+    transparent 75%
+  );
+}
+
+.akath-wordmark-part {
+  background-image: linear-gradient(
+    180deg,
+    #FFFDF7 0%,
+    #FFF3C4 26%,
+    #FFD966 54%,
+    rgba(239, 104, 85, 0.55) 78%,
+    rgba(27, 45, 107, 0.12) 100%
+  );
+  background-size: 100% 165%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 253, 247, 0.18);
+  filter: drop-shadow(0 -6px 24px rgba(255, 217, 102, 0.12));
+  animation: akath-sarvam-wordmark-shimmer 8.5s ease-in-out infinite;
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    -webkit-text-stroke-color 0.45s ease;
+}
+
+.akath-wordmark-part-2 {
+  animation-delay: 1.2s;
+}
+
+.akath-sarvam-wordmark-stage .akath-wordmark-part {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+}
+
+.akath-sarvam-wordmark-stage.is-visible .akath-wordmark-part-1 {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.08s,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.08s,
+    filter 0.45s ease;
+}
+
+.akath-sarvam-wordmark-stage.is-visible .akath-wordmark-part-2 {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.2s,
+    transform 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.2s,
+    filter 0.45s ease;
+}
+
+.akath-sarvam-wordmark-stage:hover .akath-wordmark-part-1 {
+  transform: translate3d(0, -5px, 0) scale(1.012);
+  -webkit-text-stroke-color: rgba(255, 217, 102, 0.48);
+  filter: drop-shadow(0 -8px 28px rgba(255, 217, 102, 0.28));
+}
+
+.akath-sarvam-wordmark-stage:hover .akath-wordmark-part-2 {
+  transform: translate3d(0, -5px, 0) scale(1.012);
+  -webkit-text-stroke-color: rgba(255, 217, 102, 0.48);
+  filter: drop-shadow(0 -8px 28px rgba(239, 104, 85, 0.25));
+}
+
+/* =========================================================================
+   IntersectionObserver Scroll-Driven Section Reveal (HomeView & Editorial)
+   ========================================================================= */
+.akath-io-section {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  transition:
+    opacity 0.68s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.68s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.akath-io-section.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.akath-io-section .akath-io-stagger-1,
+.akath-io-section .akath-io-stagger-2,
+.akath-io-section .akath-io-stagger-3 {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+  transition:
+    opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.58s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.akath-io-section.is-visible .akath-io-stagger-1 {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition-delay: 0.08s;
+}
+
+.akath-io-section.is-visible .akath-io-stagger-2 {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition-delay: 0.16s;
+}
+
+.akath-io-section.is-visible .akath-io-stagger-3 {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition-delay: 0.24s;
+}
+
+/* =========================================================================
+   About Page — Subtle Physics-Based 'Breathe' Animation for Headline & Prose
+   Models damped harmonic respiration (~7.5 breaths/min) paired with spring
+   settling so long-form Marathi & English prose feels alive on warm paper
+   without shifting layout or distracting the reader's eye.
+   ========================================================================= */
+@keyframes akath-headline-harmonic-breathe {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.985;
+  }
+  50% {
+    transform: translate3d(0, -2.2px, 0) scale(1.0038);
+    opacity: 1;
+  }
+}
+
+@keyframes akath-lead-harmonic-breathe {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.94;
+  }
+  50% {
+    transform: translate3d(0, -1.6px, 0) scale(1.0024);
+    opacity: 1;
+  }
+}
+
+@keyframes akath-prose-harmonic-breathe {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.975;
+  }
+  50% {
+    transform: translate3d(0, -1.35px, 0) scale(1.0016);
+    opacity: 1;
+  }
+}
+
+.akath-about-headline-breathe {
+  animation: akath-headline-harmonic-breathe 7.2s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  transform-origin: left center;
+  will-change: transform, opacity;
+}
+
+.akath-about-lead-breathe {
+  animation: akath-lead-harmonic-breathe 7.8s cubic-bezier(0.37, 0, 0.63, 1) 1.1s infinite;
+  transform-origin: left center;
+  will-change: transform, opacity;
+}
+
+.akath-about-prose-breathe {
+  animation: akath-prose-harmonic-breathe 8.4s cubic-bezier(0.37, 0, 0.63, 1) var(--breathe-phase, 0s) infinite;
+  transform-origin: left center;
+  will-change: transform, opacity;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.akath-about-prose-breathe > p {
+  animation: akath-prose-harmonic-breathe 8.8s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  transform-origin: left center;
+  transition:
+    color 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.akath-about-prose-breathe > p:nth-child(2n) {
+  animation-delay: 1.4s;
+}
+
+.akath-about-prose-breathe > p:nth-child(3n) {
+  animation-delay: 2.8s;
+}
+
+/* Steadying physics on hover/focus: when a reader lingers on a prose block,
+   the oscillation gently pauses so foveal tracking remains crystal-clear */
+.akath-about-headline-breathe:hover,
+.akath-about-prose-breathe:hover,
+.akath-about-prose-breathe:focus-within,
+.akath-about-prose-breathe:hover > p {
+  animation-play-state: paused;
+}
+
 /* Respect reduced motion preferences (WCAG 2.1 SC 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -915,6 +1323,15 @@
     scroll-behavior: auto !important;
   }
 
+  .akath-io-section,
+  .akath-io-section.is-visible,
+  .akath-io-section .akath-io-stagger-1,
+  .akath-io-section .akath-io-stagger-2,
+  .akath-io-section .akath-io-stagger-3,
+  .akath-about-headline-breathe,
+  .akath-about-lead-breathe,
+  .akath-about-prose-breathe,
+  .akath-about-prose-breathe > p,
   .tortoise-float,
   .group:hover .tortoise-float,
   .tortoise-float:hover,
@@ -956,6 +1373,23 @@
   .akath-walking-tortoise-leg-b,
   .akath-walking-tortoise-body,
   .akath-walking-tortoise-head,
+  .akath-colophon-orbit-ring,
+  .akath-colophon-aura,
+  .akath-colophon-page-left,
+  .akath-colophon-page-right,
+  .akath-colophon-shell-pulse,
+  .akath-colophon-head-nod,
+  .akath-colophon-glyph-a,
+  .akath-colophon-glyph-b,
+  .akath-colophon-glyph-c,
+  .akath-wordmark-shirorekha-beam,
+  .akath-wordmark-horizon-glow,
+  .akath-wordmark-part,
+  .akath-sarvam-wordmark-stage .akath-wordmark-part,
+  .akath-sarvam-wordmark-stage.is-visible .akath-wordmark-part-1,
+  .akath-sarvam-wordmark-stage.is-visible .akath-wordmark-part-2,
+  .akath-sarvam-wordmark-stage:hover .akath-wordmark-part-1,
+  .akath-sarvam-wordmark-stage:hover .akath-wordmark-part-2,
   .akath-stage-loupe,
   .akath-stage-quill,
   .akath-stage-proof-mark,
@@ -973,6 +1407,7 @@
     animation: none !important;
     transition: none !important;
     transform: none !important;
+    opacity: 1 !important;
     will-change: auto;
   }
 
@@ -980,6 +1415,4 @@
     justify-content: center;
   }
 }
-
-
 
