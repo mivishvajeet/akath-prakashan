@@ -447,8 +447,8 @@ export const Footer: React.FC<FooterProps> = ({
                   />
                   <span>
                     {lang === 'mr'
-                      ? 'नांदेड व पुणे, महाराष्ट्र'
-                      : 'Nanded & Pune, MH'}
+                      ? 'नांदेड, महाराष्ट्र'
+                      : 'Nanded, Maharashtra'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">

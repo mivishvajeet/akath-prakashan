@@ -26,6 +26,11 @@ import {
   BookOpen,
   Feather,
   Compass,
+  ChevronDown,
+  Check,
+  Mail,
+  Phone,
+  MessageSquare,
 } from 'lucide-react';
 
 // ============================================================================
@@ -402,7 +407,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
             <span className="hidden sm:inline text-[#FFFDF7]/35">|</span>
             <span className="inline-flex items-center gap-1.5 text-[#FFFDF7]/90">
               <MapPin className="w-3.5 h-3.5 text-[#EF6855]" />
-              <span>Nanded • Pune, Maharashtra (IST)</span>
+              <span>Nanded, Maharashtra (IST)</span>
             </span>
           </div>
 
@@ -496,7 +501,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
               </p>
 
               <p>
-                Based in Nanded and Pune, Akath Prakashan is an independent publishing house devoted to Marathi literature and writing across languages. We work with fiction, poetry, essays, criticism, and translations — not because every category needs to be represented, but because good writing can come from anywhere and speak to anyone.
+                Based in Nanded, Akath Prakashan is an independent publishing house devoted to Marathi literature and writing across languages. We work with fiction, poetry, essays, criticism, and translations — not because every category needs to be represented, but because good writing can come from anywhere and speak to anyone.
               </p>
 
               <p>
@@ -681,6 +686,106 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
             </motion.div>
           </motion.section>
 
+          {/* Option 2: Minimal Editorial Desk & Colophon (संपादकीय कक्ष व प्रकाशन मुद्रा) */}
+          <motion.section
+            id="about-chapter-06"
+            data-testid="about-editorial-colophon-desk"
+            variants={aboutSectionSequentialVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="akath-seq-step space-y-6 pb-12 border-b border-[#E6DFCE]"
+          >
+            <motion.div variants={aboutItemSequentialVariants} className="space-y-1.5">
+              <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#174D3A] font-semibold">
+                Imprint Colophon · प्रकाशन मुद्रा
+              </p>
+              <h2 className="akath-about-headline-breathe font-serif text-[23px] sm:text-[27px] font-bold text-[#252832] leading-snug">
+                Editorial Desk &amp; Stewardship
+              </h2>
+            </motion.div>
+
+            <motion.div
+              variants={aboutItemSequentialVariants}
+              whileHover={{ y: -1, scale: 1.0015 }}
+              transition={aboutBreatheHoverSpring}
+              style={{ '--breathe-phase': '4.3s' } as React.CSSProperties}
+              className="akath-about-prose-breathe rounded-2xl bg-[#F7F3E8]/70 border border-[#E6DFCE] p-6 sm:p-8 space-y-6"
+            >
+              {/* Primary Founder & Publisher Entry */}
+              <div className="pb-6 border-b border-[#E6DFCE] flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+                <div className="space-y-1">
+                  <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#243B8A] font-semibold">
+                    Founder &amp; Publisher · संस्थापक आणि प्रकाशक
+                  </p>
+                  <h3
+                    data-testid="about-founder-name"
+                    className="font-serif text-[21px] sm:text-[24px] font-bold text-[#252832] tracking-tight"
+                  >
+                    Pooja Vasantrao Dhawale
+                  </h3>
+                  <p className="font-serif text-[15.5px] text-[#174D3A] font-medium">
+                    पूजा वसंतराव ढवळे
+                  </p>
+                </div>
+                <p className="text-[13.5px] font-serif italic text-[#5A5F72] sm:text-right max-w-[30ch]">
+                  Editorial Direction, Manuscript Selection &amp; Imprint Stewardship
+                </p>
+              </div>
+
+              {/* Minimal Typographic Desk Ledger */}
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 text-[14.5px]">
+                <div className="space-y-1">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#5A5F72]">
+                    Editorial &amp; Proofreading Desk
+                  </dt>
+                  <dd className="font-serif font-semibold text-[#252832]">
+                    Akath Editorial Circle · अकथ संपादकीय मंडळ
+                  </dd>
+                  <dd className="text-[13px] text-[#5A5F72] leading-relaxed">
+                    Developmental editing, regional Marathi cadence &amp; translation review
+                  </dd>
+                </div>
+
+                <div className="space-y-1">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#5A5F72]">
+                    Typography &amp; Book Design
+                  </dt>
+                  <dd className="font-serif font-semibold text-[#252832]">
+                    Akath Archival Presswork · अक्षरजुळणी व मुखपृष्ठ कक्ष
+                  </dd>
+                  <dd className="text-[13px] text-[#5A5F72] leading-relaxed">
+                    Long-form Devanagari typesetting, cover art direction &amp; print production
+                  </dd>
+                </div>
+
+                <div className="space-y-1">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#5A5F72]">
+                    Literary Forum
+                  </dt>
+                  <dd className="font-serif font-semibold text-[#252832]">
+                    Vachankatta &amp; First Page · वाचनकट्टा आणि पहिलं पान
+                  </dd>
+                  <dd className="text-[13px] text-[#5A5F72] leading-relaxed">
+                    Reader essays, critical reviews, curated reading lists &amp; book excerpts
+                  </dd>
+                </div>
+
+                <div className="space-y-1">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#5A5F72]">
+                    Seat of Publication
+                  </dt>
+                  <dd className="font-serif font-semibold text-[#252832]">
+                    Nanded, Maharashtra · नांदेड, महाराष्ट्र
+                  </dd>
+                  <dd className="text-[13px] text-[#5A5F72] leading-relaxed">
+                    Independent Marathi literary publishing &amp; direct reader dispatch
+                  </dd>
+                </div>
+              </dl>
+            </motion.div>
+          </motion.section>
+
           {/* Closing Signature & Researched Tortoise Colophon Seal */}
           <motion.footer
             data-testid="about-closing-colophon"
@@ -821,7 +926,7 @@ export const SubmitManuscriptView: React.FC<SubmitManuscriptViewProps> = ({
         authorName: authorName.trim(),
         email: emailCheck.normalizedValue,
         phone: phoneCheck.normalizedValue,
-        city: city.trim() || 'पुणे',
+        city: city.trim() || 'नांदेड',
         manuscriptTitle: manuscriptTitle.trim(),
         category,
         wordCountEstimate: wordCountEstimate.trim(),
@@ -1038,30 +1143,37 @@ export const SubmitManuscriptView: React.FC<SubmitManuscriptViewProps> = ({
                 <label htmlFor="ms-category" className="block ui-label mb-1.5">
                   {t.manuscript.categoryLabel}
                 </label>
-                <select
+                <EditorialSelectDropdown
                   id="ms-category"
+                  testId="ms-category-select"
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFCE] text-[15px] bg-white"
-                >
-                  <option value="कादंबरी">
-                    {lang === 'mr' ? 'कादंबरी' : 'Novel (कादंबरी)'}
-                  </option>
-                  <option value="कथासंग्रह">
-                    {lang === 'mr' ? 'कथासंग्रह' : 'Short Stories (कथासंग्रह)'}
-                  </option>
-                  <option value="कवितासंग्रह">
-                    {lang === 'mr' ? 'कवितासंग्रह' : 'Poetry (कवितासंग्रह)'}
-                  </option>
-                  <option value="समीक्षा व निबंध">
-                    {lang === 'mr'
-                      ? 'समीक्षा व निबंध'
-                      : 'Criticism & Essays (समीक्षा व निबंध)'}
-                  </option>
-                  <option value="अनुवाद">
-                    {lang === 'mr' ? 'अनुवाद' : 'Translation (अनुवाद)'}
-                  </option>
-                </select>
+                  onChange={(val) => setCategory(val)}
+                  options={[
+                    {
+                      value: 'कादंबरी',
+                      label: lang === 'mr' ? 'कादंबरी' : 'Novel (कादंबरी)',
+                    },
+                    {
+                      value: 'कथासंग्रह',
+                      label: lang === 'mr' ? 'कथासंग्रह' : 'Short Stories (कथासंग्रह)',
+                    },
+                    {
+                      value: 'कवितासंग्रह',
+                      label: lang === 'mr' ? 'कवितासंग्रह' : 'Poetry (कवितासंग्रह)',
+                    },
+                    {
+                      value: 'समीक्षा व निबंध',
+                      label:
+                        lang === 'mr'
+                          ? 'समीक्षा व निबंध'
+                          : 'Criticism & Essays (समीक्षा व निबंध)',
+                    },
+                    {
+                      value: 'अनुवाद',
+                      label: lang === 'mr' ? 'अनुवाद' : 'Translation (अनुवाद)',
+                    },
+                  ]}
+                />
               </div>
             </div>
 
@@ -1204,8 +1316,208 @@ export const SubmitManuscriptView: React.FC<SubmitManuscriptViewProps> = ({
 };
 
 // ============================================================================
-// 5. CONTACT VIEW (/contact)
+// SHARED EDITORIAL ACCESSIBLE DROPDOWN COMPONENT
 // ============================================================================
+
+export interface EditorialDropdownOption {
+  value: string;
+  label: string;
+}
+
+interface EditorialSelectDropdownProps {
+  id: string;
+  testId?: string;
+  value: string;
+  options: EditorialDropdownOption[];
+  onChange: (value: string) => void;
+  ariaLabel?: string;
+}
+
+export const EditorialSelectDropdown: React.FC<EditorialSelectDropdownProps> = ({
+  id,
+  testId,
+  value,
+  options,
+  onChange,
+  ariaLabel,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(() =>
+    Math.max(
+      0,
+      options.findIndex((o) => o.value === value)
+    )
+  );
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const selectedOption =
+    options.find((opt) => opt.value === value) || options[0];
+
+  useEffect(() => {
+    const idx = options.findIndex((o) => o.value === value);
+    if (idx >= 0) {
+      setHighlightedIndex(idx);
+    }
+  }, [value, options]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handlePointerDownOutside = (event: MouseEvent | TouchEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handlePointerDownOutside);
+    document.addEventListener('touchstart', handlePointerDownOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDownOutside);
+      document.removeEventListener('touchstart', handlePointerDownOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const handleTriggerKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!isOpen) {
+        setIsOpen(true);
+      } else {
+        setHighlightedIndex((prev) => (prev + 1) % options.length);
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!isOpen) {
+        setIsOpen(true);
+      } else {
+        setHighlightedIndex((prev) => (prev - 1 + options.length) % options.length);
+      }
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (isOpen && options[highlightedIndex]) {
+        onChange(options[highlightedIndex].value);
+        setIsOpen(false);
+      } else {
+        setIsOpen((prev) => !prev);
+      }
+    } else if (e.key === 'Escape') {
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      data-testid={testId}
+      className="relative w-full min-w-0"
+    >
+      {/* Synchronized native select for form semantics & accessibility */}
+      <select
+        id={id}
+        aria-label={ariaLabel}
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setIsOpen(false);
+        }}
+        className="sr-only"
+        tabIndex={-1}
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+
+      <button
+        type="button"
+        data-testid={testId ? `${testId}-trigger` : `${id}-trigger`}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={`${id}-listbox`}
+        onClick={() => setIsOpen((prev) => !prev)}
+        onKeyDown={handleTriggerKeyDown}
+        className={`w-full px-3.5 py-2.5 rounded-xl border text-left text-[15px] bg-white transition-colors flex items-center justify-between gap-2 ${
+          isOpen
+            ? 'border-[#243B8A] ring-2 ring-[#243B8A]/10'
+            : 'border-[#E6DFCE] hover:border-[#243B8A]/45'
+        }`}
+      >
+        <span className="text-[#252832] truncate block">
+          {selectedOption?.label}
+        </span>
+        <ChevronDown
+          className={`w-4 h-4 text-[#5A5F72] shrink-0 transition-transform duration-150 ${
+            isOpen ? 'rotate-180 text-[#243B8A]' : ''
+          }`}
+          aria-hidden="true"
+        />
+      </button>
+
+      {isOpen && (
+        <ul
+          id={`${id}-listbox`}
+          role="listbox"
+          aria-labelledby={id}
+          data-testid={testId ? `${testId}-menu` : `${id}-menu`}
+          className="absolute left-0 right-0 top-[calc(100%+4px)] z-40 bg-white border border-[#E6DFCE] rounded-xl shadow-[0_12px_28px_-8px_rgba(37,40,50,0.14)] py-1 max-h-60 overflow-y-auto"
+        >
+          {options.map((opt, index) => {
+            const isSelected = opt.value === value;
+            const isHighlighted = index === highlightedIndex;
+            return (
+              <li
+                key={opt.value}
+                role="option"
+                aria-selected={isSelected}
+                data-testid={`${id}-option-${opt.value}`}
+                onMouseEnter={() => setHighlightedIndex(index)}
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={`px-3.5 py-2.5 text-[14.5px] cursor-pointer transition-colors flex items-center justify-between gap-2 ${
+                  isSelected
+                    ? 'bg-[#243B8A]/[0.07] font-semibold text-[#243B8A]'
+                    : isHighlighted
+                    ? 'bg-[#FFFDF7] text-[#252832]'
+                    : 'text-[#252832] hover:bg-[#FFFDF7]'
+                }`}
+              >
+                <span className="truncate">{opt.label}</span>
+                {isSelected && (
+                  <Check
+                    className="w-4 h-4 text-[#243B8A] shrink-0"
+                    aria-hidden="true"
+                  />
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
+// 5. CONTACT VIEW (/contact) — MINIMAL STANDARD UI (ADDRESS, CHANNELS & FORM)
+// ============================================================================
+
+type CorrespondentRole =
+  | 'Reader'
+  | 'Author'
+  | 'Bookstore_Institution'
+  | 'Contributor';
 
 interface ContactViewProps {
   onSubmitContact: (
@@ -1215,20 +1527,33 @@ interface ContactViewProps {
     message?: string;
     error?: string;
     fieldErrors?: Record<string, string>;
+    inquiry?: {
+      id: string;
+      name: string;
+      role: CorrespondentRole;
+      email: string;
+      phone?: string;
+      subject: string;
+      message: string;
+      preferWhatsAppFollowup?: boolean;
+      createdAt: string;
+    };
   }>;
+  onNavigate?: (path: string) => void;
 }
 
-export const ContactView: React.FC<ContactViewProps> = ({ onSubmitContact }) => {
+export const ContactView: React.FC<ContactViewProps> = ({
+  onSubmitContact,
+}) => {
   const { lang, t } = useLanguage();
 
   const [name, setName] = useState('');
-  const [role, setRole] = useState<
-    'Reader' | 'Author' | 'Bookstore_Institution' | 'Contributor'
-  >('Reader');
+  const [role, setRole] = useState<CorrespondentRole>('Reader');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -1237,6 +1562,30 @@ export const ContactView: React.FC<ContactViewProps> = ({ onSubmitContact }) => 
   const emailRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
+
+  const roleOptions: EditorialDropdownOption[] = [
+    {
+      value: 'Reader',
+      label: lang === 'mr' ? 'वाचक' : 'Reader',
+    },
+    {
+      value: 'Author',
+      label: lang === 'mr' ? 'लेखक' : 'Author',
+    },
+    {
+      value: 'Bookstore_Institution',
+      label:
+        lang === 'mr'
+          ? 'ग्रंथालय / पुस्तक विक्रेता'
+          : 'Bookstore / Library',
+    },
+    {
+      value: 'Contributor',
+      label: lang === 'mr' ? 'समीक्षक / पत्रकार' : 'Reviewer / Media',
+    },
+  ];
+
+  const editorialEmail = 'sampark@akathprakashan.in';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1309,225 +1658,318 @@ export const ContactView: React.FC<ContactViewProps> = ({ onSubmitContact }) => 
   };
 
   return (
-    <div className="bg-[#FFFDF7] text-[#252832] min-h-screen py-12 lg:py-16">
+    <div
+      data-testid="contact-editorial-view"
+      className="bg-[#FFFDF7] text-[#252832] min-h-screen py-12 lg:py-16"
+    >
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="max-w-[780px] mx-auto px-4 sm:px-6"
+        transition={{ duration: 0.3 }}
+        className="max-w-[1060px] mx-auto px-4 sm:px-6 lg:px-8"
       >
-        <div className="mb-8 space-y-2">
+        {/* Minimal Page Header */}
+        <div className="mb-10 space-y-2 max-w-[64ch]">
           <h1 className="type-page-heading text-[#252832]">{t.contact.title}</h1>
           <p className="prose-marathi text-[#5A5F72]">{t.contact.subtitle}</p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          noValidate
-          className="bg-white rounded-3xl border border-[#E6DFCE] p-6 sm:p-10 space-y-6"
-        >
-          {successMsg && (
-            <div
-              role="status"
-              className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[14px] flex items-center gap-2"
-            >
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-              <span>{successMsg}</span>
-            </div>
-          )}
-
-          {errors.form && (
-            <div
-              role="alert"
-              className="p-4 rounded-xl bg-red-50 border border-red-200 text-[#B42318] text-[14px] flex items-center gap-2"
-            >
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errors.form}</span>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="contact-name" className="block ui-label mb-1.5">
-                {t.contact.nameLabel} <span className="text-[#B42318]">*</span>
-              </label>
-              <input
-                ref={nameRef}
-                id="contact-name"
-                type="text"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  if (errors.name) setErrors((p) => ({ ...p, name: '' }));
-                }}
-                aria-invalid={Boolean(errors.name)}
-                className={`w-full px-3.5 py-2.5 rounded-xl border text-[15px] bg-white ${
-                  errors.name ? 'border-[#B42318]' : 'border-[#E6DFCE]'
-                }`}
-              />
-              {errors.name && (
-                <p
-                  role="alert"
-                  className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
-                >
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>{errors.name}</span>
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="contact-role" className="block ui-label mb-1.5">
-                {t.contact.roleLabel}
-              </label>
-              <select
-                id="contact-role"
-                value={role}
-                onChange={(e) => setRole(e.target.value as typeof role)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFCE] text-[15px] bg-white"
-              >
-                <option value="Reader">
-                  {lang === 'mr' ? 'वाचक' : 'Reader'}
-                </option>
-                <option value="Author">
-                  {lang === 'mr' ? 'लेखक' : 'Author'}
-                </option>
-                <option value="Bookstore_Institution">
-                  {lang === 'mr'
-                    ? 'ग्रंथालय / पुस्तक विक्रेता'
-                    : 'Bookstore / Library'}
-                </option>
-                <option value="Contributor">
-                  {lang === 'mr'
-                    ? 'समीक्षक / पत्रकार'
-                    : 'Reviewer / Media'}
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="contact-email" className="block ui-label mb-1.5">
-                {t.checkout.emailLabel} <span className="text-[#B42318]">*</span>
-              </label>
-              <input
-                ref={emailRef}
-                id="contact-email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (errors.email) setErrors((p) => ({ ...p, email: '' }));
-                }}
-                aria-invalid={Boolean(errors.email)}
-                className={`w-full px-3.5 py-2.5 rounded-xl border text-[15px] bg-white ${
-                  errors.email ? 'border-[#B42318]' : 'border-[#E6DFCE]'
-                }`}
-              />
-              {errors.email && (
-                <p
-                  role="alert"
-                  className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
-                >
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>{errors.email}</span>
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="contact-phone" className="block ui-label mb-1.5">
-                {t.checkout.phoneLabel}{' '}
-                <span className="text-[12px] font-normal text-[#5A5F72]">
-                  ({t.checkout.optionalMarker})
-                </span>
-              </label>
-              <input
-                ref={phoneRef}
-                id="contact-phone"
-                type="tel"
-                inputMode="numeric"
-                autoComplete="tel"
-                value={phone}
-                onChange={(e) => {
-                  setPhone(e.target.value);
-                  if (errors.phone) setErrors((p) => ({ ...p, phone: '' }));
-                }}
-                placeholder={t.checkout.phoneHint}
-                aria-invalid={Boolean(errors.phone)}
-                className={`w-full px-3.5 py-2.5 rounded-xl border text-[15px] bg-white ${
-                  errors.phone ? 'border-[#B42318]' : 'border-[#E6DFCE]'
-                }`}
-              />
-              {errors.phone && (
-                <p
-                  role="alert"
-                  className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
-                >
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>{errors.phone}</span>
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="contact-subject" className="block ui-label mb-1.5">
-              {t.contact.subjectLabel}{' '}
-              <span className="text-[12px] font-normal text-[#5A5F72]">
-                ({t.checkout.optionalMarker})
-              </span>
-            </label>
-            <input
-              id="contact-subject"
-              type="text"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFCE] text-[15px] bg-white"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="contact-message" className="block ui-label mb-1.5">
-              {t.contact.messageLabel} <span className="text-[#B42318]">*</span>
-            </label>
-            <textarea
-              ref={messageRef}
-              id="contact-message"
-              rows={5}
-              value={message}
-              onChange={(e) => {
-                setMessage(e.target.value);
-                if (errors.message) setErrors((p) => ({ ...p, message: '' }));
-              }}
-              aria-invalid={Boolean(errors.message)}
-              className={`w-full px-3.5 py-2.5 rounded-xl border text-[15px] bg-white ${
-                errors.message ? 'border-[#B42318]' : 'border-[#E6DFCE]'
-              }`}
-            />
-            {errors.message && (
-              <p
-                role="alert"
-                className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
-              >
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>{errors.message}</span>
-              </p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="px-6 py-3.5 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7] text-[15px] font-semibold transition-colors"
+        {/* Standard 2-Column Layout: Left = Address & Channels | Right = Form */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+          {/* LEFT COLUMN: Address & Channels */}
+          <aside
+            data-testid="contact-info-sidebar"
+            className="lg:col-span-4 space-y-6 min-w-0"
           >
-            {t.contact.submitBtn}
-          </button>
-        </form>
+            {/* 1. Address Card */}
+            <div
+              data-testid="contact-address-block"
+              className="bg-white rounded-2xl border border-[#E6DFCE] p-6 space-y-3"
+            >
+              <div className="flex items-center gap-2 text-[13px] font-semibold text-[#243B8A]">
+                <MapPin className="w-4 h-4 shrink-0" />
+                <span>{lang === 'mr' ? 'पत्ता' : 'Address'}</span>
+              </div>
+
+              <div className="space-y-1 text-[15px] text-[#252832]">
+                <p className="font-semibold">
+                  {lang === 'mr'
+                    ? PUBLISHER_IDENTITY.nameMarathi
+                    : PUBLISHER_IDENTITY.nameEnglish}
+                </p>
+                <p className="text-[#5A5F72] leading-relaxed">
+                  {lang === 'mr'
+                    ? 'नांदेड, महाराष्ट्र'
+                    : 'Nanded, Maharashtra'}
+                </p>
+              </div>
+
+              <div className="pt-3 border-t border-[#E6DFCE] flex items-center gap-2 text-[13px] text-[#5A5F72]">
+                <Clock className="w-3.5 h-3.5 text-[#243B8A] shrink-0" />
+                <span>
+                  {lang === 'mr'
+                    ? 'सोम–शनि · सकाळी १०:३० ते ६:३०'
+                    : 'Mon–Sat · 10:30 AM – 6:30 PM'}
+                </span>
+              </div>
+            </div>
+
+            {/* 2. Channels Card */}
+            <div
+              data-testid="contact-channels-block"
+              className="bg-white rounded-2xl border border-[#E6DFCE] p-6 space-y-4"
+            >
+              <p className="text-[13px] font-semibold text-[#243B8A]">
+                {lang === 'mr' ? 'संपर्क माध्यम' : 'Channels'}
+              </p>
+
+              <div className="space-y-3.5 text-[14.5px]">
+                <a
+                  href={`mailto:${editorialEmail}`}
+                  className="flex items-start gap-3 text-[#252832] hover:text-[#243B8A] transition-colors min-w-0"
+                >
+                  <Mail className="w-4 h-4 text-[#243B8A] mt-1 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[12px] text-[#5A5F72]">
+                      {lang === 'mr' ? 'ईमेल' : 'Email'}
+                    </p>
+                    <p className="font-medium break-all">{editorialEmail}</p>
+                  </div>
+                </a>
+
+                <a
+                  href={`tel:${PUBLISHER_IDENTITY.phoneDisplay.replace(/\s+/g, '')}`}
+                  className="flex items-start gap-3 text-[#252832] hover:text-[#243B8A] transition-colors min-w-0"
+                >
+                  <Phone className="w-4 h-4 text-[#243B8A] mt-1 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[12px] text-[#5A5F72]">
+                      {lang === 'mr' ? 'दूरध्वनी' : 'Phone'}
+                    </p>
+                    <p className="font-medium">{PUBLISHER_IDENTITY.phoneDisplay}</p>
+                  </div>
+                </a>
+
+                <a
+                  href={`https://wa.me/${PUBLISHER_IDENTITY.whatsappNumber}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-start gap-3 text-[#252832] hover:text-[#15803D] transition-colors min-w-0"
+                >
+                  <MessageSquare className="w-4 h-4 text-[#15803D] mt-1 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[12px] text-[#5A5F72]">
+                      {lang === 'mr' ? 'व्हॉट्सॲप' : 'WhatsApp'}
+                    </p>
+                    <p className="font-medium text-[#15803D]">
+                      {lang === 'mr' ? 'थेट संदेश पाठवा ↗' : 'Send a message ↗'}
+                    </p>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </aside>
+
+          {/* RIGHT COLUMN: Standard Minimal Contact Form */}
+          <div className="lg:col-span-8 min-w-0">
+            <form
+              onSubmit={handleSubmit}
+              noValidate
+              data-testid="contact-form-folio"
+              className="bg-white rounded-2xl border border-[#E6DFCE] p-6 sm:p-8 space-y-5"
+            >
+              {successMsg && (
+                <div
+                  role="status"
+                  data-testid="contact-receipt-card"
+                  className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[14px] flex items-center gap-2.5"
+                >
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{successMsg}</span>
+                </div>
+              )}
+
+              {errors.form && (
+                <div
+                  role="alert"
+                  className="p-4 rounded-xl bg-red-50 border border-red-200 text-[#B42318] text-[14px] flex items-center gap-2"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{errors.form}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="min-w-0">
+                  <label htmlFor="contact-name" className="block ui-label mb-1.5">
+                    {t.contact.nameLabel} <span className="text-[#B42318]">*</span>
+                  </label>
+                  <input
+                    ref={nameRef}
+                    id="contact-name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (errors.name) setErrors((p) => ({ ...p, name: '' }));
+                    }}
+                    aria-invalid={Boolean(errors.name)}
+                    className={`w-full px-3.5 py-2.5 rounded-xl border text-[15px] bg-white transition-colors focus:outline-none focus:border-[#243B8A] ${
+                      errors.name ? 'border-[#B42318]' : 'border-[#E6DFCE]'
+                    }`}
+                  />
+                  {errors.name && (
+                    <p
+                      role="alert"
+                      className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{errors.name}</span>
+                    </p>
+                  )}
+                </div>
+
+                <div className="min-w-0">
+                  <label htmlFor="contact-role" className="block ui-label mb-1.5">
+                    {t.contact.roleLabel}
+                  </label>
+                  <EditorialSelectDropdown
+                    id="contact-role"
+                    testId="contact-role-select"
+                    ariaLabel={t.contact.roleLabel}
+                    value={role}
+                    onChange={(nextVal) => setRole(nextVal as CorrespondentRole)}
+                    options={roleOptions}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="min-w-0">
+                  <label htmlFor="contact-email" className="block ui-label mb-1.5">
+                    {t.checkout.emailLabel} <span className="text-[#B42318]">*</span>
+                  </label>
+                  <input
+                    ref={emailRef}
+                    id="contact-email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) setErrors((p) => ({ ...p, email: '' }));
+                    }}
+                    aria-invalid={Boolean(errors.email)}
+                    className={`w-full px-3.5 py-2.5 rounded-xl border text-[15px] bg-white transition-colors focus:outline-none focus:border-[#243B8A] ${
+                      errors.email ? 'border-[#B42318]' : 'border-[#E6DFCE]'
+                    }`}
+                  />
+                  {errors.email && (
+                    <p
+                      role="alert"
+                      className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{errors.email}</span>
+                    </p>
+                  )}
+                </div>
+
+                <div className="min-w-0">
+                  <label htmlFor="contact-phone" className="block ui-label mb-1.5">
+                    {t.checkout.phoneLabel}{' '}
+                    <span className="text-[12px] font-normal text-[#5A5F72]">
+                      ({t.checkout.optionalMarker})
+                    </span>
+                  </label>
+                  <input
+                    ref={phoneRef}
+                    id="contact-phone"
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    value={phone}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      if (errors.phone) setErrors((p) => ({ ...p, phone: '' }));
+                    }}
+                    placeholder={t.checkout.phoneHint}
+                    aria-invalid={Boolean(errors.phone)}
+                    className={`w-full px-3.5 py-2.5 rounded-xl border text-[15px] bg-white transition-colors focus:outline-none focus:border-[#243B8A] ${
+                      errors.phone ? 'border-[#B42318]' : 'border-[#E6DFCE]'
+                    }`}
+                  />
+                  {errors.phone && (
+                    <p
+                      role="alert"
+                      className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{errors.phone}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="min-w-0">
+                <label htmlFor="contact-subject" className="block ui-label mb-1.5">
+                  {t.contact.subjectLabel}{' '}
+                  <span className="text-[12px] font-normal text-[#5A5F72]">
+                    ({t.checkout.optionalMarker})
+                  </span>
+                </label>
+                <input
+                  id="contact-subject"
+                  type="text"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFCE] text-[15px] bg-white transition-colors focus:outline-none focus:border-[#243B8A]"
+                />
+              </div>
+
+              <div className="min-w-0">
+                <label htmlFor="contact-message" className="block ui-label mb-1.5">
+                  {t.contact.messageLabel} <span className="text-[#B42318]">*</span>
+                </label>
+                <textarea
+                  ref={messageRef}
+                  id="contact-message"
+                  rows={5}
+                  value={message}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                    if (errors.message) setErrors((p) => ({ ...p, message: '' }));
+                  }}
+                  aria-invalid={Boolean(errors.message)}
+                  className={`w-full px-3.5 py-2.5 rounded-xl border text-[15px] bg-white transition-colors focus:outline-none focus:border-[#243B8A] ${
+                    errors.message ? 'border-[#B42318]' : 'border-[#E6DFCE]'
+                  }`}
+                />
+                {errors.message && (
+                  <p
+                    role="alert"
+                    className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
+                  >
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{errors.message}</span>
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                data-testid="contact-submit-btn"
+                className="px-6 py-3 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] disabled:opacity-60 text-[#FFFDF7] text-[15px] font-semibold transition-colors"
+              >
+                {t.contact.submitBtn}
+              </button>
+            </form>
+          </div>
+        </div>
       </motion.div>
     </div>
   );
 };
+

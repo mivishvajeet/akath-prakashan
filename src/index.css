@@ -200,6 +200,42 @@
   letter-spacing: 0;
 }
 
+/* Immersive Article Reading Prose — Dynamic Viewport-Width Line-Height Optimization
+   Adapts interlinear leading for Devanagari upper/lower matras across screen widths:
+   - Mobile (<640px): ~1.84–1.88 for compact 36-42ch lines
+   - Tablet (640px–1024px): ~1.92–1.98 for medium 50-58ch lines
+   - Desktop (>1024px): ~2.00–2.08 for full 62-66ch literary measure */
+.prose-marathi-immersive {
+  font-family: var(--font-serif);
+  font-size: var(--dynamic-marathi-font-size, clamp(1.08rem, 1.02rem + 0.22vw, 1.22rem));
+  line-height: var(--dynamic-marathi-lh, clamp(1.84, 1.74 + 0.022vw, 2.06));
+  color: var(--color-ink);
+  max-width: 65ch;
+  letter-spacing: 0;
+  font-feature-settings: "kern" 1, "liga" 1;
+  transition:
+    line-height 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    font-size 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (max-width: 639px) {
+  .prose-marathi-immersive {
+    --viewport-tier-lh: 1.85;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .prose-marathi-immersive {
+    --viewport-tier-lh: 1.94;
+  }
+}
+
+@media (min-width: 1024px) {
+  .prose-marathi-immersive {
+    --viewport-tier-lh: 2.04;
+  }
+}
+
 /* Functional UI text & labels */
 .ui-label {
   font-family: var(--font-sans);

@@ -1050,6 +1050,25 @@ async function runTests() {
     path.resolve(process.cwd(), 'src/views/BooksAndStoreView.tsx'),
     'utf-8'
   );
+  const vachankattaSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/views/VachankattaView.tsx'),
+    'utf-8'
+  );
+  const appSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/App.tsx'),
+    'utf-8'
+  );
+  assert.ok(navbarSource.includes('data-immersive-hidden'));
+  assert.ok(navbarSource.includes('immersiveHidden'));
+  assert.ok(appSource.includes('isImmersiveNavHidden'));
+  assert.ok(vachankattaSource.includes('computeDynamicMarathiLineHeight'));
+  assert.ok(vachankattaSource.includes('data-testid="immersive-article-container"'));
+  assert.ok(vachankattaSource.includes('data-testid="article-reading-sidebar"'));
+  assert.ok(vachankattaSource.includes('data-sidebar-hidden'));
+  assert.ok(vachankattaSource.includes('data-testid="immersive-reading-toggle"'));
+  assert.ok(vachankattaSource.includes('data-testid="immersive-reading-progress"'));
+  assert.ok(vachankattaSource.includes('prose-marathi-immersive'));
+  assert.ok(cssSource.includes('.prose-marathi-immersive'));
   assert.ok(sixStagesSource.includes('data-testid="editorial-stages-autoplay-toggle"'));
   assert.ok(sixStagesSource.includes('data-testid="editorial-stages-mobile-tabs"'));
   assert.ok(sixStagesSource.includes('data-testid="editorial-stage-spotlight"'));
@@ -1062,6 +1081,16 @@ async function runTests() {
   assert.ok(sixStagesSource.includes('akath-stage-caliper'));
   assert.ok(sixStagesSource.includes('akath-stage-book'));
   assert.ok(homeViewSource.includes('data-testid="home-publishing-hero"'));
+  assert.ok(!homeViewSource.includes('Independent Marathi Literary Publishing House (Nanded'));
+  assert.ok(!homeViewSource.includes('Pune'));
+  assert.ok(!navbarSource.includes('Pune'));
+  assert.ok(!navbarSource.includes('पुणे'));
+  assert.ok(!footerSource.includes('Pune'));
+  assert.ok(!footerSource.includes('पुणे'));
+  assert.ok(!walkingTortoiseSource.includes('PUNE'));
+  assert.ok(!walkingTortoiseSource.includes('पुणे'));
+  assert.ok(!publishingViewsSource.includes('Pune'));
+  assert.ok(!publishingViewsSource.includes('पुणे'));
   assert.ok(!homeViewSource.includes('Manuscript to Archival Edition'));
   assert.ok(!homeViewSource.includes('Smyth-Sewn Binding'));
   assert.ok(!homeViewSource.includes('Official ISBN-13 Registration'));
@@ -1108,8 +1137,14 @@ async function runTests() {
       'Akath Prakashan is our attempt to do just that — one manuscript, one book, one reader at a time.'
     )
   );
+  assert.ok(
+    publishingViewsSource.includes('data-testid="about-editorial-colophon-desk"')
+  );
+  assert.ok(publishingViewsSource.includes('data-testid="about-founder-name"'));
+  assert.ok(publishingViewsSource.includes('Pooja Vasantrao Dhawale'));
+  assert.ok(publishingViewsSource.includes('पूजा वसंतराव ढवळे'));
   console.log(
-    '  [PASS] UI-07: Mobile & Desktop SixEditorialStages UI, Mobile Horizontal Catalog Scroll, Removed Top Metadata Strip, and 60–68ch Marathi/English About Monograph with Physics-Based Breathe Animation verified'
+    '  [PASS] UI-07: Article Immersive Reading Mode (hide-on-scroll Navbar & Sidebar + Dynamic Viewport Marathi Line-Heights), SixEditorialStages, Mobile Horizontal Catalog Scroll, and About Monograph + Editorial Colophon (Founder: Pooja Vasantrao Dhawale) verified'
   );
 
   // Verify No-Code Admin CMS Endpoints (Create Book, Export CSV, Publish Article, Update Site Config, Create Promotion)
@@ -1158,9 +1193,44 @@ async function runTests() {
     '  [PASS] CMS-01: No-Code Admin CMS endpoints verified (Visual Book Creation, Editorial Article Publishing, and Storefront Site Config)'
   );
 
+  // Verify Minimal Standard ContactView UI (Address, Channels & Form), Accessible Dropdowns, and Live /api/contact Integration
+  assert.ok(publishingViewsSource.includes('export const EditorialSelectDropdown'));
+  assert.ok(publishingViewsSource.includes('aria-haspopup="listbox"'));
+  assert.ok(publishingViewsSource.includes('role="listbox"'));
+  assert.ok(publishingViewsSource.includes('data-testid="contact-editorial-view"'));
+  assert.ok(publishingViewsSource.includes('data-testid="contact-address-block"'));
+  assert.ok(publishingViewsSource.includes('data-testid="contact-channels-block"'));
+  assert.ok(publishingViewsSource.includes('data-testid="contact-form-folio"'));
+  assert.ok(publishingViewsSource.includes('testId="contact-role-select"'));
+  assert.ok(publishingViewsSource.includes('testId="ms-category-select"'));
+  assert.ok(publishingViewsSource.includes('data-testid="contact-receipt-card"'));
+  assert.ok(!publishingViewsSource.includes('data-testid="contact-desk-cards"'));
+  assert.ok(!publishingViewsSource.includes('FOLIO · AKATH-CORR-2026'));
+
+  const contactDispatchRes = await postJson('/api/contact', {
+    lang: 'mr',
+    name: 'प्रा. अनिकेत देशमुख',
+    role: 'Bookstore_Institution',
+    email: 'aniket.deshmukh@library.org.in',
+    phone: '9422178430',
+    subject: 'ग्रंथालय संच / पुस्तक विक्रेता घाऊक मागणी',
+    message:
+      'आमच्या महाविद्यालयीन ग्रंथालयासाठी अकथ प्रकाशनच्या सर्व प्रकाशित पुस्तकांचे २ संच हवे आहेत. कृपया सवलत दरपत्रक पाठवावे.',
+  });
+  assert.equal(contactDispatchRes.status, 201);
+  assert.ok(contactDispatchRes.data.inquiry.id.startsWith('inq-'));
+  assert.equal(contactDispatchRes.data.inquiry.role, 'Bookstore_Institution');
+  assert.equal(
+    contactDispatchRes.data.inquiry.subject,
+    'ग्रंथालय संच / पुस्तक विक्रेता घाऊक मागणी'
+  );
+  console.log(
+    '  [PASS] UI-08: Minimal Standard Contact View (Address, Channels, and Form), interactive custom dropdowns, and live /api/contact dispatch verified'
+  );
+
   console.log('\n================================================================');
   console.log(
-    'ALL 73 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 8 UI/CMS) PASSED!'
+    'ALL 74 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS) PASSED!'
   );
   console.log('================================================================');
 }

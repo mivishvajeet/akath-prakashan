@@ -93,6 +93,7 @@ export default function App() {
   const [cartQuote, setCartQuote] = useState<CartQuoteResponse | null>(null);
   const [loadingQuote, setLoadingQuote] = useState(false);
   const [recentlyAddedBookId, setRecentlyAddedBookId] = useState<string | null>(null);
+  const [isImmersiveNavHidden, setIsImmersiveNavHidden] = useState(false);
 
   // Sync HTML lang attribute and localStorage when language changes
   const setLang = useCallback((nextLang: AppLanguage) => {
@@ -123,6 +124,7 @@ export default function App() {
     window.history.pushState({}, '', cleanPath);
     const [pathnameOnly] = cleanPath.split('?');
     setCurrentPath(pathnameOnly || '/');
+    setIsImmersiveNavHidden(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
@@ -462,7 +464,7 @@ export default function App() {
         fieldErrors: data.fieldErrors,
       };
     }
-    return { ok: true, message: data.message };
+    return { ok: true, message: data.message, inquiry: data.inquiry };
   };
 
   const totalCartCount = cartQuote
@@ -695,6 +697,7 @@ export default function App() {
             allArticles={articles}
             onNavigate={navigate}
             onAddToCart={(id) => handleAddToCart(id, 1)}
+            onImmersiveChange={setIsImmersiveNavHidden}
           />
         );
       }
@@ -730,7 +733,7 @@ export default function App() {
     }
 
     if (currentPath === '/contact') {
-      return <ContactView onSubmitContact={handleSubmitContact} />;
+      return <ContactView onSubmitContact={handleSubmitContact} onNavigate={navigate} />;
     }
 
     if (currentPath === '/cart') {
@@ -810,6 +813,7 @@ export default function App() {
           user={authUser}
           onLogout={handleLogout}
           onQuickPersonaSwitch={handleQuickPersonaSwitch}
+          immersiveHidden={isImmersiveNavHidden}
         />
 
         <main id="main-content" className="flex-1">

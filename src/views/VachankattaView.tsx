@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import {
   EditorialArticle,
@@ -20,6 +20,10 @@ import {
   EyeOff,
   ShoppingBag,
   Check,
+  Maximize2,
+  Minimize2,
+  BookOpen,
+  SlidersHorizontal,
 } from 'lucide-react';
 
 // ============================================================================
@@ -470,8 +474,33 @@ export const VachankattaHubView: React.FC<VachankattaHubViewProps> = ({
 };
 
 // ============================================================================
-// 2. ARTICLE DETAIL VIEW (/vachankatta/:slug)
+// 2. ARTICLE DETAIL VIEW (/vachankatta/:slug) — IMMERSIVE READING MODE
+//    - Hides primary navigation and editorial sidebar on scroll (or manual lock)
+//    - Dynamically computes Marathi line-height based on live viewport width
+//      to protect Devanagari upper/lower matras across mobile, tablet & desktop
 // ============================================================================
+
+export function computeDynamicMarathiLineHeight(
+  viewportWidth: number,
+  isImmersive: boolean,
+  leadingScale: 'compact' | 'adaptive' | 'spacious' = 'adaptive'
+): number {
+  const clampedRatio = Math.min(
+    1,
+    Math.max(0, (viewportWidth - 360) / (1440 - 360))
+  );
+  // Fluidly scales from 1.84 on 360px mobile to 2.04 on 1440px desktop
+  let lh = 1.84 + clampedRatio * 0.2;
+  if (isImmersive) {
+    lh += 0.04;
+  }
+  if (leadingScale === 'compact') {
+    lh -= 0.06;
+  } else if (leadingScale === 'spacious') {
+    lh += 0.08;
+  }
+  return Number(lh.toFixed(3));
+}
 
 interface ArticleDetailViewProps {
   article: EditorialArticle;
@@ -480,182 +509,489 @@ interface ArticleDetailViewProps {
   allArticles: EditorialArticle[];
   onNavigate: (path: string) => void;
   onAddToCart: (bookId: string) => void;
+  onImmersiveChange?: (isImmersive: boolean) => void;
 }
 
 export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
   article,
   allBooks,
   allAuthors,
+  allArticles,
   onNavigate,
   onAddToCart,
+  onImmersiveChange,
 }) => {
   const { lang, t } = useLanguage();
+  const [immersivePreference, setImmersivePreference] = useState<
+    'auto' | 'on' | 'off'
+  >('auto');
+  const [isScrollImmersive, setIsScrollImmersive] = useState(false);
+  const [readingProgress, setReadingProgress] = useState(0);
+  const [viewportWidth, setViewportWidth] = useState<number>(() =>
+    typeof window !== 'undefined' ? window.innerWidth : 1280
+  );
+  const [leadingScale, setLeadingScale] = useState<
+    'compact' | 'adaptive' | 'spacious'
+  >('adaptive');
+  const lastScrollYRef = useRef<number>(0);
+
+  const isImmersiveActive =
+    immersivePreference === 'on' ||
+    (immersivePreference === 'auto' && isScrollImmersive);
+
+  // Sync primary Navbar visibility with parent App
+  useEffect(() => {
+    onImmersiveChange?.(isImmersiveActive);
+  }, [isImmersiveActive, onImmersiveChange]);
+
+  useEffect(() => {
+    return () => {
+      onImmersiveChange?.(false);
+    };
+  }, [onImmersiveChange]);
+
+  // Track viewport width to dynamically optimize Devanagari line-height
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleResize = () => {
+      setViewportWidth(window.innerWidth);
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Scroll listener: hide primary navbar & sidebar when scrolling down into the essay
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleScroll = () => {
+      const currentY = window.scrollY || 0;
+      const docHeight =
+        document.documentElement.scrollHeight - window.innerHeight;
+      const progress =
+        docHeight > 0
+          ? Math.min(100, Math.max(0, Math.round((currentY / docHeight) * 100)))
+          : 0;
+      setReadingProgress(progress);
+
+      const delta = currentY - lastScrollYRef.current;
+      if (currentY <= 64) {
+        setIsScrollImmersive(false);
+      } else if (delta > 8 && currentY > 96) {
+        setIsScrollImmersive(true);
+      } else if (delta < -14) {
+        setIsScrollImmersive(false);
+      }
+      lastScrollYRef.current = currentY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const dynamicLineHeight = computeDynamicMarathiLineHeight(
+    viewportWidth,
+    isImmersiveActive,
+    leadingScale
+  );
+
+  const viewportTierLabel =
+    viewportWidth < 640
+      ? lang === 'mr'
+        ? 'मोबाईल वाचन मांडणी'
+        : 'Mobile Reading Measure'
+      : viewportWidth < 1024
+      ? lang === 'mr'
+        ? 'टॅब्लेट वाचन मांडणी'
+        : 'Tablet Reading Measure'
+      : lang === 'mr'
+      ? 'विस्तृत संपादकीय मांडणी'
+      : 'Wide Editorial Measure';
+
   const relatedBooks = allBooks.filter((b) =>
     article.relatedBookIds.includes(b.id)
   );
+  const otherArticles = allArticles
+    .filter((a) => a.id !== article.id)
+    .slice(0, 3);
+
+  const handleToggleImmersive = () => {
+    setImmersivePreference((prev) => {
+      if (prev === 'on') return 'off';
+      if (prev === 'off') return 'on';
+      return isScrollImmersive ? 'off' : 'on';
+    });
+  };
+
+  const handleCycleLeading = () => {
+    setLeadingScale((prev) =>
+      prev === 'adaptive'
+        ? 'spacious'
+        : prev === 'spacious'
+        ? 'compact'
+        : 'adaptive'
+    );
+  };
 
   return (
-    <div className="bg-[#FFFDF7] text-[#252832] min-h-screen">
-      {/* Top Breadcrumb */}
-      <div className="bg-white border-b border-[#E6DFCE]">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between text-[14px] text-[#5A5F72]">
+    <div
+      data-testid="immersive-article-container"
+      data-immersive-active={isImmersiveActive ? 'true' : 'false'}
+      data-dynamic-line-height={dynamicLineHeight}
+      style={
+        {
+          '--dynamic-marathi-lh': String(dynamicLineHeight),
+        } as React.CSSProperties
+      }
+      className="bg-[#FFFDF7] text-[#252832] min-h-screen relative transition-colors duration-300"
+    >
+      {/* Top 2px Reading Progress Hairline */}
+      <div
+        data-testid="immersive-reading-progress"
+        aria-hidden="true"
+        className="fixed top-0 inset-x-0 z-50 h-0.5 bg-[#E6DFCE]/60 pointer-events-none"
+      >
+        <div
+          className="h-full bg-[#243B8A] transition-all duration-150"
+          style={{ width: `${readingProgress}%` }}
+        />
+      </div>
+
+      {/* Top Breadcrumb & Immersive Reading Toolbar (hides smoothly on scroll in immersive mode) */}
+      <div
+        data-testid="article-top- subbar"
+        className={`bg-white border-b border-[#E6DFCE] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          isImmersiveActive
+            ? '-translate-y-full opacity-0 pointer-events-none max-h-0 overflow-hidden border-b-0'
+            : 'translate-y-0 opacity-100 max-h-28'
+        }`}
+      >
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3 text-[13.5px] text-[#5A5F72]">
           <button
             type="button"
             onClick={() => onNavigate('/vachankatta')}
-            className="inline-flex items-center gap-2 font-medium hover:text-[#243B8A]"
+            className="inline-flex items-center gap-2 font-medium hover:text-[#243B8A] cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>{t.nav.vachankatta}</span>
           </button>
-          <span>
-            {article.categoryMarathi} · {article.readingTimeMinutes}{' '}
-            {t.vachankatta.readingTime}
-          </span>
+
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+            <span className="hidden md:inline text-[12.5px] text-[#5A5F72]">
+              {viewportTierLabel} · LH {dynamicLineHeight}
+            </span>
+
+            <button
+              type="button"
+              data-testid="immersive-leading-cycle-btn"
+              onClick={handleCycleLeading}
+              className="px-2.5 py-1 rounded-lg bg-[#F7F3E8] hover:bg-[#FFD966]/45 text-[#252832] text-[12px] font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+              title={
+                lang === 'mr'
+                  ? 'ओळींमधील अंतर बदला'
+                  : 'Adjust Marathi line-height spacing'
+              }
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5 text-[#243B8A]" />
+              <span>
+                {leadingScale === 'adaptive'
+                  ? lang === 'mr'
+                    ? 'लवचिक उंची'
+                    : 'Adaptive LH'
+                  : leadingScale === 'spacious'
+                  ? lang === 'mr'
+                    ? 'मोकळी उंची'
+                    : 'Spacious LH'
+                  : lang === 'mr'
+                  ? 'संक्षिप्त उंची'
+                  : 'Compact LH'}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              data-testid="immersive-reading-toggle"
+              aria-pressed={isImmersiveActive}
+              onClick={handleToggleImmersive}
+              className="px-3 py-1.5 rounded-lg bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[12.5px] font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Maximize2 className="w-3.5 h-3.5 text-[#FFD966]" />
+              <span>
+                {lang === 'mr' ? 'एकाग्र वाचन मोड' : 'Immersive Reading'}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Long-form Literary Essay Container */}
-      <article className="max-w-[820px] mx-auto px-4 sm:px-6 py-10 lg:py-14">
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="bg-white rounded-3xl border border-[#E6DFCE] p-6 sm:p-10 lg:p-12"
-        >
-          <header className="space-y-4 border-b border-[#E6DFCE] pb-8 mb-8">
-            <div className="flex items-center gap-2 text-[13px] font-semibold text-[#243B8A]">
-              <span>{article.categoryMarathi}</span>
-              <span aria-hidden="true">·</span>
-              <span className="text-[#5A5F72] font-normal">
-                {article.publishedAt}
-              </span>
-            </div>
+      {/* Main 12-Column Editorial Layout: Essay Column + Hide-on-Scroll Sidebar */}
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-14">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          {/* Primary Long-Form Essay Column (expands & centers when sidebar hides on scroll) */}
+          <article
+            className={`transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              isImmersiveActive
+                ? 'lg:col-span-12 max-w-[780px] mx-auto w-full'
+                : 'lg:col-span-8 w-full'
+            }`}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35 }}
+              className="bg-white rounded-3xl border border-[#E6DFCE] p-6 sm:p-10 lg:p-12"
+            >
+              <header className="space-y-4 border-b border-[#E6DFCE] pb-8 mb-8">
+                <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-[#243B8A]">
+                  <span>{article.categoryMarathi}</span>
+                  <span aria-hidden="true">·</span>
+                  <span className="text-[#5A5F72] font-normal">
+                    {article.publishedAt}
+                  </span>
+                  <span aria-hidden="true">·</span>
+                  <span className="text-[#5A5F72] font-normal">
+                    {article.readingTimeMinutes} {t.vachankatta.readingTime}
+                  </span>
+                </div>
 
-            <h1 className="type-article-headline text-[#252832]">
-              {article.title}
-            </h1>
+                <h1 className="type-article-headline text-[#252832]">
+                  {article.title}
+                </h1>
 
-            <p className="font-serif text-[20px] text-[#5A5F72] leading-[1.6]">
-              {article.subtitle}
-            </p>
+                <p className="font-serif text-[20px] text-[#5A5F72] leading-[1.65]">
+                  {article.subtitle}
+                </p>
 
-            <div className="pt-3 flex flex-wrap items-center justify-between gap-4 text-[14px] text-[#5A5F72]">
-              <div>
-                <span className="font-bold text-[#252832]">
-                  {article.contributorName}
-                </span>{' '}
-                — {article.contributorRole}
-              </div>
-              <span>
-                {article.readingTimeMinutes} {t.vachankatta.readingTime}
-              </span>
-            </div>
-          </header>
-
-          {/* Lead Paragraph */}
-          <p className="font-serif text-[20px] text-[#252832] leading-[1.85] mb-8">
-            {article.leadParagraph}
-          </p>
-
-          {/* Sections */}
-          <div className="space-y-10 prose-marathi text-[#252832]">
-            {article.sections.map((sec) => (
-              <section key={sec.id} className="space-y-5">
-                {sec.heading && (
-                  <h2 className="type-section-heading text-[#252832] pt-2">
-                    {sec.heading}
-                  </h2>
-                )}
-                {sec.paragraphs.map((p, idx) => (
-                  <p key={idx}>{p}</p>
-                ))}
-                {sec.pullQuote && (
-                  <blockquote className="my-8 bg-[#FFD966]/20 border border-[#FFD966] rounded-2xl p-6 font-serif text-[21px] text-[#252832] leading-[1.6]">
-                    “{sec.pullQuote}”
-                  </blockquote>
-                )}
-              </section>
-            ))}
-          </div>
-
-          {/* Tortoise Literary Colophon Stamp at the End of the Essay */}
-          <div className="mt-12 pt-6">
-            <ArchitecturalDivider />
-            <p className="mt-3 text-center text-[12px] text-[#5A5F72] font-medium">
-              {lang === 'mr'
-                ? 'अकथ प्रकाशन · वाचनकट्टा संपादकीय मुद्रा'
-                : 'Akath Prakashan · Vachankatta Editorial Imprint'}
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Related Books Mentioned in Essay */}
-        {relatedBooks.length > 0 && (
-          <aside className="mt-10 space-y-4">
-            <h3 className="type-section-heading text-[#252832]">
-              {lang === 'mr'
-                ? 'या लेखाशी संबंधित पुस्तके'
-                : 'Books Discussed in This Essay'}
-            </h3>
-            <div className="space-y-4">
-              {relatedBooks.map((book) => {
-                const author = allAuthors.find((a) => a.id === book.authorId);
-                return (
-                  <div
-                    key={book.id}
-                    className="bg-white rounded-2xl border border-[#E6DFCE] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-16 shrink-0">
-                        <BookCoverArt
-                          book={book}
-                          author={author}
-                          size="sm"
-                          onClick={() => onNavigate(`/books/${book.slug}`)}
-                        />
-                      </div>
-                      <div>
-                        <button
-                          type="button"
-                          onClick={() => onNavigate(`/books/${book.slug}`)}
-                          className="font-serif text-[18px] font-bold text-[#252832] hover:text-[#243B8A] text-left"
-                        >
-                          {book.title}
-                        </button>
-                        {author && (
-                          <p className="text-[14px] text-[#5A5F72]">
-                            {author.name}
-                          </p>
-                        )}
-                        <p className="text-[16px] font-bold text-[#252832] mt-1 tabular-nums">
-                          ₹{book.price}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 self-end sm:self-center">
-                      <button
-                        type="button"
-                        onClick={() => onNavigate(`/books/${book.slug}`)}
-                        className="text-[14px] text-[#243B8A] font-semibold hover:underline"
-                      >
-                        {t.book.viewDetails}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onAddToCart(book.id)}
-                        className="px-4 py-2 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7] text-[13px] font-semibold whitespace-nowrap shrink-0"
-                      >
-                        {t.book.addToCart}
-                      </button>
-                    </div>
+                <div className="pt-3 flex flex-wrap items-center justify-between gap-4 text-[14px] text-[#5A5F72]">
+                  <div>
+                    <span className="font-bold text-[#252832]">
+                      {article.contributorName}
+                    </span>{' '}
+                    — {article.contributorRole}
                   </div>
-                );
-              })}
-            </div>
+                  <span
+                    data-testid="article-dynamic-lh-readout"
+                    className="font-mono text-[12px] text-[#5A5F72] tabular-nums"
+                  >
+                    {viewportWidth}px · LH {dynamicLineHeight}
+                  </span>
+                </div>
+              </header>
+
+              {/* Lead Paragraph with Dynamic Viewport Marathi Line-Height */}
+              <p
+                data-testid="article-lead-paragraph"
+                style={{ lineHeight: dynamicLineHeight }}
+                className="font-serif text-[19px] sm:text-[21px] text-[#252832] mb-8 transition-[line-height] duration-300"
+              >
+                {article.leadParagraph}
+              </p>
+
+              {/* Long-Form Marathi Essay Sections */}
+              <div
+                data-testid="article-immersive-prose"
+                style={{ lineHeight: dynamicLineHeight }}
+                className="space-y-10 prose-marathi-immersive text-[#252832]"
+              >
+                {article.sections.map((sec) => (
+                  <section key={sec.id} id={`section-${sec.id}`} className="space-y-5">
+                    {sec.heading && (
+                      <h2 className="type-section-heading text-[#252832] pt-2">
+                        {sec.heading}
+                      </h2>
+                    )}
+                    {sec.paragraphs.map((p, idx) => (
+                      <p key={idx} style={{ lineHeight: dynamicLineHeight }}>
+                        {p}
+                      </p>
+                    ))}
+                    {sec.pullQuote && (
+                      <blockquote className="my-8 bg-[#FFD966]/20 border border-[#FFD966] rounded-2xl p-6 font-serif text-[21px] text-[#252832] leading-[1.65]">
+                        “{sec.pullQuote}”
+                      </blockquote>
+                    )}
+                  </section>
+                ))}
+              </div>
+
+              {/* Tortoise Literary Colophon Stamp at the End of the Essay */}
+              <div className="mt-12 pt-6">
+                <ArchitecturalDivider />
+                <p className="mt-3 text-center text-[12px] text-[#5A5F72] font-medium">
+                  {lang === 'mr'
+                    ? 'अकथ प्रकाशन · वाचनकट्टा संपादकीय मुद्रा'
+                    : 'Akath Prakashan · Vachankatta Editorial Imprint'}
+                </p>
+              </div>
+            </motion.div>
+          </article>
+
+          {/* Editorial Sidebar — Hides smoothly on scroll in Immersive Reading Mode */}
+          <aside
+            data-testid="article-reading-sidebar"
+            data-sidebar-hidden={isImmersiveActive ? 'true' : 'false'}
+            aria-hidden={isImmersiveActive ? true : undefined}
+            className={`lg:col-span-4 space-y-6 lg:sticky lg:top-24 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              isImmersiveActive
+                ? 'opacity-0 translate-x-6 pointer-events-none lg:hidden'
+                : 'opacity-100 translate-x-0'
+            }`}
+          >
+            {/* 1. Essay Section Outline */}
+            {article.sections.some((s) => Boolean(s.heading)) && (
+              <div className="bg-white rounded-2xl border border-[#E6DFCE] p-5 space-y-3">
+                <div className="flex items-center gap-2 text-[12px] font-mono uppercase tracking-[0.14em] text-[#243B8A] font-semibold">
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>
+                    {lang === 'mr' ? 'लेखातील विभाग' : 'Essay Outline'}
+                  </span>
+                </div>
+                <ul className="space-y-2 text-[14px] text-[#5A5F72]">
+                  {article.sections
+                    .filter((s) => Boolean(s.heading))
+                    .map((sec, idx) => (
+                      <li key={sec.id}>
+                        <a
+                          href={`#section-${sec.id}`}
+                          className="hover:text-[#243B8A] transition-colors inline-flex items-baseline gap-2"
+                        >
+                          <span className="font-mono text-[11px] text-[#243B8A]">
+                            0{idx + 1}.
+                          </span>
+                          <span>{sec.heading}</span>
+                        </a>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
+
+            {/* 2. Books Discussed in This Essay */}
+            {relatedBooks.length > 0 && (
+              <div className="bg-white rounded-2xl border border-[#E6DFCE] p-5 space-y-4">
+                <h3 className="text-[15px] font-serif font-bold text-[#252832]">
+                  {lang === 'mr'
+                    ? 'या लेखाशी संबंधित पुस्तके'
+                    : 'Books Discussed in This Essay'}
+                </h3>
+                <div className="space-y-4 divide-y divide-[#E6DFCE]">
+                  {relatedBooks.map((book) => {
+                    const author = allAuthors.find(
+                      (a) => a.id === book.authorId
+                    );
+                    return (
+                      <div
+                        key={book.id}
+                        className="pt-4 first:pt-0 flex flex-col gap-3"
+                      >
+                        <div className="flex items-start gap-3.5">
+                          <div className="w-14 shrink-0">
+                            <BookCoverArt
+                              book={book}
+                              author={author}
+                              size="sm"
+                              onClick={() => onNavigate(`/books/${book.slug}`)}
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <button
+                              type="button"
+                              onClick={() => onNavigate(`/books/${book.slug}`)}
+                              className="font-serif text-[16px] font-bold text-[#252832] hover:text-[#243B8A] text-left leading-snug"
+                            >
+                              {book.title}
+                            </button>
+                            {author && (
+                              <p className="text-[13px] text-[#5A5F72]">
+                                {author.name}
+                              </p>
+                            )}
+                            <p className="text-[14px] font-bold text-[#252832] mt-1 tabular-nums">
+                              ₹{book.price}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2">
+                          <button
+                            type="button"
+                            onClick={() => onNavigate(`/books/${book.slug}`)}
+                            className="text-[13px] text-[#243B8A] font-semibold hover:underline"
+                          >
+                            {t.book.viewDetails}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onAddToCart(book.id)}
+                            className="px-3.5 py-1.5 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7] text-[12.5px] font-semibold whitespace-nowrap shrink-0 cursor-pointer"
+                          >
+                            {t.book.addToCart}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 3. Further Reading on Vachankatta */}
+            {otherArticles.length > 0 && (
+              <div className="bg-white rounded-2xl border border-[#E6DFCE] p-5 space-y-3">
+                <h3 className="text-[15px] font-serif font-bold text-[#252832]">
+                  {lang === 'mr' ? 'वाचनकट्ट्यावरील इतर लेख' : 'Further Reading'}
+                </h3>
+                <div className="divide-y divide-[#E6DFCE]">
+                  {otherArticles.map((art) => (
+                    <div key={art.id} className="py-2.5 first:pt-0 last:pb-0">
+                      <button
+                        type="button"
+                        onClick={() => onNavigate(`/vachankatta/${art.slug}`)}
+                        className="font-serif text-[15px] font-semibold text-[#252832] hover:text-[#243B8A] text-left leading-snug cursor-pointer"
+                      >
+                        {art.title}
+                      </button>
+                      <p className="text-[12px] text-[#5A5F72] mt-0.5">
+                        {art.contributorName} · {art.readingTimeMinutes}{' '}
+                        {t.vachankatta.readingTime}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </aside>
-        )}
-      </article>
+        </div>
+      </div>
+
+      {/* Floating Minimal Restore Dock when Immersive Reading Mode is Active */}
+      <div
+        data-testid="immersive-floating-controls"
+        className={`fixed bottom-5 right-5 z-40 flex items-center gap-2 transition-all duration-300 ${
+          isImmersiveActive
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-3 pointer-events-none'
+        }`}
+      >
+        <button
+          type="button"
+          onClick={handleCycleLeading}
+          className="px-3 py-2 rounded-xl bg-white/95 backdrop-blur-md border border-[#E6DFCE] shadow-md text-[12px] font-mono text-[#252832] hover:border-[#243B8A] transition-colors cursor-pointer tabular-nums"
+        >
+          LH {dynamicLineHeight}
+        </button>
+        <button
+          type="button"
+          data-testid="immersive-floating-restore-btn"
+          onClick={() => setImmersivePreference('off')}
+          className="px-3.5 py-2 rounded-xl bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] shadow-md text-[12.5px] font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+        >
+          <Minimize2 className="w-3.5 h-3.5 text-[#FFD966]" />
+          <span>
+            {lang === 'mr' ? 'नेव्हिगेशन दाखवा' : 'Exit Immersive'}
+          </span>
+        </button>
+      </div>
     </div>
   );
 };

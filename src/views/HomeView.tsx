@@ -167,21 +167,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
         data-testid="home-publishing-hero"
         className={`akath-io-section ${
           isHeroVisible ? 'is-visible' : ''
-        } relative overflow-hidden sarvam-aura border-b border-[#E6E1D6] py-12 sm:py-16 lg:py-20`}
+        } relative overflow-hidden sarvam-aura border-b border-[#E6E1D6] pt-6 sm:pt-8 lg:pt-10 pb-12 sm:pb-16 lg:pb-20`}
       >
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10">
-          {/* Top Publishing House Imprint Ribbon */}
-          <div className="akath-io-stagger-1 flex flex-wrap items-center justify-between gap-3 pb-6 mb-8 border-b border-[#E6E1D6]/90">
-            <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-sm bg-[#FFFDF7] border border-[#E6E1D6]">
-              <span className="w-2 h-2 rounded-full bg-[#243B8A]" />
-              <span className="text-xs font-semibold text-[#243B8A] tracking-wide">
-                {lang === 'mr'
-                  ? 'अकथ प्रकाशन • स्वतंत्र मराठी साहित्य प्रकाशन संस्था (नांदेड • पुणे)'
-                  : 'Akath Prakashan • Independent Marathi Literary Publishing House (Nanded • Pune)'}
-              </span>
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             {/* Left 7 Columns: Publishing House Identity & Primary Publishing CTAs */}
             <div className="akath-io-stagger-2 lg:col-span-7 space-y-6">

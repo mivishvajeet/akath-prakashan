@@ -20,6 +20,8 @@ export const PUBLISHER_IDENTITY = {
     '“Like the turtle, a good book takes its time — and lasts for generations.”',
   cityMarathi: 'नांदेड, महाराष्ट्र',
   cityEnglish: 'Nanded, Maharashtra',
+  founderNameEnglish: 'Pooja Vasantrao Dhawale',
+  founderNameMarathi: 'पूजा वसंतराव ढवळे',
   whatsappNumber: '919270282932',
   phoneDisplay: '+91 92702 82932',
   logoUrl: '/assets/akath/akath-logo.png',

@@ -363,7 +363,7 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
             •
           </span>
           <span className="text-[#243B8A]">
-            {lang === 'mr' ? 'नांदेड व पुणे' : 'NANDED & PUNE'}
+            {lang === 'mr' ? 'नांदेड, महाराष्ट्र' : 'NANDED, MAHARASHTRA'}
           </span>
         </div>
       </div>

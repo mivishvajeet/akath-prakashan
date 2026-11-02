@@ -29,6 +29,7 @@ interface NavbarProps {
     persona: 'reader' | 'author' | 'admin' | 'guest',
     targetPath?: string
   ) => Promise<void>;
+  immersiveHidden?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -38,6 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSearch,
   user,
   onLogout,
+  immersiveHidden = false,
 }) => {
   const { lang, setLang, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -105,7 +107,16 @@ export const Navbar: React.FC<NavbarProps> = ({
       : 'Reader';
 
   return (
-    <header className="sticky top-0 z-40 bg-[#243B8A] text-[#FFFDF7] border-b border-[#1B2D6B] shadow-[0_6px_24px_-10px_rgba(36,59,138,0.45)] w-full">
+    <header
+      data-testid="primary-navbar"
+      data-immersive-hidden={immersiveHidden ? 'true' : 'false'}
+      aria-hidden={immersiveHidden ? true : undefined}
+      className={`sticky top-0 z-40 bg-[#243B8A] text-[#FFFDF7] border-b border-[#1B2D6B] shadow-[0_6px_24px_-10px_rgba(36,59,138,0.45)] w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        immersiveHidden
+          ? '-translate-y-full opacity-0 pointer-events-none'
+          : 'translate-y-0 opacity-100'
+      }`}
+    >
       {/* Top Butter-Yellow & Coral-Red Editorial Hairline */}
       <div
         className="h-1 w-full"
@@ -142,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   अकथ प्रकाशन
                 </span>
                 <span className="hidden xl:inline-block text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#FFD966] text-[#252832] whitespace-nowrap">
-                  {lang === 'mr' ? 'नांदेड / पुणे' : 'Nanded / Pune'}
+                  {lang === 'mr' ? 'नांदेड' : 'Nanded'}
                 </span>
               </div>
               <span className="hidden min-[380px]:block text-[10.5px] sm:text-[11px] text-[#FFD966]/90 font-medium tracking-wide truncate">
@@ -547,8 +558,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </span>
                     <span className="text-[11px] text-[#FFD966] font-medium block truncate">
                       {lang === 'mr'
-                        ? 'कासव मुद्रा · नांदेड / पुणे'
-                        : 'Tortoise Imprint · Nanded / Pune'}
+                        ? 'कासव मुद्रा · नांदेड'
+                        : 'Tortoise Imprint · Nanded'}
                     </span>
                   </div>
                 </div>
