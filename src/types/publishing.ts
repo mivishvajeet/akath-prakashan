@@ -90,6 +90,8 @@ export interface BookRecord {
   provenanceLabel: string;
   coverStyle: BookCoverStyle;
   coverImageUrl?: string;
+  coverSpreadUrl?: string;
+  coverPdfUrl?: string;
   galleryImages?: BookGalleryImage[];
   seoTitle?: string;
   seoDescription?: string;
@@ -202,6 +204,17 @@ export interface FirstPageReactionCounts {
   wantContext: number;   // मला अजून संदर्भ हवा आहे
 }
 
+export interface FirstPageFolioPage {
+  pageNumber: number;
+  labelMarathi: string;
+  labelEnglish: string;
+  heading?: string;
+  sublines?: string[];
+  bodyLines: string[];
+  illustrationUrl?: string;
+  emblemUrl?: string;
+}
+
 export interface FirstPageExcerpt {
   id: string;
   slug: string;
@@ -217,6 +230,8 @@ export interface FirstPageExcerpt {
   approvalStatus: 'approved' | 'scheduled';
   blindModeDefault: boolean;
   relatedArticleId?: string;
+  pdfDocumentUrl?: string;
+  folioPages?: FirstPageFolioPage[];
   reactions: FirstPageReactionCounts;
 }
 

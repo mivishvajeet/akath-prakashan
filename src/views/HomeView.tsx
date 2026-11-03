@@ -89,6 +89,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const { lang, t } = useLanguage();
   const [activeBookCategory, setActiveBookCategory] = useState<string>('सर्व');
   const [featuredBookIndex, setFeaturedBookIndex] = useState<number>(0);
+  const [showFullSpread, setShowFullSpread] = useState<boolean>(false);
 
   const [heroSectionRef, isHeroVisible] = useIntersectionReveal<HTMLElement>({
     threshold: 0.08,
@@ -116,12 +117,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   const categories = [
     'सर्व',
-    'कादंबरी',
     'कथासंग्रह',
+    'ललित आणि वैचारिक',
+    'संशोधन आणि समीक्षा',
     'कविता',
-    'समीक्षा व निबंध',
-    'चरित्र व आठवणी',
-    'तत्त्वज्ञान व चिंतन',
+    'अनुवादित साहित्य',
   ];
 
   const filteredBooks =
@@ -224,28 +224,24 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => onNavigate('/submit-manuscript')}
-                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-sm bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] font-semibold text-sm sm:text-base shadow-sm transition-all cursor-pointer"
+                  onClick={() => onNavigate('/vachankatta/first-page')}
+                  className="inline-flex items-center gap-2.5 px-5 py-3.5 rounded-sm bg-[#FFD966] hover:bg-[#f5cb4d] text-[#252832] font-semibold text-sm sm:text-base shadow-sm transition-all cursor-pointer"
                 >
-                  <Feather className="w-4 h-4 text-[#FFFDF7]" />
-                  <span>{t.nav.submitManuscript}</span>
+                  <FileText className="w-4 h-4 text-[#243B8A]" />
+                  <span>
+                    {lang === 'mr'
+                      ? 'पहिलं पान : सुरुवातीची ६ पाने वाचा'
+                      : 'First Page: Read Opening 6 Pages'}
+                  </span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => {
-                    const el = document.getElementById('six-editorial-stages-heading-home');
-                    if (el) {
-                      el.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                      onNavigate('/about');
-                    }
-                  }}
-                  className="inline-flex items-center gap-2 px-5 py-3.5 rounded-sm bg-[#FFFDF7] hover:bg-[#F7F3E8] text-[#252832] border border-[#E6E1D6] hover:border-[#243B8A]/40 font-semibold text-sm transition-all cursor-pointer"
+                  onClick={() => onNavigate('/submit-manuscript')}
+                  className="inline-flex items-center gap-2.5 px-5 py-3.5 rounded-sm bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] font-semibold text-sm sm:text-base shadow-sm transition-all cursor-pointer"
                 >
-                  <span>
-                    {lang === 'mr' ? 'सहा संपादकीय टप्पे पहा' : 'View 6 Publishing Stages'}
-                  </span>
+                  <Feather className="w-4 h-4 text-[#FFFDF7]" />
+                  <span>{t.nav.submitManuscript}</span>
                 </button>
               </div>
             </div>
@@ -257,7 +253,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 className="akath-io-stagger-3 lg:col-span-5"
               >
                 <div className="akath-card rounded-sm p-6 sm:p-7 bg-[#FFFDF7] relative">
-                  <div className="flex items-center justify-between gap-2 pb-4 mb-5 border-b border-[#E6E1D6]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-5 border-b border-[#E6E1D6]">
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-[#243B8A]" />
                       <span className="text-xs font-semibold uppercase tracking-wider text-[#243B8A]">
@@ -266,24 +262,35 @@ export const HomeView: React.FC<HomeViewProps> = ({
                           : 'Akath Imprint • Featured Edition'}
                       </span>
                     </div>
-                    {spotlightBooks.length > 1 ? (
-                      <div className="flex items-center gap-1.5">
-                        {spotlightBooks.slice(0, 3).map((b, idx) => (
-                          <button
-                            key={b.id}
-                            type="button"
-                            onClick={() => setFeaturedBookIndex(idx)}
-                            aria-label={`Featured edition ${idx + 1}: ${b.title}`}
-                            className={`h-2 rounded-full transition-all cursor-pointer ${
-                              featuredBookIndex === idx
-                                ? 'w-7 bg-[#243B8A]'
-                                : 'w-2 bg-[#E6E1D6] hover:bg-[#525665]'
-                            }`}
-                          />
-                        ))}
+
+                    {activeHeroBook.coverSpreadUrl ? (
+                      <div className="inline-flex items-center rounded-sm bg-[#F7F3E8] border border-[#E6E1D6] p-0.5 text-[11px] font-semibold">
+                        <button
+                          type="button"
+                          onClick={() => setShowFullSpread(false)}
+                          className={`px-2.5 py-1 rounded-xs transition-colors cursor-pointer ${
+                            !showFullSpread
+                              ? 'bg-[#243B8A] text-[#FFFDF7]'
+                              : 'text-[#525665] hover:text-[#252832]'
+                          }`}
+                        >
+                          {lang === 'mr' ? 'मुखपृष्ठ' : 'Front Cover'}
+                        </button>
+                        <button
+                          type="button"
+                          data-testid="toggle-featured-jacket-spread"
+                          onClick={() => setShowFullSpread(true)}
+                          className={`px-2.5 py-1 rounded-xs transition-colors cursor-pointer ${
+                            showFullSpread
+                              ? 'bg-[#243B8A] text-[#FFFDF7]'
+                              : 'text-[#525665] hover:text-[#252832]'
+                          }`}
+                        >
+                          {lang === 'mr' ? 'पूर्ण वेष्टन (Spread)' : 'Full Jacket'}
+                        </button>
                       </div>
                     ) : (
-                      <span className="text-[11px] font-serif font-semibold px-2.5 py-0.5 rounded-xs bg-[#FFD966]/45 text-[#252832] border border-[#FFD966]">
+                      <span className="text-[11px] font-serif text-right text-[#525665]">
                         {activeHeroBook.subtitle || activeHeroBook.category}
                       </span>
                     )}
@@ -291,67 +298,122 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
                   <AnimatePresence mode="wait">
                     <motion.div
-                      key={activeHeroBook.id}
+                      key={`${activeHeroBook.id}-${showFullSpread ? 'spread' : 'cover'}`}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.25 }}
                       className="space-y-5"
                     >
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
-                        {/* Book Cover Specimen */}
-                        <div className="sm:col-span-5 flex justify-center">
-                          <div className="w-full max-w-[165px]">
-                            <BookCoverArt
-                              book={activeHeroBook}
-                              author={activeHeroAuthor}
-                              size="md"
-                              onClick={() => onNavigate(`/books/${activeHeroBook.slug}`)}
+                      {showFullSpread && activeHeroBook.coverSpreadUrl ? (
+                        <div className="space-y-3">
+                          <div className="rounded-sm overflow-hidden border border-[#E6E1D6] bg-[#F7F3E8] p-2 shadow-xs">
+                            <img
+                              src={activeHeroBook.coverSpreadUrl}
+                              alt={`${activeHeroBook.title} — पूर्ण मुखपृष्ठ व मलपृष्ठ मांडणी`}
+                              className="w-full h-auto rounded-xs object-contain max-h-[260px] mx-auto"
                             />
                           </div>
+                          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#525665]">
+                            <span>
+                              {lang === 'mr'
+                                ? 'मुखपृष्ठ व आतील चित्रे : मिलिंद कडणे · ISBN 978-81-996989-6-3'
+                                : 'Cover & Interior Art: Milind Kadne · ISBN 978-81-996989-6-3'}
+                            </span>
+                            {activeHeroBook.coverPdfUrl && (
+                              <a
+                                href={activeHeroBook.coverPdfUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-semibold text-[#243B8A] hover:underline"
+                              >
+                                {lang === 'mr' ? 'मूळ कव्हर PDF पहा ↗' : 'Open Cover PDF ↗'}
+                              </a>
+                            )}
+                          </div>
                         </div>
-
-                        {/* Bibliographic & Publishing Metadata */}
-                        <div className="sm:col-span-7 flex flex-col justify-between space-y-3">
-                          <div className="space-y-1.5">
-                            <div className="flex flex-wrap items-center gap-2 text-xs text-[#525665]">
-                              <span className="font-semibold text-[#243B8A]">
-                                {activeHeroBook.subtitle || activeHeroBook.category}
-                              </span>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
+                          {/* Book Cover Specimen */}
+                          <div className="sm:col-span-5 flex flex-col items-center gap-2.5">
+                            <div className="w-full max-w-[165px]">
+                              <BookCoverArt
+                                book={activeHeroBook}
+                                author={activeHeroAuthor}
+                                size="md"
+                                onClick={() => onNavigate(`/books/${activeHeroBook.slug}`)}
+                              />
                             </div>
-
-                            <h2
-                              onClick={() => onNavigate(`/books/${activeHeroBook.slug}`)}
-                              className="text-2xl sm:text-[1.65rem] font-serif font-bold text-[#252832] hover:text-[#243B8A] transition-colors cursor-pointer leading-snug"
-                            >
-                              {activeHeroBook.title}
-                            </h2>
-
-                            {activeHeroAuthor && (
-                              <p className="text-sm sm:text-base text-[#252832] font-serif font-semibold">
-                                — {activeHeroAuthor.name}
-                              </p>
+                            {activeHeroBook.coverSpreadUrl && (
+                              <button
+                                type="button"
+                                onClick={() => setShowFullSpread(true)}
+                                className="w-full max-w-[165px] group flex items-center gap-2 p-1.5 rounded-xs bg-[#F7F3E8] hover:bg-[#FFD966]/30 border border-[#E6E1D6] transition-colors cursor-pointer text-left"
+                              >
+                                <img
+                                  src={activeHeroBook.coverSpreadUrl}
+                                  alt="Full jacket thumbnail"
+                                  className="w-11 h-8 object-cover rounded-2xs border border-[#E6E1D6] shrink-0"
+                                />
+                                <span className="text-[10.5px] leading-tight font-medium text-[#243B8A] group-hover:underline">
+                                  {lang === 'mr'
+                                    ? 'पूर्ण मुखपृष्ठ व मलपृष्ठ पहा'
+                                    : 'View Full Jacket Spread'}
+                                </span>
+                              </button>
                             )}
                           </div>
 
-                          <div className="pt-2 border-t border-[#E6E1D6] flex items-baseline justify-between gap-2">
-                            <span className="text-xs font-serif font-semibold text-[#525665]">
-                              किंमत - ५४९/-
-                            </span>
-                            <div className="flex items-baseline gap-2 tabular-nums">
-                              <span className="text-xl font-bold text-[#243B8A]">
-                                ₹{activeHeroBook.price}/-
-                              </span>
-                              {activeHeroBook.listPrice &&
-                                activeHeroBook.listPrice > activeHeroBook.price && (
-                                  <span className="text-xs text-[#525665] line-through">
-                                    ₹{activeHeroBook.listPrice}
-                                  </span>
+                          {/* Bibliographic & Publishing Metadata */}
+                          <div className="sm:col-span-7 flex flex-col justify-between space-y-3">
+                            <div className="space-y-1.5">
+                              <div className="flex flex-wrap items-center gap-2 text-xs text-[#525665]">
+                                <span className="font-semibold text-[#243B8A]">
+                                  {activeHeroBook.subtitle || activeHeroBook.category}
+                                </span>
+                                {activeHeroBook.isbn && (
+                                  <>
+                                    <span aria-hidden="true">·</span>
+                                    <span className="font-mono text-[11px]">
+                                      ISBN {activeHeroBook.isbn}
+                                    </span>
+                                  </>
                                 )}
+                              </div>
+
+                              <h2
+                                onClick={() => onNavigate(`/books/${activeHeroBook.slug}`)}
+                                className="text-2xl sm:text-[1.65rem] font-serif font-bold text-[#252832] hover:text-[#243B8A] transition-colors cursor-pointer leading-snug"
+                              >
+                                {activeHeroBook.title}
+                              </h2>
+
+                              {activeHeroAuthor && (
+                                <p className="text-sm sm:text-base text-[#252832] font-serif font-semibold">
+                                  — {activeHeroAuthor.name}
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="pt-2 border-t border-[#E6E1D6] flex items-baseline justify-between gap-2">
+                              <span className="text-xs font-serif font-semibold text-[#525665]">
+                                किंमत - ५४९/-
+                              </span>
+                              <div className="flex items-baseline gap-2 tabular-nums">
+                                <span className="text-xl font-bold text-[#243B8A]">
+                                  ₹{activeHeroBook.price}/-
+                                </span>
+                                {activeHeroBook.listPrice &&
+                                  activeHeroBook.listPrice > activeHeroBook.price && (
+                                    <span className="text-xs text-[#525665] line-through">
+                                      ₹{activeHeroBook.listPrice}
+                                    </span>
+                                  )}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Full Critical Endorsement Blurb & Attribution */}
                       <div
@@ -368,18 +430,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         )}
                       </div>
 
-                      <div className="pt-1 flex items-center gap-2.5">
+                      <div className="pt-1 flex flex-wrap items-center gap-2">
                         <button
                           type="button"
                           onClick={() => onNavigate(`/books/${activeHeroBook.slug}`)}
-                          className="flex-1 px-3.5 py-2.5 text-xs font-semibold text-[#252832] hover:text-[#243B8A] border border-[#E6E1D6] hover:border-[#243B8A] rounded-sm transition-colors cursor-pointer"
+                          className="flex-1 px-3 py-2.5 text-xs font-semibold text-[#252832] hover:text-[#243B8A] border border-[#E6E1D6] hover:border-[#243B8A] rounded-sm transition-colors cursor-pointer whitespace-nowrap"
                         >
                           {t.book.viewDetails}
                         </button>
                         <button
                           type="button"
+                          onClick={() => onNavigate('/vachankatta/first-page')}
+                          className="px-3 py-2.5 text-xs font-semibold text-[#243B8A] bg-[#FFD966]/45 hover:bg-[#FFD966] rounded-sm transition-colors cursor-pointer whitespace-nowrap"
+                        >
+                          {lang === 'mr' ? 'पहिलं पान (६ पृष्ठे)' : 'First Page (6p)'}
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => onAddToCart(activeHeroBook.id)}
-                          className={`flex-1 px-3.5 py-2.5 text-xs font-semibold rounded-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          className={`flex-1 px-3.5 py-2.5 text-xs font-semibold rounded-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
                             recentlyAddedBookId === activeHeroBook.id
                               ? 'bg-[#15803D] text-white'
                               : 'bg-[#EF6855] hover:bg-[#d95643] text-white'

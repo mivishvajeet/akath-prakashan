@@ -61,6 +61,8 @@ export const VachankattaHubView: React.FC<VachankattaHubViewProps> = ({
   const { lang, t } = useLanguage();
   const [blindModeMap, setBlindModeMap] = useState<Record<string, boolean>>({});
   const [reactedMap, setReactedMap] = useState<Record<string, string>>({});
+  const [activeFolioPageMap, setActiveFolioPageMap] = useState<Record<string, number>>({});
+  const [showRawPdfMap, setShowRawPdfMap] = useState<Record<string, boolean>>({});
 
   const tabs = [
     { slug: 'all', label: t.vachankatta.allCategories, path: '/vachankatta' },
@@ -159,7 +161,7 @@ export const VachankattaHubView: React.FC<VachankattaHubViewProps> = ({
             FIRST PAGE EXCERPTS VIEW (/vachankatta/first-page or 'all')
             =================================================================== */}
         {(activeSubRoute === 'first-page' || activeSubRoute === 'all') && (
-          <section className="space-y-8">
+          <section className="space-y-8" data-testid="vachankatta-first-page-section">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
               <div className="flex items-center gap-3">
                 <AnimatedTortoiseEmblem
@@ -184,49 +186,267 @@ export const VachankattaHubView: React.FC<VachankattaHubViewProps> = ({
                 const book = books.find((b) => b.id === ex.bookId);
                 const author = authors.find((a) => a.id === ex.authorId);
                 const blind = isBlind(ex);
+                const folioPages = ex.folioPages || [];
+                const currentFolioIdx = activeFolioPageMap[ex.id] ?? 0;
+                const currentFolioPage = folioPages[currentFolioIdx];
+                const showRawPdf = Boolean(showRawPdfMap[ex.id]);
 
                 return (
                   <motion.article
                     key={ex.id}
+                    data-testid={`first-page-card-${ex.id}`}
                     initial={{ opacity: 0, y: 14 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.3, delay: idx * 0.05 }}
                     className="bg-white rounded-3xl border border-[#E6DFCE] p-6 sm:p-10 space-y-6 shadow-[0_12px_36px_-18px_rgba(37,40,50,0.06)]"
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#E6DFCE]">
-                      <div>
-                        <span className="text-[12px] font-semibold text-[#243B8A]">
-                          {ex.genreMarathi}
-                        </span>
-                        <h3 className="type-section-heading text-[#252832] mt-1">
-                          {blind ? ex.openingHook : `${ex.title} — ${book?.title}`}
-                        </h3>
-                        {!blind && author && (
-                          <p className="text-[15px] text-[#5A5F72] mt-0.5">
-                            {author.name}
-                          </p>
+                    <div className="flex flex-wrap items-start justify-between gap-4 pb-5 border-b border-[#E6DFCE]">
+                      <div className="flex items-start gap-4">
+                        {!blind && book && (
+                          <div className="w-16 sm:w-20 shrink-0 hidden xs:block sm:block">
+                            <BookCoverArt
+                              book={book}
+                              author={author}
+                              size="sm"
+                              onClick={() => onNavigate(`/books/${book.slug}`)}
+                            />
+                          </div>
                         )}
+                        <div>
+                          <span className="text-[12px] font-semibold text-[#243B8A]">
+                            {ex.genreMarathi}
+                          </span>
+                          <h3 className="type-section-heading text-[#252832] mt-1">
+                            {blind ? ex.openingHook : `${ex.title} — ${book?.title}`}
+                          </h3>
+                          {!blind && author && (
+                            <p className="text-[15px] text-[#5A5F72] mt-0.5 font-medium">
+                              — {author.name}
+                            </p>
+                          )}
+                        </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => toggleBlind(ex)}
-                        className="px-4 py-2 rounded-xl bg-[#243B8A] hover:bg-[#1C2E6E] text-[#FFFDF7] text-[13px] font-semibold inline-flex items-center gap-2 transition-colors whitespace-nowrap shrink-0"
-                      >
-                        {blind ? (
-                          <>
-                            <Eye className="w-4 h-4 text-[#FFD966]" />
-                            <span>{t.vachankatta.revealIdentity}</span>
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff className="w-4 h-4 text-[#FFD966]" />
-                            <span>{t.vachankatta.hideIdentity}</span>
-                          </>
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        {ex.pdfDocumentUrl && (
+                          <a
+                            href={ex.pdfDocumentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            data-testid="first-page-pdf-download-link"
+                            className="px-3.5 py-2 rounded-xl bg-[#FFD966] hover:bg-[#f5cb4d] text-[#252832] text-[13px] font-semibold inline-flex items-center gap-2 transition-colors whitespace-nowrap shrink-0"
+                          >
+                            <BookOpen className="w-4 h-4 text-[#243B8A]" />
+                            <span>
+                              {lang === 'mr'
+                                ? 'मूळ ६ पाने PDF उघडा ↗'
+                                : 'Open 6-Page PDF ↗'}
+                            </span>
+                          </a>
                         )}
-                      </button>
+
+                        <button
+                          type="button"
+                          onClick={() => toggleBlind(ex)}
+                          className="px-4 py-2 rounded-xl bg-[#243B8A] hover:bg-[#1C2E6E] text-[#FFFDF7] text-[13px] font-semibold inline-flex items-center gap-2 transition-colors whitespace-nowrap shrink-0"
+                        >
+                          {blind ? (
+                            <>
+                              <Eye className="w-4 h-4 text-[#FFD966]" />
+                              <span>{t.vachankatta.revealIdentity}</span>
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff className="w-4 h-4 text-[#FFD966]" />
+                              <span>{t.vachankatta.hideIdentity}</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
+
+                    {/* Interactive 6-Page Preliminary Book Folio Viewer (Second PDF Integration) */}
+                    {folioPages.length > 0 && currentFolioPage && (
+                      <div
+                        data-testid="first-page-pdf-folio-viewer"
+                        className="rounded-2xl border border-[#E6DFCE] bg-[#F7F3E8]/90 p-4 sm:p-6 space-y-5"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E6DFCE] pb-3.5">
+                          <div>
+                            <span className="text-[11px] font-mono uppercase tracking-wider text-[#243B8A] font-bold">
+                              {lang === 'mr'
+                                ? 'प्रारंभिक ६ पृष्ठे · मूळ मुद्रित संहिता (First Page PDF Folio)'
+                                : 'Opening 6 Pages · Typeset Preliminary Folio'}
+                            </span>
+                            <h4 className="text-[16px] sm:text-[18px] font-serif font-bold text-[#252832] mt-0.5">
+                              {lang === 'mr'
+                                ? currentFolioPage.labelMarathi
+                                : currentFolioPage.labelEnglish}
+                            </h4>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {ex.pdfDocumentUrl && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setShowRawPdfMap((prev) => ({
+                                    ...prev,
+                                    [ex.id]: !prev[ex.id],
+                                  }))
+                                }
+                                className="px-3 py-1.5 rounded-lg border border-[#E6DFCE] bg-white hover:border-[#243B8A] text-[12px] font-semibold text-[#243B8A] transition-colors cursor-pointer"
+                              >
+                                {showRawPdf
+                                  ? lang === 'mr'
+                                    ? 'पृष्ठनिहाय वाचन पहा'
+                                    : 'Show Page Folio'
+                                  : lang === 'mr'
+                                  ? 'अंतर्गत PDF दर्शक'
+                                  : 'Embedded PDF View'}
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setActiveFolioPageMap((prev) => ({
+                                  ...prev,
+                                  [ex.id]:
+                                    (currentFolioIdx - 1 + folioPages.length) %
+                                    folioPages.length,
+                                }))
+                              }
+                              aria-label="Previous folio page"
+                              className="w-8 h-8 rounded-lg border border-[#E6DFCE] bg-white hover:bg-[#FFD966]/40 inline-flex items-center justify-center text-[#252832] cursor-pointer"
+                            >
+                              <ArrowLeft className="w-4 h-4" />
+                            </button>
+                            <span className="text-[12px] font-mono font-bold text-[#252832] px-1.5 tabular-nums">
+                              {currentFolioPage.pageNumber} / {folioPages.length}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setActiveFolioPageMap((prev) => ({
+                                  ...prev,
+                                  [ex.id]: (currentFolioIdx + 1) % folioPages.length,
+                                }))
+                              }
+                              aria-label="Next folio page"
+                              className="w-8 h-8 rounded-lg border border-[#E6DFCE] bg-white hover:bg-[#FFD966]/40 inline-flex items-center justify-center text-[#252832] cursor-pointer"
+                            >
+                              <ArrowRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Page Number Pills */}
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                          {folioPages.map((fp, pIdx) => {
+                            const isActive = pIdx === currentFolioIdx;
+                            return (
+                              <button
+                                key={fp.pageNumber}
+                                type="button"
+                                onClick={() =>
+                                  setActiveFolioPageMap((prev) => ({
+                                    ...prev,
+                                    [ex.id]: pIdx,
+                                  }))
+                                }
+                                className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold whitespace-nowrap transition-colors cursor-pointer ${
+                                  isActive
+                                    ? 'bg-[#243B8A] text-[#FFFDF7]'
+                                    : 'bg-white text-[#5A5F72] hover:text-[#252832] border border-[#E6DFCE]'
+                                }`}
+                              >
+                                {lang === 'mr' ? fp.labelMarathi : fp.labelEnglish}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {showRawPdf && ex.pdfDocumentUrl ? (
+                          <div className="rounded-xl overflow-hidden border border-[#E6DFCE] bg-white">
+                            <iframe
+                              src={ex.pdfDocumentUrl}
+                              title={`${ex.title} PDF`}
+                              className="w-full h-[480px]"
+                            />
+                          </div>
+                        ) : (
+                          /* Archival Book Page Sheet */
+                          <div className="bg-[#FFFDF7] rounded-xl border border-[#E6DFCE] p-6 sm:p-8 shadow-2xs max-w-3xl mx-auto space-y-5">
+                            {currentFolioPage.illustrationUrl && (
+                              <div className="flex justify-center py-2">
+                                <img
+                                  src={currentFolioPage.illustrationUrl}
+                                  alt={currentFolioPage.heading || 'Book illustration'}
+                                  className="max-h-[290px] w-auto object-contain rounded-lg border border-[#E6DFCE] bg-white p-3"
+                                />
+                              </div>
+                            )}
+
+                            <div
+                              className={`space-y-2 ${
+                                currentFolioPage.pageNumber === 2 ||
+                                currentFolioPage.pageNumber === 4
+                                  ? 'text-center py-4'
+                                  : ''
+                              }`}
+                            >
+                              {currentFolioPage.heading && (
+                                <h5 className="font-serif text-[22px] sm:text-[26px] font-bold text-[#252832]">
+                                  {currentFolioPage.heading}
+                                </h5>
+                              )}
+                              {currentFolioPage.sublines &&
+                                currentFolioPage.sublines.map((sub, sIdx) => (
+                                  <p
+                                    key={sIdx}
+                                    className="font-serif text-[16px] sm:text-[18px] font-semibold text-[#243B8A]"
+                                  >
+                                    {sub}
+                                  </p>
+                                ))}
+                            </div>
+
+                            {currentFolioPage.emblemUrl && (
+                              <div className="flex justify-center py-2">
+                                <img
+                                  src={currentFolioPage.emblemUrl}
+                                  alt="अकथ प्रकाशन बोधचिन्ह"
+                                  className="h-24 w-auto object-contain"
+                                />
+                              </div>
+                            )}
+
+                            <div
+                              className={`space-y-2.5 font-serif text-[15px] sm:text-[16.5px] text-[#252832] leading-relaxed ${
+                                currentFolioPage.pageNumber === 2 ||
+                                currentFolioPage.pageNumber === 4
+                                  ? 'text-center'
+                                  : ''
+                              }`}
+                            >
+                              {currentFolioPage.bodyLines.map((line, lIdx) => (
+                                <p
+                                  key={lIdx}
+                                  className={
+                                    currentFolioPage.pageNumber === 6
+                                      ? 'p-2.5 rounded-lg bg-[#F7F3E8] border border-[#E6DFCE] font-semibold text-[#252832]'
+                                      : ''
+                                  }
+                                >
+                                  {line}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <blockquote className="font-serif text-[21px] sm:text-[24px] text-[#252832] bg-[#FFD966]/20 border border-[#FFD966] rounded-2xl p-6 leading-[1.6]">
                       “{ex.highlightedLine}”
@@ -363,21 +583,31 @@ export const VachankattaHubView: React.FC<VachankattaHubViewProps> = ({
                           key={item.bookId}
                           className="bg-[#FFFDF7] rounded-2xl border border-[#E6DFCE] p-4 flex flex-col justify-between space-y-3"
                         >
-                          <div>
-                            <button
-                              type="button"
-                              onClick={() => onNavigate(`/books/${b.slug}`)}
-                              className="font-serif text-[18px] font-bold text-[#252832] hover:text-[#243B8A] text-left"
-                            >
-                              {b.title}
-                            </button>
-                            {a && (
-                              <p className="text-[13px] text-[#5A5F72]">{a.name}</p>
-                            )}
-                            <p className="text-[14px] text-[#5A5F72] mt-2 leading-relaxed">
-                              “{item.curatorComment}”
-                            </p>
+                          <div className="flex items-start gap-3.5">
+                            <div className="w-16 shrink-0">
+                              <BookCoverArt
+                                book={b}
+                                author={a}
+                                size="sm"
+                                onClick={() => onNavigate(`/books/${b.slug}`)}
+                              />
+                            </div>
+                            <div>
+                              <button
+                                type="button"
+                                onClick={() => onNavigate(`/books/${b.slug}`)}
+                                className="font-serif text-[18px] font-bold text-[#252832] hover:text-[#243B8A] text-left leading-snug"
+                              >
+                                {b.title}
+                              </button>
+                              {a && (
+                                <p className="text-[13px] text-[#5A5F72] mt-0.5">{a.name}</p>
+                              )}
+                            </div>
                           </div>
+                          <p className="text-[14px] text-[#5A5F72] leading-relaxed">
+                            “{item.curatorComment}”
+                          </p>
                           <div className="pt-2 flex items-center justify-between border-t border-[#E6DFCE]">
                             <span className="text-[15px] font-bold text-[#252832] tabular-nums">
                               ₹{b.price}

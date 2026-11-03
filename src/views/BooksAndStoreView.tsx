@@ -353,6 +353,11 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
   const { lang, t } = useLanguage();
   const [quantity, setQuantity] = useState(1);
   const [showExcerptSheet, setShowExcerptSheet] = useState(false);
+  const [selectedGalleryId, setSelectedGalleryId] = useState<string>('3d-cover');
+
+  useEffect(() => {
+    setSelectedGalleryId('3d-cover');
+  }, [book.id]);
 
   // Reviews & Wishlist state
   const [reviews, setReviews] = useState<BookReviewRecord[]>([]);
@@ -473,6 +478,10 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
     onNavigate('/cart');
   };
 
+  const activeGalleryItem = (book.galleryImages || []).find(
+    (g) => g.id === selectedGalleryId
+  );
+
   return (
     <div className="bg-[#FFFDF7] text-[#252832] min-h-screen">
       {/* Breadcrumb Navigation */}
@@ -496,18 +505,89 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
       {/* Main Book Monograph Layout */}
       <section className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
-          {/* Left Column: Studio Pedestal for 3:4 Book Cover */}
+          {/* Left Column: Studio Pedestal for 3:4 Book Cover & Full Jacket Spread Switcher */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
             className="lg:col-span-5"
           >
-            <div className="bg-white rounded-3xl border border-[#E6E1D6] p-8 sm:p-10 flex flex-col items-center">
-              <div className="w-full max-w-[270px] bg-gradient-to-b from-[#FFD966]/25 via-[#FFFDF7] to-[#F7F3E8] rounded-t-[130px] rounded-b-2xl pt-9 pb-7 px-6 border border-[#E6E1D6] flex justify-center">
-                <BookCoverArt book={book} author={author} size="lg" />
-              </div>
-              <div className="mt-5 flex items-center gap-2 text-[12px] text-[#525665] text-center">
+            <div className="bg-white rounded-3xl border border-[#E6E1D6] p-6 sm:p-8 flex flex-col items-center space-y-5">
+              {selectedGalleryId === '3d-cover' || !activeGalleryItem ? (
+                <div className="w-full max-w-[270px] bg-gradient-to-b from-[#FFD966]/25 via-[#FFFDF7] to-[#F7F3E8] rounded-t-[130px] rounded-b-2xl pt-9 pb-7 px-6 border border-[#E6E1D6] flex justify-center">
+                  <BookCoverArt book={book} author={author} size="lg" />
+                </div>
+              ) : (
+                <div className="w-full rounded-2xl border border-[#E6E1D6] bg-[#F7F3E8] p-3 space-y-2.5">
+                  <img
+                    src={activeGalleryItem.url}
+                    alt={activeGalleryItem.altText}
+                    className="w-full max-h-[360px] object-contain rounded-xl mx-auto bg-white"
+                  />
+                  <p className="text-[12px] font-serif text-[#525665] text-center">
+                    {activeGalleryItem.caption}
+                  </p>
+                </div>
+              )}
+
+              {/* Gallery Switcher (3D Cover + Full Jacket Spread + Interior Art) */}
+              {book.galleryImages && book.galleryImages.length > 0 && (
+                <div className="w-full space-y-2 pt-1">
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedGalleryId('3d-cover')}
+                      className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors cursor-pointer ${
+                        selectedGalleryId === '3d-cover'
+                          ? 'bg-[#243B8A] text-[#FFFDF7]'
+                          : 'bg-[#F7F3E8] text-[#525665] hover:text-[#252832] border border-[#E6E1D6]'
+                      }`}
+                    >
+                      {lang === 'mr' ? '३डी मुखपृष्ठ' : '3D Front Cover'}
+                    </button>
+                    {book.galleryImages.map((img, gIdx) => (
+                      <button
+                        key={img.id}
+                        type="button"
+                        onClick={() => setSelectedGalleryId(img.id)}
+                        className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors cursor-pointer ${
+                          selectedGalleryId === img.id
+                            ? 'bg-[#243B8A] text-[#FFFDF7]'
+                            : 'bg-[#F7F3E8] text-[#525665] hover:text-[#252832] border border-[#E6E1D6]'
+                        }`}
+                      >
+                        {gIdx === 0
+                          ? lang === 'mr'
+                            ? 'मुखपृष्ठ कला'
+                            : 'Cover Art'
+                          : gIdx === 1
+                          ? lang === 'mr'
+                            ? 'पूर्ण वेष्टन (Spread)'
+                            : 'Full Jacket Spread'
+                          : lang === 'mr'
+                          ? `अंतर्गत चित्र`
+                          : `Interior Art`}
+                      </button>
+                    ))}
+                  </div>
+                  {book.coverPdfUrl && (
+                    <div className="text-center pt-1">
+                      <a
+                        href={book.coverPdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[12px] font-semibold text-[#243B8A] hover:underline"
+                      >
+                        {lang === 'mr'
+                          ? 'मूळ हाय-रिझोल्यूशन कव्हर PDF उघडा ↗'
+                          : 'Open Original High-Res Cover PDF ↗'}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 text-[12px] text-[#525665] text-center">
                 <AnimatedTortoiseEmblem
                   className="w-6 h-6 shrink-0"
                   variant="forest"

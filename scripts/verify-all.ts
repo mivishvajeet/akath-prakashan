@@ -1198,8 +1198,41 @@ async function runTests() {
   assert.ok(seedDataSource.includes("subtitle: '( दीर्घकथा संग्रह )'"));
   assert.ok(seedDataSource.includes('price: 549'));
   assert.ok(seedDataSource.includes('- सुदाम राठोड, नाशिक'));
+  assert.ok(seedDataSource.includes("coverImageUrl: '/assets/aistudio/scholar-juice-cover.jpg'"));
+  assert.ok(seedDataSource.includes("coverSpreadUrl: '/assets/aistudio/scholar-juice-spread.jpg'"));
+  assert.ok(seedDataSource.includes("coverPdfUrl: '/assets/aistudio/SCHOLAR_JUSIE_cover_design_cdr_15_15f6273e.pdf'"));
+
+  // Verify Book 2 (धुक्याची दुलई — भूतान प्रवासवर्णन by अनुरत्न वाघमारे) & Book 3 (लोकशाहीमध्ये समाजमाध्यमांचा वापर by आखिलेश पंडित येलकदरे)
+  assert.ok(seedDataSource.includes("id: 'book-dhukyachi-dulai'"));
+  assert.ok(seedDataSource.includes("title: 'धुक्याची दुलई'"));
+  assert.ok(seedDataSource.includes("name: 'अनुरत्न वाघमारे'"));
+  assert.ok(seedDataSource.includes("coverImageUrl: '/assets/aistudio/book2_b40a45e1.jpeg'"));
+  assert.ok(seedDataSource.includes("id: 'book-lokshahimadhye-samajmadhyamancha-vapar'"));
+  assert.ok(seedDataSource.includes("title: 'लोकशाहीमध्ये समाजमाध्यमांचा वापर'"));
+  assert.ok(seedDataSource.includes("name: 'आखिलेश पंडित येलकदरे'"));
+  assert.ok(seedDataSource.includes("coverImageUrl: '/assets/aistudio/lokshahi-cover.jpg'"));
+  assert.ok(
+    seedDataSource.includes(
+      "coverSpreadUrl: '/assets/aistudio/ChatGPT_Image_Nov_3__2026_at_11_52_43_PM_821c7865.png'"
+    )
+  );
+
+  // Verify Second PDF in First Page section (excerpt-scholar-juice + 6 folioPages)
+  assert.ok(seedDataSource.includes("id: 'excerpt-scholar-juice'"));
+  assert.ok(
+    seedDataSource.includes(
+      "pdfDocumentUrl: '/assets/aistudio/_________________________________________ead1d264.pdf'"
+    )
+  );
+  assert.ok(seedDataSource.includes("id: 'excerpt-dhukyachi-dulai'"));
+  assert.ok(seedDataSource.includes("id: 'excerpt-lokshahimadhye-samajmadhyamancha-vapar'"));
+  assert.ok(seedDataSource.includes("id: 'list-akath-prakashan-vishesh-granth'"));
+  assert.ok(vachankattaSource.includes('data-testid="first-page-pdf-folio-viewer"'));
+  assert.ok(vachankattaSource.includes('data-testid="first-page-pdf-download-link"'));
+
   assert.ok(homeViewSource.includes('data-testid="home-featured-edition-dossier"'));
   assert.ok(homeViewSource.includes('data-testid="featured-edition-blurb"'));
+  assert.ok(homeViewSource.includes('data-testid="toggle-featured-jacket-spread"'));
   assert.ok(bookCoverArtSource.includes('const customCoverSrc = book.coverImageUrl || book.coverUploadMeta?.dataUrl;'));
 
   const bootstrapFeaturedCheck = await getJson('/api/bootstrap');
@@ -1215,8 +1248,22 @@ async function runTests() {
   assert.equal(liveFeaturedBooks[0].title, 'स्कॉलर ज्यूस');
   assert.equal(liveFeaturedBooks[0].price, 549);
 
+  // Verify all 3 books are present in /api/bootstrap books, excerpts, and readingLists
+  const liveBookIds = bootstrapFeaturedCheck.data.books.map((b: { id: string }) => b.id);
+  assert.ok(liveBookIds.includes('book-scholar-juice'));
+  assert.ok(liveBookIds.includes('book-dhukyachi-dulai'));
+  assert.ok(liveBookIds.includes('book-lokshahimadhye-samajmadhyamancha-vapar'));
+
+  const liveExcerptBookIds = bootstrapFeaturedCheck.data.excerpts.map(
+    (e: { bookId: string }) => e.bookId
+  );
+  assert.ok(liveExcerptBookIds.includes('book-scholar-juice'));
+  assert.ok(liveExcerptBookIds.includes('book-dhukyachi-dulai'));
+  assert.ok(liveExcerptBookIds.includes('book-lokshahimadhye-samajmadhyamancha-vapar'));
+  assert.equal(bootstrapFeaturedCheck.data.excerpts[0].folioPages.length, 6);
+
   console.log(
-    '  [PASS] UI-07: Featured Edition ("स्कॉलर ज्यूस - जी. के. ऐनापुरे", ₹549), Article Immersive Reading Mode, SixEditorialStages, Mobile Horizontal Catalog Scroll, and About Monograph Staggered IntersectionObserver Reveal verified'
+    '  [PASS] UI-07: Featured Edition ("स्कॉलर ज्यूस - जी. के. ऐनापुरे", ₹549 + Cover Spread PDF), First Page 6-Page PDF Folio, and all 3 Books across Books, Vachankatta & Catalogue verified'
   );
 
   // Verify No-Code Admin CMS Endpoints (Create Book, Export CSV, Publish Article, Update Site Config, Create Promotion)
