@@ -24,8 +24,10 @@
     --color-error: #D93829;
     --color-success: #15803D;
 
-    /* 2+1 Font System: Settled Serif Display + Crisp Geometric/Devanagari Sans + Tabular Mono */
-    --font-serif: "Noto Serif Devanagari", "Playfair Display", Georgia, serif;
+    /* 2+1 Font System + Elevated Literary Display & Book-Prose Serifs */
+    --font-serif: "Noto Serif Devanagari", "Newsreader", "Playfair Display", Georgia, serif;
+    --font-editorial-display: "Cormorant Garamond", "Tiro Devanagari Marathi", "Noto Serif Devanagari", "Playfair Display", Georgia, serif;
+    --font-editorial-prose: "Newsreader", "Noto Serif Devanagari", Georgia, serif;
     --font-sans: "Plus Jakarta Sans", "Mukta", -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono: "JetBrains Mono", monospace;
   }
@@ -198,6 +200,38 @@
   color: var(--color-ink);
   max-width: 66ch;
   letter-spacing: 0;
+}
+
+/* Elevated Literary Display & Compact Monograph Prose Utilities (About Page) */
+.font-editorial-display {
+  font-family: var(--font-editorial-display);
+  letter-spacing: 0;
+  font-feature-settings: "kern" 1, "liga" 1, "onum" 1;
+}
+
+.font-editorial-prose {
+  font-family: var(--font-editorial-prose);
+  letter-spacing: 0;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+.about-folio-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E6DFCE;
+  box-shadow:
+    0 1px 2px rgba(37, 40, 50, 0.025),
+    0 10px 26px -14px rgba(36, 59, 138, 0.06);
+  transition:
+    border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.about-folio-card:hover {
+  border-color: rgba(36, 59, 138, 0.32);
+  box-shadow:
+    0 4px 14px rgba(37, 40, 50, 0.04),
+    0 18px 36px -16px rgba(36, 59, 138, 0.11);
 }
 
 /* Immersive Article Reading Prose — Dynamic Viewport-Width Line-Height Optimization
@@ -617,10 +651,80 @@
   outline-offset: 3px;
 }
 
+/* Hide scrollbars cleanly on mobile/tablet horizontal swipe rails */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* =========================================================================
-   WalkingTortoise — About Section Closing Colophon Animation
-   Calm, patient left-to-right walk, brief pause, smooth turn, and return.
+   WalkingTortoise — Patient Tortoise Bottom-of-Page Traverse Animation
+   A slow, meditative CSS-only horizontal cycle along the bottom margin
+   horizon line. Uses GPU-composited translate3d + container query units (cqw)
+   so it glides smoothly across mobile (320px–430px), tablet (768px), and desktop.
    ========================================================================= */
+
+.akath-patient-traverse-track {
+  container-type: inline-size;
+}
+
+@keyframes akath-patient-traverse {
+  0% {
+    transform: translate3d(4px, 0, 0);
+  }
+  44% {
+    transform: translate3d(calc(100cqw - 92px), 0, 0);
+  }
+  50% {
+    transform: translate3d(calc(100cqw - 92px), 0, 0);
+  }
+  94% {
+    transform: translate3d(4px, 0, 0);
+  }
+  100% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
+
+@keyframes akath-patient-turn {
+  0%,
+  45% {
+    transform: scaleX(1);
+  }
+  49%,
+  95% {
+    transform: scaleX(-1);
+  }
+  99%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes akath-traverse-footstep-pulse {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes akath-traverse-horizon-shimmer {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
 
 @keyframes akath-tortoise-traverse {
   0% {
@@ -693,6 +797,66 @@
   50% {
     transform: translate(1px, -0.8px) rotate(-1.5deg);
   }
+}
+
+.akath-patient-traverse-stage {
+  --traverse-duration: 20s;
+}
+
+@media (min-width: 640px) {
+  .akath-patient-traverse-stage {
+    --traverse-duration: 26s;
+  }
+}
+
+@media (min-width: 1024px) {
+  .akath-patient-traverse-stage {
+    --traverse-duration: 32s;
+  }
+}
+
+.akath-patient-tortoise-runner {
+  position: absolute;
+  bottom: 9px;
+  left: 0;
+  width: 84px;
+  animation: akath-patient-traverse var(--traverse-duration, 24s) cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  will-change: transform;
+}
+
+.akath-patient-tortoise-flip {
+  animation: akath-patient-turn var(--traverse-duration, 24s) cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  transform-origin: center center;
+}
+
+/* Explicit pause state (via mobile/desktop toggle button) */
+.akath-patient-traverse-stage.is-paused .akath-patient-tortoise-runner,
+.akath-patient-traverse-stage.is-paused .akath-patient-tortoise-flip,
+.akath-patient-traverse-stage.is-paused .akath-walking-tortoise-leg-a,
+.akath-patient-traverse-stage.is-paused .akath-walking-tortoise-leg-b,
+.akath-patient-traverse-stage.is-paused .akath-walking-tortoise-body,
+.akath-patient-traverse-stage.is-paused .akath-walking-tortoise-head {
+  animation-play-state: paused;
+}
+
+/* Guard hover-to-pause behind pointer:fine so mobile touch taps never freeze the tortoise */
+@media (hover: hover) and (pointer: fine) {
+  .akath-patient-traverse-stage:hover .akath-patient-tortoise-runner,
+  .akath-patient-traverse-stage:hover .akath-patient-tortoise-flip,
+  .akath-patient-traverse-stage:hover .akath-walking-tortoise-leg-a,
+  .akath-patient-traverse-stage:hover .akath-walking-tortoise-leg-b,
+  .akath-patient-traverse-stage:hover .akath-walking-tortoise-body,
+  .akath-patient-traverse-stage:hover .akath-walking-tortoise-head {
+    animation-play-state: paused;
+  }
+}
+
+.akath-traverse-footstep {
+  animation: akath-traverse-footstep-pulse 4.8s ease-in-out infinite;
+}
+
+.akath-traverse-horizon-line {
+  animation: akath-traverse-horizon-shimmer 7s ease-in-out infinite;
 }
 
 .akath-walking-tortoise-traveler {
@@ -1405,6 +1569,10 @@
   .last-page-creator-mark,
   .akath-walking-tortoise-traveler,
   .akath-walking-tortoise-turner,
+  .akath-patient-tortoise-runner,
+  .akath-patient-tortoise-flip,
+  .akath-traverse-footstep,
+  .akath-traverse-horizon-line,
   .akath-walking-tortoise-leg-a,
   .akath-walking-tortoise-leg-b,
   .akath-walking-tortoise-body,
@@ -1445,6 +1613,10 @@
     transform: none !important;
     opacity: 1 !important;
     will-change: auto;
+  }
+
+  .akath-patient-tortoise-runner {
+    left: calc(50% - 44px) !important;
   }
 
   .akath-walking-tortoise-track {

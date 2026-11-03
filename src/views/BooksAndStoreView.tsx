@@ -13,6 +13,7 @@ import { BookCard } from '../components/BookCard';
 import { AnimatedTortoiseEmblem } from '../components/SarvamIllustrations';
 import { useLanguage } from '../i18n/translations';
 import { authFetch } from './AuthAndRoleViews';
+import { EditorialSelectDropdown } from './PublishingHouseViews';
 import {
   Search,
   ShoppingBag,
@@ -121,10 +122,10 @@ export const BooksCatalogueView: React.FC<BooksCatalogueViewProps> = ({
             {t.catalogue.subtitle}
           </p>
 
-          {/* Architectural Filter Toolbar */}
-          <div className="mt-8 bg-[#FFFDF7] rounded-2xl border border-[#E6E1D6] p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+          {/* Architectural Filter Toolbar (Mobile & Tablet Responsive) */}
+          <div className="mt-8 bg-[#FFFDF7] rounded-2xl border border-[#E6E1D6] p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 sm:gap-4 items-center">
             {/* Search Input */}
-            <div className="md:col-span-5 relative">
+            <div className="sm:col-span-2 lg:col-span-5 relative">
               <Search className="w-4 h-4 text-[#243B8A] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="search"
@@ -132,44 +133,47 @@ export const BooksCatalogueView: React.FC<BooksCatalogueViewProps> = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t.catalogue.searchPlaceholder}
                 aria-label={t.catalogue.searchPlaceholder}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#E6E1D6] text-[15px] text-[#252832] focus:border-[#243B8A] focus:outline-none"
+                className="w-full min-h-[44px] pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#E6E1D6] text-[15px] text-[#252832] focus:border-[#243B8A] focus:outline-none"
               />
             </div>
 
             {/* Category Selector */}
-            <div className="md:col-span-3">
-              <select
+            <div className="sm:col-span-1 lg:col-span-3">
+              <EditorialSelectDropdown
+                id="catalogue-category"
+                testId="catalogue-category-select"
+                ariaLabel={t.catalogue.allCategories}
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                aria-label={t.catalogue.allCategories}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E6E1D6] text-[15px] text-[#252832] focus:border-[#243B8A] focus:outline-none"
-              >
-                <option value="all">{t.catalogue.allCategories}</option>
-                {categories.map(([slug, label]) => (
-                  <option key={slug} value={slug}>
-                    {label}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setSelectedCategory(val)}
+                options={[
+                  { value: 'all', label: t.catalogue.allCategories },
+                  ...categories.map(([slug, label]) => ({
+                    value: slug,
+                    label,
+                  })),
+                ]}
+              />
             </div>
 
             {/* Sort Selector */}
-            <div className="md:col-span-2">
-              <select
+            <div className="sm:col-span-1 lg:col-span-2">
+              <EditorialSelectDropdown
+                id="catalogue-sort"
+                testId="catalogue-sort-select"
+                ariaLabel={t.catalogue.sortBy}
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                aria-label={t.catalogue.sortBy}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E6E1D6] text-[15px] text-[#252832] focus:border-[#243B8A] focus:outline-none"
-              >
-                <option value="featured">{t.catalogue.sortFeatured}</option>
-                <option value="newest">{t.catalogue.sortNewest}</option>
-                <option value="price_asc">{t.catalogue.sortPriceLow}</option>
-                <option value="price_desc">{t.catalogue.sortPriceHigh}</option>
-              </select>
+                onChange={(val) => setSortBy(val as typeof sortBy)}
+                options={[
+                  { value: 'featured', label: t.catalogue.sortFeatured },
+                  { value: 'newest', label: t.catalogue.sortNewest },
+                  { value: 'price_asc', label: t.catalogue.sortPriceLow },
+                  { value: 'price_desc', label: t.catalogue.sortPriceHigh },
+                ]}
+              />
             </div>
 
             {/* In-stock Toggle */}
-            <div className="md:col-span-2 flex items-center justify-end">
+            <div className="sm:col-span-2 lg:col-span-2 flex items-center justify-start lg:justify-end pt-1 lg:pt-0">
               <label className="inline-flex items-center gap-2 text-[14px] font-medium text-[#252832] cursor-pointer select-none whitespace-nowrap">
                 <input
                   type="checkbox"

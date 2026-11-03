@@ -950,10 +950,22 @@ async function runTests() {
   assert.ok(navbarSource.includes('data-testid="navbar-signin-btn"'));
   assert.ok(navbarSource.includes('data-testid="navbar-cart-btn"'));
   assert.ok(navbarSource.includes('data-testid="navbar-admin-link"'));
+  assert.ok(navbarSource.includes('data-testid="navbar-mobile-menu-btn"'));
+  assert.ok(navbarSource.includes('aria-controls="akath-mobile-drawer"'));
+  assert.ok(navbarSource.includes('data-testid="navbar-mobile-drawer-overlay"'));
+  assert.ok(navbarSource.includes('data-testid="navbar-mobile-drawer"'));
+  assert.ok(navbarSource.includes('data-testid="mobile-tablet-quick-nav"'));
+  assert.ok(!navbarSource.includes("immersiveHidden ? '-translate-y-full pointer-events-none' : 'translate-y-0'"));
+  const headerCloseIdx = navbarSource.indexOf('</header>');
+  const drawerOverlayIdx = navbarSource.indexOf('data-testid="navbar-mobile-drawer-overlay"');
+  assert.ok(
+    drawerOverlayIdx > headerCloseIdx,
+    'Mobile/Tablet navigation drawer must be rendered OUTSIDE <header> so CSS transform containing blocks never clip the fixed drawer on mobile viewports'
+  );
   assert.ok(!navbarSource.includes('data-testid="navbar-demo-admin"'));
   assert.ok(!navbarSource.includes('data-testid="navbar-demo-switcher"'));
   console.log(
-    '  [PASS] UI-04: Responsive Two-Tier Navbar verified (Language Selector, Sign In, and Cart visible across Desktop, Tablet, and Mobile; front-end Demo buttons cleanly removed)'
+    '  [PASS] UI-04: Responsive Mobile/Tablet/Desktop Navbar & Unclipped Full-Viewport Slide-Over Drawer verified (outside <header> transform context + swipeable mobile/tablet quick nav)'
   );
 
   const footerSource = fs.readFileSync(
@@ -1018,8 +1030,19 @@ async function runTests() {
   );
   assert.ok(walkingTortoiseSource.includes('data-testid="about-walking-tortoise"'));
   assert.ok(walkingTortoiseSource.includes('data-testid="about-tortoise-colophon-seal"'));
+  assert.ok(walkingTortoiseSource.includes('data-testid="about-tortoise-traverse-track"'));
+  assert.ok(walkingTortoiseSource.includes('data-testid="about-tortoise-traverse-runner"'));
+  assert.ok(walkingTortoiseSource.includes('data-testid="about-tortoise-play-toggle"'));
+  assert.ok(walkingTortoiseSource.includes('akath-patient-traverse-track'));
+  assert.ok(walkingTortoiseSource.includes('akath-patient-tortoise-runner'));
+  assert.ok(walkingTortoiseSource.includes('akath-patient-tortoise-flip'));
   assert.ok(!walkingTortoiseSource.includes('data-testid="walking-tortoise-traveler"'));
   assert.ok(walkingTortoiseSource.includes('#174D3A'));
+  assert.ok(cssSource.includes('container-type: inline-size'));
+  assert.ok(cssSource.includes('calc(100cqw - 92px)'));
+  assert.ok(cssSource.includes('@media (hover: hover) and (pointer: fine)'));
+  assert.ok(cssSource.includes('@keyframes akath-patient-traverse'));
+  assert.ok(cssSource.includes('@keyframes akath-patient-turn'));
   assert.ok(cssSource.includes('@keyframes akath-colophon-orbit'));
   assert.ok(cssSource.includes('@keyframes akath-colophon-page-breathe-left'));
   assert.ok(cssSource.includes('@keyframes akath-colophon-shell-breathe'));
@@ -1031,10 +1054,10 @@ async function runTests() {
   const tortoiseIdx = publishingViewsSource.indexOf('<WalkingTortoise');
   assert.ok(
     tortoiseIdx > mottoIdx,
-    'WalkingTortoise Colophon Seal must appear AFTER the final Marathi line “वाचत राहू. विचारत राहू. लिहित राहू.”'
+    'WalkingTortoise Traverse must appear AFTER the final Marathi line “वाचत राहू. विचारत राहू. लिहित राहू.”'
   );
   console.log(
-    '  [PASS] UI-06: Researched Tortoise Colophon Seal Animation verified on About page (placed after “वाचत राहू. विचारत राहू. लिहित राहू.”, open Smyth-sewn breathing manuscript + astrolabe ring + Devanagari ink-sparks, reduced-motion static fallback)'
+    '  [PASS] UI-06: Mobile, Tablet & Desktop CSS Patient Tortoise Traverse Animation verified on About page (GPU container-query 100cqw transform, responsive 20s/26s/32s cycle, touch-safe play/pause toggle, hover-media guard, and reduced-motion fallback)'
   );
 
   // Verify SixEditorialStages component, HomeView layout, Mobile Horizontal Catalog Scroll, and redesigned 60-68ch AboutAkathView with physics-based breathe animation
@@ -1091,6 +1114,8 @@ async function runTests() {
   assert.ok(!walkingTortoiseSource.includes('पुणे'));
   assert.ok(!publishingViewsSource.includes('Pune'));
   assert.ok(!publishingViewsSource.includes('पुणे'));
+  assert.ok(!sixStagesSource.includes('Pune'));
+  assert.ok(!sixStagesSource.includes('पुणे'));
   assert.ok(!homeViewSource.includes('Manuscript to Archival Edition'));
   assert.ok(!homeViewSource.includes('Smyth-Sewn Binding'));
   assert.ok(!homeViewSource.includes('Official ISBN-13 Registration'));
@@ -1104,6 +1129,8 @@ async function runTests() {
   assert.ok(homeViewSource.includes('data-testid="home-published-books"'));
   assert.ok(homeViewSource.includes('data-testid="home-catalog-horizontal-scroll"'));
   assert.ok(booksAndStoreSource.includes('data-testid="catalogue-mobile-horizontal-scroll"'));
+  assert.ok(booksAndStoreSource.includes('testId="catalogue-category-select"'));
+  assert.ok(booksAndStoreSource.includes('testId="catalogue-sort-select"'));
   assert.ok(
     homeViewSource.indexOf('data-testid="home-manuscript-desk"') <
       homeViewSource.indexOf('<SixEditorialStages variant="home"'),
@@ -1120,6 +1147,7 @@ async function runTests() {
   assert.ok(publishingViewsSource.includes('data-testid="about-prose-breathe-block"'));
   assert.ok(publishingViewsSource.includes('akath-about-headline-breathe'));
   assert.ok(publishingViewsSource.includes('akath-about-prose-breathe'));
+  assert.ok(publishingViewsSource.includes('hidden md:block md:opacity-45'));
   assert.ok(cssSource.includes('@keyframes akath-headline-harmonic-breathe'));
   assert.ok(cssSource.includes('@keyframes akath-prose-harmonic-breathe'));
   assert.ok(
@@ -1140,11 +1168,17 @@ async function runTests() {
   assert.ok(
     publishingViewsSource.includes('data-testid="about-editorial-colophon-desk"')
   );
+  assert.ok(publishingViewsSource.includes('data-testid="about-monograph-bento-grid"'));
+  assert.ok(publishingViewsSource.includes('data-testid="about-folio-filter-bar"'));
+  assert.ok(publishingViewsSource.includes('font-editorial-display'));
+  assert.ok(publishingViewsSource.includes('font-editorial-prose'));
+  assert.ok(cssSource.includes('.font-editorial-display'));
+  assert.ok(cssSource.includes('.font-editorial-prose'));
   assert.ok(publishingViewsSource.includes('data-testid="about-founder-name"'));
   assert.ok(publishingViewsSource.includes('Pooja Vasantrao Dhawale'));
   assert.ok(publishingViewsSource.includes('पूजा वसंतराव ढवळे'));
   console.log(
-    '  [PASS] UI-07: Article Immersive Reading Mode (hide-on-scroll Navbar & Sidebar + Dynamic Viewport Marathi Line-Heights), SixEditorialStages, Mobile Horizontal Catalog Scroll, and About Monograph + Editorial Colophon (Founder: Pooja Vasantrao Dhawale) verified'
+    '  [PASS] UI-07: Article Immersive Reading Mode, SixEditorialStages, Mobile Horizontal Catalog Scroll, and Mobile-Optimized About Monograph Spread + Breathe Animation + Colophon (Founder: Pooja Vasantrao Dhawale) verified'
   );
 
   // Verify No-Code Admin CMS Endpoints (Create Book, Export CSV, Publish Article, Update Site Config, Create Promotion)
@@ -1197,6 +1231,8 @@ async function runTests() {
   assert.ok(publishingViewsSource.includes('export const EditorialSelectDropdown'));
   assert.ok(publishingViewsSource.includes('aria-haspopup="listbox"'));
   assert.ok(publishingViewsSource.includes('role="listbox"'));
+  assert.ok(publishingViewsSource.includes("isOpen ? 'z-50' : 'z-10'"));
+  assert.ok(publishingViewsSource.includes('z-[70]'));
   assert.ok(publishingViewsSource.includes('data-testid="contact-editorial-view"'));
   assert.ok(publishingViewsSource.includes('data-testid="contact-address-block"'));
   assert.ok(publishingViewsSource.includes('data-testid="contact-channels-block"'));
@@ -1225,7 +1261,7 @@ async function runTests() {
     'ग्रंथालय संच / पुस्तक विक्रेता घाऊक मागणी'
   );
   console.log(
-    '  [PASS] UI-08: Minimal Standard Contact View (Address, Channels, and Form), interactive custom dropdowns, and live /api/contact dispatch verified'
+    '  [PASS] UI-08: Minimal Standard Contact View (Address, Channels, and Form), Mobile-Safe Z-Indexed Dropdowns, and live /api/contact dispatch verified'
   );
 
   console.log('\n================================================================');

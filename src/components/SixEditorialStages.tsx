@@ -226,12 +226,12 @@ const ENRICHED_STAGES: EnrichedStageSpec[] = [
     pillarEn: 'Reader Communion',
     specCode: 'AKATH-DP-06',
     checkpointsMr: [
-      'नांदेड व पुणे वितरण केंद्रातून आर्द्रतारोधक वेष्टनात सुरक्षित घरपोच रवानगी',
+      'नांदेड वितरण केंद्रातून आर्द्रतारोधक वेष्टनात सुरक्षित घरपोच रवानगी',
       'महाराष्ट्रातील प्रमुख स्वतंत्र ग्रंथदालने, विद्यापीठे आणि सार्वजनिक वाचनालयांत उपलब्धता',
       'वाचनकट्टा, पुस्तक चर्चा आणि डिजिटल माध्यमांतून पुस्तकाचा दीर्घकालीन प्रसार',
     ],
     checkpointsEn: [
-      'Moisture-shielded protective book-wrap dispatch from Nanded & Pune hubs',
+      'Moisture-shielded protective book-wrap dispatch from our Nanded hub',
       'Placement across independent Marathi bookshops, universities, and public libraries',
       'Sustained post-publication literary conversations, reviews, and reader outreach',
     ],
@@ -662,7 +662,7 @@ const StageCraftIllustration: React.FC<{ stepIndex: number; lang: 'mr' | 'en' }>
             अकथ केंद्र
           </text>
           <text x="101" y="124" textAnchor="middle" fill="#FFFDF7" fontSize="9.5" fontFamily="Noto Serif Devanagari, serif">
-            नांदेड • पुणे
+            नांदेड, महाराष्ट्र
           </text>
 
           <path

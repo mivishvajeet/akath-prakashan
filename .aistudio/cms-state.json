@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-11-02T19:20:49.454Z",
-  "latestSnapshotId": "bkp-1793647249453-a26570",
+  "updatedAt": "2026-11-02T19:45:33.254Z",
+  "latestSnapshotId": "bkp-1793648733254-9e53c1",
   "promotions": [
     {
       "id": "promo-seed-1",
@@ -113,8 +113,8 @@
       "metaDescription": "अकथ प्रकाशन, नांदेड व पुणे: स्वतंत्र मराठी साहित्य प्रकाशन संस्था, वाचनकट्टा संपादकीय मंच, पहिले पान उतारा वाचन आणि थेट वाचक पुस्तकपेढी."
     },
     "status": "published",
-    "updatedAt": "2026-11-02T19:20:49.453Z",
-    "updatedBy": "admin.1793647248734@akath.in",
+    "updatedAt": "2026-11-02T19:45:33.254Z",
+    "updatedBy": "admin.1793648732681@akath.in",
     "history": [
       {
         "versionId": "sc-ver-initial",
