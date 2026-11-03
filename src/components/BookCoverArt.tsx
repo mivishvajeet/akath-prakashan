@@ -20,6 +20,7 @@ export const BookCoverArt: React.FC<BookCoverArtProps> = ({
 }) => {
   const { coverStyle } = book;
   const resolvedAuthorName = author?.name || authorName || 'अकथ लेखक';
+  const customCoverSrc = book.coverImageUrl || book.coverUploadMeta?.dataUrl;
 
   const containerPadding =
     size === 'sm'
@@ -44,7 +45,9 @@ export const BookCoverArt: React.FC<BookCoverArtProps> = ({
 
   const content = (
     <div
-      className={`relative aspect-[3/4] w-full select-none rounded-r-lg rounded-l-[3px] overflow-hidden transition-all duration-300 ${containerPadding} flex flex-col justify-between text-left shadow-[6px_12px_24px_-6px_rgba(18,19,22,0.26),0_2px_6px_-1px_rgba(18,19,22,0.12)] ${
+      className={`relative aspect-[3/4] w-full select-none rounded-r-lg rounded-l-[3px] overflow-hidden transition-all duration-300 ${
+        customCoverSrc ? 'p-0' : containerPadding
+      } flex flex-col justify-between text-left shadow-[6px_12px_24px_-6px_rgba(18,19,22,0.26),0_2px_6px_-1px_rgba(18,19,22,0.12)] ${
         onClick
           ? 'cursor-pointer group-hover:-translate-y-1 group-hover:shadow-[10px_18px_32px_-6px_rgba(18,19,22,0.32)]'
           : ''
@@ -74,76 +77,86 @@ export const BookCoverArt: React.FC<BookCoverArtProps> = ({
         }}
       />
 
-      {/* Subtle Top Lighting Sheen */}
-      <div
-        className="pointer-events-none absolute inset-0 z-10 opacity-20"
-        style={{
-          background:
-            'radial-gradient(circle at 80% 15%, rgba(255,255,255,0.35) 0%, transparent 60%)',
-        }}
-      />
-
-      {/* Archival Inner Hairline Frame */}
-      <div
-        className="pointer-events-none absolute inset-2 left-3.5 border opacity-35 rounded-xs"
-        style={{ borderColor: coverStyle.accentHex }}
-      />
-
-      {/* Top Literary Series Header */}
-      <div
-        className="relative z-10 flex items-center justify-between border-b pb-1 opacity-90 gap-1"
-        style={{ borderColor: `${coverStyle.accentHex}45` }}
-      >
-        <span className="text-[9.5px] font-medium truncate leading-tight">
-          {coverStyle.emblemText}
-        </span>
-        <span
-          className="h-1.5 w-1.5 rotate-45 shrink-0"
-          style={{ backgroundColor: coverStyle.accentHex }}
+      {customCoverSrc ? (
+        <img
+          src={customCoverSrc}
+          alt={`${book.title} — ${resolvedAuthorName}`}
+          className="w-full h-full object-cover relative z-10"
         />
-      </div>
+      ) : (
+        <>
+          {/* Subtle Top Lighting Sheen */}
+          <div
+            className="pointer-events-none absolute inset-0 z-10 opacity-20"
+            style={{
+              background:
+                'radial-gradient(circle at 80% 15%, rgba(255,255,255,0.35) 0%, transparent 60%)',
+            }}
+          />
 
-      {/* Center Typographic Composition */}
-      <div className="relative z-10 my-auto py-1.5 overflow-hidden">
-        <div
-          className="mb-2 h-[2px] w-7 rounded-full"
-          style={{ backgroundColor: coverStyle.accentHex }}
-        />
-        <p className={`font-serif font-bold break-words ${titleSizeClass}`}>
-          {book.title}
-        </p>
-        {book.subtitle && size !== 'sm' && (
-          <p className={`font-normal opacity-85 ${subtitleSizeClass}`}>
-            {book.subtitle}
-          </p>
-        )}
-      </div>
+          {/* Archival Inner Hairline Frame */}
+          <div
+            className="pointer-events-none absolute inset-2 left-3.5 border opacity-35 rounded-xs"
+            style={{ borderColor: coverStyle.accentHex }}
+          />
 
-      {/* Bottom Author & Publisher Colophon */}
-      <div
-        className="relative z-10 flex items-end justify-between border-t pt-1.5 gap-1.5"
-        style={{ borderColor: `${coverStyle.accentHex}45` }}
-      >
-        <div className="min-w-0 flex-1">
-          <p
-            className={`font-serif font-semibold truncate ${
-              size === 'sm' ? 'text-[9.5px]' : 'text-[11px]'
-            }`}
+          {/* Top Literary Series Header */}
+          <div
+            className="relative z-10 flex items-center justify-between border-b pb-1 opacity-90 gap-1"
+            style={{ borderColor: `${coverStyle.accentHex}45` }}
           >
-            {resolvedAuthorName}
-          </p>
-        </div>
-        {size !== 'sm' && (
-          <div className="text-right shrink-0">
-            <p
-              className="font-serif text-[10px] font-bold"
-              style={{ color: coverStyle.accentHex }}
-            >
-              अकथ
-            </p>
+            <span className="text-[9.5px] font-medium truncate leading-tight">
+              {coverStyle.emblemText}
+            </span>
+            <span
+              className="h-1.5 w-1.5 rotate-45 shrink-0"
+              style={{ backgroundColor: coverStyle.accentHex }}
+            />
           </div>
-        )}
-      </div>
+
+          {/* Center Typographic Composition */}
+          <div className="relative z-10 my-auto py-1.5 overflow-hidden">
+            <div
+              className="mb-2 h-[2px] w-7 rounded-full"
+              style={{ backgroundColor: coverStyle.accentHex }}
+            />
+            <p className={`font-serif font-bold break-words ${titleSizeClass}`}>
+              {book.title}
+            </p>
+            {book.subtitle && size !== 'sm' && (
+              <p className={`font-normal opacity-85 ${subtitleSizeClass}`}>
+                {book.subtitle}
+              </p>
+            )}
+          </div>
+
+          {/* Bottom Author & Publisher Colophon */}
+          <div
+            className="relative z-10 flex items-end justify-between border-t pt-1.5 gap-1.5"
+            style={{ borderColor: `${coverStyle.accentHex}45` }}
+          >
+            <div className="min-w-0 flex-1">
+              <p
+                className={`font-serif font-semibold truncate ${
+                  size === 'sm' ? 'text-[9.5px]' : 'text-[11px]'
+                }`}
+              >
+                {resolvedAuthorName}
+              </p>
+            </div>
+            {size !== 'sm' && (
+              <div className="text-right shrink-0">
+                <p
+                  className="font-serif text-[10px] font-bold"
+                  style={{ color: coverStyle.accentHex }}
+                >
+                  अकथ
+                </p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 

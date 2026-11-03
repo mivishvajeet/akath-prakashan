@@ -1142,6 +1142,12 @@ async function runTests() {
   assert.ok(publishingViewsSource.includes('data-testid="about-live-time"'));
   assert.ok(publishingViewsSource.includes('data-testid="about-prose-measure"'));
   assert.ok(publishingViewsSource.includes('max-w-[65ch]'));
+  assert.ok(publishingViewsSource.includes('useAboutParagraphScrollReveal'));
+  assert.ok(publishingViewsSource.includes('data-about-io-block'));
+  assert.ok(publishingViewsSource.includes('data-about-io-para'));
+  assert.ok(publishingViewsSource.includes('--io-stagger-index'));
+  assert.ok(cssSource.includes('.akath-about-io-block'));
+  assert.ok(cssSource.includes('.akath-about-io-para'));
   assert.ok(publishingViewsSource.includes('aboutSectionSequentialVariants'));
   assert.ok(publishingViewsSource.includes('data-testid="about-headline-breathe"'));
   assert.ok(publishingViewsSource.includes('data-testid="about-prose-breathe-block"'));
@@ -1177,8 +1183,40 @@ async function runTests() {
   assert.ok(publishingViewsSource.includes('data-testid="about-founder-name"'));
   assert.ok(publishingViewsSource.includes('Pooja Vasantrao Dhawale'));
   assert.ok(publishingViewsSource.includes('पूजा वसंतराव ढवळे'));
+
+  const seedDataSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/data/seedData.ts'),
+    'utf-8'
+  );
+  const bookCoverArtSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/components/BookCoverArt.tsx'),
+    'utf-8'
+  );
+  assert.ok(seedDataSource.includes("id: 'book-scholar-juice'"));
+  assert.ok(seedDataSource.includes("title: 'स्कॉलर ज्यूस'"));
+  assert.ok(seedDataSource.includes("name: 'जी. के. ऐनापुरे'"));
+  assert.ok(seedDataSource.includes("subtitle: '( दीर्घकथा संग्रह )'"));
+  assert.ok(seedDataSource.includes('price: 549'));
+  assert.ok(seedDataSource.includes('- सुदाम राठोड, नाशिक'));
+  assert.ok(homeViewSource.includes('data-testid="home-featured-edition-dossier"'));
+  assert.ok(homeViewSource.includes('data-testid="featured-edition-blurb"'));
+  assert.ok(bookCoverArtSource.includes('const customCoverSrc = book.coverImageUrl || book.coverUploadMeta?.dataUrl;'));
+
+  const bootstrapFeaturedCheck = await getJson('/api/bootstrap');
+  const liveFeaturedBooks = bootstrapFeaturedCheck.data.books.filter(
+    (b: { isFeatured: boolean }) => b.isFeatured
+  );
+  assert.equal(
+    liveFeaturedBooks.length,
+    1,
+    'Only स्कॉलर ज्यूस should be marked isFeatured: true (dummy featured editions removed)'
+  );
+  assert.equal(liveFeaturedBooks[0].id, 'book-scholar-juice');
+  assert.equal(liveFeaturedBooks[0].title, 'स्कॉलर ज्यूस');
+  assert.equal(liveFeaturedBooks[0].price, 549);
+
   console.log(
-    '  [PASS] UI-07: Article Immersive Reading Mode, SixEditorialStages, Mobile Horizontal Catalog Scroll, and Mobile-Optimized About Monograph Spread + Breathe Animation + Colophon (Founder: Pooja Vasantrao Dhawale) verified'
+    '  [PASS] UI-07: Featured Edition ("स्कॉलर ज्यूस - जी. के. ऐनापुरे", ₹549), Article Immersive Reading Mode, SixEditorialStages, Mobile Horizontal Catalog Scroll, and About Monograph Staggered IntersectionObserver Reveal verified'
   );
 
   // Verify No-Code Admin CMS Endpoints (Create Book, Export CSV, Publish Article, Update Site Config, Create Promotion)

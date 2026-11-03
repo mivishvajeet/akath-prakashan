@@ -108,8 +108,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   });
 
   const featuredBooks = books.filter((b) => b.isFeatured);
-  const spotlightBooks = featuredBooks.length > 0 ? featuredBooks : books.slice(0, 3);
-  const activeHeroBook = spotlightBooks[featuredBookIndex] || books[0];
+  const spotlightBooks = featuredBooks.length > 0 ? featuredBooks : books.slice(0, 1);
+  const activeHeroBook = spotlightBooks[featuredBookIndex] || spotlightBooks[0] || books[0];
   const activeHeroAuthor = activeHeroBook
     ? authors.find((a) => a.id === activeHeroBook.authorId)
     : undefined;
@@ -252,8 +252,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             {/* Right 5 Columns: Featured Imprint Edition Dossier */}
             {activeHeroBook && (
-              <div className="akath-io-stagger-3 lg:col-span-5">
-                <div className="akath-card rounded-sm p-6 sm:p-8 bg-[#FFFDF7] relative">
+              <div
+                data-testid="home-featured-edition-dossier"
+                className="akath-io-stagger-3 lg:col-span-5"
+              >
+                <div className="akath-card rounded-sm p-6 sm:p-7 bg-[#FFFDF7] relative">
                   <div className="flex items-center justify-between gap-2 pb-4 mb-5 border-b border-[#E6E1D6]">
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-[#243B8A]" />
@@ -263,21 +266,27 @@ export const HomeView: React.FC<HomeViewProps> = ({
                           : 'Akath Imprint • Featured Edition'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      {spotlightBooks.slice(0, 3).map((b, idx) => (
-                        <button
-                          key={b.id}
-                          type="button"
-                          onClick={() => setFeaturedBookIndex(idx)}
-                          aria-label={`Featured edition ${idx + 1}: ${b.title}`}
-                          className={`h-2 rounded-full transition-all cursor-pointer ${
-                            featuredBookIndex === idx
-                              ? 'w-7 bg-[#243B8A]'
-                              : 'w-2 bg-[#E6E1D6] hover:bg-[#525665]'
-                          }`}
-                        />
-                      ))}
-                    </div>
+                    {spotlightBooks.length > 1 ? (
+                      <div className="flex items-center gap-1.5">
+                        {spotlightBooks.slice(0, 3).map((b, idx) => (
+                          <button
+                            key={b.id}
+                            type="button"
+                            onClick={() => setFeaturedBookIndex(idx)}
+                            aria-label={`Featured edition ${idx + 1}: ${b.title}`}
+                            className={`h-2 rounded-full transition-all cursor-pointer ${
+                              featuredBookIndex === idx
+                                ? 'w-7 bg-[#243B8A]'
+                                : 'w-2 bg-[#E6E1D6] hover:bg-[#525665]'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-[11px] font-serif font-semibold px-2.5 py-0.5 rounded-xs bg-[#FFD966]/45 text-[#252832] border border-[#FFD966]">
+                        {activeHeroBook.subtitle || activeHeroBook.category}
+                      </span>
+                    )}
                   </div>
 
                   <AnimatePresence mode="wait">
@@ -287,101 +296,107 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.25 }}
-                      className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center"
+                      className="space-y-5"
                     >
-                      {/* Book Cover Specimen */}
-                      <div className="sm:col-span-5 flex justify-center">
-                        <div className="w-full max-w-[175px]">
-                          <BookCoverArt
-                            book={activeHeroBook}
-                            author={activeHeroAuthor}
-                            size="md"
-                            onClick={() => onNavigate(`/books/${activeHeroBook.slug}`)}
-                          />
+                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
+                        {/* Book Cover Specimen */}
+                        <div className="sm:col-span-5 flex justify-center">
+                          <div className="w-full max-w-[165px]">
+                            <BookCoverArt
+                              book={activeHeroBook}
+                              author={activeHeroAuthor}
+                              size="md"
+                              onClick={() => onNavigate(`/books/${activeHeroBook.slug}`)}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Bibliographic & Publishing Metadata */}
+                        <div className="sm:col-span-7 flex flex-col justify-between space-y-3">
+                          <div className="space-y-1.5">
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-[#525665]">
+                              <span className="font-semibold text-[#243B8A]">
+                                {activeHeroBook.subtitle || activeHeroBook.category}
+                              </span>
+                            </div>
+
+                            <h2
+                              onClick={() => onNavigate(`/books/${activeHeroBook.slug}`)}
+                              className="text-2xl sm:text-[1.65rem] font-serif font-bold text-[#252832] hover:text-[#243B8A] transition-colors cursor-pointer leading-snug"
+                            >
+                              {activeHeroBook.title}
+                            </h2>
+
+                            {activeHeroAuthor && (
+                              <p className="text-sm sm:text-base text-[#252832] font-serif font-semibold">
+                                — {activeHeroAuthor.name}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="pt-2 border-t border-[#E6E1D6] flex items-baseline justify-between gap-2">
+                            <span className="text-xs font-serif font-semibold text-[#525665]">
+                              किंमत - ५४९/-
+                            </span>
+                            <div className="flex items-baseline gap-2 tabular-nums">
+                              <span className="text-xl font-bold text-[#243B8A]">
+                                ₹{activeHeroBook.price}/-
+                              </span>
+                              {activeHeroBook.listPrice &&
+                                activeHeroBook.listPrice > activeHeroBook.price && (
+                                  <span className="text-xs text-[#525665] line-through">
+                                    ₹{activeHeroBook.listPrice}
+                                  </span>
+                                )}
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Bibliographic & Publishing Metadata */}
-                      <div className="sm:col-span-7 flex flex-col justify-between space-y-4">
-                        <div className="space-y-2">
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-[#525665]">
-                            <span className="font-semibold text-[#243B8A]">
-                              {activeHeroBook.category}
-                            </span>
-                            <span>·</span>
-                            <span className="font-mono">
-                              {activeHeroBook.format} · {activeHeroBook.pageCount || 224} {t.book.pages}
-                            </span>
-                          </div>
-
-                          <h2
-                            onClick={() => onNavigate(`/books/${activeHeroBook.slug}`)}
-                            className="text-xl sm:text-2xl font-serif font-bold text-[#252832] hover:text-[#243B8A] transition-colors cursor-pointer leading-snug"
-                          >
-                            {activeHeroBook.title}
-                          </h2>
-                          {activeHeroAuthor && (
-                            <p className="text-sm text-[#525665] font-medium">
-                              {t.book.byAuthor}{' '}
-                              <span className="text-[#252832] font-semibold">
-                                {activeHeroAuthor.name}
-                              </span>
-                            </p>
-                          )}
-                        </div>
-
-                        <p className="text-xs sm:text-sm text-[#252832]/90 font-serif italic bg-[#F7F3E8]/90 p-3 rounded-sm border-l-2 border-[#FFD966] line-clamp-3 leading-relaxed">
-                          “{activeHeroBook.editorialContext || activeHeroBook.subtitle || activeHeroBook.description}”
+                      {/* Full Critical Endorsement Blurb & Attribution */}
+                      <div
+                        data-testid="featured-edition-blurb"
+                        className="bg-[#F7F3E8]/90 p-3.5 sm:p-4 rounded-sm border-l-2 border-[#FFD966] space-y-2 max-h-[210px] overflow-y-auto"
+                      >
+                        <p className="text-xs sm:text-[13.5px] text-[#252832]/95 font-serif leading-[1.78]">
+                          {activeHeroBook.description}
                         </p>
+                        {activeHeroBook.editorialContext && (
+                          <p className="text-xs sm:text-[13px] font-serif font-bold text-[#243B8A] text-right pt-1">
+                            {activeHeroBook.editorialContext}
+                          </p>
+                        )}
+                      </div>
 
-                        <div className="pt-2 border-t border-[#E6E1D6] space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-mono text-[#525665]">
-                              ISBN: {activeHeroBook.isbn}
-                            </span>
-                            <div className="flex items-baseline gap-2 tabular-nums">
-                              <span className="text-xl font-bold text-[#252832]">
-                                ₹{activeHeroBook.price}
-                              </span>
-                              {activeHeroBook.listPrice && activeHeroBook.listPrice > activeHeroBook.price && (
-                                <span className="text-xs text-[#525665] line-through">
-                                  ₹{activeHeroBook.listPrice}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => onNavigate(`/books/${activeHeroBook.slug}`)}
-                              className="flex-1 px-3.5 py-2 text-xs font-semibold text-[#252832] hover:text-[#243B8A] border border-[#E6E1D6] hover:border-[#243B8A] rounded-sm transition-colors cursor-pointer"
-                            >
-                              {t.book.viewDetails}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => onAddToCart(activeHeroBook.id)}
-                              className={`flex-1 px-3.5 py-2 text-xs font-semibold rounded-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                                recentlyAddedBookId === activeHeroBook.id
-                                  ? 'bg-[#15803D] text-white'
-                                  : 'bg-[#EF6855] hover:bg-[#d95643] text-white'
-                              }`}
-                            >
-                              {recentlyAddedBookId === activeHeroBook.id ? (
-                                <>
-                                  <Check className="w-3.5 h-3.5" />
-                                  <span>{t.book.addedToCart}</span>
-                                </>
-                              ) : (
-                                <>
-                                  <ShoppingBag className="w-3.5 h-3.5" />
-                                  <span>{t.book.addToCart}</span>
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </div>
+                      <div className="pt-1 flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => onNavigate(`/books/${activeHeroBook.slug}`)}
+                          className="flex-1 px-3.5 py-2.5 text-xs font-semibold text-[#252832] hover:text-[#243B8A] border border-[#E6E1D6] hover:border-[#243B8A] rounded-sm transition-colors cursor-pointer"
+                        >
+                          {t.book.viewDetails}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onAddToCart(activeHeroBook.id)}
+                          className={`flex-1 px-3.5 py-2.5 text-xs font-semibold rounded-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                            recentlyAddedBookId === activeHeroBook.id
+                              ? 'bg-[#15803D] text-white'
+                              : 'bg-[#EF6855] hover:bg-[#d95643] text-white'
+                          }`}
+                        >
+                          {recentlyAddedBookId === activeHeroBook.id ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              <span>{t.book.addedToCart}</span>
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingBag className="w-3.5 h-3.5" />
+                              <span>{t.book.addToCart}</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                     </motion.div>
                   </AnimatePresence>

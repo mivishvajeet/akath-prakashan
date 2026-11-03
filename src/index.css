@@ -1427,6 +1427,45 @@
 }
 
 /* =========================================================================
+   About Page — IntersectionObserver Staggered Paragraph-Block Scroll Reveal
+   Each prose section (.akath-about-io-block) and individual paragraph block
+   (.akath-about-io-para) reveals sequentially via --io-stagger-index when
+   entering the viewport, then transitions smoothly into harmonic breathing.
+   ========================================================================= */
+.akath-about-io-block {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition:
+    opacity 0.64s cubic-bezier(0.22, 1, 0.36, 1) var(--io-block-delay, 0ms),
+    transform 0.64s cubic-bezier(0.22, 1, 0.36, 1) var(--io-block-delay, 0ms),
+    border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.akath-about-io-block.is-revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.akath-about-io-para {
+  --io-para-delay: calc(var(--io-stagger-index, 0) * 95ms);
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1) var(--io-para-delay),
+    transform 0.58s cubic-bezier(0.22, 1, 0.36, 1) var(--io-para-delay),
+    color 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.akath-about-io-block.is-revealed .akath-about-io-para,
+.akath-about-io-para.is-revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* =========================================================================
    About Page — Subtle Physics-Based 'Breathe' Animation for Headline & Prose
    Models damped harmonic respiration (~7.5 breaths/min) paired with spring
    settling so long-form Marathi & English prose feels alive on warm paper
@@ -1487,12 +1526,21 @@
   transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.akath-about-prose-breathe > p {
+.akath-about-prose-breathe > p:not(.akath-about-io-para) {
   animation: akath-prose-harmonic-breathe 8.8s cubic-bezier(0.37, 0, 0.63, 1) infinite;
   transform-origin: left center;
   transition:
     color 320ms cubic-bezier(0.22, 1, 0.36, 1),
     transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Staggered IntersectionObserver paragraphs begin harmonic breathing only after
+   their staggered entrance transition completes so initial opacity: 0 is preserved */
+.akath-about-io-block.is-revealed .akath-about-prose-breathe > p.akath-about-io-para,
+.akath-about-prose-breathe > p.akath-about-io-para.is-revealed {
+  animation: akath-prose-harmonic-breathe 8.8s cubic-bezier(0.37, 0, 0.63, 1)
+    calc(var(--io-stagger-index, 0) * 95ms + 620ms) infinite;
+  transform-origin: left center;
 }
 
 .akath-about-prose-breathe > p:nth-child(2n) {
@@ -1528,6 +1576,10 @@
   .akath-io-section .akath-io-stagger-1,
   .akath-io-section .akath-io-stagger-2,
   .akath-io-section .akath-io-stagger-3,
+  .akath-about-io-block,
+  .akath-about-io-block.is-revealed,
+  .akath-about-io-para,
+  .akath-about-io-para.is-revealed,
   .akath-about-headline-breathe,
   .akath-about-lead-breathe,
   .akath-about-prose-breathe,

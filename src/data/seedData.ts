@@ -160,6 +160,24 @@ export const PHASE_0_AUDIT_REPORT = {
 
 export const INITIAL_AUTHORS: AuthorRecord[] = [
   {
+    id: 'author-g-k-ainapure',
+    slug: 'g-k-ainapure',
+    name: 'जी. के. ऐनापुरे',
+    transliteratedName: 'G. K. Ainapure',
+    literaryRole: 'समकालीन मराठी कथाकार व कादंबरीकार',
+    region: 'महाराष्ट्र',
+    biography:
+      'समकालीन मराठी कथनपरंपरेला नवोत्तर संवेदनांचे भान देणारे महत्त्वाचे कथाकार व कादंबरीकार. व्यक्तीमनाच्या खोल तळापर्यंत जाऊन सामाजिक आणि सांस्कृतिक वास्तवाचे सूक्ष्म भान मांडणारी वैशिष्ट्यपूर्ण भाषाशैली व कथा-विन्यासरचना ही त्यांच्या लेखनाची ओळख आहे.',
+    editorialNote:
+      'अकथ प्रकाशनच्या विशेष ग्रंथ आवृत्तीतील प्रमुख कथाकार.',
+    themes: ['दीर्घकथा', 'समकालीन मराठी कथनपरंपरा', 'सामाजिक-सांस्कृतिक वास्तव', 'नवोत्तर संवेदना'],
+    bookIds: ['book-scholar-juice'],
+    articleIds: [],
+    publicProfileStatus: 'published',
+    verificationStatus: 'publisher_verified',
+    provenanceLabel: 'अकथ प्रकाशन अधिकृत लेखक प्रोफाइल',
+  },
+  {
     id: 'author-dnyaneshwar-parampara',
     slug: 'marathwada-sant-sahitya-abhyas-mandal',
     name: 'डॉ. विश्वनाथ देशमुख',
@@ -219,7 +237,7 @@ export const INITIAL_AUTHORS: AuthorRecord[] = [
     name: 'मीरा जोशी',
     transliteratedName: 'Meera Joshi Translator',
     literaryRole: 'अनुवादक आणि भारतीय साहित्य अभ्यासक',
-    region: 'पुणे / नांदेड',
+    region: 'नांदेड, महाराष्ट्र',
     biography:
       'भारतीय भाषांमधील (कन्नड, हिंदी आणि बंगाली) निवडक अभिजात व समकालीन साहित्याचा मराठीत संवेदनशील अनुवाद करणाऱ्या अभ्यासक. मूळ भाषेचा लहेजा आणि मराठीची सहजता यांचा समतोल साधण्यावर भर.',
     editorialNote:
@@ -234,6 +252,58 @@ export const INITIAL_AUTHORS: AuthorRecord[] = [
 ];
 
 export const INITIAL_BOOKS: BookRecord[] = [
+  {
+    id: 'book-scholar-juice',
+    slug: 'scholar-juice',
+    title: 'स्कॉलर ज्यूस',
+    subtitle: '( दीर्घकथा संग्रह )',
+    transliteratedTitle: 'Scholar Juice Dirghakatha Sangrah G. K. Ainapure',
+    authorId: 'author-g-k-ainapure',
+    contributorIds: [],
+    category: 'कथासंग्रह',
+    categorySlug: 'fiction-stories',
+    topics: ['दीर्घकथा संग्रह', 'समकालीन मराठी कथनपरंपरा', 'नवोत्तर संवेदना', 'सामाजिक-सांस्कृतिक वास्तव'],
+    language: 'मराठी',
+    publisher: 'अकथ प्रकाशन, नांदेड',
+    isbn: 'अकथ प्रकाशन विशेष आवृत्ती',
+    edition: 'पहिली आवृत्ती, २०२६',
+    publicationDate: '२०२६',
+    format: 'दीर्घकथा संग्रह (पेपरबॅक)',
+    price: 549,
+    currency: 'INR',
+    stock: 35,
+    availability: 'in_stock',
+    shippingNote: 'महाराष्ट्रभर ४ ते ६ कामाच्या दिवसांत नोंदणीकृत पोस्टाने किंवा कुरिअरने वितरण.',
+    description:
+      "समकालीन मराठी कथनपरंपरेला नवोत्तर संवेदनांचे भान देणाऱ्या जी. के. ऐनापुरे यांचा 'स्कॉलरज्यूस' हा एक वैशिष्ट्यपूर्ण दीर्घ कथासंग्रह आहे. नैसर्गिक जगण्याचा गुन्हा केलेल्या माणसांची आंतरिक द्वंद्वे आणि सामाजिक संरचनेतील विसंवाद मांडणारा हा संग्रह मूल्यांच्या विघटनाची विविध रूपे- विरुपे अधोरेखित करतो. शैक्षणिक व व्यावसायिक स्पर्धेचे साजिवंत क्रौर्य आणि त्यात अस्तित्वसंकटात सापडलेल्या नव्या पिढीची संघर्षरत हताशा संग्रहभर आढळून येते. धर्माच्या भांडवलाचे आणि भांडवलाच्या धर्माचे आंतरसंबंध उलगडून दाखवत लेखक शोषणाची आधुनिक केंद्रे निर्देशीत करत जातो. समुहमनाचा वेध घेत हळूहळू व्यक्तीमनाच्या खोल खोल तळापर्यंत जाऊन तिथे ढवळाढवळ करतो. ही ढवळाढवळ फार अस्वस्थ करणारी आहे. व्यक्तीचित्रणातील बारीक-सारीक नोंदी, नव्या सामाजिक/सांस्कृतिक वास्तवाचे सूक्ष्म भान, वैशिष्ट्यपूर्ण भाषाशैली आणि अंतर्मनाला अस्वस्थ करणारी कथा - विन्यासरचना यामुळे हा दीर्घ कथासंग्रह समकाळातील माणूस आणि समाज यांच्या नात्याचा गालिबी आरसा आहे असे म्हणता येईल. स्कॉलरज्यूस वाचकाला केवळ कथा सांगत नाही तर जीवनाला गेलेले अदृश्य तडे पाहण्याची दृष्टी बहाल करतो.",
+    editorialContext: '- सुदाम राठोड, नाशिक',
+    rightsNote: 'प्रताधिकार © जी. के. ऐनापुरे. अकथ प्रकाशनद्वारे प्रकाशित.',
+    isFeatured: true,
+    isNewRelease: true,
+    isEditorSelection: true,
+    editorSelectionNote: {
+      personalNote:
+        "समकालीन मराठी कथनपरंपरेला नवोत्तर संवेदनांचे भान देणाऱ्या जी. के. ऐनापुरे यांचा 'स्कॉलरज्यूस' हा एक वैशिष्ट्यपूर्ण दीर्घ कथासंग्रह आहे. नैसर्गिक जगण्याचा गुन्हा केलेल्या माणसांची आंतरिक द्वंद्वे आणि सामाजिक संरचनेतील विसंवाद मांडणारा हा संग्रह मूल्यांच्या विघटनाची विविध रूपे- विरुपे अधोरेखित करतो. शैक्षणिक व व्यावसायिक स्पर्धेचे साजिवंत क्रौर्य आणि त्यात अस्तित्वसंकटात सापडलेल्या नव्या पिढीची संघर्षरत हताशा संग्रहभर आढळून येते. धर्माच्या भांडवलाचे आणि भांडवलाच्या धर्माचे आंतरसंबंध उलगडून दाखवत लेखक शोषणाची आधुनिक केंद्रे निर्देशीत करत जातो. समुहमनाचा वेध घेत हळूहळू व्यक्तीमनाच्या खोल खोल तळापर्यंत जाऊन तिथे ढवळाढवळ करतो. ही ढवळाढवळ फार अस्वस्थ करणारी आहे. व्यक्तीचित्रणातील बारीक-सारीक नोंदी, नव्या सामाजिक/सांस्कृतिक वास्तवाचे सूक्ष्म भान, वैशिष्ट्यपूर्ण भाषाशैली आणि अंतर्मनाला अस्वस्थ करणारी कथा - विन्यासरचना यामुळे हा दीर्घ कथासंग्रह समकाळातील माणूस आणि समाज यांच्या नात्याचा गालिबी आरसा आहे असे म्हणता येईल. स्कॉलरज्यूस वाचकाला केवळ कथा सांगत नाही तर जीवनाला गेलेले अदृश्य तडे पाहण्याची दृष्टी बहाल करतो.",
+      whySelected:
+        'व्यक्तीचित्रणातील बारीक-सारीक नोंदी, नव्या सामाजिक/सांस्कृतिक वास्तवाचे सूक्ष्म भान, वैशिष्ट्यपूर्ण भाषाशैली आणि अंतर्मनाला अस्वस्थ करणारी कथा-विन्यासरचना.',
+      whoShouldRead:
+        'समकालीन मराठी कथासाहित्य, दीर्घकथा आणि गंभीर साहित्यिक जाणिवांचा शोध घेणाऱ्या प्रत्येक वाचकासाठी.',
+      selectedBy: 'सुदाम राठोड, नाशिक',
+      selectionMonth: 'विशेष ग्रंथ आवृत्ती २०२६',
+    },
+    relatedArticleIds: ['article-katha-lihitana-bhovtal'],
+    relatedBookIds: ['book-koradya-nadichi-bakhar', 'book-godavari-kathache-akshar'],
+    readingListIds: ['list-marathwada-sahitya-pravah'],
+    verificationStatus: 'publisher_verified',
+    provenanceLabel: 'अकथ प्रकाशन विशेष ग्रंथ आवृत्ती',
+    coverStyle: {
+      backgroundHex: '#1F2A44',
+      accentHex: '#FFD966',
+      textHex: '#FFFDF7',
+      borderPattern: 'classic_frame',
+      emblemText: 'दीर्घकथा संग्रह · अकथ प्रकाशन',
+    },
+  },
   {
     id: 'book-godavari-kathache-akshar',
     slug: 'godavari-kathache-akshar',
@@ -262,9 +332,9 @@ export const INITIAL_BOOKS: BookRecord[] = [
     editorialContext:
       'अकथ प्रकाशनच्या स्थापनेमागील ‘स्थानिक मुळे आणि वैश्विक दृष्टी’ या सूत्राचे प्रतिनिधित्व करणारे हे महत्त्वाचे प्रकाशन आहे.',
     rightsNote: 'सर्व हक्क लेखकाधीन. अकथ प्रकाशनद्वारे अधिकृत मुद्रण व वितरण परवाना.',
-    isFeatured: true,
+    isFeatured: false,
     isNewRelease: true,
-    isEditorSelection: true,
+    isEditorSelection: false,
     editorSelectionNote: {
       personalNote:
         'आपण ज्या भूमीत राहतो, तिथल्या भाषेचा इतिहास समजून घेतल्याशिवाय नवे साहित्य लिहिता येत नाही. डॉ. विश्वनाथ देशमुख यांनी अनेक वर्षे शांतपणे केलेल्या संशोधनाचे हे फळ आहे.',
@@ -320,7 +390,7 @@ export const INITIAL_BOOKS: BookRecord[] = [
     editorialContext:
       'आक्रस्ताळेपणा टाळून संयत शब्दांत काळाला भिडणाऱ्या नव्या मराठी कवितेचा हा संग्रह आहे.',
     rightsNote: 'प्रताधिकार © रेवती कुलकर्णी. अकथ प्रकाशनद्वारे प्रकाशित.',
-    isFeatured: true,
+    isFeatured: false,
     isNewRelease: true,
     isEditorSelection: false,
     firstPageExcerptId: 'excerpt-unhachya-savlya',
@@ -368,7 +438,7 @@ export const INITIAL_BOOKS: BookRecord[] = [
     editorialContext:
       'कथा हा मराठी वाचकांचा अत्यंत जिव्हाळ्याचा फॉर्म आहे; त्या फॉर्मला नवे गंभीर परिमाण देणारा संग्रह.',
     rightsNote: 'प्रताधिकार © सिद्धार्थ वाघमारे.',
-    isFeatured: true,
+    isFeatured: false,
     isNewRelease: false,
     isEditorSelection: false,
     firstPageExcerptId: 'excerpt-koradya-nadichi-bakhar',
@@ -460,7 +530,7 @@ export const INITIAL_BOOKS: BookRecord[] = [
     editorialContext:
       'भारतीय भाषांमधील संवादाचा पूल उभारण्याचा अकथ प्रकाशनचा विशेष उपक्रम.',
     rightsNote: 'अनुवाद प्रताधिकार © मीरा जोशी. संबंधित मूळ हक्कधारकांच्या परवानगीने.',
-    isFeatured: true,
+    isFeatured: false,
     isNewRelease: true,
     isEditorSelection: false,
     firstPageExcerptId: 'excerpt-antarbhasha-anuvad',
