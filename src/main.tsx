@@ -6,8 +6,8 @@ import {
   installGitHubPagesStaticAdapter,
   getGitHubPagesBasePath,
   normalizeAppRoutePath,
-  runGitHubPagesAssetDiagnostics,
 } from './utils/githubPagesAdapter.ts';
+import {runGitHubPagesAssetDiagnostics} from './utils/assetDiagnostics.ts';
 
 // 1. Initialize GitHub Pages static API adapter and normalize subpath / 404.html redirects
 let detectedBase = '';
