@@ -36,6 +36,9 @@ export interface GitHubPagesDiagnosticReport {
   comparisons: AssetPathComparisonRow[];
 }
 
+export type AssetDiagnosticEntry = AssetPathComparisonRow;
+export type AssetDiagnosticSummary = GitHubPagesDiagnosticReport;
+
 const KNOWN_ROUTE_SEGMENTS = new Set([
   'books',
   'authors',

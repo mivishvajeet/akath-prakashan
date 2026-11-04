@@ -693,10 +693,3 @@ export function installGitHubPagesStaticAdapter(): void {
     }
   }
 }
-
-export {
-  getExpectedRepositoryBasePath,
-  runGitHubPagesAssetDiagnostics,
-  type AssetPathComparisonRow,
-  type GitHubPagesDiagnosticReport,
-} from './assetDiagnostics';
