@@ -457,10 +457,10 @@ export const Footer: React.FC<FooterProps> = ({
                     aria-hidden="true"
                   />
                   <a
-                    href="mailto:sampark@akathprakashan.in"
+                    href="mailto:akathpublication@gmail.com"
                     className="hover:text-[#FFD966] transition-colors break-all rounded"
                   >
-                    sampark@akathprakashan.in
+                    akathpublication@gmail.com
                   </a>
                 </div>
                 <div className="flex items-center gap-2">
@@ -469,10 +469,10 @@ export const Footer: React.FC<FooterProps> = ({
                     aria-hidden="true"
                   />
                   <a
-                    href="tel:+919422178430"
+                    href="tel:+919270282932"
                     className="tabular-nums hover:text-[#FFD966] transition-colors rounded"
                   >
-                    +91 94221 78430
+                    +91 92702 82932
                   </a>
                 </div>
                 <div className="pt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-[#FFD966]">
@@ -484,7 +484,7 @@ export const Footer: React.FC<FooterProps> = ({
                     {lang === 'mr' ? 'संपर्क दालन' : 'Editorial Desk'}
                   </a>
                   <a
-                    href={`https://wa.me/${PUBLISHER_IDENTITY.whatsappNumber}`}
+                    href={PUBLISHER_IDENTITY.whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-[#FFFDF7] inline-flex items-center gap-0.5 underline underline-offset-4 transition-colors rounded"

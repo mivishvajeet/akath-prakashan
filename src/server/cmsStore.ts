@@ -15,29 +15,130 @@ export const PAYMENT_WEBHOOK_SECRET =
   process.env.PAYMENT_WEBHOOK_SECRET?.trim() ||
   'whsec_akath_dev_hmac_secret_2026';
 
+export const WEBHOOK_TOLERANCE_MS = 5 * 60 * 1000; // 5 minutes replay window
+export const processedWebhookCache = new Map<string, number>();
+
 export function computeWebhookSignature(
   rawPayload: string,
-  secret = PAYMENT_WEBHOOK_SECRET
+  secret = PAYMENT_WEBHOOK_SECRET,
+  timestamp?: string
 ): string {
-  return crypto.createHmac('sha256', secret).update(rawPayload).digest('hex');
+  const signingInput = timestamp ? `${timestamp}.${rawPayload}` : rawPayload;
+  return crypto
+    .createHmac('sha256', secret)
+    .update(signingInput, 'utf8')
+    .digest('hex');
+}
+
+export interface WebhookVerificationOptions {
+  timestampHeader?: string;
+  eventId?: string;
+  toleranceMs?: number;
+  enforceReplayProtection?: boolean;
+}
+
+export interface WebhookVerificationResult {
+  valid: boolean;
+  reason?:
+    | 'missing_signature'
+    | 'invalid_timestamp'
+    | 'timestamp_expired'
+    | 'signature_mismatch'
+    | 'replayed_event';
+}
+
+export function verifyPaymentWebhookSignatureWithDetails(
+  rawPayload: string,
+  signatureHeader?: string,
+  secret = PAYMENT_WEBHOOK_SECRET,
+  options: WebhookVerificationOptions = {}
+): WebhookVerificationResult {
+  if (!signatureHeader || typeof signatureHeader !== 'string') {
+    return { valid: false, reason: 'missing_signature' };
+  }
+  const cleanSig = signatureHeader.replace(/^sha256=/i, '').trim();
+  if (!/^[0-9a-fA-F]{64}$/.test(cleanSig)) {
+    return { valid: false, reason: 'signature_mismatch' };
+  }
+
+  const toleranceMs = options.toleranceMs ?? WEBHOOK_TOLERANCE_MS;
+  const timestampStr = options.timestampHeader?.trim();
+
+  if (timestampStr) {
+    const parsedTs = Number(timestampStr);
+    if (!Number.isFinite(parsedTs) || parsedTs <= 0) {
+      return { valid: false, reason: 'invalid_timestamp' };
+    }
+    // Support both unix seconds and unix milliseconds
+    const timestampMs = parsedTs < 1e12 ? parsedTs * 1000 : parsedTs;
+    const ageMs = Math.abs(Date.now() - timestampMs);
+    if (ageMs > toleranceMs) {
+      return { valid: false, reason: 'timestamp_expired' };
+    }
+  }
+
+  // Accept signature computed over `${timestamp}.${rawPayload}` (preferred) or `rawPayload`
+  const expectedWithTs = timestampStr
+    ? computeWebhookSignature(rawPayload, secret, timestampStr)
+    : null;
+  const expectedRaw = computeWebhookSignature(rawPayload, secret);
+
+  let matched = false;
+  try {
+    const sigBuf = Buffer.from(cleanSig, 'hex');
+    if (expectedWithTs) {
+      const expTsBuf = Buffer.from(expectedWithTs, 'hex');
+      if (
+        sigBuf.length === expTsBuf.length &&
+        crypto.timingSafeEqual(sigBuf, expTsBuf)
+      ) {
+        matched = true;
+      }
+    }
+    if (!matched) {
+      const expRawBuf = Buffer.from(expectedRaw, 'hex');
+      if (
+        sigBuf.length === expRawBuf.length &&
+        crypto.timingSafeEqual(sigBuf, expRawBuf)
+      ) {
+        matched = true;
+      }
+    }
+  } catch {
+    return { valid: false, reason: 'signature_mismatch' };
+  }
+
+  if (!matched) {
+    return { valid: false, reason: 'signature_mismatch' };
+  }
+
+  if (options.enforceReplayProtection !== false) {
+    const replayKey = options.eventId
+      ? `evt:${options.eventId}`
+      : `sig:${cleanSig.toLowerCase()}`;
+    const existingTs = processedWebhookCache.get(replayKey);
+    const now = Date.now();
+    if (existingTs && now - existingTs < toleranceMs * 12) {
+      return { valid: false, reason: 'replayed_event' };
+    }
+    processedWebhookCache.set(replayKey, now);
+  }
+
+  return { valid: true };
 }
 
 export function verifyPaymentWebhookSignature(
   rawPayload: string,
   signatureHeader?: string,
-  secret = PAYMENT_WEBHOOK_SECRET
+  secret = PAYMENT_WEBHOOK_SECRET,
+  options: WebhookVerificationOptions = {}
 ): boolean {
-  if (!signatureHeader || typeof signatureHeader !== 'string') return false;
-  const cleanSig = signatureHeader.replace(/^sha256=/i, '').trim();
-  const expected = computeWebhookSignature(rawPayload, secret);
-  try {
-    const a = Buffer.from(cleanSig, 'hex');
-    const b = Buffer.from(expected, 'hex');
-    if (a.length !== b.length) return false;
-    return crypto.timingSafeEqual(a, b);
-  } catch {
-    return false;
-  }
+  return verifyPaymentWebhookSignatureWithDetails(
+    rawPayload,
+    signatureHeader,
+    secret,
+    options
+  ).valid;
 }
 
 // ============================================================================

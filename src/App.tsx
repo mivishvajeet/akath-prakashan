@@ -353,18 +353,18 @@ export default function App() {
     customer: OrderRecord['customer'];
     paymentMethod: OrderRecord['paymentMethod'];
   }) => {
-    const res = await fetch('/api/orders', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+    const res = await authFetch(
+      '/api/orders',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          ...payload,
+          items: cartItems,
+          lang,
+        }),
       },
-      body: JSON.stringify({
-        ...payload,
-        items: cartItems,
-        lang,
-      }),
-    });
+      csrfToken
+    );
     const data = await res.json();
     if (!res.ok) {
       return {
@@ -376,19 +376,25 @@ export default function App() {
     return { ok: true, order: data.order as OrderRecord };
   };
 
-  // Verify Order Payment handler
+  // Verify Order Payment handler (calls server-side ownership-verified & HMAC-signed checkout endpoint)
   const handleVerifyPayment = async (
     orderId: string,
-    outcome: 'success' | 'failed'
+    outcome: 'success' | 'failed',
+    guestAccessToken?: string
   ) => {
-    const res = await fetch(`/api/orders/${orderId}/verify-payment`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+    const res = await authFetch(
+      `/api/orders/${orderId}/checkout-payment`,
+      {
+        method: 'POST',
+        headers: {
+          ...(guestAccessToken
+            ? { 'X-Guest-Access-Token': guestAccessToken }
+            : {}),
+        },
+        body: JSON.stringify({ outcome, lang, guestAccessToken }),
       },
-      body: JSON.stringify({ outcome, lang }),
-    });
+      csrfToken
+    );
     const data = await res.json();
     if (!res.ok) {
       return { ok: false, error: data.error };

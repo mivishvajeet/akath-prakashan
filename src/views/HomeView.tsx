@@ -170,9 +170,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
         } relative overflow-hidden sarvam-aura border-b border-[#E6E1D6] pt-6 sm:pt-8 lg:pt-10 pb-12 sm:pb-16 lg:pb-20`}
       >
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
             {/* Left 7 Columns: Publishing House Identity & Primary Publishing CTAs */}
-            <div className="akath-io-stagger-2 lg:col-span-7 space-y-6">
+            <div className="akath-io-stagger-2 lg:col-span-7 space-y-5 sm:space-y-6 pt-0">
               <div className="inline-flex items-center gap-3 px-3.5 py-1.5 rounded-sm bg-[#243B8A]/8 border border-[#243B8A]/20">
                 <AnimatedTortoiseEmblem
                   className="w-6 h-6"
@@ -211,7 +211,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </p>
 
               {/* Primary Publishing CTA Cluster */}
-              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+              <div className="flex flex-wrap items-center gap-3.5 pt-1">
                 <button
                   type="button"
                   onClick={() => onNavigate('/books')}
@@ -252,8 +252,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 data-testid="home-featured-edition-dossier"
                 className="akath-io-stagger-3 lg:col-span-5"
               >
-                <div className="akath-card rounded-sm p-6 sm:p-7 bg-[#FFFDF7] relative">
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-5 border-b border-[#E6E1D6]">
+                <div className="akath-card rounded-sm p-5 sm:p-6 bg-[#FFFDF7] relative">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3.5 mb-4 border-b border-[#E6E1D6]">
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-[#243B8A]" />
                       <span className="text-xs font-semibold uppercase tracking-wider text-[#243B8A]">
@@ -418,13 +418,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       {/* Full Critical Endorsement Blurb & Attribution */}
                       <div
                         data-testid="featured-edition-blurb"
-                        className="bg-[#F7F3E8]/90 p-3.5 sm:p-4 rounded-sm border-l-2 border-[#FFD966] space-y-2 max-h-[210px] overflow-y-auto"
+                        className="bg-[#F7F3E8]/90 p-3 sm:p-3.5 rounded-sm border-l-2 border-[#FFD966] space-y-1.5 max-h-[145px] overflow-y-auto"
                       >
-                        <p className="text-xs sm:text-[13.5px] text-[#252832]/95 font-serif leading-[1.78]">
+                        <p className="text-xs sm:text-[13px] text-[#252832]/95 font-serif leading-[1.72]">
                           {activeHeroBook.description}
                         </p>
                         {activeHeroBook.editorialContext && (
-                          <p className="text-xs sm:text-[13px] font-serif font-bold text-[#243B8A] text-right pt-1">
+                          <p className="text-xs sm:text-[12.5px] font-serif font-bold text-[#243B8A] text-right pt-1">
                             {activeHeroBook.editorialContext}
                           </p>
                         )}

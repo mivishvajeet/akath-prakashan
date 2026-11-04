@@ -77,6 +77,7 @@ import {
   invalidateUserSessions,
   mergeCartItems,
 } from './src/server/authStore';
+import crypto from 'node:crypto';
 import {
   inventoryMovementsStore,
   mediaAssetsStore,
@@ -86,7 +87,10 @@ import {
   parseCsvLine,
   exportBooksToCsv,
   exportInventoryLedgerToCsv,
+  PAYMENT_WEBHOOK_SECRET,
+  computeWebhookSignature,
   verifyPaymentWebhookSignature,
+  verifyPaymentWebhookSignatureWithDetails,
   backupSnapshotsStore,
   saveCmsBackupSnapshot,
 } from './src/server/cmsStore';
@@ -97,7 +101,14 @@ const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'akath_sid';
 const SESSION_TTL_MS =
   Math.max(1, Number(process.env.SESSION_TTL_HOURS) || 24) * 60 * 60 * 1000;
 
-app.use(express.json({ limit: '6mb' }));
+app.use(
+  express.json({
+    limit: '6mb',
+    verify: (req: AuthenticatedRequest, _res, buf) => {
+      req.rawBody = buf.toString('utf8');
+    },
+  })
+);
 
 // Security & privacy headers (iframe-compatible for AI Studio preview)
 app.use((_req, res, next) => {
@@ -351,6 +362,7 @@ interface AuthenticatedRequest extends Request {
   authUser?: InternalUserRecord;
   authSession?: InternalSessionRecord;
   authViaCookie?: boolean;
+  rawBody?: string;
 }
 
 function parseCookies(cookieHeader?: string): Record<string, string> {
@@ -3072,24 +3084,105 @@ app.post('/api/orders', (req: AuthenticatedRequest, res: Response) => {
   res.status(201).json({ order: newOrder });
 });
 
-app.post('/api/orders/:id/verify-payment', (req: AuthenticatedRequest, res: Response) => {
-  const lang: AppLanguage = req.body?.lang === 'en' ? 'en' : 'mr';
-  const order = ordersStore.find(
-    (o) => o.id === req.params.id || o.orderNumber === req.params.id
-  );
-  if (!order) {
-    res.status(404).json({
-      error: lang === 'mr' ? 'ऑर्डर सापडली नाही.' : 'Order not found.',
-    });
-    return;
+// ============================================================================
+// SEC-01: PAYMENT VERIFICATION HELPERS, PII REDACTION & REPLAY PROTECTION
+// ============================================================================
+
+const consumedPaymentReferences = new Map<string, string>(); // paymentRef -> orderId
+
+function verifyOpaqueTokenConstantTime(
+  provided?: string,
+  expected?: string
+): boolean {
+  if (!provided || !expected) return false;
+  const a = Buffer.from(hashOpaqueToken(provided.trim()), 'hex');
+  const b = Buffer.from(hashOpaqueToken(expected.trim()), 'hex');
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
+function maskEmailForRedactedOrder(email: string): string {
+  const [local, domain] = (email || '').split('@');
+  if (!local || !domain) return '***@***';
+  const visible = local.slice(0, Math.min(2, local.length));
+  return `${visible}***@${domain}`;
+}
+
+function maskPhoneForRedactedOrder(phone: string): string {
+  const digits = (phone || '').replace(/\D/g, '');
+  if (digits.length < 4) return '**********';
+  return `******${digits.slice(-4)}`;
+}
+
+function redactOrderForResponse(order: OrderRecord): OrderRecord {
+  const cloned: OrderRecord = {
+    ...order,
+    guestAccessToken: undefined,
+    customer: {
+      ...order.customer,
+      phone: maskPhoneForRedactedOrder(order.customer.phone),
+      email: maskEmailForRedactedOrder(order.customer.email),
+      addressLine1: `[Redacted — ${order.customer.city}]`,
+      addressLine2: undefined,
+    },
+  };
+  return cloned;
+}
+
+function executeOrderPaymentTransition(params: {
+  order: OrderRecord;
+  outcome: 'success' | 'failed';
+  paymentReference?: string;
+  actorLabel: string;
+  lang: AppLanguage;
+  authUser?: InternalUserRecord;
+}): {
+  status: number;
+  body: Record<string, unknown>;
+} {
+  const { order, outcome, paymentReference, actorLabel, lang, authUser } = params;
+
+  // Prevent arbitrary payment status updates on cancelled or refunded orders
+  if (
+    order.orderStatus === 'cancelled' ||
+    order.orderStatus === 'refunded' ||
+    order.paymentStatus === 'refunded'
+  ) {
+    return {
+      status: 400,
+      body: {
+        error:
+          lang === 'mr'
+            ? 'रद्द केलेल्या किंवा परतावा दिलेल्या ऑर्डरची पेमेंट स्थिती बदलता येत नाही.'
+            : 'Cannot modify payment status for a cancelled or refunded order.',
+        code: 'INVALID_ORDER_STATE',
+      },
+    };
   }
 
+  // Idempotent guard: prevent repeated inventory deductions if already verified
   if (order.paymentStatus === 'verified') {
-    res.json({ order, alreadyVerified: true });
-    return;
+    if (outcome === 'failed') {
+      return {
+        status: 400,
+        body: {
+          error:
+            lang === 'mr'
+              ? 'प्रमाणेित पेमेंट पुन्हा अयशस्वी म्हणून चिन्हांकित करता येत नाही.'
+              : 'Cannot downgrade an already verified payment to failed.',
+          code: 'ALREADY_VERIFIED_IMMUTABLE',
+        },
+      };
+    }
+    return {
+      status: 200,
+      body: {
+        order: redactOrderForResponse(order),
+        alreadyVerified: true,
+      },
+    };
   }
 
-  const outcome = req.body?.outcome === 'failed' ? 'failed' : 'success';
   const nowIso = new Date().toISOString();
 
   if (outcome === 'failed') {
@@ -3098,65 +3191,641 @@ app.post('/api/orders/:id/verify-payment', (req: AuthenticatedRequest, res: Resp
     order.updatedAt = nowIso;
     order.auditTrail.push({
       timestamp: nowIso,
-      actor: 'payment_gateway_verifier',
+      actor: actorLabel,
       action: 'PAYMENT_FAILED',
       note: 'पेमेंट गेटवेकडून व्यवहार अपयशी/रद्द झाल्याचा संदेश. साठा राखीव ठेवलेला नाही.',
     });
     recordAnalytics('payment_failed', order.orderNumber);
-    res.json({ order });
-    return;
+    return {
+      status: 200,
+      body: {
+        order: redactOrderForResponse(order),
+      },
+    };
   }
 
-  for (const line of order.items) {
-    const book = booksStore.find((b) => b.id === line.bookId);
-    if (!book || book.stock < line.approvedQuantity) {
-      res.status(409).json({
-        error:
-          lang === 'mr'
-            ? `'${line.title}' चा साठा आता अपुरा आहे. कृपया ऑर्डर पुन्हा तपासा.`
-            : `'${line.title}' no longer has enough stock. Please review your cart.`,
-      });
-      return;
+  // Check paymentReference replay across different orders
+  const cleanRef = sanitizeText(paymentReference, 80);
+  if (cleanRef) {
+    const existingOrderForRef = consumedPaymentReferences.get(cleanRef);
+    if (existingOrderForRef && existingOrderForRef !== order.id) {
+      return {
+        status: 409,
+        body: {
+          error:
+            lang === 'mr'
+              ? 'हा पेमेंट संदर्भ क्रमांक आधीच वापरला गेला आहे.'
+              : 'This payment reference has already been used for another order.',
+          code: 'PAYMENT_REFERENCE_REPLAY',
+        },
+      };
     }
   }
 
+  // Verify stock availability before any deduction
+  for (const line of order.items) {
+    const book = booksStore.find((b) => b.id === line.bookId);
+    if (!book || book.stock < line.approvedQuantity) {
+      return {
+        status: 409,
+        body: {
+          error:
+            lang === 'mr'
+              ? `'${line.title}' चा साठा आता अपुरा आहे. कृपया ऑर्डर पुन्हा तपासा.`
+              : `'${line.title}' no longer has enough stock. Please review your cart.`,
+          code: 'INSUFFICIENT_STOCK',
+        },
+      };
+    }
+  }
+
+  // Deduct stock exactly once and record inventory movement
   for (const line of order.items) {
     const book = booksStore.find((b) => b.id === line.bookId);
     if (book) {
+      const previousStock = book.stock;
       book.stock = Math.max(0, book.stock - line.approvedQuantity);
       if (book.stock === 0) {
         book.availability = 'out_of_stock';
       } else if (book.stock <= 5) {
         book.availability = 'limited_stock';
       }
+      inventoryMovementsStore.unshift({
+        id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        timestamp: nowIso,
+        bookId: book.id,
+        bookTitle: book.title,
+        isbn: book.isbn,
+        type: 'order_reserved',
+        delta: -line.approvedQuantity,
+        previousStock,
+        newStock: book.stock,
+        reason: `Verified payment for order ${order.orderNumber}`,
+        actorEmail: actorLabel,
+      });
     }
   }
 
-  const paymentRef =
-    sanitizeText(req.body?.paymentReference, 80) ||
+  const finalPaymentRef =
+    cleanRef ||
     `UPI-AKATH-${Math.floor(100000000 + Math.random() * 900000000)}`;
+  consumedPaymentReferences.set(finalPaymentRef, order.id);
 
   order.paymentStatus = 'verified';
-  order.paymentReference = paymentRef;
+  order.paymentReference = finalPaymentRef;
   order.orderStatus = 'payment_verified';
   order.updatedAt = nowIso;
   order.auditTrail.push({
     timestamp: nowIso,
-    actor: 'payment_gateway_verifier',
+    actor: actorLabel,
     action: 'PAYMENT_VERIFIED',
-    note: `सर्व्हरद्वारे पेमेंट पडताळणी पूर्ण (संदर्भ: ${paymentRef}). पुस्तक साठा अद्ययावत केला.`,
+    note: `सर्व्हरद्वारे पेमेंट पडताळणी पूर्ण (संदर्भ: ${finalPaymentRef}). पुस्तक साठा अद्ययावत केला.`,
   });
 
-  if (req.authUser) {
-    req.authUser.savedCart = [];
+  if (authUser) {
+    authUser.savedCart = [];
   }
 
   recordAnalytics('purchase_completed', order.orderNumber, {
     grandTotal: order.grandTotal,
   });
 
-  res.json({ order });
+  return {
+    status: 200,
+    body: {
+      order: redactOrderForResponse(order),
+    },
+  };
+}
+
+// 1. Dedicated Payment Provider Webhook Endpoint (HMAC-SHA256 Signed & Replay-Protected)
+app.post('/api/webhooks/payment', (req: AuthenticatedRequest, res: Response) => {
+  const ip = req.ip || '127.0.0.1';
+  if (!checkRateLimit(ip, 'payment_webhook', 30, 60_000)) {
+    res.status(429).json({
+      error: 'Too many webhook requests.',
+      code: 'RATE_LIMITED',
+    });
+    return;
+  }
+
+  const signatureHeader =
+    (req.headers['x-webhook-signature'] as string | undefined) ||
+    (req.headers['x-razorpay-signature'] as string | undefined);
+  const timestampHeader = req.headers['x-webhook-timestamp'] as
+    | string
+    | undefined;
+  const eventId = sanitizeText(
+    req.body?.eventId || req.headers['x-webhook-event-id'],
+    100
+  );
+  const rawPayload = req.rawBody ?? JSON.stringify(req.body ?? {});
+
+  const verification = verifyPaymentWebhookSignatureWithDetails(
+    rawPayload,
+    signatureHeader,
+    PAYMENT_WEBHOOK_SECRET,
+    {
+      timestampHeader,
+      eventId: eventId || undefined,
+      enforceReplayProtection: true,
+    }
+  );
+
+  if (!verification.valid) {
+    recordSecurityAudit({
+      actorUserId: null,
+      actorRole: 'guest',
+      ipAddress: ip,
+      action: `PAYMENT_WEBHOOK_REJECTED:${(verification.reason || 'invalid').toUpperCase()}`,
+      targetType: 'order',
+      targetId: sanitizeText(req.body?.orderId || req.body?.orderNumber, 60),
+      outcome: 'denied',
+      details: `Payment webhook rejected (${verification.reason}).`,
+    });
+    const status = verification.reason === 'replayed_event' ? 409 : 401;
+    res.status(status).json({
+      error:
+        verification.reason === 'replayed_event'
+          ? 'Duplicate or replayed webhook event.'
+          : 'Invalid or missing payment webhook signature.',
+      code: (verification.reason || 'invalid_signature').toUpperCase(),
+    });
+    return;
+  }
+
+  const targetOrderId = sanitizeText(
+    req.body?.orderId || req.body?.orderNumber,
+    60
+  );
+  const order = ordersStore.find(
+    (o) =>
+      o.id === targetOrderId ||
+      o.orderNumber.toUpperCase() === targetOrderId.toUpperCase()
+  );
+  if (!order) {
+    res.status(404).json({ error: 'Order not found.', code: 'ORDER_NOT_FOUND' });
+    return;
+  }
+
+  // Verify webhook amount matches server order total if provided
+  if (
+    req.body?.amount !== undefined &&
+    Number(req.body.amount) !== order.grandTotal
+  ) {
+    recordSecurityAudit({
+      actorUserId: null,
+      actorRole: 'guest',
+      ipAddress: ip,
+      action: 'PAYMENT_WEBHOOK_AMOUNT_MISMATCH',
+      targetType: 'order',
+      targetId: order.id,
+      outcome: 'denied',
+      details: `Webhook amount (${req.body.amount}) did not match order grandTotal (${order.grandTotal}).`,
+    });
+    res.status(400).json({
+      error: 'Webhook payment amount does not match order grandTotal.',
+      code: 'AMOUNT_MISMATCH',
+    });
+    return;
+  }
+
+  const outcome = req.body?.outcome === 'failed' ? 'failed' : 'success';
+  const result = executeOrderPaymentTransition({
+    order,
+    outcome,
+    paymentReference: req.body?.paymentReference,
+    actorLabel: 'payment_gateway_webhook',
+    lang: 'en',
+  });
+
+  if (result.status !== 200) {
+    res.status(result.status).json(result.body);
+    return;
+  }
+
+  recordSecurityAudit({
+    actorUserId: null,
+    actorRole: 'guest',
+    ipAddress: ip,
+    action: `PAYMENT_WEBHOOK_${outcome.toUpperCase()}`,
+    targetType: 'order',
+    targetId: order.id,
+    outcome: 'success',
+    details: `Authentic payment webhook processed for order '${order.orderNumber}'.`,
+  });
+
+  // Return minimal webhook acknowledgement with zero customer PII
+  res.status(200).json({
+    received: true,
+    orderId: order.id,
+    orderNumber: order.orderNumber,
+    paymentStatus: order.paymentStatus,
+    orderStatus: order.orderStatus,
+    alreadyVerified: Boolean(result.body.alreadyVerified),
+  });
 });
+
+// 2. Dedicated Admin Manual Payment Verification Endpoint
+app.post(
+  '/api/admin/orders/:id/verify-payment',
+  requirePermission('admin:orders:manage'),
+  (req: AuthenticatedRequest, res: Response) => {
+    const ip = req.ip || '127.0.0.1';
+    const admin = req.authUser!;
+    const lang: AppLanguage = req.body?.lang === 'en' ? 'en' : 'mr';
+    if (!checkRateLimit(ip, 'admin_verify_payment', 30, 60_000)) {
+      res.status(429).json({
+        error: 'Too many requests. Please wait a moment.',
+        code: 'RATE_LIMITED',
+      });
+      return;
+    }
+
+    const order = ordersStore.find(
+      (o) =>
+        o.id === req.params.id ||
+        o.orderNumber.toUpperCase() === req.params.id.toUpperCase()
+    );
+    if (!order) {
+      res.status(404).json({
+        error: lang === 'mr' ? 'ऑर्डर सापडली नाही.' : 'Order not found.',
+      });
+      return;
+    }
+
+    const outcome = req.body?.outcome === 'failed' ? 'failed' : 'success';
+    const result = executeOrderPaymentTransition({
+      order,
+      outcome,
+      paymentReference: req.body?.paymentReference,
+      actorLabel: admin.email,
+      lang,
+    });
+
+    if (result.status === 200) {
+      recordSecurityAudit({
+        actorUserId: admin.id,
+        actorEmail: admin.email,
+        actorRole: admin.role,
+        ipAddress: ip,
+        action: `ADMIN_PAYMENT_VERIFY_${outcome.toUpperCase()}`,
+        targetType: 'order',
+        targetId: order.id,
+        outcome: 'success',
+        details: `Admin manually verified payment (${outcome}) for order '${order.orderNumber}'.`,
+      });
+    }
+
+    res.status(result.status).json(result.body);
+  }
+);
+
+// Server-Side HMAC Signature Verification Middleware (Enforces PAYMENT_WEBHOOK_SECRET HMAC-SHA256)
+function verifyPaymentHmacMiddleware(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void {
+  const ip = req.ip || '127.0.0.1';
+  const lang: AppLanguage = req.body?.lang === 'en' ? 'en' : 'mr';
+
+  const signatureHeader =
+    (req.headers['x-webhook-signature'] as string | undefined) ||
+    (req.headers['x-hmac-signature'] as string | undefined) ||
+    (req.headers['x-payment-signature'] as string | undefined) ||
+    (req.headers['x-razorpay-signature'] as string | undefined);
+  const timestampHeader =
+    (req.headers['x-webhook-timestamp'] as string | undefined) ||
+    (req.headers['x-payment-timestamp'] as string | undefined);
+  const eventId = sanitizeText(
+    req.body?.eventId || req.headers['x-webhook-event-id'],
+    100
+  );
+
+  if (!signatureHeader || !signatureHeader.trim()) {
+    recordSecurityAudit({
+      actorUserId: req.authUser?.id ?? null,
+      actorEmail: req.authUser?.email,
+      actorRole: req.authUser?.role ?? 'guest',
+      ipAddress: ip,
+      action: 'ORDER_PAYMENT_VERIFY_MISSING_HMAC',
+      targetType: 'order',
+      targetId: sanitizeText(req.params.id || req.body?.orderId, 60),
+      outcome: 'denied',
+      details:
+        'Rejected payment verification request: missing HMAC signature header.',
+    });
+    res.status(401).json({
+      error:
+        lang === 'mr'
+          ? 'पेमेंट पडताळणीसाठी वैध HMAC स्वाक्षरी (signature) आवश्यक आहे.'
+          : 'A valid HMAC payment signature header is required to process payment verification.',
+      code: 'MISSING_SIGNATURE',
+    });
+    return;
+  }
+
+  const rawPayload = req.rawBody ?? JSON.stringify(req.body ?? {});
+  const webhookCheck = verifyPaymentWebhookSignatureWithDetails(
+    rawPayload,
+    signatureHeader,
+    PAYMENT_WEBHOOK_SECRET,
+    {
+      timestampHeader,
+      eventId: eventId || undefined,
+      enforceReplayProtection: true,
+    }
+  );
+
+  if (!webhookCheck.valid) {
+    recordSecurityAudit({
+      actorUserId: req.authUser?.id ?? null,
+      actorEmail: req.authUser?.email,
+      actorRole: req.authUser?.role ?? 'guest',
+      ipAddress: ip,
+      action: `ORDER_PAYMENT_VERIFY_BAD_SIGNATURE:${(
+        webhookCheck.reason || 'invalid'
+      ).toUpperCase()}`,
+      targetType: 'order',
+      targetId: sanitizeText(req.params.id || req.body?.orderId, 60),
+      outcome: 'denied',
+      details: `Rejected invalid/replayed HMAC signature (${webhookCheck.reason}).`,
+    });
+    const errStatus = webhookCheck.reason === 'replayed_event' ? 409 : 403;
+    res.status(errStatus).json({
+      error:
+        webhookCheck.reason === 'replayed_event'
+          ? 'Duplicate or replayed payment verification event.'
+          : 'Invalid or expired HMAC payment signature.',
+      code: (webhookCheck.reason || 'INVALID_SIGNATURE').toUpperCase(),
+    });
+    return;
+  }
+
+  next();
+}
+
+// 3. HMAC-Protected Payment Verification Endpoint (Strictly requires valid PAYMENT_WEBHOOK_SECRET HMAC signature)
+app.post(
+  '/api/orders/:id/verify-payment',
+  verifyPaymentHmacMiddleware,
+  (req: AuthenticatedRequest, res: Response) => {
+    const ip = req.ip || '127.0.0.1';
+    const lang: AppLanguage = req.body?.lang === 'en' ? 'en' : 'mr';
+
+    if (!checkRateLimit(ip, 'verify_payment', 15, 60_000)) {
+      res.status(429).json({
+        error:
+          lang === 'mr'
+            ? 'कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.'
+            : 'Too many payment verification attempts. Please wait a moment.',
+        code: 'RATE_LIMITED',
+      });
+      return;
+    }
+
+    const order = ordersStore.find(
+      (o) =>
+        o.id === req.params.id ||
+        o.orderNumber.toUpperCase() === req.params.id.toUpperCase()
+    );
+    if (!order) {
+      res.status(404).json({
+        error: lang === 'mr' ? 'ऑर्डर सापडली नाही.' : 'Order not found.',
+      });
+      return;
+    }
+
+    // Additional defense-in-depth ownership check if guest token or user session is attached
+    const providedGuestToken = sanitizeText(
+      req.body?.guestAccessToken || req.headers['x-guest-access-token'],
+      120
+    );
+    const isAdmin =
+      req.authUser?.role === 'admin' &&
+      hasPermission(
+        req.authUser.role,
+        req.authUser.accountStatus,
+        'admin:orders:manage'
+      );
+    const isCrossUserAttempt = Boolean(
+      req.authUser &&
+        !isAdmin &&
+        order.userId &&
+        order.userId !== req.authUser.id
+    );
+    const hasInvalidProvidedGuestToken = Boolean(
+      providedGuestToken &&
+        !verifyOpaqueTokenConstantTime(
+          providedGuestToken,
+          order.guestAccessToken
+        )
+    );
+
+    if (isCrossUserAttempt || hasInvalidProvidedGuestToken) {
+      recordSecurityAudit({
+        actorUserId: req.authUser?.id ?? null,
+        actorEmail: req.authUser?.email,
+        actorRole: req.authUser?.role ?? 'guest',
+        ipAddress: ip,
+        action: 'ORDER_PAYMENT_VERIFY_FORBIDDEN',
+        targetType: 'order',
+        targetId: order.id,
+        outcome: 'denied',
+        details: `Blocked cross-user or invalid-token payment verification attempt on order '${order.orderNumber}'.`,
+      });
+      res.status(403).json({
+        error:
+          lang === 'mr'
+            ? 'या ऑर्डरचे पेमेंट सत्यापित करण्याची परवानगी नाही.'
+            : 'Forbidden: You are not authorized to verify payment for this order.',
+        code: 'ORDER_OWNERSHIP_REQUIRED',
+      });
+      return;
+    }
+
+    // Prevent payment amount / total tampering
+    const suppliedAmount = req.body?.amount ?? req.body?.grandTotal;
+    if (
+      suppliedAmount !== undefined &&
+      Number(suppliedAmount) !== order.grandTotal
+    ) {
+      recordSecurityAudit({
+        actorUserId: req.authUser?.id ?? null,
+        actorEmail: req.authUser?.email,
+        actorRole: req.authUser?.role ?? 'guest',
+        ipAddress: ip,
+        action: 'PAYMENT_AMOUNT_TAMPER_BLOCKED',
+        targetType: 'order',
+        targetId: order.id,
+        outcome: 'denied',
+        details: `Tampered payment amount (${suppliedAmount}) rejected; expected ₹${order.grandTotal}.`,
+      });
+      res.status(400).json({
+        error:
+          lang === 'mr'
+            ? 'पेमेंट रक्कम ऑर्डरच्या एकूण रकमेपेक्षा वेगळी आहे.'
+            : 'Payment amount does not match the server-calculated order total.',
+        code: 'PAYMENT_AMOUNT_MISMATCH',
+      });
+      return;
+    }
+
+    const outcome = req.body?.outcome === 'failed' ? 'failed' : 'success';
+    const actorLabel = req.authUser?.email || 'payment_gateway_hmac_verified';
+
+    const result = executeOrderPaymentTransition({
+      order,
+      outcome,
+      paymentReference: req.body?.paymentReference,
+      actorLabel,
+      lang,
+      authUser: req.authUser,
+    });
+
+    res.status(result.status).json(result.body);
+  }
+);
+
+// 4. Server-Side Storefront Checkout Payment Capture Endpoint (Verifies Ownership & Signs HMAC Server-Side)
+app.post(
+  '/api/orders/:id/checkout-payment',
+  (req: AuthenticatedRequest, res: Response) => {
+    const ip = req.ip || '127.0.0.1';
+    const lang: AppLanguage = req.body?.lang === 'en' ? 'en' : 'mr';
+
+    if (!checkRateLimit(ip, 'checkout_payment', 15, 60_000)) {
+      res.status(429).json({
+        error:
+          lang === 'mr'
+            ? 'कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.'
+            : 'Too many payment verification attempts. Please wait a moment.',
+        code: 'RATE_LIMITED',
+      });
+      return;
+    }
+
+    if (req.authViaCookie && req.authSession) {
+      const headerCsrf = req.headers['x-csrf-token'];
+      if (
+        typeof headerCsrf !== 'string' ||
+        headerCsrf !== req.authSession.csrfToken
+      ) {
+        res.status(403).json({
+          error: 'Invalid or missing CSRF security token.',
+          code: 'CSRF_INVALID',
+        });
+        return;
+      }
+    }
+
+    const providedGuestToken = sanitizeText(
+      req.body?.guestAccessToken || req.headers['x-guest-access-token'],
+      120
+    );
+
+    if (!req.authUser && !providedGuestToken) {
+      res.status(401).json({
+        error:
+          lang === 'mr'
+            ? 'पेमेंट पडताळणीसाठी अधिकृत सत्र किंवा ऑर्डर सुरक्षा टोकन आवश्यक आहे.'
+            : 'Authentication or guest order token is required to confirm checkout payment.',
+        code: 'UNAUTHENTICATED_CHECKOUT_PAYMENT',
+      });
+      return;
+    }
+
+    const order = ordersStore.find(
+      (o) =>
+        o.id === req.params.id ||
+        o.orderNumber.toUpperCase() === req.params.id.toUpperCase()
+    );
+    if (!order) {
+      res.status(404).json({
+        error: lang === 'mr' ? 'ऑर्डर सापडली नाही.' : 'Order not found.',
+      });
+      return;
+    }
+
+    const isAdmin =
+      req.authUser?.role === 'admin' &&
+      hasPermission(
+        req.authUser.role,
+        req.authUser.accountStatus,
+        'admin:orders:manage'
+      );
+    const isAuthenticatedOwner = Boolean(
+      req.authUser && order.userId && req.authUser.id === order.userId
+    );
+    const hasValidGuestToken = verifyOpaqueTokenConstantTime(
+      providedGuestToken,
+      order.guestAccessToken
+    );
+    const isCrossUserAttempt = Boolean(
+      req.authUser &&
+        !isAdmin &&
+        order.userId &&
+        order.userId !== req.authUser.id
+    );
+
+    if (
+      isCrossUserAttempt ||
+      (!isAdmin && !isAuthenticatedOwner && !hasValidGuestToken)
+    ) {
+      res.status(403).json({
+        error:
+          lang === 'mr'
+            ? 'या ऑर्डरचे पेमेंट सत्यापित करण्याची परवानगी नाही.'
+            : 'Forbidden: You are not authorized to verify payment for this order.',
+        code: 'ORDER_OWNERSHIP_REQUIRED',
+      });
+      return;
+    }
+
+    const outcome = req.body?.outcome === 'failed' ? 'failed' : 'success';
+    const ts = String(Date.now());
+    const serverGatewayPayload = JSON.stringify({
+      orderId: order.id,
+      outcome,
+      amount: order.grandTotal,
+      timestamp: ts,
+    });
+    const serverHmac = computeWebhookSignature(
+      serverGatewayPayload,
+      PAYMENT_WEBHOOK_SECRET,
+      ts
+    );
+    const hmacCheck = verifyPaymentWebhookSignatureWithDetails(
+      serverGatewayPayload,
+      serverHmac,
+      PAYMENT_WEBHOOK_SECRET,
+      {
+        timestampHeader: ts,
+        eventId: `chk-${order.id}-${ts}-${Math.random().toString(36).slice(2, 7)}`,
+        enforceReplayProtection: true,
+      }
+    );
+    if (!hmacCheck.valid) {
+      res.status(403).json({
+        error: 'Server payment gateway HMAC verification failed.',
+        code: 'GATEWAY_HMAC_FAILED',
+      });
+      return;
+    }
+
+    const result = executeOrderPaymentTransition({
+      order,
+      outcome,
+      paymentReference: req.body?.paymentReference,
+      actorLabel: req.authUser?.email || 'verified_checkout_owner',
+      lang,
+      authUser: req.authUser,
+    });
+
+    res.status(result.status).json(result.body);
+  }
+);
 
 // Guest order lookup (requires Order Number + matching Contact OR unguessable guestAccessToken)
 app.get('/api/orders/lookup', (req: Request, res: Response) => {
@@ -3193,7 +3862,11 @@ app.get('/api/orders/lookup', (req: Request, res: Response) => {
 
   const order = ordersStore.find((o) => {
     if (o.orderNumber.toUpperCase() !== orderNumber) return false;
-    if (guestToken && o.guestAccessToken && guestToken === o.guestAccessToken) {
+    if (
+      guestToken &&
+      o.guestAccessToken &&
+      verifyOpaqueTokenConstantTime(guestToken, o.guestAccessToken)
+    ) {
       return true;
     }
     if (!rawContact) return false;
@@ -3213,7 +3886,7 @@ app.get('/api/orders/lookup', (req: Request, res: Response) => {
     return;
   }
 
-  res.json({ order });
+  res.json({ order: redactOrderForResponse(order) });
 });
 
 // ============================================================================

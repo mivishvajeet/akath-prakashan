@@ -20,6 +20,10 @@ import {
   verifyPassword,
   hashOpaqueToken,
 } from '../src/server/authStore';
+import {
+  computeWebhookSignature,
+  verifyPaymentWebhookSignatureWithDetails,
+} from '../src/server/cmsStore';
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -1003,8 +1007,9 @@ async function runTests() {
     'href="/privacy"',
     'href="/terms"',
     'href="/contact"',
-    'href="mailto:sampark@akathprakashan.in"',
-    'href="tel:+919422178430"',
+    'href="mailto:akathpublication@gmail.com"',
+    'href="tel:+919270282932"',
+    'href={PUBLISHER_IDENTITY.whatsappUrl}',
   ]) {
     assert.ok(
       footerSource.includes(requiredHref),
@@ -1104,6 +1109,9 @@ async function runTests() {
   assert.ok(sixStagesSource.includes('akath-stage-caliper'));
   assert.ok(sixStagesSource.includes('akath-stage-book'));
   assert.ok(homeViewSource.includes('data-testid="home-publishing-hero"'));
+  assert.ok(homeViewSource.includes('काळजात उतरणारे मराठी ग्रंथप्रकाशन.'));
+  assert.ok(homeViewSource.includes('Enduring Marathi Book Publishing.'));
+  assert.ok(!homeViewSource.includes('Words That Stay.'));
   assert.ok(!homeViewSource.includes('Independent Marathi Literary Publishing House (Nanded'));
   assert.ok(!homeViewSource.includes('Pune'));
   assert.ok(!navbarSource.includes('Pune'));
@@ -1361,9 +1369,486 @@ async function runTests() {
     '  [PASS] UI-08: Minimal Standard Contact View (Address, Channels, and Form), Mobile-Safe Z-Indexed Dropdowns, and live /api/contact dispatch verified'
   );
 
+  // --------------------------------------------------------------------------
+  // 6. SEC-01 REMEDIATION SUITE: PAYMENT VERIFICATION, OWNERSHIP, WEBHOOK HMAC,
+  //    REPLAY PROTECTION, INVENTORY IDEMPOTENCY & PII REDACTION (11 CASES)
+  // --------------------------------------------------------------------------
+  console.log(
+    '\n--- 6. SEC-01 Remediation Suite: Payment Verification, Ownership, Webhook HMAC & Idempotency (11 Cases) ---'
+  );
+
+  // SEC-01.1: Unit Test — Cryptographic HMAC-SHA256 Webhook Signature, Timestamp Tolerance & Replay Protection
+  const unitWebhookSecret = 'unit-test-hmac-secret-2026';
+  const unitPayload = JSON.stringify({
+    orderId: 'ord-unit-101',
+    outcome: 'success',
+    paymentReference: 'GW-UNIT-101',
+    amount: 549,
+  });
+  const unitNowTs = String(Date.now());
+  const validUnitSig = computeWebhookSignature(unitPayload, unitWebhookSecret, unitNowTs);
+
+  const unitValidCheck = verifyPaymentWebhookSignatureWithDetails(
+    unitPayload,
+    validUnitSig,
+    unitWebhookSecret,
+    {
+      timestampHeader: unitNowTs,
+      eventId: `evt-unit-${unitNowTs}`,
+    }
+  );
+  assert.equal(unitValidCheck.valid, true, 'Valid HMAC-SHA256 webhook signature must pass');
+
+  // Replay of the exact same webhook event/signature must be blocked
+  const unitReplayCheck = verifyPaymentWebhookSignatureWithDetails(
+    unitPayload,
+    validUnitSig,
+    unitWebhookSecret,
+    {
+      timestampHeader: unitNowTs,
+      eventId: `evt-unit-${unitNowTs}`,
+    }
+  );
+  assert.equal(unitReplayCheck.valid, false);
+  assert.equal(unitReplayCheck.reason, 'replayed_event');
+
+  // Invalid signature must fail
+  const unitBadSigCheck = verifyPaymentWebhookSignatureWithDetails(
+    unitPayload,
+    'deadbeef'.repeat(8),
+    unitWebhookSecret,
+    {
+      timestampHeader: unitNowTs,
+      eventId: `evt-unit-bad-${unitNowTs}`,
+    }
+  );
+  assert.equal(unitBadSigCheck.valid, false);
+  assert.equal(unitBadSigCheck.reason, 'signature_mismatch');
+
+  // Expired timestamp (>5 minutes old) must fail
+  const expiredTs = String(Date.now() - 10 * 60 * 1000);
+  const expiredSig = computeWebhookSignature(unitPayload, unitWebhookSecret, expiredTs);
+  const unitExpiredCheck = verifyPaymentWebhookSignatureWithDetails(
+    unitPayload,
+    expiredSig,
+    unitWebhookSecret,
+    {
+      timestampHeader: expiredTs,
+      eventId: `evt-unit-exp-${unitNowTs}`,
+    }
+  );
+  assert.equal(unitExpiredCheck.valid, false);
+  assert.equal(unitExpiredCheck.reason, 'timestamp_expired');
+  console.log(
+    '  [PASS] SEC-01.1 (Unit): HMAC-SHA256 webhook signature, 5-minute timestamp window, and event replay cache verified'
+  );
+
+  // Create a fresh Guest Order specifically for SEC-01 live endpoint testing
+  const bootBeforeSec01 = await getJson('/api/bootstrap');
+  const targetBookBefore = bootBeforeSec01.data.books.find(
+    (b: { id: string }) => b.id === 'book-scholar-juice'
+  );
+  assert.ok(targetBookBefore, 'book-scholar-juice must exist in catalog');
+  const initialScholarStock = targetBookBefore.stock;
+
+  const sec01GuestOrderRes = await postJson('/api/orders', {
+    idempotencyKey: `sec01-guest-order-${Date.now()}`,
+    lang: 'en',
+    paymentMethod: 'upi_qr',
+    items: [{ bookId: 'book-scholar-juice', quantity: 1 }],
+    customer: {
+      fullName: 'Vikramaditya Deshmukh',
+      phone: '9823456789',
+      email: 'vikram.sec01@example.com',
+      addressLine1: 'Flat 402, Sahyadri Residency, VIP Road',
+      city: 'Nanded',
+      postalCode: '431602',
+    },
+  });
+  assert.equal(sec01GuestOrderRes.status, 201);
+  const sec01GuestOrder = sec01GuestOrderRes.data.order;
+  const sec01GuestToken = sec01GuestOrder.guestAccessToken;
+  assert.ok(sec01GuestToken, 'Guest order must include guestAccessToken at creation');
+
+  const activeWebhookSecret =
+    process.env.PAYMENT_WEBHOOK_SECRET?.trim() ||
+    'whsec_akath_dev_hmac_secret_2026';
+
+  async function postSignedVerifyPayment(
+    orderId: string,
+    payloadObj: Record<string, unknown>,
+    extraHeaders: Record<string, string> = {}
+  ) {
+    const tsStr = String(Date.now());
+    const evtId = `evt-verify-${tsStr}-${Math.random().toString(36).slice(2, 7)}`;
+    const rawBody = JSON.stringify(payloadObj);
+    const sig = computeWebhookSignature(rawBody, activeWebhookSecret, tsStr);
+    const res = await fetch(`${BASE_URL}/api/orders/${orderId}/verify-payment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-webhook-signature': sig,
+        'x-webhook-timestamp': tsStr,
+        'x-webhook-event-id': evtId,
+        ...extraHeaders,
+      },
+      body: rawBody,
+    });
+    const data = await res.json();
+    return { status: res.status, ok: res.ok, data };
+  }
+
+  // SEC-01.2: Calling /api/orders/:id/verify-payment without HMAC signature (even with guestAccessToken or session) -> Rejected (401 MISSING_SIGNATURE)
+  const anonVerifyAttempt = await postJson(
+    `/api/orders/${sec01GuestOrder.id}/verify-payment`,
+    {
+      outcome: 'success',
+      paymentReference: `ATK-ANON-${Date.now()}`,
+      guestAccessToken: sec01GuestToken,
+    }
+  );
+  assert.equal(
+    anonVerifyAttempt.status,
+    401,
+    'Any request to /api/orders/:id/verify-payment without a valid HMAC signature header must be rejected by verifyPaymentHmacMiddleware with 401'
+  );
+  assert.equal(anonVerifyAttempt.data.code, 'MISSING_SIGNATURE');
+  assert.equal(anonVerifyAttempt.data.order, undefined, 'Error response must not leak order PII');
+  console.log(
+    '  [PASS] SEC-01.2 (HMAC Middleware): Unsigned POST /api/orders/:id/verify-payment rejected with 401 MISSING_SIGNATURE and zero PII leaked'
+  );
+
+  // SEC-01.3: Attacker supplying a forged/wrong guestAccessToken -> Rejected (403)
+  const wrongTokenAttempt = await postSignedVerifyPayment(
+    sec01GuestOrder.id,
+    {
+      outcome: 'success',
+      paymentReference: `ATK-TOKEN-${Date.now()}`,
+      guestAccessToken: 'forged-guest-access-token-000000',
+    }
+  );
+  assert.equal(wrongTokenAttempt.status, 403);
+  assert.equal(wrongTokenAttempt.data.order, undefined);
+  console.log(
+    '  [PASS] SEC-01.3 (Guest Token): Forged guestAccessToken rejected with 403 Forbidden'
+  );
+
+  // SEC-01.4: Authenticated Reader (non-owner) attempting to verify another customer's order (IDOR) -> Rejected (403)
+  const readerNonOwnerAttempt = await postJson(
+    `/api/orders/${sec01GuestOrder.id}/checkout-payment`,
+    {
+      outcome: 'success',
+      paymentReference: `ATK-READER-${Date.now()}`,
+    },
+    { Authorization: `Bearer ${sandboxReader.data.sessionToken}` }
+  );
+  assert.equal(readerNonOwnerAttempt.status, 403);
+  assert.equal(readerNonOwnerAttempt.data.order, undefined);
+  console.log(
+    '  [PASS] SEC-01.4 (Reader IDOR): Logged-in non-owner Reader blocked from verifying another user order with 403'
+  );
+
+  // SEC-01.5: Authenticated Author (non-owner) attempting to verify another customer's order -> Rejected (403)
+  const authorNonOwnerAttempt = await postJson(
+    `/api/orders/${sec01GuestOrder.id}/checkout-payment`,
+    {
+      outcome: 'success',
+      paymentReference: `ATK-AUTHOR-${Date.now()}`,
+    },
+    { Authorization: `Bearer ${sandboxAuthor.data.sessionToken}` }
+  );
+  assert.equal(authorNonOwnerAttempt.status, 403);
+  assert.equal(authorNonOwnerAttempt.data.order, undefined);
+  console.log(
+    '  [PASS] SEC-01.5 (Author IDOR): Logged-in non-owner Author blocked from verifying another user order with 403'
+  );
+
+  // SEC-01.6: Forged Webhook Signature on /api/orders/:id/verify-payment and /api/webhooks/payment -> 403 / 401
+  const forgedWebhookAttempt = await postJson(
+    `/api/orders/${sec01GuestOrder.id}/verify-payment`,
+    {
+      outcome: 'success',
+      paymentReference: `ATK-WEBHOOK-${Date.now()}`,
+    },
+    {
+      'x-webhook-signature': '0000000000000000000000000000000000000000000000000000000000000000',
+      'x-webhook-timestamp': String(Date.now()),
+    }
+  );
+  assert.equal(forgedWebhookAttempt.status, 403);
+
+  const forgedDedicatedWebhook = await postJson(
+    '/api/webhooks/payment',
+    {
+      orderId: sec01GuestOrder.id,
+      outcome: 'success',
+      paymentReference: `ATK-GW-${Date.now()}`,
+    },
+    {
+      'x-webhook-signature': 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+      'x-webhook-timestamp': String(Date.now()),
+    }
+  );
+  assert.equal(forgedDedicatedWebhook.status, 401);
+  console.log(
+    '  [PASS] SEC-01.6 (Webhook Auth): Forged X-Webhook-Signature rejected on both client (403) and gateway (401) endpoints'
+  );
+
+  // SEC-01.7: Payment Amount Tampering (e.g. paying ₹1 for a ₹549 order) -> 400
+  const tamperedAmountAttempt = await postSignedVerifyPayment(
+    sec01GuestOrder.id,
+    {
+      outcome: 'success',
+      paymentReference: `UTR-TAMPER-${Date.now()}`,
+      guestAccessToken: sec01GuestToken,
+      amount: 1,
+    }
+  );
+  assert.equal(tamperedAmountAttempt.status, 400);
+  console.log(
+    '  [PASS] SEC-01.7 (Amount Integrity): Payment amount mismatch (₹1 vs order grandTotal) rejected with 400'
+  );
+
+  // Verify stock has NOT changed after all 6 rejected attack attempts above
+  const bootMidSec01 = await getJson('/api/bootstrap');
+  const targetBookMid = bootMidSec01.data.books.find(
+    (b: { id: string }) => b.id === 'book-scholar-juice'
+  );
+  assert.equal(
+    targetBookMid.stock,
+    initialScholarStock,
+    'Book inventory must remain completely untouched after unauthorized/invalid verification attempts'
+  );
+
+  // SEC-01.8: Valid HMAC-Signed Verification with PAYMENT_WEBHOOK_SECRET -> 200 OK, Stock Deducted Once, PII Redacted
+  const validGuestPaymentRef = `UTR-VALID-GUEST-${Date.now()}`;
+  const validGuestVerifyRes = await postSignedVerifyPayment(
+    sec01GuestOrder.id,
+    {
+      outcome: 'success',
+      paymentReference: validGuestPaymentRef,
+      guestAccessToken: sec01GuestToken,
+      amount: sec01GuestOrder.grandTotal,
+    }
+  );
+  assert.equal(validGuestVerifyRes.status, 200);
+  assert.equal(validGuestVerifyRes.data.order.paymentStatus, 'verified');
+  assert.equal(validGuestVerifyRes.data.order.orderStatus, 'payment_verified');
+  assert.equal(
+    validGuestVerifyRes.data.order.guestAccessToken,
+    undefined,
+    'Verification response must strip guestAccessToken'
+  );
+  assert.notEqual(
+    validGuestVerifyRes.data.order.customer.phone,
+    '9823456789',
+    'Verification response must mask customer phone PII'
+  );
+  assert.ok(
+    validGuestVerifyRes.data.order.customer.phone.includes('*'),
+    'Customer phone must be masked in verification response'
+  );
+  assert.ok(
+    validGuestVerifyRes.data.order.customer.email.includes('*'),
+    'Customer email must be masked in verification response'
+  );
+  assert.ok(
+    !validGuestVerifyRes.data.order.customer.addressLine1.includes('Flat 402'),
+    'Customer street address must be redacted in verification response'
+  );
+
+  const bootAfterFirstVerify = await getJson('/api/bootstrap');
+  const targetBookAfterFirst = bootAfterFirstVerify.data.books.find(
+    (b: { id: string }) => b.id === 'book-scholar-juice'
+  );
+  assert.equal(
+    targetBookAfterFirst.stock,
+    initialScholarStock - 1,
+    'Book stock must be deducted by exactly 1 upon valid payment verification'
+  );
+  console.log(
+    '  [PASS] SEC-01.8 (Valid HMAC & PII Redaction): Valid PAYMENT_WEBHOOK_SECRET HMAC verification succeeds (200), deducts stock by 1, and masks phone/email/address PII'
+  );
+
+  // SEC-01.9: Idempotency & State-Machine Guard — Repeated verification does NOT deduct stock again, and downgrade to failed is blocked
+  const duplicateVerifyRes = await postSignedVerifyPayment(
+    sec01GuestOrder.id,
+    {
+      outcome: 'success',
+      paymentReference: validGuestPaymentRef,
+      guestAccessToken: sec01GuestToken,
+    }
+  );
+  assert.equal(duplicateVerifyRes.status, 200);
+  assert.equal(duplicateVerifyRes.data.alreadyVerified, true);
+
+  const bootAfterDuplicateVerify = await getJson('/api/bootstrap');
+  const targetBookAfterDuplicate = bootAfterDuplicateVerify.data.books.find(
+    (b: { id: string }) => b.id === 'book-scholar-juice'
+  );
+  assert.equal(
+    targetBookAfterDuplicate.stock,
+    initialScholarStock - 1,
+    'Repeated verify-payment call must NEVER deduct inventory a second time'
+  );
+
+  const downgradeVerifiedAttempt = await postSignedVerifyPayment(
+    sec01GuestOrder.id,
+    {
+      outcome: 'failed',
+      guestAccessToken: sec01GuestToken,
+    }
+  );
+  assert.equal(
+    downgradeVerifiedAttempt.status,
+    400,
+    'Cannot downgrade an already verified order back to failed'
+  );
+  console.log(
+    '  [PASS] SEC-01.9 (Inventory Idempotency & State Guard): Repeated verification returns alreadyVerified=true with 0 extra stock deduction; status downgrade blocked (400)'
+  );
+
+  // SEC-01.10: Cross-Order Payment Reference Replay Prevention -> 409 Conflict
+  const readerOrderRes = await postJson(
+    '/api/orders',
+    {
+      idempotencyKey: `sec01-reader-order-${Date.now()}`,
+      lang: 'mr',
+      paymentMethod: 'upi_qr',
+      items: [{ bookId: 'book-dhukyachi-dulai', quantity: 1 }],
+      customer: {
+        fullName: 'मीरा देशमुख',
+        phone: '9823011223',
+        email: readerAEmail,
+        addressLine1: '१४, प्रभात रस्ता, डेक्कन',
+        city: 'नांदेड',
+        postalCode: '431605',
+      },
+    },
+    readerAHeaders
+  );
+  assert.equal(readerOrderRes.status, 201);
+  const sec01ReaderOrder = readerOrderRes.data.order;
+
+  const replayPaymentRefAttempt = await postSignedVerifyPayment(
+    sec01ReaderOrder.id,
+    {
+      outcome: 'success',
+      paymentReference: validGuestPaymentRef, // Reusing paymentReference from sec01GuestOrder!
+    },
+    readerAHeaders
+  );
+  assert.equal(
+    replayPaymentRefAttempt.status,
+    409,
+    'Reusing a consumed paymentReference on a different order must be rejected with 409 Conflict'
+  );
+  assert.equal(replayPaymentRefAttempt.data.code, 'PAYMENT_REFERENCE_REPLAY');
+  console.log(
+    '  [PASS] SEC-01.10 (Payment Reference Replay): Reusing a consumed paymentReference across orders rejected with 409 Conflict'
+  );
+
+  // SEC-01.11: Dedicated Admin Verification Endpoint (/api/admin/orders/:id/verify-payment) & Authentic Gateway Webhook (/api/webhooks/payment)
+  const nonAdminManualVerify = await postJson(
+    `/api/admin/orders/${sec01ReaderOrder.id}/verify-payment`,
+    {
+      outcome: 'success',
+      paymentReference: `ADMIN-REF-${Date.now()}`,
+    },
+    readerAHeaders
+  );
+  assert.equal(
+    nonAdminManualVerify.status,
+    403,
+    'Reader must be blocked from /api/admin/orders/:id/verify-payment with 403'
+  );
+
+  const adminManualVerify = await postJson(
+    `/api/admin/orders/${sec01ReaderOrder.id}/verify-payment`,
+    {
+      outcome: 'success',
+      paymentReference: `ADMIN-MANUAL-${Date.now()}`,
+    },
+    adminHeaders
+  );
+  assert.equal(adminManualVerify.status, 200);
+  assert.equal(adminManualVerify.data.order.paymentStatus, 'verified');
+
+  // Test authentic signed gateway webhook on a third order via POST /api/webhooks/payment
+  const webhookOrderRes = await postJson('/api/orders', {
+    idempotencyKey: `sec01-webhook-order-${Date.now()}`,
+    lang: 'en',
+    paymentMethod: 'razorpay_cards',
+    items: [{ bookId: 'book-lokshahimadhye-samajmadhyamancha-vapar', quantity: 1 }],
+    customer: {
+      fullName: 'Gateway Webhook Customer',
+      phone: '9765432109',
+      email: 'webhook.customer@example.com',
+      addressLine1: '108, M.G. Road',
+      city: 'Nanded',
+      postalCode: '431601',
+    },
+  });
+  assert.equal(webhookOrderRes.status, 201);
+  const webhookOrder = webhookOrderRes.data.order;
+
+  const webhookSecret =
+    process.env.PAYMENT_WEBHOOK_SECRET?.trim() ||
+    'whsec_akath_dev_hmac_secret_2026';
+  const webhookTs = String(Date.now());
+  const webhookEventId = `evt-live-gw-${webhookTs}`;
+  const webhookPayloadObj = {
+    orderId: webhookOrder.id,
+    outcome: 'success',
+    paymentReference: `RZP-GW-${webhookTs}`,
+    amount: webhookOrder.grandTotal,
+  };
+  const webhookRawBody = JSON.stringify(webhookPayloadObj);
+  const webhookSig = computeWebhookSignature(webhookRawBody, webhookSecret, webhookTs);
+
+  const liveWebhookRes = await fetch(`${BASE_URL}/api/webhooks/payment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-webhook-signature': webhookSig,
+      'x-webhook-timestamp': webhookTs,
+      'x-webhook-event-id': webhookEventId,
+    },
+    body: webhookRawBody,
+  });
+  const liveWebhookData = await liveWebhookRes.json();
+  assert.equal(liveWebhookRes.status, 200);
+  assert.equal(liveWebhookData.received, true);
+  assert.equal(liveWebhookData.paymentStatus, 'verified');
+  assert.equal(
+    liveWebhookData.customer,
+    undefined,
+    'Gateway webhook acknowledgment must return minimal status metadata without customer PII'
+  );
+
+  // Replaying the exact same signed webhook request must return 409 Conflict
+  const replayedWebhookRes = await fetch(`${BASE_URL}/api/webhooks/payment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-webhook-signature': webhookSig,
+      'x-webhook-timestamp': webhookTs,
+      'x-webhook-event-id': webhookEventId,
+    },
+    body: webhookRawBody,
+  });
+  assert.equal(
+    replayedWebhookRes.status,
+    409,
+    'Replaying an already-processed webhook event must be rejected with 409 Conflict'
+  );
+  console.log(
+    '  [PASS] SEC-01.11 (Admin & Gateway Separation): /api/admin/orders/:id/verify-payment (RBAC enforced) and /api/webhooks/payment (HMAC + replay enforced) verified'
+  );
+
   console.log('\n================================================================');
   console.log(
-    'ALL 74 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS) PASSED!'
+    'ALL 85 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS + 11 SEC-01) PASSED!'
   );
   console.log('================================================================');
 }

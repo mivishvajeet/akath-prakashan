@@ -1788,7 +1788,7 @@ export const ContactView: React.FC<ContactViewProps> = ({
     },
   ];
 
-  const editorialEmail = 'sampark@akathprakashan.in';
+  const editorialEmail = 'akathpublication@gmail.com';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1954,9 +1954,9 @@ export const ContactView: React.FC<ContactViewProps> = ({
                 </a>
 
                 <a
-                  href={`https://wa.me/${PUBLISHER_IDENTITY.whatsappNumber}`}
+                  href={PUBLISHER_IDENTITY.whatsappUrl}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="flex items-start gap-3 text-[#252832] hover:text-[#15803D] transition-colors min-w-0"
                 >
                   <MessageSquare className="w-4 h-4 text-[#15803D] mt-1 shrink-0" />

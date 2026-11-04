@@ -552,7 +552,8 @@ interface CheckoutViewProps {
   }>;
   onVerifyPayment: (
     orderId: string,
-    outcome: 'success' | 'failed'
+    outcome: 'success' | 'failed',
+    guestAccessToken?: string
   ) => Promise<{ ok: boolean; order?: OrderRecord; error?: string }>;
   onNavigate: (path: string) => void;
 }
@@ -704,13 +705,25 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
     if (!pendingOrder || submitting) return;
     setSubmitting(true);
     try {
-      const res = await onVerifyPayment(pendingOrder.id, outcome);
+      const res = await onVerifyPayment(
+        pendingOrder.id,
+        outcome,
+        pendingOrder.guestAccessToken
+      );
       if (res.ok && res.order) {
         if (res.order.paymentStatus === 'verified') {
-          setCompletedOrder(res.order);
+          setCompletedOrder({
+            ...res.order,
+            customer: pendingOrder.customer,
+            guestAccessToken: pendingOrder.guestAccessToken,
+          });
           setPendingOrder(null);
         } else {
-          setPendingOrder(res.order);
+          setPendingOrder({
+            ...res.order,
+            customer: pendingOrder.customer,
+            guestAccessToken: pendingOrder.guestAccessToken,
+          });
           setIdempotencyKey(`idem-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
         }
       } else if (res.error) {

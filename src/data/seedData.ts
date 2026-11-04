@@ -10,6 +10,7 @@ export const PUBLISHER_IDENTITY = {
   nameMarathi: 'अकथ प्रकाशन',
   nameEnglish: 'Akath Prakashan',
   taglineMarathi: 'मराठी साहित्य. नवे आवाज. दीर्घ संवाद.',
+  taglineEnglish: 'Words That Stay. Stories That Travel.',
   positioningEnglish:
     'An independent Marathi literary publisher that discovers distinctive writing, gives it the editorial attention it deserves, and builds lasting relationships between books, writers, and readers.',
   positioningMarathi:
@@ -22,7 +23,10 @@ export const PUBLISHER_IDENTITY = {
   cityEnglish: 'Nanded, Maharashtra',
   founderNameEnglish: 'Pooja Vasantrao Dhawale',
   founderNameMarathi: 'पूजा वसंतराव ढवळे',
+  email: 'akathpublication@gmail.com',
   whatsappNumber: '919270282932',
+  whatsappUrl:
+    'https://api.whatsapp.com/send/?phone=919270282932&text=Hello+Akath+Prakashan%2C%0AName%3A+hi%0AI+am+a%3A+Author%0Aedw&type=phone_number&app_absent=0',
   phoneDisplay: '+91 92702 82932',
   logoUrl: '/assets/akath/akath-logo.png',
   heroBooksUrl: '/assets/akath/hero-books.jpg',
