@@ -13,7 +13,17 @@ import {
 } from './types/publishing';
 import { LanguageContext, TRANSLATIONS } from './i18n/translations';
 import { AppLanguage } from './utils/validation';
-import { getGitHubPagesBasePath } from './utils/githubPagesAdapter';
+import {
+  getGitHubPagesBasePath,
+  normalizeAppRoutePath,
+  getStaticBooks,
+  getStaticAuthors,
+  getStaticArticles,
+  getStaticExcerpts,
+  getStaticReadingLists,
+  withResolvedBookAssets,
+  withResolvedExcerptAssets,
+} from './utils/githubPagesAdapter';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { SearchModal } from './components/SearchModal';
@@ -74,25 +84,22 @@ function loadInitialLang(): AppLanguage {
 
 export default function App() {
   const [lang, setLangState] = useState<AppLanguage>(loadInitialLang);
-  const [currentPath, setCurrentPath] = useState<string>(() => {
-    const base = getGitHubPagesBasePath();
-    const rawPath = window.location.pathname || '/';
-    if (base && rawPath.startsWith(base)) {
-      return rawPath.slice(base.length) || '/';
-    }
-    return rawPath;
-  });
+  const [currentPath, setCurrentPath] = useState<string>(() =>
+    normalizeAppRoutePath(window.location.pathname)
+  );
   const [searchOpen, setSearchOpen] = useState(false);
 
   // Authentication & Session state
   const [authUser, setAuthUser] = useState<PublicUserProfile | null>(null);
   const [csrfToken, setCsrfToken] = useState<string | null>(null);
 
-  const [books, setBooks] = useState<BookRecord[]>([]);
-  const [authors, setAuthors] = useState<AuthorRecord[]>([]);
-  const [articles, setArticles] = useState<EditorialArticle[]>([]);
-  const [excerpts, setExcerpts] = useState<FirstPageExcerpt[]>([]);
-  const [readingLists, setReadingLists] = useState<ReadingList[]>([]);
+  const [books, setBooks] = useState<BookRecord[]>(() => getStaticBooks());
+  const [authors, setAuthors] = useState<AuthorRecord[]>(() => getStaticAuthors());
+  const [articles, setArticles] = useState<EditorialArticle[]>(() => getStaticArticles());
+  const [excerpts, setExcerpts] = useState<FirstPageExcerpt[]>(() => getStaticExcerpts());
+  const [readingLists, setReadingLists] = useState<ReadingList[]>(() =>
+    getStaticReadingLists()
+  );
   const [loadingBootstrap, setLoadingBootstrap] = useState(true);
 
   const [cartItems, setCartItems] = useState<CartItemInput[]>(loadInitialCart);
@@ -119,30 +126,25 @@ export default function App() {
   // History popstate listener
   useEffect(() => {
     const onPopState = () => {
-      const base = getGitHubPagesBasePath();
-      const rawPath = window.location.pathname || '/';
-      if (base && rawPath.startsWith(base)) {
-        setCurrentPath(rawPath.slice(base.length) || '/');
-      } else {
-        setCurrentPath(rawPath);
-      }
+      setCurrentPath(normalizeAppRoutePath(window.location.pathname));
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   const navigate = useCallback((path: string) => {
-    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    const [rawPathname, queryPart] = (path || '/').split('?');
+    const normalizedRoute = normalizeAppRoutePath(rawPathname);
     const base = getGitHubPagesBasePath();
-    const fullHistoryPath =
-      base && cleanPath === '/'
+    const fullPathname =
+      base && normalizedRoute === '/'
         ? `${base}/`
         : base
-          ? `${base}${cleanPath}`
-          : cleanPath;
-    window.history.pushState({}, '', fullHistoryPath);
-    const [pathnameOnly] = cleanPath.split('?');
-    setCurrentPath(pathnameOnly || '/');
+          ? `${base}${normalizedRoute}`
+          : normalizedRoute;
+    const fullHistoryUrl = queryPart ? `${fullPathname}?${queryPart}` : fullPathname;
+    window.history.pushState({}, '', fullHistoryUrl);
+    setCurrentPath(normalizedRoute);
     setIsImmersiveNavHidden(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
@@ -153,12 +155,24 @@ export default function App() {
       const res = await fetch('/api/bootstrap');
       if (res.ok) {
         const data = await res.json();
-        setBooks(data.books || []);
-        setAuthors(data.authors || []);
-        setArticles(data.articles || []);
-        setExcerpts(data.excerpts || []);
-        setReadingLists(data.readingLists || []);
+        if (Array.isArray(data.books) && data.books.length > 0) {
+          setBooks(data.books.map(withResolvedBookAssets));
+        }
+        if (Array.isArray(data.authors) && data.authors.length > 0) {
+          setAuthors(data.authors);
+        }
+        if (Array.isArray(data.articles)) {
+          setArticles(data.articles);
+        }
+        if (Array.isArray(data.excerpts)) {
+          setExcerpts(data.excerpts.map(withResolvedExcerptAssets));
+        }
+        if (Array.isArray(data.readingLists)) {
+          setReadingLists(data.readingLists);
+        }
       }
+    } catch {
+      // Static fallback already initialized via getStaticBooks(), etc.
     } finally {
       setLoadingBootstrap(false);
     }
@@ -792,11 +806,17 @@ export default function App() {
       return <OrderTrackingView onLookupOrder={handleLookupOrder} />;
     }
 
-    if (currentPath.startsWith('/policies/')) {
-      const pType = currentPath.replace('/policies/', '') as
-        | 'privacy'
-        | 'terms'
-        | 'shipping-returns';
+    if (
+      currentPath.startsWith('/policies/') ||
+      currentPath === '/privacy' ||
+      currentPath === '/terms' ||
+      currentPath === '/shipping-returns'
+    ) {
+      const pType = (
+        currentPath.startsWith('/policies/')
+          ? currentPath.replace('/policies/', '')
+          : currentPath.replace(/^\//, '')
+      ) as 'privacy' | 'terms' | 'shipping-returns';
       return <PolicyDocumentView policyType={pType} onNavigate={navigate} />;
     }
 

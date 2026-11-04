@@ -1,5 +1,6 @@
 import React from 'react';
 import { BookRecord, AuthorRecord } from '../types/publishing';
+import { resolvePublicAssetUrl } from '../utils/githubPagesAdapter';
 
 export interface BookCoverArtProps {
   book: BookRecord;
@@ -20,7 +21,8 @@ export const BookCoverArt: React.FC<BookCoverArtProps> = ({
 }) => {
   const { coverStyle } = book;
   const resolvedAuthorName = author?.name || authorName || 'अकथ लेखक';
-  const customCoverSrc = book.coverImageUrl || book.coverUploadMeta?.dataUrl;
+  const customCoverSrc =
+    resolvePublicAssetUrl(book.coverImageUrl) || book.coverUploadMeta?.dataUrl;
 
   const containerPadding =
     size === 'sm'

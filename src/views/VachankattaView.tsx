@@ -8,6 +8,7 @@ import {
   AuthorRecord,
 } from '../types/publishing';
 import { BookCoverArt } from '../components/BookCoverArt';
+import { resolvePublicAssetUrl } from '../utils/githubPagesAdapter';
 import {
   AnimatedTortoiseEmblem,
   ArchitecturalDivider,
@@ -231,7 +232,7 @@ export const VachankattaHubView: React.FC<VachankattaHubViewProps> = ({
                       <div className="flex flex-wrap items-center gap-2.5">
                         {ex.pdfDocumentUrl && (
                           <a
-                            href={ex.pdfDocumentUrl}
+                            href={resolvePublicAssetUrl(ex.pdfDocumentUrl)}
                             target="_blank"
                             rel="noopener noreferrer"
                             data-testid="first-page-pdf-download-link"
@@ -370,7 +371,7 @@ export const VachankattaHubView: React.FC<VachankattaHubViewProps> = ({
                         {showRawPdf && ex.pdfDocumentUrl ? (
                           <div className="rounded-xl overflow-hidden border border-[#E6DFCE] bg-white">
                             <iframe
-                              src={ex.pdfDocumentUrl}
+                              src={resolvePublicAssetUrl(ex.pdfDocumentUrl)}
                               title={`${ex.title} PDF`}
                               className="w-full h-[480px]"
                             />
@@ -381,7 +382,9 @@ export const VachankattaHubView: React.FC<VachankattaHubViewProps> = ({
                             {currentFolioPage.illustrationUrl && (
                               <div className="flex justify-center py-2">
                                 <img
-                                  src={currentFolioPage.illustrationUrl}
+                                  src={resolvePublicAssetUrl(
+                                    currentFolioPage.illustrationUrl
+                                  )}
                                   alt={currentFolioPage.heading || 'Book illustration'}
                                   className="max-h-[290px] w-auto object-contain rounded-lg border border-[#E6DFCE] bg-white p-3"
                                 />
@@ -415,7 +418,9 @@ export const VachankattaHubView: React.FC<VachankattaHubViewProps> = ({
                             {currentFolioPage.emblemUrl && (
                               <div className="flex justify-center py-2">
                                 <img
-                                  src={currentFolioPage.emblemUrl}
+                                  src={resolvePublicAssetUrl(
+                                    currentFolioPage.emblemUrl
+                                  )}
                                   alt="अकथ प्रकाशन बोधचिन्ह"
                                   className="h-24 w-auto object-contain"
                                 />

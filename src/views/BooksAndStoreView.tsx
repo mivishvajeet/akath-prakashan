@@ -9,6 +9,7 @@ import {
   BookReviewRecord,
 } from '../types/publishing';
 import { BookCoverArt } from '../components/BookCoverArt';
+import { resolvePublicAssetUrl } from '../utils/githubPagesAdapter';
 import { BookCard } from '../components/BookCard';
 import { AnimatedTortoiseEmblem } from '../components/SarvamIllustrations';
 import { useLanguage } from '../i18n/translations';
@@ -520,7 +521,7 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
               ) : (
                 <div className="w-full rounded-2xl border border-[#E6E1D6] bg-[#F7F3E8] p-3 space-y-2.5">
                   <img
-                    src={activeGalleryItem.url}
+                    src={resolvePublicAssetUrl(activeGalleryItem.url)}
                     alt={activeGalleryItem.altText}
                     className="w-full max-h-[360px] object-contain rounded-xl mx-auto bg-white"
                   />
@@ -573,7 +574,7 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
                   {book.coverPdfUrl && (
                     <div className="text-center pt-1">
                       <a
-                        href={book.coverPdfUrl}
+                        href={resolvePublicAssetUrl(book.coverPdfUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[12px] font-semibold text-[#243B8A] hover:underline"

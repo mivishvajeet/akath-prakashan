@@ -38,63 +38,176 @@ const GH_STORAGE_KEYS = {
   sessionUser: 'akath_gh_session_user_v1',
 };
 
+const KNOWN_APP_ROUTES = new Set([
+  'books',
+  'authors',
+  'vachankatta',
+  'about',
+  'submit-manuscript',
+  'contact',
+  'cart',
+  'checkout',
+  'track-order',
+  'shipping-returns',
+  'privacy',
+  'terms',
+  'policies',
+  'admin',
+  'audit',
+  'login',
+  'register',
+  'forgot-password',
+  'reset-password',
+  'verify-email',
+  'account',
+  'author',
+  'author-portal',
+  'index.html',
+]);
+
+let cachedBasePath: string | null = null;
+
 /**
- * Detects the base path when hosted on a GitHub Pages project subpath
- * (e.g., https://username.github.io/repo-name/ -> '/repo-name').
+ * Reliably detects the deployment base path (e.g. '/akath-prakashan' on GitHub Pages
+ * project sites, or '' when deployed at the root domain '/').
  */
 export function getGitHubPagesBasePath(): string {
   if (typeof window === 'undefined') return '';
-  const host = window.location.hostname;
-  if (host.endsWith('.github.io')) {
-    const segments = window.location.pathname.split('/').filter(Boolean);
-    const knownAppRoutes = new Set([
-      'books',
-      'authors',
-      'vachankatta',
-      'about',
-      'submit-manuscript',
-      'contact',
-      'cart',
-      'checkout',
-      'track-order',
-      'shipping-returns',
-      'privacy',
-      'terms',
-      'admin',
-      'audit',
-      'login',
-      'register',
-      'forgot-password',
-      'reset-password',
-      'account',
-      'author-portal',
-    ]);
-    if (segments.length > 0 && !knownAppRoutes.has(segments[0])) {
-      return `/${segments[0]}`;
+  if (cachedBasePath !== null) return cachedBasePath;
+
+  // 1. Check Vite's configured BASE_URL if it is an explicit subpath
+  const envBase = (import.meta as any).env?.BASE_URL;
+  if (
+    typeof envBase === 'string' &&
+    envBase.startsWith('/') &&
+    envBase !== '/' &&
+    !envBase.startsWith('/.')
+  ) {
+    cachedBasePath = envBase.replace(/\/+$/, '');
+    return cachedBasePath;
+  }
+
+  // 2. Inspect the loaded bundle <script src=".../assets/index-*.js"> or <link href=".../assets/index-*.css"> URL
+  if (typeof document !== 'undefined') {
+    const assetUrls: string[] = [];
+    for (const s of Array.from(document.getElementsByTagName('script'))) {
+      if (s.src) assetUrls.push(s.src);
+    }
+    for (const l of Array.from(document.getElementsByTagName('link'))) {
+      if (l.rel === 'stylesheet' && l.href) assetUrls.push(l.href);
+    }
+    for (const rawUrl of assetUrls) {
+      try {
+        const parsed = new URL(rawUrl, window.location.origin);
+        const assetsIdx = parsed.pathname.indexOf('/assets/');
+        if (assetsIdx > 0) {
+          cachedBasePath = parsed.pathname.slice(0, assetsIdx);
+          return cachedBasePath;
+        }
+      } catch {
+        // Ignore malformed asset URL
+      }
     }
   }
-  return '';
+
+  // 3. Fallback: inspect window.location.pathname on *.github.io
+  if (window.location.hostname.endsWith('.github.io')) {
+    const segments = window.location.pathname.split('/').filter(Boolean);
+    if (segments.length > 0 && !KNOWN_APP_ROUTES.has(segments[0])) {
+      cachedBasePath = `/${segments[0]}`;
+      return cachedBasePath;
+    }
+  }
+
+  cachedBasePath = '';
+  return cachedBasePath;
+}
+
+/**
+ * Normalizes any raw browser pathname (including GitHub Pages '/<repo-name>/',
+ * '/<repo-name>/index.html', or trailing slashes) into a clean SPA route like '/' or '/books'.
+ */
+export function normalizeAppRoutePath(rawPathname?: string): string {
+  const base = getGitHubPagesBasePath();
+  let path = rawPathname || (typeof window !== 'undefined' ? window.location.pathname : '/') || '/';
+
+  if (base && (path === base || path.startsWith(`${base}/`))) {
+    path = path.slice(base.length) || '/';
+  }
+
+  // Strip trailing /index.html
+  if (path === '/index.html' || path.endsWith('/index.html')) {
+    path = path.slice(0, -'/index.html'.length) || '/';
+  }
+
+  // Ensure leading slash and strip trailing slash (except root '/')
+  if (!path.startsWith('/')) {
+    path = `/${path}`;
+  }
+  if (path.length > 1 && path.endsWith('/')) {
+    path = path.replace(/\/+$/, '');
+  }
+
+  return path || '/';
 }
 
 export function resolvePublicAssetUrl(url?: string): string | undefined {
-  if (!url || !url.startsWith('/assets/')) return url;
+  if (!url) return url;
+  if (
+    url.startsWith('http://') ||
+    url.startsWith('https://') ||
+    url.startsWith('data:') ||
+    url.startsWith('blob:')
+  ) {
+    return url;
+  }
   const base = getGitHubPagesBasePath();
-  return base ? `${base}${url}` : url;
+  if (base && (url === base || url.startsWith(`${base}/`))) {
+    return url;
+  }
+  const normalizedClean = url.replace(/^\.\//, '');
+  const withLeadingSlash = normalizedClean.startsWith('/')
+    ? normalizedClean
+    : `/${normalizedClean}`;
+  if (
+    withLeadingSlash.startsWith('/assets/') ||
+    withLeadingSlash === '/manifest.json'
+  ) {
+    return base ? `${base}${withLeadingSlash}` : withLeadingSlash;
+  }
+  return url;
 }
 
-function withResolvedBookAssets(book: BookRecord): BookRecord {
+export const normalizeAssetPath = resolvePublicAssetUrl;
+
+export function withResolvedBookAssets(book: BookRecord): BookRecord {
   return {
     ...book,
     coverImageUrl: resolvePublicAssetUrl(book.coverImageUrl),
     coverSpreadUrl: resolvePublicAssetUrl(book.coverSpreadUrl),
     coverPdfUrl: resolvePublicAssetUrl(book.coverPdfUrl),
+    galleryImages: Array.isArray(book.galleryImages)
+      ? book.galleryImages.map((img) => ({
+          ...img,
+          url: resolvePublicAssetUrl(img.url) || img.url,
+        }))
+      : book.galleryImages,
   };
 }
 
-function withResolvedExcerptAssets(excerpt: FirstPageExcerpt): FirstPageExcerpt {
+export function withResolvedExcerptAssets(
+  excerpt: FirstPageExcerpt
+): FirstPageExcerpt {
   return {
     ...excerpt,
     pdfDocumentUrl: resolvePublicAssetUrl(excerpt.pdfDocumentUrl),
+    folioPages: Array.isArray(excerpt.folioPages)
+      ? excerpt.folioPages.map((page) => ({
+          ...page,
+          illustrationUrl: resolvePublicAssetUrl(page.illustrationUrl),
+          emblemUrl: resolvePublicAssetUrl(page.emblemUrl),
+        }))
+      : excerpt.folioPages,
   };
 }
 
@@ -116,18 +229,18 @@ function writeLocalJson<T>(key: string, value: T): void {
   }
 }
 
-function getBooks(): BookRecord[] {
+export function getStaticBooks(): BookRecord[] {
   const stored = readLocalJson<BookRecord[] | null>(GH_STORAGE_KEYS.books, null);
   const list = stored && stored.length > 0 ? stored : INITIAL_BOOKS;
   return list.map(withResolvedBookAssets);
 }
 
-function getAuthors(): AuthorRecord[] {
+export function getStaticAuthors(): AuthorRecord[] {
   const stored = readLocalJson<AuthorRecord[] | null>(GH_STORAGE_KEYS.authors, null);
   return stored && stored.length > 0 ? stored : INITIAL_AUTHORS;
 }
 
-function getArticles(): EditorialArticle[] {
+export function getStaticArticles(): EditorialArticle[] {
   const stored = readLocalJson<EditorialArticle[] | null>(
     GH_STORAGE_KEYS.articles,
     null
@@ -135,7 +248,7 @@ function getArticles(): EditorialArticle[] {
   return stored && stored.length > 0 ? stored : INITIAL_ARTICLES;
 }
 
-function getExcerpts(): FirstPageExcerpt[] {
+export function getStaticExcerpts(): FirstPageExcerpt[] {
   const stored = readLocalJson<FirstPageExcerpt[] | null>(
     GH_STORAGE_KEYS.excerpts,
     null
@@ -144,7 +257,7 @@ function getExcerpts(): FirstPageExcerpt[] {
   return list.map(withResolvedExcerptAssets);
 }
 
-function getReadingLists(): ReadingList[] {
+export function getStaticReadingLists(): ReadingList[] {
   const stored = readLocalJson<ReadingList[] | null>(
     GH_STORAGE_KEYS.readingLists,
     null
@@ -156,8 +269,8 @@ function computeStaticCartQuote(
   items: CartItemInput[],
   lang: AppLanguage
 ): CartQuoteResponse {
-  const books = getBooks();
-  const authors = getAuthors();
+  const books = getStaticBooks();
+  const authors = getStaticAuthors();
   const mergedMap = new Map<string, number>();
   const validationMessages: string[] = [];
 
@@ -252,11 +365,11 @@ async function handleStaticApiRequest(
   // 1. GET /api/bootstrap
   if (method === 'GET' && pathname === '/api/bootstrap') {
     return jsonResponse({
-      books: getBooks(),
-      authors: getAuthors(),
-      articles: getArticles(),
-      excerpts: getExcerpts(),
-      readingLists: getReadingLists(),
+      books: getStaticBooks(),
+      authors: getStaticAuthors(),
+      articles: getStaticArticles(),
+      excerpts: getStaticExcerpts(),
+      readingLists: getStaticReadingLists(),
       promotions: [],
       siteConfig: {
         promoBanner: {
@@ -287,18 +400,18 @@ async function handleStaticApiRequest(
   // 4. GET /api/search
   if (method === 'GET' && pathname === '/api/search') {
     const q = (searchParams.get('q') || '').trim().toLowerCase();
-    const books = getBooks().filter(
+    const books = getStaticBooks().filter(
       (b) =>
         b.title.toLowerCase().includes(q) ||
         b.transliteratedTitle.toLowerCase().includes(q) ||
         b.category.toLowerCase().includes(q)
     );
-    const authors = getAuthors().filter(
+    const authors = getStaticAuthors().filter(
       (a) =>
         a.name.toLowerCase().includes(q) ||
         a.transliteratedName.toLowerCase().includes(q)
     );
-    const articles = getArticles().filter((ar) =>
+    const articles = getStaticArticles().filter((ar) =>
       ar.title.toLowerCase().includes(q)
     );
     return jsonResponse({ books, authors, articles });
@@ -487,7 +600,7 @@ async function handleStaticApiRequest(
   if (method === 'POST' && reactMatch) {
     const excerptId = reactMatch[1];
     const reactionType = body.reactionType as keyof FirstPageReactionCounts;
-    const excerpts = getExcerpts();
+    const excerpts = getStaticExcerpts();
     const target = excerpts.find((e) => e.id === excerptId);
     if (!target) return jsonResponse({ error: 'Excerpt not found' }, 404);
     if (
@@ -513,32 +626,35 @@ async function handleStaticApiRequest(
 
 export function installGitHubPagesStaticAdapter(): void {
   if (typeof window === 'undefined') return;
-  const isGitHubPagesHost =
-    window.location.hostname.endsWith('.github.io') ||
-    (import.meta as any).env?.VITE_GITHUB_PAGES === 'true';
 
-  if (!isGitHubPagesHost) {
-    return;
-  }
-
-  // Restore clean SPA URL if redirected from GitHub Pages 404.html (?/path)
+  // 1. Restore clean SPA URL if redirected from GitHub Pages 404.html (?/path)
   const loc = window.location;
-  if (loc.search && loc.search[1] === '/') {
+  if (loc.search && loc.search.startsWith('?/')) {
     const decoded = loc.search
-      .slice(1)
+      .slice(2)
       .split('&')
       .map((s) => s.replace(/~and~/g, '&'))
       .join('?');
-    window.history.replaceState(
-      null,
-      '',
-      loc.pathname.slice(0, -1) + decoded + loc.hash
-    );
+    const basePrefix = loc.pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '');
+    const restoredPath = `${basePrefix}/${decoded.replace(/^\/+/, '')}${loc.hash}`;
+    window.history.replaceState(null, '', restoredPath);
+  } else if (loc.pathname.endsWith('/index.html')) {
+    // Strip explicit /index.html on initial boot while preserving repository subpath
+    const cleanPathname = loc.pathname.slice(0, -'index.html'.length) || '/';
+    window.history.replaceState(null, '', `${cleanPathname}${loc.search}${loc.hash}`);
+  }
+
+  const isExplicitStaticHost =
+    window.location.hostname.endsWith('.github.io') ||
+    (import.meta as any).env?.VITE_GITHUB_PAGES === 'true';
+
+  if (!isExplicitStaticHost) {
+    return;
   }
 
   const originalFetch = window.fetch.bind(window);
 
-  window.fetch = async (
+  const staticFetch = async (
     input: RequestInfo | URL,
     init?: RequestInit
   ): Promise<Response> => {
@@ -562,4 +678,257 @@ export function installGitHubPagesStaticAdapter(): void {
 
     return handleStaticApiRequest(normalizedPath, urlObj.searchParams, init);
   };
+
+  try {
+    Object.defineProperty(window, 'fetch', {
+      value: staticFetch,
+      configurable: true,
+      writable: true,
+    });
+  } catch {
+    try {
+      (window as any).fetch = staticFetch;
+    } catch {
+      // Ignore if environment forbids overriding window.fetch
+    }
+  }
+}
+
+export interface AssetDiagnosticEntry {
+  source: string;
+  rawPath: string;
+  resolvedUrl: string;
+  matchesBasePath: boolean;
+  httpStatus: number;
+  contentType: string;
+  ok: boolean;
+}
+
+export interface AssetDiagnosticSummary {
+  timestamp: string;
+  origin: string;
+  pathname: string;
+  normalizedRoute: string;
+  viteBaseUrl: string;
+  detectedBasePath: string;
+  totalChecked: number;
+  passedCount: number;
+  failedCount: number;
+  entries: AssetDiagnosticEntry[];
+}
+
+/**
+ * Browser console diagnostic check that iterates over the site's manifest,
+ * static book/excerpt asset paths, and rendered DOM asset elements to verify
+ * that all URLs resolve properly against the repository base path.
+ */
+export async function runGitHubPagesAssetDiagnostics(): Promise<AssetDiagnosticSummary | null> {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return null;
+  }
+
+  const detectedBase = getGitHubPagesBasePath();
+  const viteBaseUrl = String((import.meta as any).env?.BASE_URL || '/');
+  const normalizedRoute = normalizeAppRoutePath(window.location.pathname);
+  const expectedPrefix = detectedBase ? `${detectedBase}/` : '/';
+
+  const candidates = new Map<string, { source: string; rawPath: string; resolvedPath: string }>();
+
+  const registerCandidate = (source: string, rawPath?: string) => {
+    if (!rawPath || rawPath.startsWith('data:') || rawPath.startsWith('blob:')) return;
+    const resolvedPath = resolvePublicAssetUrl(rawPath) || rawPath;
+    const key = `${source}::${resolvedPath}`;
+    if (!candidates.has(key)) {
+      candidates.set(key, { source, rawPath, resolvedPath });
+    }
+  };
+
+  // 1. Site Web App Manifest & Brand Assets
+  const manifestLink = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+  const manifestPath = manifestLink?.getAttribute('href') || '/manifest.json';
+  registerCandidate('manifest:link', manifestPath);
+  registerCandidate('brand:logo', '/assets/akath/akath-logo.png');
+  registerCandidate('brand:hero', '/assets/akath/hero-books.jpg');
+
+  // Parse manifest.json if reachable to also verify icons[] and static_assets[]
+  try {
+    const resolvedManifestUrl = new URL(
+      resolvePublicAssetUrl('/manifest.json') || '/manifest.json',
+      window.location.origin
+    ).toString();
+    const manifestRes = await window.fetch(resolvedManifestUrl, { method: 'GET' });
+    const manifestType = manifestRes.headers.get('content-type') || '';
+    if (manifestRes.ok && manifestType.includes('json')) {
+      const manifestJson = await manifestRes.json();
+      if (Array.isArray(manifestJson.icons)) {
+        for (const icon of manifestJson.icons) {
+          if (icon?.src) {
+            const normalizedIconSrc = icon.src.startsWith('/')
+              ? icon.src
+              : `/${icon.src.replace(/^\.\//, '')}`;
+            registerCandidate('manifest:icon', normalizedIconSrc);
+          }
+        }
+      }
+      if (Array.isArray(manifestJson.static_assets)) {
+        for (const assetPath of manifestJson.static_assets) {
+          if (typeof assetPath === 'string') {
+            registerCandidate('manifest:static_assets', assetPath);
+          }
+        }
+      }
+    }
+  } catch {
+    // Ignore manifest fetch error; handled in individual probe loop below
+  }
+
+  // 2. Static Book Catalogue Assets
+  for (const book of getStaticBooks()) {
+    registerCandidate(`book:${book.slug}:cover`, book.coverImageUrl);
+    registerCandidate(`book:${book.slug}:spread`, book.coverSpreadUrl);
+    registerCandidate(`book:${book.slug}:pdf`, book.coverPdfUrl);
+    if (Array.isArray(book.galleryImages)) {
+      book.galleryImages.forEach((img, idx) => {
+        registerCandidate(`book:${book.slug}:gallery[${idx}]`, img.url);
+      });
+    }
+  }
+
+  // 3. Static First-Page Excerpt Assets
+  for (const excerpt of getStaticExcerpts()) {
+    registerCandidate(`excerpt:${excerpt.id}:pdf`, excerpt.pdfDocumentUrl);
+    if (Array.isArray(excerpt.folioPages)) {
+      excerpt.folioPages.forEach((page, idx) => {
+        registerCandidate(
+          `excerpt:${excerpt.id}:folio[${idx}]:illustration`,
+          page.illustrationUrl
+        );
+        registerCandidate(
+          `excerpt:${excerpt.id}:folio[${idx}]:emblem`,
+          page.emblemUrl
+        );
+      });
+    }
+  }
+
+  // 4. Rendered DOM scripts, stylesheets, and images
+  document
+    .querySelectorAll<HTMLScriptElement>('script[src]')
+    .forEach((script, idx) => {
+      registerCandidate(`dom:script[${idx}]`, script.getAttribute('src') || script.src);
+    });
+  document
+    .querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"][href]')
+    .forEach((link, idx) => {
+      registerCandidate(`dom:stylesheet[${idx}]`, link.getAttribute('href') || link.href);
+    });
+  document.querySelectorAll<HTMLImageElement>('img[src]').forEach((img, idx) => {
+    registerCandidate(`dom:img[${idx}]`, img.getAttribute('src') || img.src);
+  });
+
+  // 5. Probe each candidate and validate base-path alignment + HTTP status
+  const entries: AssetDiagnosticEntry[] = [];
+  for (const item of candidates.values()) {
+    let resolvedUrlObj: URL;
+    try {
+      resolvedUrlObj = new URL(item.resolvedPath, window.location.href);
+    } catch {
+      entries.push({
+        source: item.source,
+        rawPath: item.rawPath,
+        resolvedUrl: item.resolvedPath,
+        matchesBasePath: false,
+        httpStatus: 0,
+        contentType: 'invalid-url',
+        ok: false,
+      });
+      continue;
+    }
+
+    const isSameOrigin = resolvedUrlObj.origin === window.location.origin;
+    const matchesBasePath = isSameOrigin
+      ? resolvedUrlObj.pathname.startsWith(expectedPrefix)
+      : true;
+
+    let httpStatus = 0;
+    let contentType = '';
+    let ok = false;
+
+    if (!isSameOrigin) {
+      // External font/CDN links
+      httpStatus = 200;
+      contentType = 'external-origin';
+      ok = true;
+    } else {
+      try {
+        let res = await window.fetch(resolvedUrlObj.toString(), { method: 'HEAD' });
+        if (res.status === 405 || res.status === 404) {
+          res = await window.fetch(resolvedUrlObj.toString(), { method: 'GET' });
+        }
+        httpStatus = res.status;
+        contentType = res.headers.get('content-type') || '';
+        const expectsHtml = resolvedUrlObj.pathname.endsWith('.html');
+        const unexpectedHtmlFallback =
+          !expectsHtml && contentType.includes('text/html');
+        ok = res.ok && matchesBasePath && !unexpectedHtmlFallback;
+      } catch {
+        httpStatus = 0;
+        contentType = 'network-error';
+        ok = false;
+      }
+    }
+
+    entries.push({
+      source: item.source,
+      rawPath: item.rawPath,
+      resolvedUrl: resolvedUrlObj.pathname,
+      matchesBasePath,
+      httpStatus,
+      contentType,
+      ok,
+    });
+  }
+
+  const passedCount = entries.filter((e) => e.ok).length;
+  const failedCount = entries.length - passedCount;
+
+  const summary: AssetDiagnosticSummary = {
+    timestamp: new Date().toISOString(),
+    origin: window.location.origin,
+    pathname: window.location.pathname,
+    normalizedRoute,
+    viteBaseUrl,
+    detectedBasePath: detectedBase || '/',
+    totalChecked: entries.length,
+    passedCount,
+    failedCount,
+    entries,
+  };
+
+  (window as any).__AKATH_ASSET_DIAGNOSTICS__ = summary;
+  (window as any).runAkathAssetDiagnostics = runGitHubPagesAssetDiagnostics;
+
+  console.groupCollapsed(
+    `[Akath Asset Diagnostics] Base="${detectedBase || '/'}" | Route="${normalizedRoute}" | ${passedCount}/${entries.length} Resolved OK`
+  );
+  console.info('Environment & Base Path Summary:', {
+    origin: summary.origin,
+    pathname: summary.pathname,
+    normalizedRoute: summary.normalizedRoute,
+    viteBaseUrl: summary.viteBaseUrl,
+    detectedBasePath: summary.detectedBasePath,
+    totalChecked: summary.totalChecked,
+    passedCount: summary.passedCount,
+    failedCount: summary.failedCount,
+  });
+  console.table(entries);
+  if (failedCount > 0) {
+    console.warn(
+      '[Akath Asset Diagnostics] Unresolved or mismatched asset paths detected:',
+      entries.filter((e) => !e.ok)
+    );
+  }
+  console.groupEnd();
+
+  return summary;
 }

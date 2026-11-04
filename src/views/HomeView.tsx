@@ -16,6 +16,7 @@ import {
   FirstPageExcerpt,
 } from '../types/publishing';
 import { PUBLISHER_IDENTITY } from '../data/seedData';
+import { resolvePublicAssetUrl } from '../utils/githubPagesAdapter';
 import { BookCard } from '../components/BookCard';
 import { BookCoverArt } from '../components/BookCoverArt';
 import { AnimatedTortoiseEmblem } from '../components/SarvamIllustrations';
@@ -309,7 +310,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         <div className="space-y-3">
                           <div className="rounded-sm overflow-hidden border border-[#E6E1D6] bg-[#F7F3E8] p-2 shadow-xs">
                             <img
-                              src={activeHeroBook.coverSpreadUrl}
+                              src={resolvePublicAssetUrl(activeHeroBook.coverSpreadUrl)}
                               alt={`${activeHeroBook.title} — पूर्ण मुखपृष्ठ व मलपृष्ठ मांडणी`}
                               className="w-full h-auto rounded-xs object-contain max-h-[260px] mx-auto"
                             />
@@ -322,7 +323,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                             </span>
                             {activeHeroBook.coverPdfUrl && (
                               <a
-                                href={activeHeroBook.coverPdfUrl}
+                                href={resolvePublicAssetUrl(activeHeroBook.coverPdfUrl)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="font-semibold text-[#243B8A] hover:underline"
@@ -351,7 +352,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                                 className="w-full max-w-[165px] group flex items-center gap-2 p-1.5 rounded-xs bg-[#F7F3E8] hover:bg-[#FFD966]/30 border border-[#E6E1D6] transition-colors cursor-pointer text-left"
                               >
                                 <img
-                                  src={activeHeroBook.coverSpreadUrl}
+                                  src={resolvePublicAssetUrl(activeHeroBook.coverSpreadUrl)}
                                   alt="Full jacket thumbnail"
                                   className="w-11 h-8 object-cover rounded-2xs border border-[#E6E1D6] shrink-0"
                                 />
