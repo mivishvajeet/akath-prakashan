@@ -13,6 +13,7 @@ import {
 } from './types/publishing';
 import { LanguageContext, TRANSLATIONS } from './i18n/translations';
 import { AppLanguage } from './utils/validation';
+import { getGitHubPagesBasePath } from './utils/githubPagesAdapter';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { SearchModal } from './components/SearchModal';
@@ -73,9 +74,14 @@ function loadInitialLang(): AppLanguage {
 
 export default function App() {
   const [lang, setLangState] = useState<AppLanguage>(loadInitialLang);
-  const [currentPath, setCurrentPath] = useState<string>(
-    () => window.location.pathname || '/'
-  );
+  const [currentPath, setCurrentPath] = useState<string>(() => {
+    const base = getGitHubPagesBasePath();
+    const rawPath = window.location.pathname || '/';
+    if (base && rawPath.startsWith(base)) {
+      return rawPath.slice(base.length) || '/';
+    }
+    return rawPath;
+  });
   const [searchOpen, setSearchOpen] = useState(false);
 
   // Authentication & Session state
@@ -113,7 +119,13 @@ export default function App() {
   // History popstate listener
   useEffect(() => {
     const onPopState = () => {
-      setCurrentPath(window.location.pathname || '/');
+      const base = getGitHubPagesBasePath();
+      const rawPath = window.location.pathname || '/';
+      if (base && rawPath.startsWith(base)) {
+        setCurrentPath(rawPath.slice(base.length) || '/');
+      } else {
+        setCurrentPath(rawPath);
+      }
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
@@ -121,7 +133,14 @@ export default function App() {
 
   const navigate = useCallback((path: string) => {
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    window.history.pushState({}, '', cleanPath);
+    const base = getGitHubPagesBasePath();
+    const fullHistoryPath =
+      base && cleanPath === '/'
+        ? `${base}/`
+        : base
+          ? `${base}${cleanPath}`
+          : cleanPath;
+    window.history.pushState({}, '', fullHistoryPath);
     const [pathnameOnly] = cleanPath.split('?');
     setCurrentPath(pathnameOnly || '/');
     setIsImmersiveNavHidden(false);

@@ -1,0 +1,562 @@
+import {
+  INITIAL_AUTHORS,
+  INITIAL_BOOKS,
+  INITIAL_EXCERPTS,
+  INITIAL_ARTICLES,
+  INITIAL_READING_LISTS,
+} from '../data/seedData';
+import {
+  BookRecord,
+  AuthorRecord,
+  EditorialArticle,
+  FirstPageExcerpt,
+  FirstPageReactionCounts,
+  ReadingList,
+  CartItemInput,
+  ValidatedCartLine,
+  CartQuoteResponse,
+  OrderRecord,
+  ManuscriptSubmission,
+  ContactInquiry,
+} from '../types/publishing';
+import {
+  validateEmail,
+  validateIndianPhone,
+  validateIndianPinCode,
+  AppLanguage,
+} from './validation';
+
+const GH_STORAGE_KEYS = {
+  books: 'akath_gh_books_v1',
+  authors: 'akath_gh_authors_v1',
+  articles: 'akath_gh_articles_v1',
+  excerpts: 'akath_gh_excerpts_v1',
+  readingLists: 'akath_gh_reading_lists_v1',
+  orders: 'akath_gh_orders_v1',
+  manuscripts: 'akath_gh_manuscripts_v1',
+  inquiries: 'akath_gh_inquiries_v1',
+  sessionUser: 'akath_gh_session_user_v1',
+};
+
+/**
+ * Detects the base path when hosted on a GitHub Pages project subpath
+ * (e.g., https://username.github.io/repo-name/ -> '/repo-name').
+ */
+export function getGitHubPagesBasePath(): string {
+  if (typeof window === 'undefined') return '';
+  const host = window.location.hostname;
+  if (host.endsWith('.github.io')) {
+    const segments = window.location.pathname.split('/').filter(Boolean);
+    const knownAppRoutes = new Set([
+      'books',
+      'authors',
+      'vachankatta',
+      'about',
+      'submit-manuscript',
+      'contact',
+      'cart',
+      'checkout',
+      'track-order',
+      'shipping-returns',
+      'privacy',
+      'terms',
+      'admin',
+      'audit',
+      'login',
+      'register',
+      'forgot-password',
+      'reset-password',
+      'account',
+      'author-portal',
+    ]);
+    if (segments.length > 0 && !knownAppRoutes.has(segments[0])) {
+      return `/${segments[0]}`;
+    }
+  }
+  return '';
+}
+
+export function resolvePublicAssetUrl(url?: string): string | undefined {
+  if (!url || !url.startsWith('/assets/')) return url;
+  const base = getGitHubPagesBasePath();
+  return base ? `${base}${url}` : url;
+}
+
+function withResolvedBookAssets(book: BookRecord): BookRecord {
+  return {
+    ...book,
+    coverImageUrl: resolvePublicAssetUrl(book.coverImageUrl),
+    coverSpreadUrl: resolvePublicAssetUrl(book.coverSpreadUrl),
+    coverPdfUrl: resolvePublicAssetUrl(book.coverPdfUrl),
+  };
+}
+
+function withResolvedExcerptAssets(excerpt: FirstPageExcerpt): FirstPageExcerpt {
+  return {
+    ...excerpt,
+    pdfDocumentUrl: resolvePublicAssetUrl(excerpt.pdfDocumentUrl),
+  };
+}
+
+function readLocalJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeLocalJson<T>(key: string, value: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
+function getBooks(): BookRecord[] {
+  const stored = readLocalJson<BookRecord[] | null>(GH_STORAGE_KEYS.books, null);
+  const list = stored && stored.length > 0 ? stored : INITIAL_BOOKS;
+  return list.map(withResolvedBookAssets);
+}
+
+function getAuthors(): AuthorRecord[] {
+  const stored = readLocalJson<AuthorRecord[] | null>(GH_STORAGE_KEYS.authors, null);
+  return stored && stored.length > 0 ? stored : INITIAL_AUTHORS;
+}
+
+function getArticles(): EditorialArticle[] {
+  const stored = readLocalJson<EditorialArticle[] | null>(
+    GH_STORAGE_KEYS.articles,
+    null
+  );
+  return stored && stored.length > 0 ? stored : INITIAL_ARTICLES;
+}
+
+function getExcerpts(): FirstPageExcerpt[] {
+  const stored = readLocalJson<FirstPageExcerpt[] | null>(
+    GH_STORAGE_KEYS.excerpts,
+    null
+  );
+  const list = stored && stored.length > 0 ? stored : INITIAL_EXCERPTS;
+  return list.map(withResolvedExcerptAssets);
+}
+
+function getReadingLists(): ReadingList[] {
+  const stored = readLocalJson<ReadingList[] | null>(
+    GH_STORAGE_KEYS.readingLists,
+    null
+  );
+  return stored && stored.length > 0 ? stored : INITIAL_READING_LISTS;
+}
+
+function computeStaticCartQuote(
+  items: CartItemInput[],
+  lang: AppLanguage
+): CartQuoteResponse {
+  const books = getBooks();
+  const authors = getAuthors();
+  const mergedMap = new Map<string, number>();
+  const validationMessages: string[] = [];
+
+  for (const entry of Array.isArray(items) ? items : []) {
+    if (!entry || typeof entry.bookId !== 'string') continue;
+    const reqQty = Math.floor(Number(entry.quantity) || 0);
+    if (reqQty < 1) {
+      validationMessages.push(
+        lang === 'mr'
+          ? 'किमान १ प्रत निवडणे आवश्यक आहे.'
+          : 'Minimum quantity per book is 1.'
+      );
+      continue;
+    }
+    mergedMap.set(entry.bookId, (mergedMap.get(entry.bookId) || 0) + reqQty);
+  }
+
+  const quoteLines: ValidatedCartLine[] = [];
+  for (const [bookId, requestedQty] of mergedMap.entries()) {
+    const book = books.find((b) => b.id === bookId);
+    if (!book || book.stock <= 0 || book.availability === 'out_of_stock') continue;
+    const author = authors.find((a) => a.id === book.authorId);
+    const maxAllowed = Math.min(book.stock, 10);
+    const approvedQuantity = Math.min(requestedQty, maxAllowed);
+    let stockWarning: string | undefined;
+    if (requestedQty > maxAllowed) {
+      stockWarning =
+        lang === 'mr'
+          ? `केवळ ${maxAllowed} प्रती उपलब्ध असल्यामुळे संख्या समायोजित केली आहे.`
+          : `Quantity adjusted to ${maxAllowed} based on available stock.`;
+    }
+    quoteLines.push({
+      bookId: book.id,
+      slug: book.slug,
+      title: book.title,
+      authorName: author?.name || 'अकथ लेखक',
+      format: book.format,
+      unitPrice: book.price,
+      listPrice: book.listPrice,
+      requestedQuantity: requestedQty,
+      approvedQuantity,
+      availableStock: book.stock,
+      lineTotal: book.price * approvedQuantity,
+      stockWarning,
+    });
+  }
+
+  const subtotal = quoteLines.reduce((acc, l) => acc + l.lineTotal, 0);
+  const freeShippingThreshold = 500;
+  const shippingCost =
+    quoteLines.length === 0 ? 0 : subtotal >= freeShippingThreshold ? 0 : 45;
+  const grandTotal = subtotal + shippingCost;
+
+  return {
+    items: quoteLines,
+    subtotal,
+    discountAmount: 0,
+    shippingCost,
+    shippingRuleNote:
+      lang === 'mr'
+        ? 'सर्व किमतीत लागू कर समाविष्ट आहेत. ₹५०० वरील ऑर्डरला मोफत घरपोच सुविधा.'
+        : 'All prices inclusive of applicable taxes. Free shipping on orders ₹500+.',
+    grandTotal,
+    currency: 'INR',
+    validationMessages,
+    isValidForCheckout: quoteLines.length > 0,
+  };
+}
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+async function handleStaticApiRequest(
+  pathname: string,
+  searchParams: URLSearchParams,
+  init?: RequestInit
+): Promise<Response> {
+  const method = (init?.method || 'GET').toUpperCase();
+  let body: Record<string, any> = {};
+  if (init?.body && typeof init.body === 'string') {
+    try {
+      body = JSON.parse(init.body);
+    } catch {
+      body = {};
+    }
+  }
+
+  // 1. GET /api/bootstrap
+  if (method === 'GET' && pathname === '/api/bootstrap') {
+    return jsonResponse({
+      books: getBooks(),
+      authors: getAuthors(),
+      articles: getArticles(),
+      excerpts: getExcerpts(),
+      readingLists: getReadingLists(),
+      promotions: [],
+      siteConfig: {
+        promoBanner: {
+          enabled: true,
+          badgeText: 'अकथ प्रकाशन',
+          messageMarathi:
+            '₹५०० वरील सर्व मराठी ग्रंथ ऑर्डरवर संपूर्ण भारतात मोफत घरपोच वितरण.',
+          messageEnglish:
+            'Complimentary tracked book-post shipping across India on orders ₹500+.',
+          ctaLink: '/books',
+        },
+      },
+    });
+  }
+
+  // 2. GET /api/auth/me
+  if (method === 'GET' && pathname === '/api/auth/me') {
+    const user = readLocalJson(GH_STORAGE_KEYS.sessionUser, null);
+    return jsonResponse({ user, csrfToken: 'gh-pages-static-csrf' });
+  }
+
+  // 3. POST /api/cart/quote
+  if (method === 'POST' && pathname === '/api/cart/quote') {
+    const lang: AppLanguage = body.lang === 'en' ? 'en' : 'mr';
+    return jsonResponse(computeStaticCartQuote(body.items || [], lang));
+  }
+
+  // 4. GET /api/search
+  if (method === 'GET' && pathname === '/api/search') {
+    const q = (searchParams.get('q') || '').trim().toLowerCase();
+    const books = getBooks().filter(
+      (b) =>
+        b.title.toLowerCase().includes(q) ||
+        b.transliteratedTitle.toLowerCase().includes(q) ||
+        b.category.toLowerCase().includes(q)
+    );
+    const authors = getAuthors().filter(
+      (a) =>
+        a.name.toLowerCase().includes(q) ||
+        a.transliteratedName.toLowerCase().includes(q)
+    );
+    const articles = getArticles().filter((ar) =>
+      ar.title.toLowerCase().includes(q)
+    );
+    return jsonResponse({ books, authors, articles });
+  }
+
+  // 5. POST /api/orders
+  if (method === 'POST' && pathname === '/api/orders') {
+    const lang: AppLanguage = body.lang === 'en' ? 'en' : 'mr';
+    const customer = body.customer || {};
+    const phoneCheck = validateIndianPhone(customer.phone || '', lang);
+    const emailCheck = validateEmail(customer.email || '', lang);
+    const pinCheck = validateIndianPinCode(customer.postalCode || '', lang);
+
+    const fieldErrors: Record<string, string> = {};
+    if (!customer.fullName || String(customer.fullName).trim().length < 2) {
+      fieldErrors.fullName =
+        lang === 'mr' ? 'कृपया पूर्ण नाव प्रविष्ट करा.' : 'Please enter your full name.';
+    }
+    if (!phoneCheck.isValid) fieldErrors.phone = phoneCheck.error || 'Invalid phone';
+    if (!emailCheck.isValid) fieldErrors.email = emailCheck.error || 'Invalid email';
+    if (!pinCheck.isValid) fieldErrors.postalCode = pinCheck.error || 'Invalid PIN';
+    if (!customer.addressLine1 || String(customer.addressLine1).trim().length < 5) {
+      fieldErrors.addressLine1 =
+        lang === 'mr' ? 'कृपया संपूर्ण पत्ता लिहा.' : 'Please enter your full address.';
+    }
+    if (!customer.city || String(customer.city).trim().length < 2) {
+      fieldErrors.city = lang === 'mr' ? 'कृपया शहर लिहा.' : 'Please enter your city.';
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      return jsonResponse(
+        {
+          error:
+            lang === 'mr'
+              ? 'कृपया फॉर्ममधील त्रुटी तपासा.'
+              : 'Please check the highlighted form fields.',
+          fieldErrors,
+        },
+        400
+      );
+    }
+
+    const quote = computeStaticCartQuote(body.items || [], lang);
+    const orders = readLocalJson<OrderRecord[]>(GH_STORAGE_KEYS.orders, []);
+    const nowIso = new Date().toISOString();
+    const orderNumber = `AK-2026-${1043 + orders.length}`;
+    const order: OrderRecord = {
+      id: `ord-gh-${Date.now()}`,
+      orderNumber,
+      idempotencyKey: body.idempotencyKey || `idem-${Date.now()}`,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      guestAccessToken: `gh-tok-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      customer: {
+        fullName: String(customer.fullName).trim(),
+        phone: phoneCheck.normalizedValue,
+        email: emailCheck.normalizedValue,
+        addressLine1: String(customer.addressLine1).trim(),
+        addressLine2: customer.addressLine2
+          ? String(customer.addressLine2).trim()
+          : undefined,
+        city: String(customer.city).trim(),
+        district: String(customer.district || customer.city).trim(),
+        state: String(customer.state || 'Maharashtra').trim(),
+        postalCode: pinCheck.normalizedValue,
+        orderNotes: customer.orderNotes
+          ? String(customer.orderNotes).trim()
+          : undefined,
+        isInstitutionalOrder: Boolean(customer.isInstitutionalOrder),
+        institutionName: customer.institutionName
+          ? String(customer.institutionName).trim()
+          : undefined,
+      },
+      items: quote.items,
+      subtotal: quote.subtotal,
+      shippingCost: quote.shippingCost,
+      grandTotal: quote.grandTotal,
+      currency: 'INR',
+      paymentMethod: body.paymentMethod || 'upi_verified',
+      paymentStatus: 'unverified',
+      paymentReference: '',
+      orderStatus: 'pending_payment',
+      fulfilment: {},
+      auditTrail: [
+        {
+          timestamp: nowIso,
+          actor: 'reader_checkout',
+          action: 'ORDER_CREATED',
+          note: 'Order created on Akath Prakashan storefront.',
+        },
+      ],
+    };
+
+    orders.unshift(order);
+    writeLocalJson(GH_STORAGE_KEYS.orders, orders);
+    return jsonResponse({ order }, 201);
+  }
+
+  // 6. POST /api/orders/:id/checkout-payment
+  const checkoutPayMatch = pathname.match(
+    /^\/api\/orders\/([^/]+)\/(checkout-payment|verify-payment)$/
+  );
+  if (method === 'POST' && checkoutPayMatch) {
+    const orderId = checkoutPayMatch[1];
+    const orders = readLocalJson<OrderRecord[]>(GH_STORAGE_KEYS.orders, []);
+    const order = orders.find(
+      (o) => o.id === orderId || o.orderNumber.toUpperCase() === orderId.toUpperCase()
+    );
+    if (!order) {
+      return jsonResponse({ error: 'Order not found.' }, 404);
+    }
+    const outcome = body.outcome === 'failed' ? 'failed' : 'success';
+    order.paymentStatus = outcome === 'failed' ? 'failed' : 'verified';
+    order.orderStatus = outcome === 'failed' ? 'payment_failed' : 'payment_verified';
+    order.paymentReference =
+      body.paymentReference || `UPI-AKATH-${String(Date.now()).slice(-8)}`;
+    order.updatedAt = new Date().toISOString();
+    writeLocalJson(GH_STORAGE_KEYS.orders, orders);
+    return jsonResponse({ order });
+  }
+
+  // 7. GET /api/orders/lookup
+  if (method === 'GET' && pathname === '/api/orders/lookup') {
+    const orderNumber = (searchParams.get('orderNumber') || '').trim().toUpperCase();
+    const orders = readLocalJson<OrderRecord[]>(GH_STORAGE_KEYS.orders, []);
+    const order = orders.find((o) => o.orderNumber.toUpperCase() === orderNumber);
+    if (!order) {
+      return jsonResponse({ error: 'Order not found.' }, 404);
+    }
+    return jsonResponse({ order });
+  }
+
+  // 8. POST /api/contact
+  if (method === 'POST' && pathname === '/api/contact') {
+    const inquiries = readLocalJson<ContactInquiry[]>(
+      GH_STORAGE_KEYS.inquiries,
+      []
+    );
+    const inquiry: ContactInquiry = {
+      id: `inq-${Date.now()}`,
+      submittedAt: new Date().toISOString(),
+      name: String(body.name || '').trim(),
+      role: body.role || 'Reader',
+      emailOrPhone: String(body.email || body.phone || body.emailOrPhone || '').trim(),
+      subject: String(body.subject || '').trim(),
+      message: String(body.message || '').trim(),
+      preferWhatsAppFollowup: Boolean(body.preferWhatsAppFollowup),
+    };
+    inquiries.unshift(inquiry);
+    writeLocalJson(GH_STORAGE_KEYS.inquiries, inquiries);
+    return jsonResponse({ inquiry }, 201);
+  }
+
+  // 9. POST /api/manuscripts
+  if (method === 'POST' && pathname === '/api/manuscripts') {
+    const manuscripts = readLocalJson<ManuscriptSubmission[]>(
+      GH_STORAGE_KEYS.manuscripts,
+      []
+    );
+    const submission: ManuscriptSubmission = {
+      id: `ms-${Date.now()}`,
+      referenceCode: `AK-MS-${101 + manuscripts.length}`,
+      submittedAt: new Date().toISOString(),
+      authorName: String(body.authorName || '').trim(),
+      email: String(body.email || '').trim(),
+      phone: String(body.phone || '').trim(),
+      city: String(body.city || '').trim(),
+      manuscriptTitle: String(body.manuscriptTitle || '').trim(),
+      category: body.category || 'कादंबरी',
+      wordCountEstimate: String(body.wordCountEstimate || body.wordCount || '25,000'),
+      synopsis: String(body.synopsis || '').trim(),
+      sampleExcerptText: String(
+        body.sampleExcerptText || body.sampleExcerpt || ''
+      ).trim(),
+      originalWorkConfirmed: true,
+      privacyConsentConfirmed: true,
+      reviewStatus: 'received',
+    };
+    manuscripts.unshift(submission);
+    writeLocalJson(GH_STORAGE_KEYS.manuscripts, manuscripts);
+    return jsonResponse({ submission }, 201);
+  }
+
+  // 10. POST /api/excerpts/:id/react
+  const reactMatch = pathname.match(/^\/api\/excerpts\/([^/]+)\/react$/);
+  if (method === 'POST' && reactMatch) {
+    const excerptId = reactMatch[1];
+    const reactionType = body.reactionType as keyof FirstPageReactionCounts;
+    const excerpts = getExcerpts();
+    const target = excerpts.find((e) => e.id === excerptId);
+    if (!target) return jsonResponse({ error: 'Excerpt not found' }, 404);
+    if (
+      reactionType &&
+      (reactionType === 'readMore' ||
+        reactionType === 'struckByLine' ||
+        reactionType === 'wantContext')
+    ) {
+      target.reactions[reactionType] += 1;
+      writeLocalJson(GH_STORAGE_KEYS.excerpts, excerpts);
+    }
+    return jsonResponse({ reactions: target.reactions });
+  }
+
+  // 11. GET /api/books/:id/reviews
+  const reviewsMatch = pathname.match(/^\/api\/books\/([^/]+)\/reviews$/);
+  if (method === 'GET' && reviewsMatch) {
+    return jsonResponse({ reviews: [] });
+  }
+
+  return jsonResponse({ ok: true });
+}
+
+export function installGitHubPagesStaticAdapter(): void {
+  if (typeof window === 'undefined') return;
+  const originalFetch = window.fetch.bind(window);
+
+  window.fetch = async (
+    input: RequestInfo | URL,
+    init?: RequestInit
+  ): Promise<Response> => {
+    const urlStr =
+      typeof input === 'string'
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url;
+
+    const urlObj = new URL(urlStr, window.location.origin);
+    const base = getGitHubPagesBasePath();
+    const normalizedPath =
+      base && urlObj.pathname.startsWith(base)
+        ? urlObj.pathname.slice(base.length) || '/'
+        : urlObj.pathname;
+
+    if (!normalizedPath.startsWith('/api/')) {
+      return originalFetch(input, init);
+    }
+
+    // On *.github.io static hosting, skip network roundtrip to missing Express server
+    if (window.location.hostname.endsWith('.github.io')) {
+      return handleStaticApiRequest(normalizedPath, urlObj.searchParams, init);
+    }
+
+    try {
+      const response = await originalFetch(input, init);
+      const contentType = response.headers.get('content-type') || '';
+      if (
+        (response.status === 404 || response.status === 405) &&
+        !contentType.includes('application/json')
+      ) {
+        return handleStaticApiRequest(normalizedPath, urlObj.searchParams, init);
+      }
+      if (contentType.includes('text/html')) {
+        return handleStaticApiRequest(normalizedPath, urlObj.searchParams, init);
+      }
+      return response;
+    } catch {
+      return handleStaticApiRequest(normalizedPath, urlObj.searchParams, init);
+    }
+  };
+}
