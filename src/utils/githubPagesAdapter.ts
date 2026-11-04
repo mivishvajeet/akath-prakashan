@@ -513,6 +513,29 @@ async function handleStaticApiRequest(
 
 export function installGitHubPagesStaticAdapter(): void {
   if (typeof window === 'undefined') return;
+  const isGitHubPagesHost =
+    window.location.hostname.endsWith('.github.io') ||
+    (import.meta as any).env?.VITE_GITHUB_PAGES === 'true';
+
+  if (!isGitHubPagesHost) {
+    return;
+  }
+
+  // Restore clean SPA URL if redirected from GitHub Pages 404.html (?/path)
+  const loc = window.location;
+  if (loc.search && loc.search[1] === '/') {
+    const decoded = loc.search
+      .slice(1)
+      .split('&')
+      .map((s) => s.replace(/~and~/g, '&'))
+      .join('?');
+    window.history.replaceState(
+      null,
+      '',
+      loc.pathname.slice(0, -1) + decoded + loc.hash
+    );
+  }
+
   const originalFetch = window.fetch.bind(window);
 
   window.fetch = async (
@@ -537,26 +560,6 @@ export function installGitHubPagesStaticAdapter(): void {
       return originalFetch(input, init);
     }
 
-    // On *.github.io static hosting, skip network roundtrip to missing Express server
-    if (window.location.hostname.endsWith('.github.io')) {
-      return handleStaticApiRequest(normalizedPath, urlObj.searchParams, init);
-    }
-
-    try {
-      const response = await originalFetch(input, init);
-      const contentType = response.headers.get('content-type') || '';
-      if (
-        (response.status === 404 || response.status === 405) &&
-        !contentType.includes('application/json')
-      ) {
-        return handleStaticApiRequest(normalizedPath, urlObj.searchParams, init);
-      }
-      if (contentType.includes('text/html')) {
-        return handleStaticApiRequest(normalizedPath, urlObj.searchParams, init);
-      }
-      return response;
-    } catch {
-      return handleStaticApiRequest(normalizedPath, urlObj.searchParams, init);
-    }
+    return handleStaticApiRequest(normalizedPath, urlObj.searchParams, init);
   };
 }
