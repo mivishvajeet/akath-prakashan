@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-11-04T17:12:11.510Z",
-  "latestSnapshotId": "bkp-1793812331510-c4f9a2",
+  "updatedAt": "2026-11-04T17:40:51.035Z",
+  "latestSnapshotId": "bkp-1793814051035-37ef8a",
   "promotions": [
     {
       "id": "promo-seed-1",
@@ -59,9 +59,9 @@
       "ctaLink": "/books"
     },
     "featuredBookIds": [
-      "book-godavari-kathache-akshar",
-      "book-unhachya-savlya",
-      "book-koradya-nadichi-bakhar"
+      "book-scholar-juice",
+      "book-dhukyachi-dulai",
+      "book-lokshahimadhye-samajmadhyamancha-vapar"
     ],
     "highlightedCategories": [
       {
@@ -110,11 +110,11 @@
     "standardShippingFee": 45,
     "seoDefaults": {
       "siteTitle": "अकथ प्रकाशन (Akath Prakashan) — स्वतंत्र मराठी साहित्य आणि प्रकाशन मंच",
-      "metaDescription": "अकथ प्रकाशन, नांदेड व पुणे: स्वतंत्र मराठी साहित्य प्रकाशन संस्था, वाचनकट्टा संपादकीय मंच, पहिले पान उतारा वाचन आणि थेट वाचक पुस्तकपेढी."
+      "metaDescription": "अकथ प्रकाशन, नांदेड: स्वतंत्र मराठी साहित्य प्रकाशन संस्था, वाचनकट्टा संपादकीय मंच, पहिले पान उतारा वाचन आणि थेट वाचक पुस्तकपेढी."
     },
     "status": "published",
-    "updatedAt": "2026-11-04T17:12:11.510Z",
-    "updatedBy": "admin.1793812330896@akath.in",
+    "updatedAt": "2026-11-04T17:40:51.035Z",
+    "updatedBy": "admin.1793814050472@akath.in",
     "history": [
       {
         "versionId": "sc-ver-initial",
@@ -144,9 +144,9 @@
           "ctaLink": "/books"
         },
         "featuredBookIds": [
-          "book-godavari-kathache-akshar",
-          "book-unhachya-savlya",
-          "book-koradya-nadichi-bakhar"
+          "book-scholar-juice",
+          "book-dhukyachi-dulai",
+          "book-lokshahimadhye-samajmadhyamancha-vapar"
         ],
         "highlightedCategories": [
           {

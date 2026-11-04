@@ -174,42 +174,42 @@ async function runTests() {
   console.log('  [PASS] Case 1: Empty cart loads cleanly (0 items, ₹0 total, checkout disabled)');
 
   const c2 = await postJson('/api/cart/quote', {
-    items: [{ bookId: 'book-godavari-kathache-akshar', quantity: 1 }],
+    items: [{ bookId: 'book-dhukyachi-dulai', quantity: 1 }],
     lang: 'mr',
   });
   assert.equal(c2.data.items.length, 1);
   assert.equal(c2.data.items[0].approvedQuantity, 1);
-  assert.equal(c2.data.items[0].unitPrice, 340);
-  assert.equal(c2.data.subtotal, 340);
+  assert.equal(c2.data.items[0].unitPrice, 320);
+  assert.equal(c2.data.subtotal, 320);
   assert.equal(c2.data.shippingCost, 45);
-  assert.equal(c2.data.grandTotal, 385);
-  console.log('  [PASS] Case 2: Add one book from listing page (qty=1, subtotal=₹340, shipping=₹45, total=₹385)');
+  assert.equal(c2.data.grandTotal, 365);
+  console.log('  [PASS] Case 2: Add one book from listing page (qty=1, subtotal=₹320, shipping=₹45, total=₹365)');
 
   const c3 = await postJson('/api/cart/quote', {
-    items: [{ bookId: 'book-unhachya-savlya', quantity: 1 }],
+    items: [{ bookId: 'book-lokshahimadhye-samajmadhyamancha-vapar', quantity: 1 }],
     lang: 'mr',
   });
   assert.equal(c3.data.items.length, 1);
-  assert.equal(c3.data.items[0].title, 'उन्हाच्या सावल्या');
+  assert.equal(c3.data.items[0].title, 'लोकशाहीमध्ये समाजमाध्यमांचा वापर');
   console.log('  [PASS] Case 3: Add one book from book detail page (title, author, unit price, and total verified)');
 
   const c4 = await postJson('/api/cart/quote', {
     items: [
-      { bookId: 'book-godavari-kathache-akshar', quantity: 1 },
-      { bookId: 'book-godavari-kathache-akshar', quantity: 1 },
+      { bookId: 'book-dhukyachi-dulai', quantity: 1 },
+      { bookId: 'book-dhukyachi-dulai', quantity: 1 },
     ],
     lang: 'mr',
   });
   assert.equal(c4.data.items.length, 1);
   assert.equal(c4.data.items[0].approvedQuantity, 2);
-  assert.equal(c4.data.items[0].lineTotal, 680);
-  console.log('  [PASS] Case 4: Add the same book again (quantity merged to 2, no duplicate row, lineTotal=₹680)');
+  assert.equal(c4.data.items[0].lineTotal, 640);
+  console.log('  [PASS] Case 4: Add the same book again (quantity merged to 2, no duplicate row, lineTotal=₹640)');
 
   const c5 = await postJson('/api/cart/quote', {
     items: [
-      { bookId: 'book-godavari-kathache-akshar', quantity: 1 },
-      { bookId: 'book-unhachya-savlya', quantity: 1 },
-      { bookId: 'book-koradya-nadichi-bakhar', quantity: 1 },
+      { bookId: 'book-scholar-juice', quantity: 1 },
+      { bookId: 'book-dhukyachi-dulai', quantity: 1 },
+      { bookId: 'book-lokshahimadhye-samajmadhyamancha-vapar', quantity: 1 },
     ],
     lang: 'mr',
   });
@@ -222,24 +222,24 @@ async function runTests() {
   console.log(`  [PASS] Case 5: Add multiple different books (3 distinct items, subtotal=₹${expectedSum5})`);
 
   const c6 = await postJson('/api/cart/quote', {
-    items: [{ bookId: 'book-godavari-kathache-akshar', quantity: 3 }],
+    items: [{ bookId: 'book-dhukyachi-dulai', quantity: 3 }],
     lang: 'mr',
   });
   assert.equal(c6.data.items[0].approvedQuantity, 3);
-  assert.equal(c6.data.items[0].lineTotal, 1020);
-  assert.equal(c6.data.subtotal, 1020);
-  console.log('  [PASS] Case 6: Increase item quantity (qty=3, lineTotal=₹1020, free shipping applied)');
+  assert.equal(c6.data.items[0].lineTotal, 960);
+  assert.equal(c6.data.subtotal, 960);
+  console.log('  [PASS] Case 6: Increase item quantity (qty=3, lineTotal=₹960, free shipping applied)');
 
   const c7 = await postJson('/api/cart/quote', {
-    items: [{ bookId: 'book-godavari-kathache-akshar', quantity: 2 }],
+    items: [{ bookId: 'book-dhukyachi-dulai', quantity: 2 }],
     lang: 'mr',
   });
   assert.equal(c7.data.items[0].approvedQuantity, 2);
-  assert.equal(c7.data.items[0].lineTotal, 680);
-  console.log('  [PASS] Case 7: Decrease item quantity above 1 (qty=3 -> 2, lineTotal=₹680)');
+  assert.equal(c7.data.items[0].lineTotal, 640);
+  console.log('  [PASS] Case 7: Decrease item quantity above 1 (qty=3 -> 2, lineTotal=₹640)');
 
   const c8 = await postJson('/api/cart/quote', {
-    items: [{ bookId: 'book-godavari-kathache-akshar', quantity: 0 }],
+    items: [{ bookId: 'book-dhukyachi-dulai', quantity: 0 }],
     lang: 'mr',
   });
   assert.equal(c8.data.items.length, 0);
@@ -248,13 +248,13 @@ async function runTests() {
 
   const c9 = await postJson('/api/cart/quote', {
     items: [
-      { bookId: 'book-godavari-kathache-akshar', quantity: 1 },
-      { bookId: 'book-unhachya-savlya', quantity: 1 },
-    ].filter((i) => i.bookId !== 'book-unhachya-savlya'),
+      { bookId: 'book-dhukyachi-dulai', quantity: 1 },
+      { bookId: 'book-lokshahimadhye-samajmadhyamancha-vapar', quantity: 1 },
+    ].filter((i) => i.bookId !== 'book-lokshahimadhye-samajmadhyamancha-vapar'),
     lang: 'mr',
   });
   assert.equal(c9.data.items.length, 1);
-  assert.equal(c9.data.items[0].bookId, 'book-godavari-kathache-akshar');
+  assert.equal(c9.data.items[0].bookId, 'book-dhukyachi-dulai');
   console.log('  [PASS] Case 9: Remove one item from multi-item cart');
 
   const c10 = await postJson('/api/cart/quote', { items: [], lang: 'mr' });
@@ -266,11 +266,11 @@ async function runTests() {
   console.log('  [PASS] Case 12: Navigate across Home, Books, Vachankatta, About, Contact');
 
   const c13Mr = await postJson('/api/cart/quote', {
-    items: [{ bookId: 'book-godavari-kathache-akshar', quantity: 1 }],
+    items: [{ bookId: 'book-dhukyachi-dulai', quantity: 1 }],
     lang: 'mr',
   });
   const c13En = await postJson('/api/cart/quote', {
-    items: [{ bookId: 'book-godavari-kathache-akshar', quantity: 1 }],
+    items: [{ bookId: 'book-dhukyachi-dulai', quantity: 1 }],
     lang: 'en',
   });
   assert.equal(c13Mr.data.grandTotal, c13En.data.grandTotal);
@@ -280,7 +280,7 @@ async function runTests() {
 
   const rapidPromises = [1, 2, 3, 2, 3].map((q) =>
     postJson('/api/cart/quote', {
-      items: [{ bookId: 'book-godavari-kathache-akshar', quantity: q }],
+      items: [{ bookId: 'book-dhukyachi-dulai', quantity: q }],
       lang: 'mr',
     })
   );
@@ -289,7 +289,7 @@ async function runTests() {
   console.log('  [PASS] Case 14: Rapid clicks on + and -');
 
   const c15 = await postJson('/api/cart/quote', {
-    items: [{ bookId: 'book-godavari-kathache-akshar', quantity: 99 }],
+    items: [{ bookId: 'book-dhukyachi-dulai', quantity: 99 }],
     lang: 'en',
   });
   assert.ok(c15.data.items[0].approvedQuantity <= 20);
@@ -303,14 +303,14 @@ async function runTests() {
   const badOrder = await postJson('/api/orders', {
     idempotencyKey: `test-bad-${Date.now()}`,
     lang: 'en',
-    items: [{ bookId: 'book-godavari-kathache-akshar', quantity: 1 }],
+    items: [{ bookId: 'book-dhukyachi-dulai', quantity: 1 }],
     customer: {
       fullName: 'Test Reader',
       phone: '1234567890',
       email: 'reader..name@example.com',
-      addressLine1: '12, Karve Road, Pune',
-      city: 'Pune',
-      postalCode: '411004',
+      addressLine1: '12, Karve Road, Nanded',
+      city: 'Nanded',
+      postalCode: '431605',
     },
   });
   assert.equal(badOrder.status, 400);
@@ -321,20 +321,20 @@ async function runTests() {
   const goodOrder = await postJson('/api/orders', {
     idempotencyKey: `test-good-${Date.now()}`,
     lang: 'mr',
-    items: [{ bookId: 'book-godavari-kathache-akshar', quantity: 2 }],
+    items: [{ bookId: 'book-dhukyachi-dulai', quantity: 2 }],
     customer: {
       fullName: 'डॉ. श्रीकांत कुलकर्णी',
       phone: '+91 98765 43210',
       email: '  reader@example.com  ',
-      addressLine1: '१२, अक्षर निवास, कर्वे रस्ता',
-      city: 'पुणे',
-      postalCode: '411004',
+      addressLine1: '१२, अक्षर निवास, वैशाखी नगर',
+      city: 'नांदेड',
+      postalCode: '431605',
     },
   });
   assert.equal(goodOrder.status, 201);
   assert.equal(goodOrder.data.order.customer.phone, '9876543210');
   assert.equal(goodOrder.data.order.customer.email, 'reader@example.com');
-  assert.equal(goodOrder.data.order.grandTotal, 680);
+  assert.equal(goodOrder.data.order.grandTotal, 640);
   assert.ok(goodOrder.data.order.guestAccessToken, 'Guest order must issue guestAccessToken');
   console.log('  [PASS] Case 18: Valid guest checkout normalizes phone/email & issues guestAccessToken');
 
@@ -456,7 +456,7 @@ async function runTests() {
     consentConfirmed: true,
     role: 'admin', // Malicious client attempt to self-assign admin role
     isAdmin: true,
-    guestCart: [{ bookId: 'book-unhachya-savlya', quantity: 2 }],
+    guestCart: [{ bookId: 'book-lokshahimadhye-samajmadhyamancha-vapar', quantity: 2 }],
   });
   assert.equal(regReaderA.status, 201);
   assert.equal(regReaderA.data.user.role, 'reader', 'Public registration MUST force reader role');
@@ -565,7 +565,7 @@ async function runTests() {
   // Reader A toggles wishlist
   const wishRes = await postJson(
     '/api/account/wishlist/toggle',
-    { bookId: 'book-godavari-kathache-akshar' },
+    { bookId: 'book-scholar-juice' },
     readerAHeaders
   );
   assert.equal(wishRes.status, 200);
@@ -573,11 +573,11 @@ async function runTests() {
 
   // Reader A posts book review
   const revARes = await postJson(
-    '/api/books/book-godavari-kathache-akshar/reviews',
+    '/api/books/book-scholar-juice/reviews',
     {
       rating: 5,
-      title: 'अप्रतिम कादंबरी',
-      comment: 'मराठवाड्याच्या सांस्कृतिक विश्वाचे अत्यंत संवेदनशील चित्रण या पुस्तकात आढळते.',
+      title: 'अप्रतिम दीर्घकथा संग्रह',
+      comment: 'समकालीन वास्तवाचे अत्यंत संवेदनशील चित्रण या पुस्तकात आढळते.',
     },
     readerAHeaders
   );
@@ -1248,22 +1248,34 @@ async function runTests() {
   assert.equal(liveFeaturedBooks[0].title, 'स्कॉलर ज्यूस');
   assert.equal(liveFeaturedBooks[0].price, 549);
 
-  // Verify all 3 books are present in /api/bootstrap books, excerpts, and readingLists
+  // Verify all 3 books are present in /api/bootstrap books, excerpts, and readingLists and all dummy books/authors are removed
   const liveBookIds = bootstrapFeaturedCheck.data.books.map((b: { id: string }) => b.id);
   assert.ok(liveBookIds.includes('book-scholar-juice'));
   assert.ok(liveBookIds.includes('book-dhukyachi-dulai'));
   assert.ok(liveBookIds.includes('book-lokshahimadhye-samajmadhyamancha-vapar'));
+  assert.ok(!seedDataSource.includes('book-godavari-kathache-akshar'));
+  assert.ok(!seedDataSource.includes('book-unhachya-savlya'));
+  assert.ok(!seedDataSource.includes('book-koradya-nadichi-bakhar'));
+  assert.ok(!seedDataSource.includes('book-santh-panyache-divas'));
+  assert.ok(!seedDataSource.includes('book-antarbhasha-anuvad-sankalan'));
+  assert.ok(!seedDataSource.includes('book-shabdanche-antahsthal'));
+  assert.ok(!seedDataSource.includes('author-dnyaneshwar-parampara'));
+  assert.ok(!seedDataSource.includes('author-revati-kulkarni'));
+  assert.ok(!seedDataSource.includes('author-siddharth-waghmare'));
+  assert.ok(!seedDataSource.includes('author-meera-joshi-anuvad'));
 
   const liveExcerptBookIds = bootstrapFeaturedCheck.data.excerpts.map(
     (e: { bookId: string }) => e.bookId
   );
+  assert.equal(liveExcerptBookIds.length, 3);
   assert.ok(liveExcerptBookIds.includes('book-scholar-juice'));
   assert.ok(liveExcerptBookIds.includes('book-dhukyachi-dulai'));
   assert.ok(liveExcerptBookIds.includes('book-lokshahimadhye-samajmadhyamancha-vapar'));
   assert.equal(bootstrapFeaturedCheck.data.excerpts[0].folioPages.length, 6);
+  assert.equal(bootstrapFeaturedCheck.data.readingLists.length, 1);
 
   console.log(
-    '  [PASS] UI-07: Featured Edition ("स्कॉलर ज्यूस - जी. के. ऐनापुरे", ₹549 + Cover Spread PDF), First Page 6-Page PDF Folio, and all 3 Books across Books, Vachankatta & Catalogue verified'
+    '  [PASS] UI-07: Only the 3 User-Provided Books & 3 Authors remain (all dummy books/authors removed), Featured Edition ("स्कॉलर ज्यूस", ₹549 + Cover Spread PDF) & 6-Page First Page PDF Folio verified'
   );
 
   // Verify No-Code Admin CMS Endpoints (Create Book, Export CSV, Publish Article, Update Site Config, Create Promotion)

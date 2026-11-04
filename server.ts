@@ -181,7 +181,7 @@ const booksStore: BookRecord[] = structuredClone(INITIAL_BOOKS).map((book) => ({
   ...book,
   publicationStatus: 'published' as BookPublicationStatus,
   ownerUserId:
-    book.authorId === 'author-vishwanath-deshmukh'
+    book.authorId === 'author-g-k-ainapure'
       ? 'usr-seed-author-1'
       : undefined,
 }));
@@ -190,7 +190,7 @@ const authorsStore: AuthorRecord[] = structuredClone(INITIAL_AUTHORS).map(
   (author) => ({
     ...author,
     ownerUserId:
-      author.id === 'author-vishwanath-deshmukh'
+      author.id === 'author-g-k-ainapure'
         ? 'usr-seed-author-1'
         : undefined,
   })
@@ -214,29 +214,29 @@ const ordersStore: OrderRecord[] = [
       phone: '9823011223',
       email: 'aniruddha.kulkarni@example.com',
       addressLine1: '१४, सरस्वती निवास, शिवाजीनगर',
-      city: 'पुणे',
-      district: 'पुणे',
+      city: 'नांदेड',
+      district: 'नांदेड',
       state: 'महाराष्ट्र',
-      postalCode: '411005',
+      postalCode: '431605',
       isInstitutionalOrder: false,
     },
     items: [
       {
-        bookId: 'book-godavari-kathache-akshar',
-        slug: 'godavari-kathache-akshar',
-        title: 'गोदावरी काठाचे अक्षर',
-        authorName: 'डॉ. विश्वनाथ देशमुख',
-        format: 'पेपरबॅक (क्रीम आर्चिव्हल पेपर)',
-        unitPrice: 340,
+        bookId: 'book-dhukyachi-dulai',
+        slug: 'dhukyachi-dulai-bhutan-pravasvarnan',
+        title: 'धुक्याची दुलई',
+        authorName: 'अनुरत्न वाघमारे',
+        format: 'प्रवासवर्णन (पेपरबॅक)',
+        unitPrice: 320,
         requestedQuantity: 2,
         approvedQuantity: 2,
-        lineTotal: 680,
-        availableStock: 28,
+        lineTotal: 640,
+        availableStock: 30,
       },
     ],
-    subtotal: 680,
+    subtotal: 640,
     shippingCost: 0,
-    grandTotal: 680,
+    grandTotal: 640,
     currency: 'INR',
     paymentMethod: 'upi_verified',
     paymentStatus: 'verified',
@@ -2669,7 +2669,7 @@ app.post(
       title,
       subtitle: subtitle || undefined,
       transliteratedTitle,
-      authorId: user.linkedAuthorId || 'author-vishwanath-deshmukh',
+      authorId: user.linkedAuthorId || 'author-g-k-ainapure',
       contributorIds: [],
       category,
       categorySlug: categorySlugMap[category] || 'novel',
