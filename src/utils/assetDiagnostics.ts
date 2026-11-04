@@ -117,9 +117,9 @@ function buildExpectedAssetPathname(
  * Diagnostic utility that logs the resolved paths of the site manifest and static assets
  * to the browser console and compares each path against the expected repository base path.
  */
-export async function runGitHubPagesAssetDiagnostics(): Promise<GitHubPagesDiagnosticReport | null> {
+export async function runGitHubPagesAssetDiagnostics(): Promise<void> {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
-    return null;
+    return;
   }
 
   const configuredViteBaseUrl = String((import.meta as any).env?.BASE_URL || '/');
@@ -394,6 +394,4 @@ export async function runGitHubPagesAssetDiagnostics(): Promise<GitHubPagesDiagn
     );
   }
   console.groupEnd();
-
-  return report;
 }

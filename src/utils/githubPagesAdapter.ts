@@ -178,8 +178,6 @@ export function resolvePublicAssetUrl(url?: string): string | undefined {
   return url;
 }
 
-export const normalizeAssetPath = resolvePublicAssetUrl;
-
 export function withResolvedBookAssets(book: BookRecord): BookRecord {
   return {
     ...book,
