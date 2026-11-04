@@ -28,24 +28,19 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Set up Node.js 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
       - name: Configure GitHub Pages
         id: pages
         uses: actions/configure-pages@v5
         continue-on-error: true
 
-      - name: Install dependencies
-        run: bun install || npm install --legacy-peer-deps
+      - name: Install dependencies with Bun
+        run: bun install
 
       - name: Build static site for GitHub Pages
         env:
           VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}
           VITE_GITHUB_PAGES: 'true'
-        run: npm run build
+        run: bun run build
 
       - name: Ensure .nojekyll and 404.html exist in dist
         run: |
