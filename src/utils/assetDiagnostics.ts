@@ -6,7 +6,7 @@ import {
   getStaticExcerpts,
 } from './githubPagesAdapter';
 
-export interface AssetPathComparisonRow {
+interface AssetPathComparisonRow {
   source: string;
   rawPath: string;
   resolvedPathname: string;
@@ -19,7 +19,7 @@ export interface AssetPathComparisonRow {
   diagnosticNote: string;
 }
 
-export interface GitHubPagesDiagnosticReport {
+interface GitHubPagesDiagnosticReport {
   timestamp: string;
   origin: string;
   currentUrl: string;
@@ -68,7 +68,7 @@ const KNOWN_ROUTE_SEGMENTS = new Set([
  * On GitHub Pages project sites (https://<user>.github.io/<repo>/...), the expected
  * repository base path is '/<repo>/'. On root domains, it is '/'.
  */
-export function getExpectedRepositoryBasePath(): string {
+function getExpectedRepositoryBasePath(): string {
   if (typeof window === 'undefined') return '/';
 
   const segments = window.location.pathname.split('/').filter(Boolean);
