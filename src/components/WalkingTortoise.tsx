@@ -43,15 +43,15 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
       } relative w-full max-w-[960px] mx-auto pt-3 pb-1 select-none overflow-hidden ${className}`}
     >
       {/* Top Margin Header with Mobile-Friendly Pause/Walk Control */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5 px-1 text-[10px] font-mono uppercase tracking-[0.16em] sm:tracking-[0.2em] text-[#5A5F72]">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-1 text-[10px] font-mono uppercase tracking-[0.16em] sm:tracking-[0.2em] text-[#5A5F72]">
         <span className="text-[#174D3A] font-semibold truncate">
           {lang === 'mr'
             ? 'संथ पावले · सखोल अक्षरे · चिरंतन ग्रंथ'
             : 'PATIENT TORTOISE TRAVERSE · ONE BOOK AT A TIME'}
         </span>
 
-        <div className="flex items-center gap-2.5 ml-auto">
-          <span className="text-[#243B8A] hidden min-[380px]:inline">
+        <div className="flex items-center gap-3 ml-auto">
+          <span className="text-[#5A5F72] hidden min-[380px]:inline">
             {lang === 'mr' ? 'नांदेड, महाराष्ट्र' : 'NANDED, MAHARASHTRA'}
           </span>
           <button
@@ -59,7 +59,7 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
             data-testid="about-tortoise-play-toggle"
             aria-pressed={isPaused}
             onClick={() => setIsPaused((prev) => !prev)}
-            className="px-2 py-0.5 rounded border border-[#E6DFCE] bg-[#F7F3E8] hover:border-[#243B8A]/45 text-[9.5px] font-mono font-semibold text-[#243B8A] transition-colors cursor-pointer"
+            className="px-2 py-0.5 border-b border-[#243B8A]/40 hover:border-[#243B8A] text-[9.5px] font-mono font-semibold text-[#243B8A] transition-colors cursor-pointer whitespace-nowrap"
           >
             {isPaused
               ? lang === 'mr'
@@ -75,7 +75,7 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
       {/* Horizontal Marginalia Traverse Track (Container Query Enabled for Mobile/Tablet/Desktop) */}
       <div
         data-testid="about-tortoise-colophon-seal"
-        className="akath-patient-traverse-track relative w-full h-[72px] sm:h-[74px] rounded-xl bg-[#F7F3E8]/65 border border-[#E6DFCE] px-3 sm:px-4 overflow-hidden flex flex-col justify-end"
+        className="akath-patient-traverse-track relative w-full h-[72px] sm:h-[74px] border-y border-[#E6DFCE] bg-[#F7F3E8]/30 px-3 sm:px-4 overflow-hidden flex flex-col justify-end"
       >
         {/* Editorial Waypoints along the Margin — Visible on Mobile, Tablet & Desktop */}
         <div
