@@ -21,8 +21,7 @@ export const BookCoverArt: React.FC<BookCoverArtProps> = ({
 }) => {
   const { coverStyle } = book;
   const resolvedAuthorName = author?.name || authorName || 'अकथ लेखक';
-  const customCoverSrc =
-    resolvePublicAssetUrl(book.coverImageUrl) || book.coverUploadMeta?.dataUrl;
+  const customCoverSrc = book.coverImageUrl || book.coverUploadMeta?.dataUrl;
 
   const containerPadding =
     size === 'sm'
@@ -81,7 +80,7 @@ export const BookCoverArt: React.FC<BookCoverArtProps> = ({
 
       {customCoverSrc ? (
         <img
-          src={customCoverSrc}
+          src={resolvePublicAssetUrl(customCoverSrc)}
           alt={`${book.title} — ${resolvedAuthorName}`}
           className="w-full h-full object-cover relative z-10"
         />

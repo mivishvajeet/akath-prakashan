@@ -1,0 +1,32 @@
+{
+  "name": "अकथ प्रकाशन | Akath Prakashan",
+  "short_name": "अकथ प्रकाशन",
+  "description": "स्वतंत्र मराठी साहित्य प्रकाशन संस्था — मराठी साहित्य. नवे आवाज. दीर्घ संवाद.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFFDF7",
+  "theme_color": "#243B8A",
+  "lang": "mr",
+  "icons": [
+    {
+      "src": "assets/akath/akath-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "static_assets": [
+    "/assets/akath/akath-logo.png",
+    "/assets/akath/hero-books.jpg",
+    "/assets/aistudio/scholar-juice-cover.jpg",
+    "/assets/aistudio/scholar-juice-spread.jpg",
+    "/assets/aistudio/scholar-juice-folio-img-1.jpg",
+    "/assets/aistudio/scholar-juice-folio-img-2.jpg",
+    "/assets/aistudio/SCHOLAR_JUSIE_cover_design_cdr_15_15f6273e.pdf",
+    "/assets/aistudio/book2_b40a45e1.jpeg",
+    "/assets/aistudio/lokshahi-cover.jpg",
+    "/assets/aistudio/ChatGPT_Image_Nov_3__2026_at_11_52_43_PM_821c7865.png",
+    "/assets/aistudio/_________________________________________ead1d264.pdf"
+  ]
+}

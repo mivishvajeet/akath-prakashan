@@ -1,0 +1,22 @@
+title: Akath Prakashan
+include:
+  - .nojekyll
+  - 404.html
+  - manifest.json
+  - assets
+exclude:
+  - src
+  - scripts
+  - public
+  - node_modules
+  - dist
+  - server.ts
+  - package.json
+  - bun.lock
+  - tsconfig.json
+  - vite.config.ts
+  - metadata.json
+  - SECURITY_AUDIT_REPORT.md
+  - README.md
+  - .github
+  - .aistudio

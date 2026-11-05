@@ -9,7 +9,7 @@
       content="अकथ प्रकाशन, नांदेड — स्वतंत्र मराठी साहित्य प्रकाशन संस्था. निवडक पुस्तके, वाचनकट्टा संपादकीय लेख, पहिलं पान उतारा वाचन आणि थेट वाचक पुस्तकपेढी."
     />
     <link rel="canonical" href="https://akathpublication.arthsankalp.com/" />
-    <link rel="manifest" href="%BASE_URL%manifest.json" />
+    <link rel="manifest" href="./manifest.json" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="अकथ प्रकाशन (Akath Prakashan)" />
     <meta property="og:title" content="अकथ प्रकाशन | मराठी साहित्य. नवे आवाज. दीर्घ संवाद." />
@@ -17,7 +17,7 @@
       property="og:description"
       content="स्वतंत्र मराठी साहित्य प्रकाशन संस्था — निवडक पुस्तके, वाचनकट्टा संपादकीय लेख, पहिलं पान उतारा वाचन आणि ऑनलाइन पुस्तकपेढी."
     />
-    <meta property="og:image" content="%BASE_URL%assets/akath/akath-logo.png" />
+    <meta property="og:image" content="./assets/akath/akath-logo.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="अकथ प्रकाशन | मराठी साहित्य. नवे आवाज. दीर्घ संवाद." />
     <meta
@@ -37,7 +37,7 @@
         "name": "अकथ प्रकाशन (Akath Prakashan)",
         "alternateName": "Akath Publication Nanded",
         "url": "https://akathpublication.arthsankalp.com/",
-        "logo": "%BASE_URL%assets/akath/akath-logo.png",
+        "logo": "./assets/akath/akath-logo.png",
         "description": "स्वतंत्र मराठी साहित्य प्रकाशन संस्था — मराठी साहित्य. नवे आवाज. दीर्घ संवाद.",
         "address": {
           "@type": "PostalAddress",
@@ -60,20 +60,19 @@
     <script type="module" src="./src/main.tsx"></script>
     <script>
       // Fallback for GitHub Pages branch-root deployments ("Deploy from a branch: main / root")
-      // where the raw repository root index.html is served instead of dist/index.html.
+      // where the repository root index.html is served directly.
       (function () {
         if (
           window.location.hostname.endsWith('.github.io') &&
           document.querySelector('script[src*="src/main.tsx"]')
         ) {
-          window.__AKATH_SERVED_FROM_REPO_ROOT__ = true;
           var link = document.createElement('link');
           link.rel = 'stylesheet';
-          link.href = './dist/assets/index.css';
+          link.href = './assets/index.css';
           document.head.appendChild(link);
           var script = document.createElement('script');
           script.type = 'module';
-          script.src = './dist/assets/app-bundle.js';
+          script.src = './assets/app-bundle.js';
           document.body.appendChild(script);
         }
       })();
