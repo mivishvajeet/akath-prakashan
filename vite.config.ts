@@ -3,15 +3,10 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
 
-/**
- * Ensures the Vite public base URL always has a leading and trailing slash
- * (e.g., '/' for root deployments or '/<repo-name>/' for GitHub Pages subpaths).
- */
-function normalizePublicBasePath(rawBase?: string): string {
+function normalizeBasePath(rawBase?: string): string {
   const trimmed = (rawBase || '').trim();
-  if (!trimmed || trimmed === '/' || trimmed === '.' || trimmed === './') {
-    return '/';
-  }
+  if (!trimmed || trimmed === '/') return '/';
+  if (trimmed === '.' || trimmed === './') return './';
   const withoutRelativePrefix = trimmed.replace(/^\.+/, '');
   const withLeading = withoutRelativePrefix.startsWith('/')
     ? withoutRelativePrefix
@@ -20,29 +15,21 @@ function normalizePublicBasePath(rawBase?: string): string {
   return collapsed.endsWith('/') ? collapsed : `${collapsed}/`;
 }
 
-function resolvePublicBaseUrl(env: Record<string, string>): string {
-  // 1. Explicit VITE_BASE_PATH from environment or .env files
+function resolveViteBasePath(
+  command: 'build' | 'serve',
+  env: Record<string, string>
+): string {
   const explicitBase = process.env.VITE_BASE_PATH || env.VITE_BASE_PATH;
   if (explicitBase) {
-    return normalizePublicBasePath(explicitBase);
+    return normalizeBasePath(explicitBase);
   }
-
-  // 2. Automatic GitHub Actions repository subpath detection (<owner>/<repo>)
-  const ghRepo = process.env.GITHUB_REPOSITORY || env.GITHUB_REPOSITORY;
-  if (ghRepo && ghRepo.includes('/')) {
-    const repoName = ghRepo.split('/')[1]?.trim();
-    if (repoName && !repoName.toLowerCase().endsWith('.github.io')) {
-      return normalizePublicBasePath(`/${repoName}/`);
-    }
-  }
-
-  // 3. Default public base URL with a leading slash
-  return '/';
+  // Use './' for production builds so dist/ works at any subpath or root
+  return command === 'build' ? './' : '/';
 }
 
-export default defineConfig(({mode}) => {
+export default defineConfig(({command, mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const base = resolvePublicBaseUrl(env);
+  const base = resolveViteBasePath(command, env);
 
   return {
     base,
@@ -52,15 +39,17 @@ export default defineConfig(({mode}) => {
         '@': path.resolve(__dirname, '.'),
       },
     },
-    experimental: {
-      renderBuiltUrl(filename) {
-        return `${base}${filename.replace(/^\/+/, '')}`;
-      },
-    },
     build: {
       outDir: 'dist',
       assetsDir: 'assets',
       emptyOutDir: true,
+      rollupOptions: {
+        output: {
+          entryFileNames: 'assets/app-bundle.js',
+          chunkFileNames: 'assets/[name].js',
+          assetFileNames: 'assets/[name][extname]',
+        },
+      },
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.

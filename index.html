@@ -58,6 +58,26 @@
   <body class="bg-[#FBF9F5] text-[#141413] antialiased selection:bg-[#312E81]/15 selection:text-[#141413]">
     <div id="root"></div>
     <script type="module" src="./src/main.tsx"></script>
+    <script>
+      // Fallback for GitHub Pages branch-root deployments ("Deploy from a branch: main / root")
+      // where the raw repository root index.html is served instead of dist/index.html.
+      (function () {
+        if (
+          window.location.hostname.endsWith('.github.io') &&
+          document.querySelector('script[src*="src/main.tsx"]')
+        ) {
+          window.__AKATH_SERVED_FROM_REPO_ROOT__ = true;
+          var link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = './dist/assets/index.css';
+          document.head.appendChild(link);
+          var script = document.createElement('script');
+          script.type = 'module';
+          script.src = './dist/assets/app-bundle.js';
+          document.body.appendChild(script);
+        }
+      })();
+    </script>
   </body>
 </html>
 

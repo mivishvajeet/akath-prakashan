@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="utf-8" />
+    <title>अकथ प्रकाशन | Akath Prakashan</title>
+    <script>
+      // Single Page Apps for GitHub Pages (SPA deep-link redirect)
+      (function () {
+        var l = window.location;
+        var knownAppRoutes = {
+          books: true,
+          authors: true,
+          vachankatta: true,
+          about: true,
+          'submit-manuscript': true,
+          contact: true,
+          cart: true,
+          checkout: true,
+          'track-order': true,
+          'shipping-returns': true,
+          privacy: true,
+          terms: true,
+          policies: true,
+          admin: true,
+          audit: true,
+          login: true,
+          register: true,
+          'forgot-password': true,
+          'reset-password': true,
+          'verify-email': true,
+          account: true,
+          author: true,
+          'author-portal': true
+        };
+        var segments = l.pathname.split('/').filter(Boolean);
+        var isProjectSubpath =
+          l.hostname.endsWith('.github.io') &&
+          segments.length > 0 &&
+          !knownAppRoutes[segments[0]];
+        var pathSegmentsToKeep = isProjectSubpath ? 1 : 0;
+
+        l.replace(
+          l.protocol +
+            '//' +
+            l.hostname +
+            (l.port ? ':' + l.port : '') +
+            l.pathname
+              .split('/')
+              .slice(0, 1 + pathSegmentsToKeep)
+              .join('/') +
+            '/?/' +
+            l.pathname
+              .slice(1)
+              .split('/')
+              .slice(pathSegmentsToKeep)
+              .join('/')
+              .replace(/&/g, '~and~') +
+            (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+            l.hash
+        );
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>

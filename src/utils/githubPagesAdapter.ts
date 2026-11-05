@@ -66,6 +66,26 @@ const KNOWN_APP_ROUTES = new Set([
 ]);
 
 let cachedBasePath: string | null = null;
+let cachedDistSubdirPrefix: string | null = null;
+
+function isServedFromRepoRootDist(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (cachedDistSubdirPrefix !== null) return cachedDistSubdirPrefix === '/dist';
+  if ((window as any).__AKATH_SERVED_FROM_REPO_ROOT__ === true) {
+    cachedDistSubdirPrefix = '/dist';
+    return true;
+  }
+  if (typeof document !== 'undefined') {
+    for (const s of Array.from(document.getElementsByTagName('script'))) {
+      if (s.src && s.src.includes('/dist/assets/')) {
+        cachedDistSubdirPrefix = '/dist';
+        return true;
+      }
+    }
+  }
+  cachedDistSubdirPrefix = '';
+  return false;
+}
 
 /**
  * Reliably detects the deployment base path (e.g. '/akath-prakashan' on GitHub Pages
@@ -87,7 +107,7 @@ export function getGitHubPagesBasePath(): string {
     return cachedBasePath;
   }
 
-  // 2. Inspect the loaded bundle <script src=".../assets/index-*.js"> or <link href=".../assets/index-*.css"> URL
+  // 2. Inspect the loaded bundle <script src=".../assets/..."> or <link href=".../assets/..."> URL
   if (typeof document !== 'undefined') {
     const assetUrls: string[] = [];
     for (const s of Array.from(document.getElementsByTagName('script'))) {
@@ -99,6 +119,12 @@ export function getGitHubPagesBasePath(): string {
     for (const rawUrl of assetUrls) {
       try {
         const parsed = new URL(rawUrl, window.location.origin);
+        const distAssetsIdx = parsed.pathname.indexOf('/dist/assets/');
+        if (distAssetsIdx >= 0) {
+          cachedDistSubdirPrefix = '/dist';
+          cachedBasePath = distAssetsIdx > 0 ? parsed.pathname.slice(0, distAssetsIdx) : '';
+          return cachedBasePath;
+        }
         const assetsIdx = parsed.pathname.indexOf('/assets/');
         if (assetsIdx > 0) {
           cachedBasePath = parsed.pathname.slice(0, assetsIdx);
@@ -162,9 +188,16 @@ export function resolvePublicAssetUrl(url?: string): string | undefined {
     return url;
   }
   const base = getGitHubPagesBasePath();
-  if (base && (url === base || url.startsWith(`${base}/`))) {
+  const distPrefix = isServedFromRepoRootDist() ? '/dist' : '';
+  const fullPrefix = `${base}${distPrefix}`;
+
+  if (fullPrefix && (url === fullPrefix || url.startsWith(`${fullPrefix}/`))) {
     return url;
   }
+  if (base && !distPrefix && (url === base || url.startsWith(`${base}/`))) {
+    return url;
+  }
+
   const normalizedClean = url.replace(/^\.\//, '');
   const withLeadingSlash = normalizedClean.startsWith('/')
     ? normalizedClean
@@ -173,7 +206,7 @@ export function resolvePublicAssetUrl(url?: string): string | undefined {
     withLeadingSlash.startsWith('/assets/') ||
     withLeadingSlash === '/manifest.json'
   ) {
-    return base ? `${base}${withLeadingSlash}` : withLeadingSlash;
+    return fullPrefix ? `${fullPrefix}${withLeadingSlash}` : withLeadingSlash;
   }
   return url;
 }
