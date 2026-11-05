@@ -127,8 +127,15 @@ export function getGitHubPagesBasePath(): string {
         }
         const assetsIdx = parsed.pathname.indexOf('/assets/');
         if (assetsIdx > 0) {
-          cachedBasePath = parsed.pathname.slice(0, assetsIdx);
-          return cachedBasePath;
+          const candidatePrefix = parsed.pathname.slice(0, assetsIdx);
+          const candidateSegments = candidatePrefix.split('/').filter(Boolean);
+          if (
+            candidateSegments.length > 0 &&
+            !KNOWN_APP_ROUTES.has(candidateSegments[0])
+          ) {
+            cachedBasePath = candidatePrefix;
+            return cachedBasePath;
+          }
         }
       } catch {
         // Ignore malformed asset URL
@@ -422,6 +429,90 @@ async function handleStaticApiRequest(
     return jsonResponse({ user, csrfToken: 'gh-pages-static-csrf' });
   }
 
+  // 2b. POST /api/auth/sandbox-persona & /api/auth/logout
+  if (method === 'POST' && pathname === '/api/auth/sandbox-persona') {
+    const persona = body.persona as 'reader' | 'author' | 'admin';
+    const nowIso = new Date().toISOString();
+    const personaUsers = {
+      reader: {
+        id: 'usr-seed-reader-1',
+        name: 'मीरा देशमुख (वाचक)',
+        email: 'meera.reader@akath.in',
+        phone: '9822011223',
+        city: 'पुणे',
+        bio: 'मराठी कथा आणि समकालीन कादंबरीच्या नियमित वाचिका.',
+        role: 'reader',
+        accountStatus: 'active',
+        emailVerified: true,
+        wishlistBookIds: ['akath-book-1', 'akath-book-3'],
+        personalReadingList: [],
+        notificationPreferences: {
+          newReleases: true,
+          orderUpdates: true,
+          vachankattaDigest: true,
+          publishingAlerts: false,
+        },
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      },
+      author: {
+        id: 'usr-seed-author-1',
+        name: 'डॉ. सदानंद देशमुख',
+        email: 'sadanand.author@akath.in',
+        phone: '9422098765',
+        city: 'नांदेड',
+        bio: 'अकथ प्रकाशनाचे ज्येष्ठ लेखक आणि साहित्य अकादमी पुरस्कार विजेते कादंबरीकार.',
+        role: 'author',
+        linkedAuthorId: 'author-1',
+        accountStatus: 'active',
+        emailVerified: true,
+        wishlistBookIds: [],
+        personalReadingList: [],
+        notificationPreferences: {
+          newReleases: true,
+          orderUpdates: true,
+          vachankattaDigest: true,
+          publishingAlerts: true,
+        },
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      },
+      admin: {
+        id: 'usr-sandbox-admin',
+        name: 'संपादकीय व प्रकाशन प्रशासक (Admin)',
+        email: 'admin.console@akath.in',
+        phone: '9270282932',
+        city: 'नांदेड / पुणे',
+        bio: 'अकथ प्रकाशन मुख्य संपादकीय आणि कार्यप्रणाली प्रशासक.',
+        role: 'admin',
+        accountStatus: 'active',
+        emailVerified: true,
+        wishlistBookIds: [],
+        personalReadingList: [],
+        notificationPreferences: {
+          newReleases: true,
+          orderUpdates: true,
+          vachankattaDigest: true,
+          publishingAlerts: true,
+        },
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      },
+    };
+    const user = personaUsers[persona] || personaUsers.reader;
+    writeLocalJson(GH_STORAGE_KEYS.sessionUser, user);
+    return jsonResponse({
+      user,
+      sessionToken: `static-session-${persona}`,
+      csrfToken: 'gh-pages-static-csrf',
+    });
+  }
+
+  if (method === 'POST' && pathname === '/api/auth/logout') {
+    writeLocalJson(GH_STORAGE_KEYS.sessionUser, null);
+    return jsonResponse({ ok: true });
+  }
+
   // 3. POST /api/cart/quote
   if (method === 'POST' && pathname === '/api/cart/quote') {
     const lang: AppLanguage = body.lang === 'en' ? 'en' : 'mr';
@@ -675,8 +766,18 @@ export function installGitHubPagesStaticAdapter(): void {
     window.history.replaceState(null, '', `${cleanPathname}${loc.search}${loc.hash}`);
   }
 
+  const hostname = window.location.hostname;
+  const isBackendDevOrPreviewHost =
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.endsWith('.run.app');
+
   const isExplicitStaticHost =
-    window.location.hostname.endsWith('.github.io') ||
+    hostname.endsWith('.github.io') ||
+    hostname.endsWith('.vercel.app') ||
+    hostname.endsWith('.netlify.app') ||
+    hostname.endsWith('.pages.dev') ||
+    !isBackendDevOrPreviewHost ||
     (import.meta as any).env?.VITE_GITHUB_PAGES === 'true';
 
   if (!isExplicitStaticHost) {
