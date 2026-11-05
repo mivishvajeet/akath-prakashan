@@ -1,0 +1,6 @@
+title: Akath Prakashan
+include:
+  - .nojekyll
+  - 404.html
+  - manifest.json
+  - assets

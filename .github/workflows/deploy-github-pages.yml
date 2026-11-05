@@ -18,11 +18,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify pre-built static assets for GitHub Pages
+      - name: Verify /docs and root static assets for GitHub Pages
         run: |
-          test -f index.html
-          test -f 404.html
-          test -f manifest.json
-          test -f assets/app-bundle.js
-          test -f assets/index.css
-          echo "GitHub Pages static bundle verified."
+          test -d docs
+          test -f docs/index.html
+          test -f docs/404.html
+          test -f docs/manifest.json
+          test -f docs/assets/app-bundle.js
+          test -f docs/assets/index.css
+          echo "GitHub Pages /docs static bundle verified."
