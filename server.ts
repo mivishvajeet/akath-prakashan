@@ -96,7 +96,7 @@ import {
 } from './src/server/cmsStore';
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'akath_sid';
 const SESSION_TTL_MS =
   Math.max(1, Number(process.env.SESSION_TTL_HOURS) || 24) * 60 * 60 * 1000;
@@ -3445,7 +3445,7 @@ app.post(
     const order = ordersStore.find(
       (o) =>
         o.id === req.params.id ||
-        o.orderNumber.toUpperCase() === req.params.id.toUpperCase()
+        o.orderNumber.toUpperCase() === String(req.params.id).toUpperCase()
     );
     if (!order) {
       res.status(404).json({
@@ -3588,7 +3588,7 @@ app.post(
     const order = ordersStore.find(
       (o) =>
         o.id === req.params.id ||
-        o.orderNumber.toUpperCase() === req.params.id.toUpperCase()
+        o.orderNumber.toUpperCase() === String(req.params.id).toUpperCase()
     );
     if (!order) {
       res.status(404).json({
@@ -3739,7 +3739,7 @@ app.post(
     const order = ordersStore.find(
       (o) =>
         o.id === req.params.id ||
-        o.orderNumber.toUpperCase() === req.params.id.toUpperCase()
+        o.orderNumber.toUpperCase() === String(req.params.id).toUpperCase()
     );
     if (!order) {
       res.status(404).json({
@@ -5328,8 +5328,18 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
+    const assetsPath = path.join(distPath, 'assets');
+    app.use('/assets', express.static(assetsPath));
+    app.use((req, res, next) => {
+      const assetsIdx = req.path.indexOf('/assets/');
+      if (assetsIdx > 0) {
+        req.url = req.url.slice(assetsIdx);
+        return express.static(distPath)(req, res, next);
+      }
+      next();
+    });
     app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
+    app.use((_req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
