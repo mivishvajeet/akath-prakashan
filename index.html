@@ -59,11 +59,16 @@
     <div id="root"></div>
     <script type="module" src="./src/main.tsx"></script>
     <script>
-      // Fallback for GitHub Pages branch-root deployments ("Deploy from a branch: main / root")
-      // where the repository root index.html is served directly.
+      // Fallback for static branch-root deployments where raw index.html is served directly
       (function () {
+        var host = window.location.hostname;
+        var isStaticHost =
+          host.endsWith('.github.io') ||
+          host.endsWith('.vercel.app') ||
+          host.endsWith('.netlify.app') ||
+          host.endsWith('.pages.dev');
         if (
-          window.location.hostname.endsWith('.github.io') &&
+          isStaticHost &&
           document.querySelector('script[src*="src/main.tsx"]')
         ) {
           var link = document.createElement('link');

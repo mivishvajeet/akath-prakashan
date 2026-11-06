@@ -1,7 +1,8 @@
 {
-  "installCommand": "echo 'Using pre-built static bundle in docs/'",
-  "buildCommand": "echo 'Using pre-built static bundle in docs/'",
-  "outputDirectory": "docs",
+  "framework": "vite",
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "npx vite build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/:prefix*/assets/:path*",
