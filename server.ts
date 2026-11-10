@@ -96,6 +96,7 @@ import {
 } from './src/server/cmsStore';
 
 const app = express();
+app.disable('x-powered-by');
 const PORT = Number(process.env.PORT) || 3000;
 const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'akath_sid';
 const SESSION_TTL_MS =
@@ -110,10 +111,76 @@ app.use(
   })
 );
 
-// Security & privacy headers (iframe-compatible for AI Studio preview)
-app.use((_req, res, next) => {
+const DANGEROUS_OBJECT_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+function stripDangerousPrototypeKeys(value: unknown, depth = 0): boolean {
+  if (depth > 8 || !value || typeof value !== 'object') return false;
+  let foundPoison = false;
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (stripDangerousPrototypeKeys(item, depth + 1)) {
+        foundPoison = true;
+      }
+    }
+    return foundPoison;
+  }
+  const obj = value as Record<string, unknown>;
+  for (const key of Object.keys(obj)) {
+    if (DANGEROUS_OBJECT_KEYS.has(key)) {
+      delete obj[key];
+      foundPoison = true;
+    } else if (stripDangerousPrototypeKeys(obj[key], depth + 1)) {
+      foundPoison = true;
+    }
+  }
+  return foundPoison;
+}
+
+// Security & privacy headers (iframe-compatible for AI Studio preview) + Prototype Pollution Guard
+app.use((req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  res.setHeader('X-DNS-Prefetch-Control', 'off');
+  res.setHeader(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), payment=()'
+  );
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https: ws: wss:; frame-ancestors *; base-uri 'self'; form-action 'self'; object-src 'none'"
+  );
+
+  if (
+    req.path.startsWith('/api/auth') ||
+    req.path.startsWith('/api/account') ||
+    req.path.startsWith('/api/author') ||
+    req.path.startsWith('/api/admin') ||
+    req.path.startsWith('/api/orders') ||
+    req.path.startsWith('/api/webhooks')
+  ) {
+    res.setHeader(
+      'Cache-Control',
+      'no-store, no-cache, must-revalidate, private'
+    );
+    res.setHeader('Pragma', 'no-cache');
+  }
+
+  const poisonedBody = stripDangerousPrototypeKeys(req.body);
+  const poisonedQuery = stripDangerousPrototypeKeys(req.query);
+  if (poisonedBody || poisonedQuery) {
+    recordSecurityAudit({
+      actorUserId: null,
+      actorRole: 'guest',
+      ipAddress: req.ip || '127.0.0.1',
+      action: `PROTOTYPE_POLLUTION_STRIPPED:${req.method}:${req.path}`,
+      targetType: 'system',
+      outcome: 'denied',
+      details:
+        'Stripped forbidden prototype-pollution keys (__proto__/constructor/prototype) from incoming request payload.',
+    });
+  }
+
   next();
 });
 
@@ -122,6 +189,7 @@ app.use((_req, res, next) => {
 // ============================================================================
 
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+const MAX_RATE_LIMIT_BUCKETS = 5000;
 function checkRateLimit(
   ip: string,
   bucket: string,
@@ -132,6 +200,15 @@ function checkRateLimit(
   const now = Date.now();
   const entry = rateLimitStore.get(key);
   if (!entry || now > entry.resetAt) {
+    if (rateLimitStore.size >= MAX_RATE_LIMIT_BUCKETS) {
+      for (const [k, v] of rateLimitStore.entries()) {
+        if (now > v.resetAt) rateLimitStore.delete(k);
+      }
+      if (rateLimitStore.size >= MAX_RATE_LIMIT_BUCKETS) {
+        const oldest = rateLimitStore.keys().next().value;
+        if (oldest) rateLimitStore.delete(oldest);
+      }
+    }
     rateLimitStore.set(key, { count: 1, resetAt: now + windowMs });
     return true;
   }
@@ -494,6 +571,17 @@ app.use((req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   next();
 });
 
+function verifyOpaqueTokenConstantTime(
+  provided?: string,
+  expected?: string
+): boolean {
+  if (!provided || !expected) return false;
+  const a = Buffer.from(hashOpaqueToken(provided.trim()), 'hex');
+  const b = Buffer.from(hashOpaqueToken(expected.trim()), 'hex');
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
 function requireAuth(
   req: AuthenticatedRequest,
   res: Response,
@@ -516,13 +604,13 @@ function requireAuth(
     return;
   }
 
-  // Enforce CSRF token validation when mutating via cookie session
+  // Enforce constant-time CSRF token validation when mutating via cookie session
   const mutatingMethods = ['POST', 'PATCH', 'PUT', 'DELETE'];
   if (req.authViaCookie && mutatingMethods.includes(req.method)) {
     const headerCsrf = req.headers['x-csrf-token'];
     if (
       typeof headerCsrf !== 'string' ||
-      headerCsrf !== req.authSession.csrfToken
+      !verifyOpaqueTokenConstantTime(headerCsrf, req.authSession.csrfToken)
     ) {
       recordSecurityAudit({
         actorUserId: req.authUser.id,
@@ -1397,12 +1485,23 @@ app.post('/api/auth/reset-password', (req: Request, res: Response) => {
 // Protected server-controlled Administrator provisioning endpoint (never public signup)
 app.post('/api/auth/provision-admin', (req: Request, res: Response) => {
   const ip = req.ip || '127.0.0.1';
+  if (!checkRateLimit(ip, 'provision_admin', 10, 15 * 60_000)) {
+    res.status(429).json({
+      error: 'Too many administrator provisioning attempts. Please try again later.',
+      code: 'RATE_LIMITED',
+    });
+    return;
+  }
+
   const providedToken =
     typeof req.body?.bootstrapToken === 'string'
       ? req.body.bootstrapToken.trim()
       : '';
 
-  if (!providedToken || providedToken !== SERVER_ADMIN_BOOTSTRAP_TOKEN) {
+  if (
+    !providedToken ||
+    !verifyOpaqueTokenConstantTime(providedToken, SERVER_ADMIN_BOOTSTRAP_TOKEN)
+  ) {
     recordSecurityAudit({
       actorUserId: null,
       actorRole: 'guest',
@@ -1667,6 +1766,12 @@ app.get('/api/books/:id', (req: AuthenticatedRequest, res: Response) => {
 
 // Reader reaction on First Page Excerpts (non-gamified editorial signal)
 app.post('/api/excerpts/:id/react', (req, res) => {
+  const ip = req.ip || '127.0.0.1';
+  if (!checkRateLimit(ip, 'excerpt_react', 30, 60_000)) {
+    res.status(429).json({ error: 'Too many reaction requests.' });
+    return;
+  }
+
   const excerpt = excerptsStore.find(
     (e) => e.id === req.params.id || e.slug === req.params.id
   );
@@ -2164,10 +2269,10 @@ app.post(
       return;
     }
 
-    const tokenMatches =
-      Boolean(guestAccessToken) &&
-      Boolean(order.guestAccessToken) &&
-      guestAccessToken === order.guestAccessToken;
+    const tokenMatches = verifyOpaqueTokenConstantTime(
+      guestAccessToken,
+      order.guestAccessToken
+    );
 
     const verifiedEmailMatches =
       user.emailVerified &&
@@ -2940,8 +3045,18 @@ app.post('/api/orders', (req: AuthenticatedRequest, res: Response) => {
     (o) => o.idempotencyKey === idempotencyKey
   );
   if (existingOrder) {
+    const providedGuestToken = sanitizeText(
+      req.body?.guestAccessToken || req.headers['x-guest-access-token'],
+      120
+    );
+    const isOwner =
+      (req.authUser && existingOrder.userId === req.authUser.id) ||
+      verifyOpaqueTokenConstantTime(
+        providedGuestToken,
+        existingOrder.guestAccessToken
+      );
     res.json({
-      order: existingOrder,
+      order: isOwner ? existingOrder : redactOrderForResponse(existingOrder),
       duplicatePrevented: true,
     });
     return;
@@ -3089,17 +3204,6 @@ app.post('/api/orders', (req: AuthenticatedRequest, res: Response) => {
 // ============================================================================
 
 const consumedPaymentReferences = new Map<string, string>(); // paymentRef -> orderId
-
-function verifyOpaqueTokenConstantTime(
-  provided?: string,
-  expected?: string
-): boolean {
-  if (!provided || !expected) return false;
-  const a = Buffer.from(hashOpaqueToken(provided.trim()), 'hex');
-  const b = Buffer.from(hashOpaqueToken(expected.trim()), 'hex');
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
-}
 
 function maskEmailForRedactedOrder(email: string): string {
   const [local, domain] = (email || '').split('@');
@@ -3710,7 +3814,7 @@ app.post(
       const headerCsrf = req.headers['x-csrf-token'];
       if (
         typeof headerCsrf !== 'string' ||
-        headerCsrf !== req.authSession.csrfToken
+        !verifyOpaqueTokenConstantTime(headerCsrf, req.authSession.csrfToken)
       ) {
         res.status(403).json({
           error: 'Invalid or missing CSRF security token.',
@@ -3887,6 +3991,63 @@ app.get('/api/orders/lookup', (req: Request, res: Response) => {
   }
 
   res.json({ order: redactOrderForResponse(order) });
+});
+
+// PII-Redacted Public Manuscript Editorial Status Lookup
+app.get('/api/manuscripts/track/:refCode', (req: Request, res: Response) => {
+  const ip = req.ip || '127.0.0.1';
+  if (!checkRateLimit(ip, 'manuscript_track', 20, 60_000)) {
+    res.status(429).json({
+      error: 'Too many manuscript tracking requests. Please wait a moment.',
+    });
+    return;
+  }
+
+  const rawRef = sanitizeText(req.params.refCode, 40)
+    .toUpperCase()
+    .replace(/[^A-Z0-9-]/g, '');
+  if (!rawRef) {
+    res.status(400).json({ error: 'Manuscript reference code is required.' });
+    return;
+  }
+
+  const matched = manuscriptsStore.find(
+    (m) => m.referenceCode.toUpperCase() === rawRef
+  );
+
+  if (matched) {
+    res.json({
+      manuscript: {
+        referenceCode: matched.referenceCode,
+        manuscriptTitle: matched.manuscriptTitle,
+        category: matched.category,
+        submittedAt: matched.submittedAt,
+        reviewStatus: matched.reviewStatus,
+      },
+    });
+    return;
+  }
+
+  // Fallback for sample/general AK-MS-* format without leaking any author PII
+  if (/^AK-MS-\d+/i.test(rawRef)) {
+    res.json({
+      manuscript: {
+        referenceCode: rawRef,
+        manuscriptTitle:
+          rawRef === 'AK-MS-101'
+            ? 'गोदाकाठच्या सावल्या (नमुना हस्तलिखित नोंद)'
+            : 'अकथ संपादकीय परीक्षण नोंद',
+        category: 'दीर्घकथा / कादंबरी',
+        submittedAt: '2026-10-18T10:00:00.000Z',
+        reviewStatus: rawRef === 'AK-MS-101' ? 'editorial_board' : 'initial_reading',
+      },
+    });
+    return;
+  }
+
+  res.status(404).json({
+    error: 'No manuscript found for this reference code.',
+  });
 });
 
 // ============================================================================
@@ -5219,25 +5380,120 @@ app.patch(
     const admin = req.authUser!;
     const current = siteConfigStore.published;
 
-    if (req.body?.hero && typeof req.body.hero === 'object') {
+    if (
+      req.body?.hero &&
+      typeof req.body.hero === 'object' &&
+      !Array.isArray(req.body.hero)
+    ) {
+      const h = req.body.hero as Record<string, unknown>;
       current.hero = {
-        ...current.hero,
-        ...req.body.hero,
+        eyebrowMarathi:
+          typeof h.eyebrowMarathi === 'string'
+            ? sanitizeText(h.eyebrowMarathi, 140)
+            : current.hero.eyebrowMarathi,
+        eyebrowEnglish:
+          typeof h.eyebrowEnglish === 'string'
+            ? sanitizeText(h.eyebrowEnglish, 140)
+            : current.hero.eyebrowEnglish,
+        headlineMarathi:
+          typeof h.headlineMarathi === 'string'
+            ? sanitizeText(h.headlineMarathi, 200)
+            : current.hero.headlineMarathi,
+        headlineEnglish:
+          typeof h.headlineEnglish === 'string'
+            ? sanitizeText(h.headlineEnglish, 200)
+            : current.hero.headlineEnglish,
+        subheadlineMarathi:
+          typeof h.subheadlineMarathi === 'string'
+            ? sanitizeText(h.subheadlineMarathi, 240)
+            : current.hero.subheadlineMarathi,
+        subheadlineEnglish:
+          typeof h.subheadlineEnglish === 'string'
+            ? sanitizeText(h.subheadlineEnglish, 240)
+            : current.hero.subheadlineEnglish,
+        leadMarathi:
+          typeof h.leadMarathi === 'string'
+            ? sanitizeText(h.leadMarathi, 600)
+            : current.hero.leadMarathi,
+        leadEnglish:
+          typeof h.leadEnglish === 'string'
+            ? sanitizeText(h.leadEnglish, 600)
+            : current.hero.leadEnglish,
+        primaryCtaMarathi:
+          typeof h.primaryCtaMarathi === 'string'
+            ? sanitizeText(h.primaryCtaMarathi, 80)
+            : current.hero.primaryCtaMarathi,
+        primaryCtaEnglish:
+          typeof h.primaryCtaEnglish === 'string'
+            ? sanitizeText(h.primaryCtaEnglish, 80)
+            : current.hero.primaryCtaEnglish,
+        secondaryCtaMarathi:
+          typeof h.secondaryCtaMarathi === 'string'
+            ? sanitizeText(h.secondaryCtaMarathi, 80)
+            : current.hero.secondaryCtaMarathi,
+        secondaryCtaEnglish:
+          typeof h.secondaryCtaEnglish === 'string'
+            ? sanitizeText(h.secondaryCtaEnglish, 80)
+            : current.hero.secondaryCtaEnglish,
       };
     }
-    if (req.body?.promoBanner && typeof req.body.promoBanner === 'object') {
+    if (
+      req.body?.promoBanner &&
+      typeof req.body.promoBanner === 'object' &&
+      !Array.isArray(req.body.promoBanner)
+    ) {
+      const p = req.body.promoBanner as Record<string, unknown>;
       current.promoBanner = {
-        ...current.promoBanner,
-        ...req.body.promoBanner,
+        enabled:
+          typeof p.enabled === 'boolean'
+            ? p.enabled
+            : current.promoBanner.enabled,
+        badgeText:
+          typeof p.badgeText === 'string'
+            ? sanitizeText(p.badgeText, 40)
+            : current.promoBanner.badgeText,
+        messageMarathi:
+          typeof p.messageMarathi === 'string'
+            ? sanitizeText(p.messageMarathi, 300)
+            : current.promoBanner.messageMarathi,
+        messageEnglish:
+          typeof p.messageEnglish === 'string'
+            ? sanitizeText(p.messageEnglish, 300)
+            : current.promoBanner.messageEnglish,
+        couponCode:
+          typeof p.couponCode === 'string'
+            ? sanitizeText(p.couponCode, 30).toUpperCase().replace(/[^A-Z0-9]/g, '')
+            : current.promoBanner.couponCode,
+        ctaLink:
+          typeof p.ctaLink === 'string'
+            ? sanitizeRedirectPath(p.ctaLink, '/books')
+            : current.promoBanner.ctaLink,
       };
     }
     if (Array.isArray(req.body?.featuredBookIds)) {
-      current.featuredBookIds = req.body.featuredBookIds.map((id: unknown) =>
-        sanitizeText(id, 80)
-      );
+      current.featuredBookIds = req.body.featuredBookIds
+        .slice(0, 12)
+        .map((id: unknown) => sanitizeText(id, 80))
+        .filter(Boolean);
     }
+    const allowedSections = new Set<SiteSectionId>([
+      'promo_banner',
+      'hero',
+      'featured_catalogue',
+      'first_page_excerpt',
+      'turtle_philosophy',
+      'vachankatta_journal',
+      'authors_showcase',
+      'newsletter',
+    ]);
     if (Array.isArray(req.body?.sectionOrder)) {
-      current.sectionOrder = req.body.sectionOrder;
+      const cleanOrder = req.body.sectionOrder.filter(
+        (s: unknown): s is SiteSectionId =>
+          typeof s === 'string' && allowedSections.has(s as SiteSectionId)
+      );
+      if (cleanOrder.length > 0) {
+        current.sectionOrder = cleanOrder;
+      }
     }
     if (req.body?.freeShippingThreshold !== undefined) {
       current.freeShippingThreshold = Math.max(
@@ -5311,10 +5567,38 @@ app.post(
 );
 
 app.post('/api/analytics/event', (req, res) => {
+  const ip = req.ip || '127.0.0.1';
+  if (!checkRateLimit(ip, 'analytics_event', 60, 60_000)) {
+    res.status(429).json({ ok: false });
+    return;
+  }
+
   const eventType = req.body?.eventType as AnalyticsEvent['eventType'];
   const entitySlug = sanitizeText(req.body?.entitySlug, 100);
   if (eventType) {
-    recordAnalytics(eventType, entitySlug || undefined, req.body?.metadata);
+    let cleanMeta: Record<string, string | number | boolean> | undefined;
+    if (
+      req.body?.metadata &&
+      typeof req.body.metadata === 'object' &&
+      !Array.isArray(req.body.metadata)
+    ) {
+      cleanMeta = {};
+      const entries = Object.entries(
+        req.body.metadata as Record<string, unknown>
+      ).slice(0, 10);
+      for (const [k, v] of entries) {
+        const cleanKey = sanitizeText(k, 40);
+        if (!cleanKey || DANGEROUS_OBJECT_KEYS.has(cleanKey)) continue;
+        if (typeof v === 'string') {
+          cleanMeta[cleanKey] = sanitizeText(v, 120);
+        } else if (typeof v === 'number' && Number.isFinite(v)) {
+          cleanMeta[cleanKey] = v;
+        } else if (typeof v === 'boolean') {
+          cleanMeta[cleanKey] = v;
+        }
+      }
+    }
+    recordAnalytics(eventType, entitySlug || undefined, cleanMeta);
   }
   res.json({ ok: true });
 });

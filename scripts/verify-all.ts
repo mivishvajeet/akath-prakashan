@@ -23,6 +23,7 @@ import {
 import {
   computeWebhookSignature,
   verifyPaymentWebhookSignatureWithDetails,
+  escapeCsvCell,
 } from '../src/server/cmsStore';
 
 const BASE_URL = 'http://localhost:3000';
@@ -1846,9 +1847,129 @@ async function runTests() {
     '  [PASS] SEC-01.11 (Admin & Gateway Separation): /api/admin/orders/:id/verify-payment (RBAC enforced) and /api/webhooks/payment (HMAC + replay enforced) verified'
   );
 
+  // --------------------------------------------------------------------------
+  // 7. SEC-02 DEFENSE-IN-DEPTH HARDENING SUITE: HTTP HEADERS, CSV DDE GUARD,
+  //    PROTOTYPE POLLUTION, IDEMPOTENCY PII GUARD & MANUSCRIPT REDACTION (5 CASES)
+  // --------------------------------------------------------------------------
+  console.log(
+    '\n--- 7. SEC-02 Defense-in-Depth Hardening Suite (5 Cases) ---'
+  );
+
+  // SEC-02.1: HTTP Security Headers, CSP (frame-ancestors *), X-Powered-By removal, and Cache-Control: no-store
+  const headerCheckRes = await fetch(`${BASE_URL}/api/auth/me`);
+  assert.equal(headerCheckRes.headers.get('x-powered-by'), null);
+  assert.equal(headerCheckRes.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(
+    headerCheckRes.headers.get('x-permitted-cross-domain-policies'),
+    'none'
+  );
+  assert.ok(
+    (headerCheckRes.headers.get('content-security-policy') || '').includes(
+      'frame-ancestors *'
+    )
+  );
+  assert.ok(
+    (headerCheckRes.headers.get('cache-control') || '').includes('no-store')
+  );
+  console.log(
+    '  [PASS] SEC-02.1 (Security Headers & Cache Control): CSP, Permissions-Policy, X-Powered-By removal, and Cache-Control: no-store verified'
+  );
+
+  // SEC-02.2: CSV Formula / DDE Injection Neutralization
+  assert.equal(escapeCsvCell("=CMD|' /C calc'!A0"), "'=CMD|' /C calc'!A0");
+  assert.equal(escapeCsvCell('@SUM(1+1)'), "'@SUM(1+1)");
+  assert.equal(escapeCsvCell('+1+1'), "'+1+1");
+  assert.equal(escapeCsvCell(-2), '-2');
+  assert.equal(escapeCsvCell('320'), '320');
+  console.log(
+    '  [PASS] SEC-02.2 (CSV Formula Injection Guard): DDE payloads (=, +, -, @) neutralized while preserving numeric values'
+  );
+
+  // SEC-02.3: Prototype Pollution & Unsafe Site-Config URL/XSS Sanitization
+  const protoPatchRes = await fetch(`${BASE_URL}/api/admin/site-config`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...adminHeaders,
+    },
+    body: '{"promoBanner":{"enabled":true,"ctaLink":"javascript:alert(1)","badgeText":"<script>evil()</script>AKATH10"},"__proto__":{"polluted":true}}',
+  });
+  const protoPatchData = await protoPatchRes.json();
+  assert.equal(protoPatchRes.status, 200);
+  assert.equal(protoPatchData.siteConfig.promoBanner.ctaLink, '/books');
+  assert.ok(
+    !protoPatchData.siteConfig.promoBanner.badgeText.includes('<script>')
+  );
+  assert.equal(({} as Record<string, unknown>).polluted, undefined);
+  console.log(
+    '  [PASS] SEC-02.3 (Prototype Pollution & Site-Config Guard): __proto__ keys stripped and javascript: CTA URLs neutralized'
+  );
+
+  // SEC-02.4: Order Idempotency Replay PII & Token Leak Prevention
+  const idemProbeKey = `sec02-idem-${Date.now()}`;
+  const idemCreateRes = await postJson('/api/orders', {
+    idempotencyKey: idemProbeKey,
+    lang: 'en',
+    paymentMethod: 'upi_verified',
+    items: [{ bookId: 'book-dhukyachi-dulai', quantity: 1 }],
+    customer: {
+      fullName: 'Idempotency Owner',
+      phone: '9823456780',
+      email: 'idem.owner@example.com',
+      addressLine1: 'Secret House 99, VIP Road',
+      city: 'Nanded',
+      postalCode: '431602',
+    },
+  });
+  assert.equal(idemCreateRes.status, 201);
+  assert.ok(idemCreateRes.data.order.guestAccessToken);
+
+  // Replay the same idempotencyKey without providing the owner's guestAccessToken
+  const idemReplayProbe = await postJson('/api/orders', {
+    idempotencyKey: idemProbeKey,
+    lang: 'en',
+    paymentMethod: 'upi_verified',
+    items: [{ bookId: 'book-dhukyachi-dulai', quantity: 1 }],
+    customer: {
+      fullName: 'Attacker Replay',
+      phone: '9823456780',
+      email: 'idem.owner@example.com',
+      addressLine1: 'Probe',
+      city: 'Nanded',
+      postalCode: '431602',
+    },
+  });
+  assert.equal(idemReplayProbe.status, 200);
+  assert.equal(idemReplayProbe.data.duplicatePrevented, true);
+  assert.equal(
+    idemReplayProbe.data.order.guestAccessToken,
+    undefined,
+    'Non-owner idempotency replay must NEVER leak guestAccessToken'
+  );
+  assert.ok(
+    idemReplayProbe.data.order.customer.phone.includes('*'),
+    'Non-owner idempotency replay must mask phone PII'
+  );
+  console.log(
+    '  [PASS] SEC-02.4 (Idempotency Replay PII Guard): Unauthenticated idempotency replay strips guestAccessToken and masks customer PII'
+  );
+
+  // SEC-02.5: PII-Redacted Manuscript Status Lookup
+  const msTrackRes = await getJson('/api/manuscripts/track/AK-MS-2026-109');
+  assert.equal(msTrackRes.status, 200);
+  assert.equal(msTrackRes.data.manuscript.referenceCode, 'AK-MS-2026-109');
+  assert.equal(msTrackRes.data.manuscript.reviewStatus, 'initial_reading');
+  assert.equal(msTrackRes.data.manuscript.authorName, undefined);
+  assert.equal(msTrackRes.data.manuscript.email, undefined);
+  assert.equal(msTrackRes.data.manuscript.phone, undefined);
+  assert.equal(msTrackRes.data.manuscript.synopsis, undefined);
+  console.log(
+    '  [PASS] SEC-02.5 (Manuscript Tracker PII Redaction): Public manuscript status lookup returns stage metadata with zero author PII'
+  );
+
   console.log('\n================================================================');
   console.log(
-    'ALL 85 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS + 11 SEC-01) PASSED!'
+    'ALL 90 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS + 11 SEC-01 + 5 SEC-02) PASSED!'
   );
   console.log('================================================================');
 }

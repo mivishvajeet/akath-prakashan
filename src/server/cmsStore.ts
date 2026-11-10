@@ -11,12 +11,39 @@ import {
 } from '../types/publishing';
 import { generateOpaqueToken } from './authStore';
 
-export const PAYMENT_WEBHOOK_SECRET =
-  process.env.PAYMENT_WEBHOOK_SECRET?.trim() ||
-  'whsec_akath_dev_hmac_secret_2026';
+function resolvePaymentWebhookSecret(): string {
+  const fromEnv = process.env.PAYMENT_WEBHOOK_SECRET?.trim();
+  if (
+    fromEnv &&
+    fromEnv.length >= 16 &&
+    fromEnv !== 'replace-with-strong-webhook-secret'
+  ) {
+    return fromEnv;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    return crypto.randomBytes(32).toString('hex');
+  }
+  return 'whsec_akath_dev_hmac_secret_2026';
+}
+
+export const PAYMENT_WEBHOOK_SECRET = resolvePaymentWebhookSecret();
 
 export const WEBHOOK_TOLERANCE_MS = 5 * 60 * 1000; // 5 minutes replay window
 export const processedWebhookCache = new Map<string, number>();
+const MAX_WEBHOOK_CACHE_ENTRIES = 5000;
+
+function pruneWebhookReplayCache(now: number, maxAgeMs: number): void {
+  if (processedWebhookCache.size < MAX_WEBHOOK_CACHE_ENTRIES) return;
+  for (const [k, ts] of processedWebhookCache.entries()) {
+    if (now - ts >= maxAgeMs) {
+      processedWebhookCache.delete(k);
+    }
+  }
+  if (processedWebhookCache.size >= MAX_WEBHOOK_CACHE_ENTRIES) {
+    const oldestKey = processedWebhookCache.keys().next().value;
+    if (oldestKey) processedWebhookCache.delete(oldestKey);
+  }
+}
 
 export function computeWebhookSignature(
   rawPayload: string,
@@ -118,9 +145,11 @@ export function verifyPaymentWebhookSignatureWithDetails(
       : `sig:${cleanSig.toLowerCase()}`;
     const existingTs = processedWebhookCache.get(replayKey);
     const now = Date.now();
-    if (existingTs && now - existingTs < toleranceMs * 12) {
+    const maxReplayAge = toleranceMs * 12;
+    if (existingTs && now - existingTs < maxReplayAge) {
       return { valid: false, reason: 'replayed_event' };
     }
+    pruneWebhookReplayCache(now, maxReplayAge);
     processedWebhookCache.set(replayKey, now);
   }
 
@@ -446,8 +475,25 @@ export function parseCsvLine(line: string): string[] {
 }
 
 export function escapeCsvCell(val: unknown): string {
-  const str = val === null || val === undefined ? '' : String(val);
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'number' || typeof val === 'boolean') {
+    return String(val);
+  }
+  let str = String(val);
+  // Neutralize CSV formula / DDE spreadsheet injection (=, +, -, @, tab, CR)
+  // while allowing plain numeric strings (e.g., "-2" or "320")
+  if (
+    /^[=+\-@\t\r]/.test(str) &&
+    !/^[+-]?\d+(\.\d+)?$/.test(str.trim())
+  ) {
+    str = `'${str}`;
+  }
+  if (
+    str.includes(',') ||
+    str.includes('"') ||
+    str.includes('\n') ||
+    str.includes('\r')
+  ) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
