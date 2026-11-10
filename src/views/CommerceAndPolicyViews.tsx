@@ -1295,15 +1295,37 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                     </div>
 
                     <div className="pt-2 space-y-3">
-                      <label className="inline-flex items-center gap-2.5 text-[14px] text-slate-800 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isInstitutionalOrder}
-                          onChange={(e) => setIsInstitutionalOrder(e.target.checked)}
-                          className="w-4 h-4 rounded accent-slate-900"
-                        />
-                        <span>{t.checkout.institutionalToggle}</span>
-                      </label>
+                      <div className="flex flex-wrap items-center gap-6">
+                        <label className="inline-flex items-center gap-2.5 text-[14px] text-slate-800 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={isInstitutionalOrder}
+                            onChange={(e) => setIsInstitutionalOrder(e.target.checked)}
+                            className="w-4 h-4 rounded accent-slate-900"
+                          />
+                          <span>{t.checkout.institutionalToggle}</span>
+                        </label>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const giftPrefix =
+                              lang === 'mr'
+                                ? '[भेटप्रत व साहित्यिक बुकमार्क सह] स्नेहपूर्वक भेट: '
+                                : '[Include Complimentary Literary Gift Bookmark] Gift Note: ';
+                            if (!orderNotes.includes(giftPrefix)) {
+                              setOrderNotes((prev) =>
+                                prev ? `${giftPrefix}${prev}` : giftPrefix
+                              );
+                            }
+                          }}
+                          className="text-[13px] font-semibold text-[#243B8A] hover:underline cursor-pointer"
+                        >
+                          {lang === 'mr'
+                            ? '+ भेटप्रत बुकमार्क व शुभेच्छा संदेश जोडा (मोफत)'
+                            : '+ Add Complimentary Literary Gift Bookmark & Note'}
+                        </button>
+                      </div>
 
                       {isInstitutionalOrder && (
                         <div>

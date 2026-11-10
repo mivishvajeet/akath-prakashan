@@ -768,7 +768,20 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
   const [leadingScale, setLeadingScale] = useState<
     'compact' | 'adaptive' | 'spacious'
   >('adaptive');
+  const [readingSurface, setReadingSurface] = useState<
+    'cream' | 'sepia' | 'ink'
+  >('cream');
+  const [copiedQuoteKey, setCopiedQuoteKey] = useState<string | null>(null);
   const lastScrollYRef = useRef<number>(0);
+
+  const handleCopyPullQuote = (quoteText: string, key: string) => {
+    const formatted = `“${quoteText}” — ${article.title} (${article.contributorName}, अकथ प्रकाशन वाचनकट्टा)`;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(formatted).catch(() => {});
+    }
+    setCopiedQuoteKey(key);
+    window.setTimeout(() => setCopiedQuoteKey(null), 2200);
+  };
 
   const isImmersiveActive =
     immersivePreference === 'on' ||
@@ -943,6 +956,34 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
               </span>
             </button>
 
+            {/* Reading Comfort Surface Switcher (Cream / Sepia / Ink) */}
+            <div
+              role="group"
+              aria-label="Reading Paper Theme"
+              className="inline-flex items-center gap-1 p-0.5 rounded-lg bg-[#F7F3E8] border border-[#E6DFCE]"
+            >
+              {(
+                [
+                  { id: 'cream', label: lang === 'mr' ? 'कागद' : 'Cream' },
+                  { id: 'sepia', label: lang === 'mr' ? 'सेपिया' : 'Sepia' },
+                  { id: 'ink', label: lang === 'mr' ? 'रात्र' : 'Night' },
+                ] as const
+              ).map((surf) => (
+                <button
+                  key={surf.id}
+                  type="button"
+                  onClick={() => setReadingSurface(surf.id)}
+                  className={`px-2 py-1 rounded-md text-[11.5px] font-medium transition-colors cursor-pointer ${
+                    readingSurface === surf.id
+                      ? 'bg-[#243B8A] text-[#FFFDF7]'
+                      : 'text-[#5A5F72] hover:text-[#252832]'
+                  }`}
+                >
+                  {surf.label}
+                </button>
+              ))}
+            </div>
+
             <button
               type="button"
               data-testid="immersive-reading-toggle"
@@ -974,39 +1015,45 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35 }}
-              className="bg-white rounded-3xl border border-[#E6DFCE] p-6 sm:p-10 lg:p-12"
+              className={`rounded-3xl border p-6 sm:p-10 lg:p-12 transition-colors duration-200 ${
+                readingSurface === 'ink'
+                  ? 'bg-[#18181B] text-[#F4EFE4] border-[#27272A]'
+                  : readingSurface === 'sepia'
+                  ? 'bg-[#F3EAD8] text-[#1C1917] border-[#D6C7AE]'
+                  : 'bg-white text-[#252832] border-[#E6DFCE]'
+              }`}
             >
-              <header className="space-y-4 border-b border-[#E6DFCE] pb-8 mb-8">
+              <header className="space-y-4 border-b border-current/15 pb-8 mb-8">
                 <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-[#243B8A]">
                   <span>{article.categoryMarathi}</span>
                   <span aria-hidden="true">·</span>
-                  <span className="text-[#5A5F72] font-normal">
+                  <span className="opacity-75 font-normal">
                     {article.publishedAt}
                   </span>
                   <span aria-hidden="true">·</span>
-                  <span className="text-[#5A5F72] font-normal">
+                  <span className="opacity-75 font-normal">
                     {article.readingTimeMinutes} {t.vachankatta.readingTime}
                   </span>
                 </div>
 
-                <h1 className="type-article-headline text-[#252832]">
+                <h1 className="type-article-headline">
                   {article.title}
                 </h1>
 
-                <p className="font-serif text-[20px] text-[#5A5F72] leading-[1.65]">
+                <p className="font-serif text-[20px] opacity-80 leading-[1.65]">
                   {article.subtitle}
                 </p>
 
-                <div className="pt-3 flex flex-wrap items-center justify-between gap-4 text-[14px] text-[#5A5F72]">
+                <div className="pt-3 flex flex-wrap items-center justify-between gap-4 text-[14px] opacity-80">
                   <div>
-                    <span className="font-bold text-[#252832]">
+                    <span className="font-bold">
                       {article.contributorName}
                     </span>{' '}
                     — {article.contributorRole}
                   </div>
                   <span
                     data-testid="article-dynamic-lh-readout"
-                    className="font-mono text-[12px] text-[#5A5F72] tabular-nums"
+                    className="font-mono text-[12px] tabular-nums"
                   >
                     {viewportWidth}px · LH {dynamicLineHeight}
                   </span>
@@ -1017,7 +1064,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
               <p
                 data-testid="article-lead-paragraph"
                 style={{ lineHeight: dynamicLineHeight }}
-                className="font-serif text-[19px] sm:text-[21px] text-[#252832] mb-8 transition-[line-height] duration-300"
+                className="font-serif text-[19px] sm:text-[21px] mb-8 transition-[line-height] duration-300"
               >
                 {article.leadParagraph}
               </p>
@@ -1026,12 +1073,12 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
               <div
                 data-testid="article-immersive-prose"
                 style={{ lineHeight: dynamicLineHeight }}
-                className="space-y-10 prose-marathi-immersive text-[#252832]"
+                className="space-y-10 prose-marathi-immersive"
               >
                 {article.sections.map((sec) => (
                   <section key={sec.id} id={`section-${sec.id}`} className="space-y-5">
                     {sec.heading && (
-                      <h2 className="type-section-heading text-[#252832] pt-2">
+                      <h2 className="type-section-heading pt-2">
                         {sec.heading}
                       </h2>
                     )}
@@ -1041,8 +1088,23 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
                       </p>
                     ))}
                     {sec.pullQuote && (
-                      <blockquote className="my-8 bg-[#FFD966]/20 border border-[#FFD966] rounded-2xl p-6 font-serif text-[21px] text-[#252832] leading-[1.65]">
-                        “{sec.pullQuote}”
+                      <blockquote className="my-8 bg-[#FFD966]/20 border border-[#FFD966] rounded-2xl p-6 font-serif text-[21px] leading-[1.65] space-y-3">
+                        <p>“{sec.pullQuote}”</p>
+                        <div className="flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => handleCopyPullQuote(sec.pullQuote!, sec.id)}
+                            className="text-[12px] font-mono font-semibold text-[#243B8A] hover:underline cursor-pointer"
+                          >
+                            {copiedQuoteKey === sec.id
+                              ? lang === 'mr'
+                                ? '✓ अवतरण कॉपी झाले'
+                                : '✓ Quote Copied'
+                              : lang === 'mr'
+                              ? 'अवतरण शेअर / कॉपी करा'
+                              : 'Copy Literary Quote'}
+                          </button>
+                        </div>
                       </blockquote>
                     )}
                   </section>

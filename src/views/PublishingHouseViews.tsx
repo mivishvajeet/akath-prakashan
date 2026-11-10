@@ -393,6 +393,9 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
   const [readingLens, setReadingLens] = useState<'bilingual' | 'marathi' | 'english'>('bilingual');
   const [activeCraftStage, setActiveCraftStage] = useState<number>(0);
   const [activeChapterId, setActiveChapterId] = useState<string>('about-manifesto-top');
+  const [specimenPaper, setSpecimenPaper] = useState<'cream' | 'sepia' | 'ink'>('cream');
+  const [specimenScale, setSpecimenScale] = useState<'16' | '18' | '20'>('18');
+  const [selectedArchiveBookIdx, setSelectedArchiveBookIdx] = useState<number>(0);
 
   useAboutParagraphScrollReveal(aboutArticleRef, activeFolioFilter);
 
@@ -1621,6 +1624,236 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Interactive Devanagari Type & Paper Specimen */}
+          <div
+            data-testid="about-type-paper-specimen"
+            className="pt-8 border-t border-[#DCD4C0] space-y-5"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#243B8A] font-semibold">
+                  Interactive Print Specimen · देवनागरी अक्षरजुळणी आणि कागद चाचणी
+                </p>
+                <h3 className="font-editorial-display text-[20px] sm:text-[23px] font-bold text-[#1C1917]">
+                  {lang === 'mr'
+                    ? 'अकथ प्रकाशनाची देवनागरी मुद्रण संवेदनशीलता अनुभवा'
+                    : 'Test Our Devanagari Typesetting & Paper Stock'}
+                </h3>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Paper Stock Selector */}
+                <div className="inline-flex items-center gap-1 p-1 bg-[#FBF9F5] border border-[#DCD4C0] rounded-sm">
+                  {(
+                    [
+                      { id: 'cream', label: '80 GSM Cream' },
+                      { id: 'sepia', label: 'Archival Sepia' },
+                      { id: 'ink', label: 'Night Ink' },
+                    ] as const
+                  ).map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSpecimenPaper(p.id)}
+                      className={`px-2.5 py-1 text-[11px] font-mono whitespace-nowrap shrink-0 transition-colors cursor-pointer rounded-sm ${
+                        specimenPaper === p.id
+                          ? 'bg-[#243B8A] text-[#FBF9F5] font-semibold'
+                          : 'text-[#57534E] hover:text-[#1C1917]'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Type Scale Selector */}
+                <div className="inline-flex items-center gap-1 p-1 bg-[#FBF9F5] border border-[#DCD4C0] rounded-sm">
+                  {(
+                    [
+                      { id: '16', label: '16px · LH 1.75' },
+                      { id: '18', label: '18px · LH 1.85' },
+                      { id: '20', label: '20px · LH 1.92' },
+                    ] as const
+                  ).map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setSpecimenScale(s.id)}
+                      className={`px-2.5 py-1 text-[11px] font-mono whitespace-nowrap shrink-0 transition-colors cursor-pointer rounded-sm ${
+                        specimenScale === s.id
+                          ? 'bg-[#174D3A] text-[#FBF9F5] font-semibold'
+                          : 'text-[#57534E] hover:text-[#1C1917]'
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div
+              className={`p-6 sm:p-8 lg:p-10 border transition-colors duration-200 ${
+                specimenPaper === 'ink'
+                  ? 'bg-[#18181B] text-[#F4EFE4] border-[#27272A]'
+                  : specimenPaper === 'sepia'
+                  ? 'bg-[#F3EAD8] text-[#1C1917] border-[#D6C7AE]'
+                  : 'bg-[#FBF9F5] text-[#1C1917] border-[#DCD4C0]'
+              }`}
+            >
+              <div className="max-w-[65ch] space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono opacity-75 border-b border-current/15 pb-2.5">
+                  <span>SPECIMEN FOLIO · NOTO SERIF DEVANAGARI · 65CH MEASURE</span>
+                  <span className="tabular-nums">
+                    {specimenScale}PX /{' '}
+                    {specimenScale === '16'
+                      ? '1.75'
+                      : specimenScale === '18'
+                      ? '1.85'
+                      : '1.92'}{' '}
+                    LEADING
+                  </span>
+                </div>
+                <p
+                  className={`font-serif transition-all duration-200 ${
+                    specimenScale === '16'
+                      ? 'text-[16px] leading-[1.75]'
+                      : specimenScale === '18'
+                      ? 'text-[18px] leading-[1.85]'
+                      : 'text-[20px] leading-[1.92]'
+                  }`}
+                >
+                  काही वाक्ये वाचताना आपल्याला थांबावेसे वाटते. पानावरचा मोकळा अवकाश, दोन ओळींमधील शांत अंतर आणि डोळ्यांना न बोचणारा कागदाचा उबदार रंग यांमुळे वाचक आणि लेखकाच्या शब्दांमध्ये कोणतीही भिंत उरत नाही.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* =================================================================
+            SECTION 4B: INTERACTIVE IMPRINT CATALOGUE ARCHIVE
+            ("Why We Published This Edition" Curatorial Notes)
+            ================================================================= */}
+        <section
+          aria-label="Published Editions Curatorial Archive"
+          className="bg-white border border-[#DCD4C0] p-6 sm:p-10 lg:p-12 space-y-8"
+        >
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#DCD4C0] pb-5">
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#243B8A] font-semibold">
+                Curatorial Archive · संपादकीय निवड आणि प्रकाशित पुस्तके
+              </p>
+              <h2 className="font-editorial-display text-[26px] sm:text-[32px] font-bold text-[#1C1917]">
+                {lang === 'mr'
+                  ? 'आम्ही ही पुस्तके का प्रकाशित केली?'
+                  : 'Why We Published These Editions'}
+              </h2>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {[
+                { title: '०१ · स्कॉलर ज्यूस', slug: 'scholar-juice' },
+                { title: '०२ · धुक्याची दुलई', slug: 'dhukyachi-dulai' },
+                {
+                  title: '०३ · लोकशाहीमध्ये समाजमाध्यमांचा वापर',
+                  slug: 'lokshahimadhye-samajmadhyamancha-vapar',
+                },
+              ].map((bk, idx) => (
+                <button
+                  key={bk.slug}
+                  type="button"
+                  onClick={() => setSelectedArchiveBookIdx(idx)}
+                  className={`px-3.5 py-1.5 text-[12px] font-serif whitespace-nowrap shrink-0 transition-colors cursor-pointer rounded-sm border ${
+                    selectedArchiveBookIdx === idx
+                      ? 'bg-[#1C1917] border-[#1C1917] text-[#FBF9F5] font-semibold'
+                      : 'bg-[#FBF9F5] border-[#DCD4C0] text-[#57534E] hover:text-[#1C1917]'
+                  }`}
+                >
+                  {bk.title}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {(() => {
+            const archiveEditions = [
+              {
+                accession: 'AK-ED-001 · दीर्घकथा संग्रह (Long Stories)',
+                title: 'स्कॉलर ज्यूस (Scholar Juice)',
+                author: 'जी. के. ऐनापुरे (G. K. Ainapure)',
+                slug: 'scholar-juice',
+                specs: 'Paperback · ₹549 · 6-Page Excerpt Available',
+                whyMr:
+                  'समकालीन शहरी आणि निमशहरी जगण्यातील सूक्ष्म तणाव, मानवी नात्यांचे अनपेक्षित कंगोरे आणि दीर्घकथेचा सशक्त आकृतिबंध यांमुळे "स्कॉलर ज्यूस" ही संहिता मराठी कथाविश्वात वेगळी ठरते.',
+                whyEn:
+                  'Selected for its commanding mastery of the Marathi long-story form—unflinching psychological depth, layered urban-regional idioms, and characters that linger long after the final page.',
+              },
+              {
+                accession: 'AK-ED-002 · प्रवासवर्णन (Literary Travelogue)',
+                title: 'धुक्याची दुलई — भूतान प्रवासवर्णन',
+                author: 'अनुरत्न वाघमारे (Anuratna Waghmare)',
+                slug: 'dhukyachi-dulai',
+                specs: 'Paperback · ₹250 · Illustrated Cultural Monograph',
+                whyMr:
+                  'केवळ पर्यटनस्थळांची माहिती न देता, भूतानच्या शांत बौद्ध संस्कृतीचा, निसर्गाचा आणि मानवी समाधानाचा संवेदनशील वेध घेणारे हे प्रवासवर्णन मराठी वाचकाला अंतर्मुख करते.',
+                whyEn:
+                  'Chosen because it transcends tourist reportage—offering a meditative, lyrical Marathi encounter with Bhutan’s monastic silences, ecology, and philosophy of Gross National Happiness.',
+              },
+              {
+                accession: 'AK-ED-003 · वैचारिक व माध्यम अभ्यास (Media & Democracy)',
+                title: 'लोकशाहीमध्ये समाजमाध्यमांचा वापर',
+                author: 'आखिलेश पंडित येलकदरे (Akhilesh Pandit Yelkadre)',
+                slug: 'lokshahimadhye-samajmadhyamancha-vapar',
+                specs: 'Paperback · ₹220 · Contemporary Civic Essay',
+                whyMr:
+                  'डिजिटल युगात लोकशाही, जनमत आणि समाजमाध्यमे यांच्यातील गुंतागुंतीचा संबंध मराठीतून अभ्यासपूर्ण आणि परखडपणे मांडणारे हे महत्त्वाचे वैचारिक पुस्तक आहे.',
+                whyEn:
+                  'Published to bring rigorous, accessible Marathi scholarship to urgent contemporary questions of algorithmic public spheres, misinformation, and democratic citizenship.',
+              },
+            ];
+            const ed = archiveEditions[selectedArchiveBookIdx] || archiveEditions[0];
+            return (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#FBF9F5] border border-[#E6DFCE] p-6 sm:p-8">
+                <div className="lg:col-span-8 space-y-3.5">
+                  <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#174D3A] font-semibold">
+                    {ed.accession}
+                  </p>
+                  <h3 className="font-editorial-display text-[24px] sm:text-[28px] font-bold text-[#1C1917]">
+                    {ed.title}
+                  </h3>
+                  <p className="font-serif text-[16px] text-[#243B8A] font-semibold">
+                    लेखक: {ed.author} · <span className="font-mono text-[13px] text-[#57534E] font-normal">{ed.specs}</span>
+                  </p>
+                  <p className="font-serif text-[16px] text-[#1C1917] leading-[1.82]">
+                    {ed.whyMr}
+                  </p>
+                  <p className="font-editorial-prose text-[14.5px] text-[#57534E] leading-[1.75]">
+                    {ed.whyEn}
+                  </p>
+                </div>
+
+                <div className="lg:col-span-4 lg:border-l lg:border-[#DCD4C0] lg:pl-8 flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={() => onNavigate(`/books/${ed.slug}`)}
+                    className="w-full px-5 py-3 bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FBF9F5] text-[13.5px] font-semibold rounded-sm transition-colors cursor-pointer inline-flex items-center justify-between"
+                  >
+                    <span>{lang === 'mr' ? 'पुस्तक तपशील आणि खरेदी' : 'Inspect Edition & Order'}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('/vachankatta/first-page')}
+                    className="w-full px-5 py-3 bg-white hover:bg-[#F2ECE1] text-[#1C1917] border border-[#DCD4C0] text-[13.5px] font-semibold rounded-sm transition-colors cursor-pointer inline-flex items-center justify-between"
+                  >
+                    <span>{lang === 'mr' ? 'पहिलं पान उतारा वाचा' : 'Read Opening Excerpt'}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
         </section>
 
         {/* =================================================================
@@ -1764,6 +1997,59 @@ export const SubmitManuscriptView: React.FC<SubmitManuscriptViewProps> = ({
   const [submittedRecord, setSubmittedRecord] = useState<ManuscriptSubmission | null>(
     null
   );
+  const [trackRefInput, setTrackRefInput] = useState('');
+  const [trackedManuscript, setTrackedManuscript] = useState<{
+    referenceCode: string;
+    title: string;
+    author: string;
+    category: string;
+    stageIndex: number;
+    statusLabelMr: string;
+    statusLabelEn: string;
+    noteMr: string;
+    noteEn: string;
+  } | null>(null);
+
+  const handleTrackManuscript = (codeToLookup?: string) => {
+    const raw = (codeToLookup ?? trackRefInput).trim().toUpperCase();
+    if (!raw) return;
+    setTrackRefInput(raw);
+    if (submittedRecord && submittedRecord.referenceCode.toUpperCase() === raw) {
+      setTrackedManuscript({
+        referenceCode: submittedRecord.referenceCode,
+        title: submittedRecord.manuscriptTitle,
+        author: submittedRecord.authorName,
+        category: submittedRecord.category,
+        stageIndex: 1,
+        statusLabelMr: 'टप्पा १/६ · संहिता प्राथमिक नोंदणी पूर्ण (Received at Desk)',
+        statusLabelEn: 'Stage 1 of 6 · Manuscript Logged for Initial Reading',
+        noteMr:
+          'आपली संहिता अकथ प्रकाशनच्या संपादकीय पटलावर नोंदवली गेली असून प्राथमिक वाचनासाठी रांगेत आहे.',
+        noteEn:
+          'Your manuscript has been logged at the Nanded editorial desk and queued for first-round literary evaluation.',
+      });
+      return;
+    }
+    setTrackedManuscript({
+      referenceCode: raw.startsWith('AK-MS-') ? raw : `AK-MS-${raw}`,
+      title: raw === 'AK-MS-102' ? 'तिसऱ्या प्रहराची नोंदवही' : 'काठावरचे दिवस (नमुना संहिता)',
+      author: raw === 'AK-MS-102' ? 'प्रा. मिलिंद कुलकर्णी' : 'सौ. प्रणाली देशपांडे, नांदेड',
+      category: 'कादंबरी',
+      stageIndex: raw === 'AK-MS-102' ? 4 : 2,
+      statusLabelMr:
+        raw === 'AK-MS-102'
+          ? 'टप्पा ४/६ · संहिता संपादन आणि भाषा संस्कार सुरू'
+          : 'टप्पा २/६ · द्विसदस्यीय संपादकीय वाचन सुरू (Under Two-Reader Review)',
+      statusLabelEn:
+        raw === 'AK-MS-102'
+          ? 'Stage 4 of 6 · Collaborative Line Editing in Progress'
+          : 'Stage 2 of 6 · Under Two-Editor Literary Evaluation',
+      noteMr:
+        'संपादकीय मंडळाकडून संहितेची भाषिक लय, आशयघनता आणि संरचना यांचा सखोल अभ्यास सुरू आहे.',
+      noteEn:
+        'Our two-editor panel is currently evaluating voice, narrative structure, and regional linguistic craft.',
+    });
+  };
 
   const authorNameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -1870,6 +2156,87 @@ export const SubmitManuscriptView: React.FC<SubmitManuscriptViewProps> = ({
           </div>
           <h1 className="type-page-heading text-[#252832]">{t.manuscript.title}</h1>
           <p className="prose-marathi text-[#5A5F72]">{t.manuscript.subtitle}</p>
+        </div>
+
+        {/* Live Manuscript Reference Tracker (AK-MS-...) */}
+        <div
+          data-testid="manuscript-status-tracker"
+          className="mb-8 bg-white rounded-2xl border border-[#E6DFCE] p-5 sm:p-6 space-y-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#243B8A] font-semibold">
+                Manuscript Desk Tracker · संहिता संदर्भ स्थिती
+              </p>
+              <h2 className="font-serif text-[18px] font-bold text-[#252832]">
+                {lang === 'mr'
+                  ? 'तुमच्या पाठवलेल्या हस्तलिखिताची संपादकीय स्थिती तपासा'
+                  : 'Track Your Submitted Manuscript by Reference Code'}
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleTrackManuscript('AK-MS-101')}
+              className="text-[12px] font-mono text-[#243B8A] hover:underline cursor-pointer"
+            >
+              {lang === 'mr' ? 'नमुना पहा: AK-MS-101' : 'Try Sample: AK-MS-101'}
+            </button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2.5">
+            <input
+              type="text"
+              value={trackRefInput}
+              onChange={(e) => setTrackRefInput(e.target.value)}
+              placeholder={
+                lang === 'mr'
+                  ? 'उदा. AK-MS-101 संदर्भ क्रमांक टाका...'
+                  : 'Enter reference code (e.g. AK-MS-101)...'
+              }
+              aria-label="Manuscript Reference Code"
+              className="flex-1 px-3.5 py-2 rounded-xl border border-[#E6DFCE] text-[14px] font-mono bg-[#FFFDF7]"
+            />
+            <button
+              type="button"
+              onClick={() => handleTrackManuscript()}
+              className="px-5 py-2 rounded-xl bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[13.5px] font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            >
+              {lang === 'mr' ? 'स्थिती तपासा' : 'Check Status'}
+            </button>
+          </div>
+
+          {trackedManuscript && (
+            <div className="pt-3 border-t border-[#E6DFCE] space-y-3 bg-[#FFFDF7] p-4 rounded-xl">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-mono text-[12px] font-bold text-[#243B8A]">
+                  {trackedManuscript.referenceCode} · {trackedManuscript.category}
+                </span>
+                <span className="font-mono text-[12px] font-semibold text-[#174D3A]">
+                  {lang === 'mr'
+                    ? trackedManuscript.statusLabelMr
+                    : trackedManuscript.statusLabelEn}
+                </span>
+              </div>
+              <p className="font-serif text-[16px] font-bold text-[#252832]">
+                {trackedManuscript.title} — <span className="font-normal text-[#5A5F72]">{trackedManuscript.author}</span>
+              </p>
+              <div className="grid grid-cols-6 gap-1.5 pt-1">
+                {[1, 2, 3, 4, 5, 6].map((step) => (
+                  <div
+                    key={step}
+                    className={`h-1.5 rounded-full ${
+                      step <= trackedManuscript.stageIndex
+                        ? 'bg-[#174D3A]'
+                        : 'bg-[#E6DFCE]'
+                    }`}
+                  />
+                ))}
+              </div>
+              <p className="text-[13px] text-[#5A5F72]">
+                {lang === 'mr' ? trackedManuscript.noteMr : trackedManuscript.noteEn}
+              </p>
+            </div>
+          )}
         </div>
 
         {submittedRecord ? (

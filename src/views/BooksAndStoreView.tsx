@@ -96,11 +96,28 @@ export const BooksCatalogueView: React.FC<BooksCatalogueViewProps> = ({
       });
   }, [books, authors, searchQuery, selectedCategory, inStockOnly, sortBy]);
 
+  const [bundleAdded, setBundleAdded] = useState(false);
+
   const handleReset = () => {
     setSearchQuery('');
     setSelectedCategory('all');
     setInStockOnly(false);
     setSortBy('featured');
+  };
+
+  const inStockBooks = useMemo(
+    () => books.filter((b) => b.availability !== 'out_of_stock' && b.stock > 0),
+    [books]
+  );
+  const bundleTotalPrice = useMemo(
+    () => inStockBooks.reduce((sum, b) => sum + b.price, 0),
+    [inStockBooks]
+  );
+
+  const handleAddCompleteBundle = () => {
+    inStockBooks.forEach((b) => onAddToCart(b.id, 1));
+    setBundleAdded(true);
+    window.setTimeout(() => setBundleAdded(false), 2400);
   };
 
   return (
@@ -234,6 +251,71 @@ export const BooksCatalogueView: React.FC<BooksCatalogueViewProps> = ({
 
       {/* Books Grid */}
       <section className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Curated Complete Akath Library Bundle Banner */}
+        {inStockBooks.length > 1 && (
+          <div
+            data-testid="complete-library-bundle-banner"
+            className="mb-8 bg-white rounded-2xl border border-[#E6E1D6] p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5"
+          >
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#243B8A] font-semibold">
+                Curated Imprint Collection · संपूर्ण अकथ ग्रंथसंच
+              </p>
+              <h2 className="font-serif text-[20px] sm:text-[22px] font-bold text-[#252832]">
+                {lang === 'mr'
+                  ? `अकथ प्रकाशनाची सर्व ${inStockBooks.length} उपलब्ध पुस्तके एकत्र मागवा`
+                  : `Complete Akath Library Set (${inStockBooks.length} Published Editions)`}
+              </h2>
+              <p className="text-[13.5px] text-[#525665]">
+                {lang === 'mr'
+                  ? 'दीर्घकथा, प्रवासवर्णन आणि वैचारिक साहित्य — ₹५००+ ऑर्डरमुळे संपूर्ण भारतात मोफत ट्रॅक्ड बुक-पोस्ट वितरण लागू.'
+                  : 'Includes fiction, travelogue, and civic scholarship with complimentary tracked book-post shipping across India.'}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 shrink-0">
+              <div className="text-left md:text-right">
+                <span className="block text-[11px] font-mono uppercase text-[#525665]">
+                  {lang === 'mr' ? 'एकूण संच मूल्य' : 'Complete Set Total'}
+                </span>
+                <strong className="text-[22px] font-bold text-[#252832] tabular-nums">
+                  ₹{bundleTotalPrice}
+                </strong>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleAddCompleteBundle}
+                className={`px-5 py-3 rounded-xl text-[13.5px] font-semibold text-[#FFFDF7] inline-flex items-center gap-2 transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                  bundleAdded
+                    ? 'bg-[#15803D]'
+                    : 'bg-[#243B8A] hover:bg-[#1B2D6B]'
+                }`}
+              >
+                {bundleAdded ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>
+                      {lang === 'mr'
+                        ? 'सर्व पुस्तके पिशवीत जोडली!'
+                        : 'All Editions Added!'}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag className="w-4 h-4" />
+                    <span>
+                      {lang === 'mr'
+                        ? 'संपूर्ण संच पिशवीत जोडा'
+                        : 'Add Complete Set to Bag'}
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between text-[14px] text-[#525665] mb-6">
           <span className="font-medium tabular-nums">
             {filteredBooks.length} {t.catalogue.resultsCount}
