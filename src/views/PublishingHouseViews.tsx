@@ -381,13 +381,18 @@ function useAboutParagraphScrollReveal(
   }, [containerRef, activeFilter]);
 }
 
-export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
+export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
+  onNavigate,
+}) => {
   const { lang } = useLanguage();
   const aboutArticleRef = useRef<HTMLElement | null>(null);
   const [now, setNow] = useState<Date>(() => new Date());
   const [activeFolioFilter, setActiveFolioFilter] = useState<
     'all' | 'language' | 'craft' | 'beginning' | 'tortoise'
   >('all');
+  const [readingLens, setReadingLens] = useState<'bilingual' | 'marathi' | 'english'>('bilingual');
+  const [activeCraftStage, setActiveCraftStage] = useState<number>(0);
+  const [activeChapterId, setActiveChapterId] = useState<string>('about-manifesto-top');
 
   useAboutParagraphScrollReveal(aboutArticleRef, activeFolioFilter);
 
@@ -397,6 +402,16 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
     }, 1000);
     return () => window.clearInterval(timer);
   }, []);
+
+  const scrollToChapter = (elementId: string) => {
+    setActiveChapterId(elementId);
+    if (typeof document !== 'undefined') {
+      const target = document.getElementById(elementId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
 
   const formattedDate = (() => {
     try {
@@ -460,144 +475,470 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
     id: 'all' | 'language' | 'craft' | 'beginning' | 'tortoise';
     label: string;
   }> = [
-    { id: 'all', label: lang === 'mr' ? 'सर्व' : 'All' },
+    { id: 'all', label: lang === 'mr' ? 'सर्व प्रकरणे (All)' : 'All Folios' },
     { id: 'language', label: '01 · Language' },
     { id: 'craft', label: '02 · Craft' },
     { id: 'beginning', label: '03 · Community' },
     { id: 'tortoise', label: '04 · Tortoise' },
   ];
 
+  const chapterRailItems = [
+    {
+      id: 'about-manifesto-top',
+      index: 'I',
+      labelMr: 'संपादकीय भूमिका',
+      labelEn: 'The Manifesto',
+    },
+    {
+      id: 'about-chapter-06',
+      index: 'II',
+      labelMr: 'संस्थापक व अधिष्ठान',
+      labelEn: 'Founder & Imprint',
+    },
+    {
+      id: 'about-pillars-section',
+      index: 'III',
+      labelMr: 'चार संपादकीय सूत्रे',
+      labelEn: 'Four Folios',
+    },
+    {
+      id: 'about-craft-anatomy',
+      index: 'IV',
+      labelMr: 'पुस्तकाची घडण',
+      labelEn: 'Anatomy of Craft',
+    },
+    {
+      id: 'about-colophon-end',
+      index: 'V',
+      labelMr: 'कासवाची पावले',
+      labelEn: 'Colophon',
+    },
+  ];
+
+  const craftStages = [
+    {
+      number: '01',
+      kickerMr: 'पहिला टप्पा · संहिता निवड',
+      kickerEn: 'Stage 01 · Manuscript Reading',
+      titleMr: 'शांत, पूर्वग्रहमुक्त संपादकीय वाचन',
+      titleEn: 'Unhurried Two-Reader Literary Evaluation',
+      specCode: '6–8 Weeks Reading Window · Merit-Only Selection',
+      summaryMr:
+        'प्रत्येक हस्तलिखित केवळ बाजारातील मागणीवरून नव्हे, तर त्यातील भाषिक अस्सलपणा, प्रादेशिक जगण्याचे भान आणि लेखकाच्या स्वतंत्र आवाजावरून वाचले जाते.',
+      summaryEn:
+        'Every submission is read independently by two editors for voice, structural honesty, and regional texture—never judged by algorithmic trends or commercial formulas.',
+      detailPoints: [
+        lang === 'mr'
+          ? 'लेखकाकडून कोणतेही प्रकाशन किंवा संपादन शुल्क घेतले जात नाही.'
+          : 'Zero author fees or vanity publishing charges—100% house-funded stewardship.',
+        lang === 'mr'
+          ? 'प्रत्येक निवडलेल्या संहितेवर सविस्तर संपादकीय टिपण दिले जाते.'
+          : 'Detailed editorial notes and structural feedback shared directly with the author.',
+      ],
+      ctaLabel: lang === 'mr' ? 'संहिता पाठवा' : 'Submit a Manuscript',
+      ctaPath: '/submit-manuscript',
+    },
+    {
+      number: '02',
+      kickerMr: 'दुसरा टप्पा · संहिता संवाद',
+      kickerEn: 'Stage 02 · Editorial Dialogue',
+      titleMr: 'मूळ बोली आणि लय न मोडता संपादन',
+      titleEn: 'Line Editing That Preserves Regional Voice',
+      specCode: 'Marathwada & Regional Cadence Fidelity',
+      summaryMr:
+        'मराठवाडा आणि महाराष्ट्रातील विविध बोलींचा गोडवा, घरगुती शब्दांची लय आणि संवादांतील जिवंतपणा प्रमाणभाषेच्या साच्यात न बसवता जपला जातो.',
+      summaryEn:
+        'We edit to sharpen clarity without sanding down the distinct cadence of Marathwada and regional Marathi speech, preserving the vernacular music of the manuscript.',
+      detailPoints: [
+        lang === 'mr'
+          ? 'लेखक आणि संपादक यांच्यात प्रत्येक प्रकरणावर थेट संवाद.'
+          : 'Collaborative chapter-by-chapter dialogue between author and editor.',
+        lang === 'mr'
+          ? 'अनुवादित साहित्यासाठी मूळ भाषेच्या सांस्कृतिक संदर्भांची जपणूक.'
+          : 'Cross-lingual sensitivity for translations entering Marathi literary discourse.',
+      ],
+      ctaLabel: lang === 'mr' ? 'आमचे लेखक पहा' : 'Meet Our Authors',
+      ctaPath: '/authors',
+    },
+    {
+      number: '03',
+      kickerMr: 'तिसरा टप्पा · मुद्रण व रूपबंध',
+      kickerEn: 'Stage 03 · Typography & Materiality',
+      titleMr: 'दीर्घ वाचनासाठी सुकर देवनागरी मुद्रणकला',
+      titleEn: 'Archival Paper & Eye-Restful Devanagari Type',
+      specCode: '60–65ch Measure · 80 GSM Natural Shade Cream Stock',
+      summaryMr:
+        'शंभर पानांनंतरही डोळ्यांना थकवा येऊ नये अशी देवनागरी अक्षरजुळणी, पुरेसा समास (margins), टिकाऊ बांधणी आणि आशयाला समर्पक मुखपृष्ठ कला.',
+      summaryEn:
+        'Generous page margins, optical Devanagari line-height (1.78–1.85), natural-shade archival paper, and bespoke cover compositions crafted for decades on the shelf.',
+      detailPoints: [
+        lang === 'mr'
+          ? 'प्रत्येक पुस्तकासाठी स्वतंत्र मुखपृष्ठ संकल्पना आणि मुद्रण पूर्वतपासणी.'
+          : 'Bespoke cover art direction and multi-pass Devanagari proof verification.',
+        lang === 'mr'
+          ? 'संपूर्ण भारतात ट्रॅक केलेल्या बुक-पोस्टने सुरक्षित घरपोच वितरण.'
+          : 'Protective book-post packaging dispatched directly from Nanded across India.',
+      ],
+      ctaLabel: lang === 'mr' ? 'प्रकाशित पुस्तके पहा' : 'Explore Published Editions',
+      ctaPath: '/books',
+    },
+    {
+      number: '04',
+      kickerMr: 'चौथा टप्पा · वाचनकट्टा आणि संवाद',
+      kickerEn: 'Stage 04 · Living Literary Commons',
+      titleMr: 'छपाईनंतर सुरू होणारा दीर्घकालीन वाचक संवाद',
+      titleEn: 'First-Page Excerpts, Critical Essays & Reader Circles',
+      specCode: '6-Page Public Previews · Vachankatta Journal',
+      summaryMr:
+        'पुस्तक छापून आल्यानंतर आमचे काम संपत नाही; "पहिलं पान" मधील ६ पृष्ठांचे उतारे आणि "वाचनकट्टा" वरील समीक्षेमधून पुस्तक वाचकांच्या चर्चेत जिवंत राहते.',
+      summaryEn:
+        'Every edition is accompanied by a 6-page public reading excerpt on First Page and long-form essays on Vachankatta so books spark enduring dialogue.',
+      detailPoints: [
+        lang === 'mr'
+          ? 'पुस्तक खरेदीपूर्वी ६ पृष्ठे शांतपणे वाचण्याची खुली सुविधा.'
+          : 'Read 6 full pages online before ordering via our First Page room.',
+        lang === 'mr'
+          ? 'वाचक, समीक्षक आणि लेखकांचे दीर्घ वैचारिक लेख.'
+          : 'Curated critical essays, author interviews, and thematic reading lists.',
+      ],
+      ctaLabel: lang === 'mr' ? 'पहिलं पान उतारे वाचा' : 'Read First Page Excerpts',
+      ctaPath: '/vachankatta/first-page',
+    },
+  ];
+
+  const currentCraft = craftStages[activeCraftStage] || craftStages[0];
+
   return (
-    <div className="bg-[#FFFDF7] text-[#252832] min-h-screen">
+    <div className="bg-[#FBF9F5] text-[#1C1917] min-h-screen selection:bg-[#243B8A]/15 selection:text-[#1C1917]">
       {/* ===================================================================
-          0. MINIMAL ARCHIVAL DATELINE BAR
+          0. ARCHIVAL DATELINE & STICKY CHAPTER NAVIGATION RIBBON
           =================================================================== */}
       <div
         data-testid="about-archival-dateline"
-        className="border-b border-[#E6DFCE] bg-[#FFFDF7]"
+        className="border-b border-[#DCD4C0] bg-[#FBF9F5]/95 backdrop-blur-sm sticky top-0 z-20"
       >
-        <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#5A5F72]">
-          <div className="flex items-center gap-2">
-            <span className="uppercase tracking-[0.16em] text-[#252832] font-medium">
-              Akath Prakashan
-            </span>
-            <span aria-hidden="true">·</span>
-            <span>Nanded, Maharashtra</span>
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10">
+          {/* Top Archival Metadata Row */}
+          <div className="py-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#57534E] border-b border-[#E6DFCE]/80">
+            <div className="flex items-center gap-2">
+              <span className="uppercase tracking-[0.18em] text-[#1C1917] font-semibold">
+                Akath Prakashan · अकथ प्रकाशन
+              </span>
+              <span aria-hidden="true">·</span>
+              <span>Nanded, Maharashtra</span>
+              <span aria-hidden="true" className="hidden md:inline">·</span>
+              <span className="hidden md:inline text-[#243B8A]">
+                Curatorial Monograph &amp; Imprint Charter
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 tabular-nums">
+              <span data-testid="about-live-date">{formattedDate}</span>
+              <span aria-hidden="true">·</span>
+              <span data-testid="about-live-time">{formattedTime} IST</span>
+              <span aria-hidden="true" className="hidden sm:inline">·</span>
+              <span className="hidden sm:inline font-editorial-prose text-[11.5px] text-[#174D3A] font-medium">
+                {literaryWatchLabel}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 tabular-nums">
-            <span data-testid="about-live-date">{formattedDate}</span>
-            <span aria-hidden="true">·</span>
-            <span data-testid="about-live-time">{formattedTime} IST</span>
-            <span aria-hidden="true" className="hidden sm:inline">·</span>
-            <span className="hidden sm:inline font-editorial-prose text-[11.5px] text-[#5A5F72]">
-              {literaryWatchLabel}
-            </span>
-          </div>
+          {/* Interactive Exhibition Chapter Rail */}
+          <nav
+            aria-label="About Monograph Chapters"
+            className="py-2 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar"
+          >
+            <div className="flex items-center gap-5 sm:gap-7 shrink-0">
+              {chapterRailItems.map((item) => {
+                const isCurrent = activeChapterId === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => scrollToChapter(item.id)}
+                    className={`group inline-flex items-baseline gap-1.5 text-[12px] whitespace-nowrap shrink-0 transition-colors cursor-pointer py-0.5 ${
+                      isCurrent
+                        ? 'text-[#243B8A] font-semibold'
+                        : 'text-[#57534E] hover:text-[#1C1917]'
+                    }`}
+                  >
+                    <span className="font-mono text-[10.5px] text-[#78716C] group-hover:text-[#243B8A]">
+                      {item.index}.
+                    </span>
+                    <span className="font-editorial-prose">
+                      {lang === 'mr' ? item.labelMr : item.labelEn}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="hidden lg:flex items-center gap-4 shrink-0 text-[11.5px] font-mono">
+              <button
+                type="button"
+                onClick={() => onNavigate('/books')}
+                className="text-[#243B8A] hover:underline whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                {lang === 'mr' ? 'प्रकाशित ग्रंथसूची →' : 'Published Catalogue →'}
+              </button>
+              <span aria-hidden="true" className="text-[#DCD4C0]">|</span>
+              <button
+                type="button"
+                onClick={() => onNavigate('/submit-manuscript')}
+                className="text-[#174D3A] hover:underline whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                {lang === 'mr' ? 'संहिता पाठवा →' : 'Submit Manuscript →'}
+              </button>
+            </div>
+          </nav>
         </div>
       </div>
 
       {/* ===================================================================
-          1. MINIMALIST EDITORIAL MONOGRAPH CONTAINER
+          1. MUSEUM-GRADE EDITORIAL MONOGRAPH & BROADSHEET CANVAS
           =================================================================== */}
       <article
         ref={aboutArticleRef}
         data-testid="about-editorial-essay"
         aria-label="About Akath Prakashan"
-        className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 space-y-14 sm:space-y-16"
+        className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-14 lg:py-20 space-y-16 sm:space-y-24"
       >
         {/* =================================================================
-            SECTION 1: LEAD EDITORIAL MANIFESTO (CLEAN 65ch READING COLUMN)
+            SECTION 1: ASYMMETRIC BROADSHEET HERO & MARGINALIA CANVAS
+            (8-Column 65ch Lead Manifesto + 4-Column Curatorial Margin Rail)
             ================================================================= */}
         <div
-          data-testid="about-prose-measure"
-          className="max-w-[65ch]"
+          id="about-manifesto-top"
+          className="scroll-mt-28 space-y-10"
         >
-          <motion.section
-            data-testid="about-hero-manifesto"
-            data-about-io-block="lead-manifesto"
-            variants={aboutSectionSequentialVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.04 }}
-            className="akath-about-io-block space-y-6"
-          >
-            <motion.div
-              variants={aboutItemSequentialVariants}
-              className="space-y-3"
-            >
+          {/* Top Broadsheet Marquee Header */}
+          <div className="border-b border-[#1C1917] pb-8 lg:pb-10">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
               <p
                 data-about-io-para="lead-eyebrow"
                 style={{ '--io-stagger-index': 0 } as React.CSSProperties}
-                className="akath-about-io-para text-[11px] font-mono uppercase tracking-[0.2em] text-[#243B8A] font-medium"
+                className="akath-about-io-para text-[11.5px] font-mono uppercase tracking-[0.2em] text-[#243B8A] font-semibold"
               >
-                About Akath Prakashan · संपादकीय भूमिका
+                About Akath Prakashan · संपादकीय जाहीरनामा · Nanded Imprint
               </p>
 
-              <h1
-                data-testid="about-headline-breathe"
-                className="akath-about-headline-breathe font-editorial-display text-[28px] sm:text-[36px] lg:text-[40px] font-bold text-[#252832] leading-[1.24]"
-              >
-                काही पुस्तकं वाचून संपतात. काही आपल्यासोबत राहतात.
-              </h1>
-
-              <p className="akath-about-lead-breathe font-editorial-display italic text-[19px] sm:text-[22px] text-[#5A5F72] leading-[1.45]">
-                Some books end at the last page. Others stay with us.
-              </p>
-            </motion.div>
-
-            <motion.div variants={aboutItemSequentialVariants}>
+              {/* Interactive Reading Lens Segmented Switcher */}
               <div
-                data-testid="about-prose-breathe-block"
-                style={{ '--breathe-phase': '0.4s' } as React.CSSProperties}
-                className="akath-about-prose-breathe space-y-4 font-editorial-prose text-[16px] sm:text-[17px] text-[#252832] leading-[1.8]"
+                role="group"
+                aria-label="Reading Language Lens"
+                className="inline-flex items-center gap-1 p-1 bg-[#F2ECE1] border border-[#DCD4C0] rounded-sm"
               >
-                <p
-                  data-about-io-para="lead-p1"
-                  style={{ '--io-stagger-index': 1 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  Akath Prakashan grew out of a simple feeling: there are books worth bringing into the world, and there should be people willing to take the time to do it properly.
-                </p>
+                {(
+                  [
+                    { id: 'bilingual', label: 'द्विभाषिक · Bilingual' },
+                    { id: 'marathi', label: 'मराठी सार' },
+                    { id: 'english', label: 'English Essay' },
+                  ] as const
+                ).map((mode) => (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    onClick={() => setReadingLens(mode.id)}
+                    className={`px-2.5 py-1 text-[11px] font-mono whitespace-nowrap shrink-0 transition-colors cursor-pointer rounded-sm ${
+                      readingLens === mode.id
+                        ? 'bg-[#1C1917] text-[#FBF9F5] font-medium'
+                        : 'text-[#57534E] hover:text-[#1C1917]'
+                    }`}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                <p
-                  data-about-io-para="lead-p2"
-                  style={{ '--io-stagger-index': 2 } as React.CSSProperties}
-                  className="akath-about-io-para"
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-end">
+              <div className="lg:col-span-8 space-y-3">
+                <h1
+                  data-testid="about-headline-breathe"
+                  className="akath-about-headline-breathe font-editorial-display text-[32px] sm:text-[44px] lg:text-[52px] font-bold text-[#1C1917] leading-[1.18] tracking-tight"
                 >
-                  A manuscript is a strange, wonderful thing. Sometimes it arrives as a finished story. Sometimes it is a collection of scattered thoughts, a voice still finding its shape, or an experience that has waited years to be put into words. Before it becomes a book, it needs someone willing to read it carefully, ask the right questions, and understand what the writer is trying to say.
-                </p>
-
-                <p
-                  data-about-io-para="lead-callout"
-                  style={{ '--io-stagger-index': 3 } as React.CSSProperties}
-                  className="akath-about-io-para py-3 border-y border-[#E6DFCE] font-editorial-display italic text-[18px] sm:text-[20px] text-[#243B8A]"
-                >
-                  That is the kind of work we want to do. We don&apos;t think literature always needs to be loud to matter.
-                </p>
-
-                <p
-                  data-about-io-para="lead-p3"
-                  style={{ '--io-stagger-index': 4 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  Based in Nanded, Akath Prakashan is an independent publishing house devoted to Marathi literature and writing across languages. We work with fiction, poetry, essays, criticism, and translations — not because every category needs to be represented, but because good writing can come from anywhere and speak to anyone.
-                </p>
-
-                <p
-                  data-about-io-para="lead-p4"
-                  style={{ '--io-stagger-index': 5 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  We are interested in writing that notices what others overlook. Stories that make familiar places feel different. Poems that find words for things we have felt but never quite known how to express. Essays that leave us with better questions than the ones we started with.
+                  काही पुस्तकं वाचून संपतात. काही आपल्यासोबत राहतात.
+                </h1>
+                <p className="akath-about-lead-breathe font-editorial-display italic text-[20px] sm:text-[25px] text-[#57534E] leading-[1.4]">
+                  Some books end at the last page. Others stay with us.
                 </p>
               </div>
-            </motion.div>
-          </motion.section>
+
+              <div className="lg:col-span-4 lg:border-l lg:border-[#DCD4C0] lg:pl-8 space-y-2 text-[13.5px] font-editorial-prose text-[#57534E]">
+                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#174D3A] font-semibold">
+                  संपादकीय अधिष्ठान · Imprint Ethos
+                </p>
+                <p className="leading-relaxed text-[#292524]">
+                  नांदेड येथून कार्यरत असलेली स्वतंत्र मराठी साहित्य प्रकाशन संस्था — कथा, कादंबरी, कविता, समीक्षा, प्रवासवर्णन आणि भाषांतरित साहित्याचे मूल्यनिष्ठ दालन.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Two-Column Asymmetric Reading Canvas (Pattern D: 70% Essay / 30% Margin Notes) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+            {/* Left 8 Columns: 65ch Reading Column */}
+            <div className="lg:col-span-8">
+              <div
+                data-testid="about-prose-measure"
+                className="max-w-[65ch]"
+              >
+                <motion.section
+                  data-testid="about-hero-manifesto"
+                  data-about-io-block="lead-manifesto"
+                  variants={aboutSectionSequentialVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.04 }}
+                  className="akath-about-io-block space-y-7"
+                >
+                  {/* Marathi Distilled Synthesis Callout (Shown in Bilingual or Marathi mode) */}
+                  {readingLens !== 'english' && (
+                    <motion.div
+                      variants={aboutItemSequentialVariants}
+                      className="bg-[#F4EFE4] border border-[#DCD4C0] p-5 sm:p-6 space-y-3"
+                    >
+                      <div className="flex items-center justify-between gap-2 text-[11px] font-mono uppercase tracking-[0.16em] text-[#243B8A]">
+                        <span>संपादकीय प्रस्तावना · Marathi Editorial Note</span>
+                        <span>नांदेड · महाराष्ट्र</span>
+                      </div>
+                      <p className="font-serif text-[16px] sm:text-[17px] text-[#1C1917] leading-[1.85]">
+                        पुस्तक प्रकाशित करणे म्हणजे केवळ कागदावर अक्षरे छापणे नव्हे; तर एका अस्वस्थ करणाऱ्या अनुभवाला, काळजात मुरलेल्या शब्दांना आणि नव्या जाणिवांना त्यांचे हक्काचे घर मिळवून देणे होय. अकथ प्रकाशन हे घाईगडबडीच्या बाजारपेठेत शांतपणे, संहितेच्या गुणवत्तेवर आणि लेखकाच्या शब्दांवर विश्वास ठेवून काम करणारे प्रकाशन गृह आहे.
+                      </p>
+                    </motion.div>
+                  )}
+
+                  {/* Main English Editorial Essay with Drop Cap */}
+                  <motion.div variants={aboutItemSequentialVariants}>
+                    <div
+                      data-testid="about-prose-breathe-block"
+                      style={{ '--breathe-phase': '0.4s' } as React.CSSProperties}
+                      className={`akath-about-prose-breathe space-y-5 font-editorial-prose text-[16.5px] sm:text-[17.5px] text-[#1C1917] leading-[1.85] ${
+                        readingLens === 'marathi' ? 'opacity-90' : 'opacity-100'
+                      }`}
+                    >
+                      <p
+                        data-about-io-para="lead-p1"
+                        style={{ '--io-stagger-index': 1 } as React.CSSProperties}
+                        className="akath-about-io-para first-letter:text-5xl first-letter:font-editorial-display first-letter:font-bold first-letter:float-left first-letter:mr-3.5 first-letter:mt-1 first-letter:leading-none first-letter:text-[#243B8A]"
+                      >
+                        Akath Prakashan grew out of a simple feeling: there are books worth bringing into the world, and there should be people willing to take the time to do it properly.
+                      </p>
+
+                      <p
+                        data-about-io-para="lead-p2"
+                        style={{ '--io-stagger-index': 2 } as React.CSSProperties}
+                        className="akath-about-io-para"
+                      >
+                        A manuscript is a strange, wonderful thing. Sometimes it arrives as a finished story. Sometimes it is a collection of scattered thoughts, a voice still finding its shape, or an experience that has waited years to be put into words. Before it becomes a book, it needs someone willing to read it carefully, ask the right questions, and understand what the writer is trying to say.
+                      </p>
+
+                      {/* Editorial Pull Quote — Hairline Top/Bottom Framing (No Left Bar) */}
+                      <blockquote
+                        data-about-io-para="lead-callout"
+                        style={{ '--io-stagger-index': 3 } as React.CSSProperties}
+                        className="akath-about-io-para my-8 py-6 border-y border-[#1C1917]/20 space-y-2"
+                      >
+                        <p className="font-editorial-display italic text-[21px] sm:text-[24px] text-[#243B8A] leading-[1.42]">
+                          &ldquo;That is the kind of work we want to do. We don&apos;t think literature always needs to be loud to matter.&rdquo;
+                        </p>
+                        <footer className="text-[12px] font-mono text-[#57534E]">
+                          साहित्याला स्वतःचे महत्त्व सिद्ध करण्यासाठी गोंगाटाची गरज नसते · Editorial Principle I
+                        </footer>
+                      </blockquote>
+
+                      <p
+                        data-about-io-para="lead-p3"
+                        style={{ '--io-stagger-index': 4 } as React.CSSProperties}
+                        className="akath-about-io-para"
+                      >
+                        Based in Nanded, Akath Prakashan is an independent publishing house devoted to Marathi literature and writing across languages. We work with fiction, poetry, essays, criticism, and translations — not because every category needs to be represented, but because good writing can come from anywhere and speak to anyone.
+                      </p>
+
+                      <p
+                        data-about-io-para="lead-p4"
+                        style={{ '--io-stagger-index': 5 } as React.CSSProperties}
+                        className="akath-about-io-para"
+                      >
+                        We are interested in writing that notices what others overlook. Stories that make familiar places feel different. Poems that find words for things we have felt but never quite known how to express. Essays that leave us with better questions than the ones we started with.
+                      </p>
+                    </div>
+                  </motion.div>
+                </motion.section>
+              </div>
+            </div>
+
+            {/* Right 4 Columns: Curatorial Margin Notes & Archival Figures */}
+            <aside
+              aria-label="Curatorial Margin Notes"
+              className="lg:col-span-4 lg:border-l lg:border-[#DCD4C0] lg:pl-8 space-y-8"
+            >
+              {/* Fig. 01 — Imprint Seal & Tortoise Emblem */}
+              <div className="bg-white border border-[#DCD4C0] p-6 space-y-4">
+                <div className="flex items-center justify-between text-[11px] font-mono text-[#57534E] border-b border-[#E6DFCE] pb-2.5">
+                  <span>FIG. 01 · IMPRINT SEAL</span>
+                  <span>ACC. AK-2025-ND</span>
+                </div>
+
+                <div className="py-4 flex flex-col items-center justify-center bg-[#FBF9F5] border border-[#E6DFCE]">
+                  <AnimatedTortoiseEmblem className="w-24 h-24" />
+                  <p className="mt-2 font-serif text-[13px] text-[#174D3A] font-medium">
+                    संथ पावले · दीर्घकालीन साहित्य
+                  </p>
+                </div>
+
+                <p className="text-[12.5px] font-editorial-prose text-[#57534E] italic leading-relaxed">
+                  Fig. 1 — The Akath Tortoise colophon mark: carrying its home quietly, choosing permanence over haste.
+                </p>
+              </div>
+
+              {/* Fig. 02 — Literary Geography Marginalia */}
+              <div className="border-t border-[#DCD4C0] pt-5 space-y-2.5">
+                <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#243B8A]">
+                  Marginalia 01 · साहित्यिक भूगोल
+                </p>
+                <h3 className="font-editorial-display text-[19px] font-bold text-[#1C1917]">
+                  Why Nanded &amp; Marathwada?
+                </h3>
+                <p className="text-[14px] font-editorial-prose text-[#57534E] leading-relaxed">
+                  Great literary publishing does not belong solely to metropolitan capitals. Rooted in Nanded, we publish voices from across Maharashtra whose lived idioms enrich contemporary Marathi prose and poetry.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/authors')}
+                  className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[#243B8A] hover:underline pt-1 cursor-pointer"
+                >
+                  <span>{lang === 'mr' ? 'लेखक परिचय दालन पहा' : 'Explore Published Authors'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Fig. 03 — Open Reading Room Marginalia */}
+              <div className="border-t border-[#DCD4C0] pt-5 space-y-2.5">
+                <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#174D3A]">
+                  Marginalia 02 · खुली वाचन संस्कृती
+                </p>
+                <h3 className="font-editorial-display text-[19px] font-bold text-[#1C1917]">
+                  Read Before You Collect
+                </h3>
+                <p className="text-[14px] font-editorial-prose text-[#57534E] leading-relaxed">
+                  Through our <em>First Page (पहिलं पान)</em> archive, readers can read a curated 6-page opening excerpt of every book before ordering the physical edition.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/vachankatta/first-page')}
+                  className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[#174D3A] hover:underline pt-1 cursor-pointer"
+                >
+                  <span>{lang === 'mr' ? 'पहिलं पान उतारे वाचा' : 'Enter First Page Reading Room'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </aside>
+          </div>
         </div>
 
         {/* =================================================================
-            SECTION 2: CLEAN, BALANCED FOUNDER PROFILE & IMPRINT OVERVIEW
+            SECTION 2: MUSEUM ACCESSION LEDGER & FOUNDER STEWARDSHIP DESK
             ================================================================= */}
         <motion.section
           id="about-chapter-06"
@@ -608,96 +949,183 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
           whileInView="visible"
           viewport={{ once: true, amount: 0.04 }}
           style={{ '--io-block-delay': '60ms' } as React.CSSProperties}
-          className="akath-seq-step akath-about-io-block bg-white border border-[#E6DFCE] rounded-2xl p-6 sm:p-8 lg:p-10"
+          className="akath-seq-step akath-about-io-block scroll-mt-28 bg-white border border-[#DCD4C0] p-6 sm:p-10 lg:p-12 space-y-10"
         >
-          <motion.div variants={aboutItemSequentialVariants}>
+          <motion.div variants={aboutItemSequentialVariants} className="space-y-8">
+            {/* Top Accession Header Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[#DCD4C0] text-[11px] font-mono text-[#57534E]">
+              <span className="uppercase tracking-[0.18em] text-[#243B8A] font-semibold">
+                Chapter II · Imprint Stewardship &amp; Accession Record
+              </span>
+              <span>REG. NANDED · MAHARASHTRA · INDIA</span>
+            </div>
+
             <div
               style={{ '--breathe-phase': '4.3s' } as React.CSSProperties}
-              className="akath-about-prose-breathe grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10 items-center"
+              className="akath-about-prose-breathe grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start"
             >
-              {/* Left 6 Cols: Founder Identity */}
+              {/* Left 6 Cols: Founder Identity & Publisher's Statement */}
               <div
                 data-about-io-para="colophon-founder"
                 style={{ '--io-stagger-index': 0 } as React.CSSProperties}
-                className="akath-about-io-para md:col-span-6 space-y-2"
+                className="akath-about-io-para lg:col-span-6 space-y-4"
               >
-                <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#243B8A] font-medium">
-                  Founder &amp; Publisher · संस्थापक आणि प्रकाशक
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#243B8A] font-medium">
+                    Founder &amp; Publisher · संस्थापक आणि प्रकाशक
+                  </p>
+                  <h2
+                    data-testid="about-founder-name"
+                    className="akath-about-headline-breathe font-editorial-display text-[28px] sm:text-[34px] font-bold text-[#1C1917] leading-tight"
+                  >
+                    Pooja Vasantrao Dhawale
+                  </h2>
+                  <p className="font-serif text-[19px] text-[#174D3A] font-semibold">
+                    पूजा वसंतराव ढवळे
+                  </p>
+                </div>
+
+                <p className="text-[15px] font-editorial-prose text-[#292524] leading-[1.8]">
+                  Editorial Direction, Manuscript Selection &amp; Imprint Stewardship. Guiding Akath Prakashan with a commitment to patient editorial dialogue, transparent author partnerships, and enduring print craftsmanship.
                 </p>
-                <h2
-                  data-testid="about-founder-name"
-                  className="akath-about-headline-breathe font-editorial-display text-[26px] sm:text-[30px] font-bold text-[#252832] leading-tight"
-                >
-                  Pooja Vasantrao Dhawale
-                </h2>
-                <p className="font-serif text-[17px] text-[#174D3A] font-medium">
-                  पूजा वसंतराव ढवळे
-                </p>
-                <p className="text-[14.5px] font-editorial-prose text-[#5A5F72] leading-relaxed pt-1">
-                  Editorial Direction, Manuscript Selection &amp; Imprint Stewardship
-                </p>
+
+                <div className="pt-2 border-t border-[#E6DFCE] text-[14px] font-serif text-[#57534E] leading-relaxed">
+                  &ldquo;प्रत्येक चांगल्या संहितेला तिचा स्वतःचा वेळ, संपादकीय आदर आणि वाचकांपर्यंत पोहोचणारा प्रामाणिक मार्ग मिळायला हवा, हाच अकथ प्रकाशनाचा पाया आहे.&rdquo;
+                </div>
               </div>
 
-              {/* Right 6 Cols: Balanced Minimal Imprint Details */}
+              {/* Right 6 Cols: Museum Accession Definition List (dl) */}
               <dl
                 data-about-io-para="colophon-header"
                 style={{ '--io-stagger-index': 1 } as React.CSSProperties}
-                className="akath-about-io-para md:col-span-6 md:border-l md:border-[#E6DFCE] md:pl-10 space-y-3.5 text-[14px]"
+                className="akath-about-io-para lg:col-span-6 lg:border-l lg:border-[#DCD4C0] lg:pl-10 space-y-4 text-[14px]"
               >
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-3 border-b border-[#E6DFCE]">
-                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#5A5F72]">
-                    Imprint
+                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-3.5 border-b border-[#E6DFCE]">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E]">
+                    Imprint Name
                   </dt>
-                  <dd className="font-editorial-prose font-medium text-[#252832]">
+                  <dd className="font-editorial-prose font-semibold text-[#1C1917]">
                     Akath Prakashan · अकथ प्रकाशन
                   </dd>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-3 border-b border-[#E6DFCE]">
-                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#5A5F72]">
-                    Location
+                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-3.5 border-b border-[#E6DFCE]">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E]">
+                    Headquarters
                   </dt>
-                  <dd className="font-editorial-prose font-medium text-[#252832]">
-                    Nanded, Maharashtra · नांदेड
+                  <dd className="font-editorial-prose font-medium text-[#1C1917]">
+                    Nanded, Maharashtra · नांदेड (४३१६०२)
+                  </dd>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-3.5 border-b border-[#E6DFCE]">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E]">
+                    Editorial Scope
+                  </dt>
+                  <dd className="font-editorial-prose font-medium text-[#1C1917]">
+                    Fiction, Poetry, Essays, Travelogues &amp; Vachankatta
+                  </dd>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-3.5 border-b border-[#E6DFCE]">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E]">
+                    Publishing Model
+                  </dt>
+                  <dd className="font-editorial-prose font-medium text-[#174D3A]">
+                    100% Merit-Based · House-Funded Production
                   </dd>
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#5A5F72]">
-                    Editorial Scope
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E]">
+                    Editorial Desk
                   </dt>
-                  <dd className="font-editorial-prose font-medium text-[#252832]">
-                    Fiction, Poetry, Essays &amp; Vachankatta
+                  <dd className="font-mono text-[13px] text-[#243B8A]">
+                    {PUBLISHER_IDENTITY.email} · {PUBLISHER_IDENTITY.phoneDisplay}
                   </dd>
                 </div>
               </dl>
+            </div>
+
+            {/* Bottom 4-Column Imprint Charter Strip */}
+            <div className="pt-6 border-t border-[#DCD4C0] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div>
+                <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#243B8A] font-semibold">
+                  01 · संहिता निवड
+                </p>
+                <p className="mt-1 font-editorial-display text-[17px] font-bold text-[#1C1917]">
+                  Merit-Only Curation
+                </p>
+                <p className="mt-1 text-[13px] text-[#57534E] leading-relaxed">
+                  Selected solely on literary craft and voice; zero author subventions.
+                </p>
+              </div>
+
+              <div>
+                <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#243B8A] font-semibold">
+                  02 · भाषिक भान
+                </p>
+                <p className="mt-1 font-editorial-display text-[17px] font-bold text-[#1C1917]">
+                  Vernacular Honesty
+                </p>
+                <p className="mt-1 text-[13px] text-[#57534E] leading-relaxed">
+                  Honoring regional rhythms, dialects, and lived Marathi idioms.
+                </p>
+              </div>
+
+              <div>
+                <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#243B8A] font-semibold">
+                  03 · पारदर्शक व्यवहार
+                </p>
+                <p className="mt-1 font-editorial-display text-[17px] font-bold text-[#1C1917]">
+                  Clear Author Royalties
+                </p>
+                <p className="mt-1 text-[13px] text-[#57534E] leading-relaxed">
+                  Honest contracts, clear timelines, and long-term edition availability.
+                </p>
+              </div>
+
+              <div>
+                <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#174D3A] font-semibold">
+                  04 · वाचक संवाद
+                </p>
+                <p className="mt-1 font-editorial-display text-[17px] font-bold text-[#1C1917]">
+                  Vachankatta &amp; Excerpts
+                </p>
+                <p className="mt-1 text-[13px] text-[#57534E] leading-relaxed">
+                  Keeping books alive in critical essays and public reading rooms.
+                </p>
+              </div>
             </div>
           </motion.div>
         </motion.section>
 
         {/* =================================================================
-            SECTION 3: REFINED 2x2 PROSE BLOCKS (CLEAR HEADINGS, CONSISTENT PADDING)
+            SECTION 3: FOUR EDITORIAL FOLIOS — ARCHITECTURAL HAIRLINE MATRIX
             ================================================================= */}
-        <div className="space-y-6">
+        <div
+          id="about-pillars-section"
+          className="scroll-mt-28 space-y-8"
+        >
           <div
             data-about-io-block="folio-header"
-            className="akath-about-io-block flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#E6DFCE] pb-4"
+            className="akath-about-io-block flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#1C1917] pb-5"
           >
-            <div className="space-y-1">
-              <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#5A5F72]">
-                Editorial Philosophy · चार संपादकीय सूत्रे
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#243B8A] font-semibold">
+                Chapter III · Editorial Philosophy · चार संपादकीय सूत्रे
               </p>
-              <h2 className="font-editorial-display text-[24px] sm:text-[28px] font-bold text-[#252832]">
+              <h2 className="font-editorial-display text-[28px] sm:text-[36px] font-bold text-[#1C1917] leading-tight">
                 Our Approach to Publishing
               </h2>
             </div>
 
-            {/* Minimal Chapter Filter */}
+            {/* Interactive Chapter Filter Tabs */}
             <div
               data-testid="about-folio-filter-bar"
               role="tablist"
               aria-label="Filter About Chapters"
-              className="flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar max-w-full"
+              className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar max-w-full"
             >
               {folioFilterOptions.map((tab) => {
                 const isActive = activeFolioFilter === tab.id;
@@ -708,10 +1136,10 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
                     role="tab"
                     aria-selected={isActive}
                     onClick={() => setActiveFolioFilter(tab.id)}
-                    className={`pb-1 text-[11.5px] font-mono whitespace-nowrap shrink-0 transition-colors cursor-pointer border-b-2 ${
+                    className={`px-3 py-1.5 text-[11.5px] font-mono whitespace-nowrap shrink-0 transition-colors cursor-pointer rounded-sm border ${
                       isActive
-                        ? 'border-[#243B8A] text-[#243B8A] font-semibold'
-                        : 'border-transparent text-[#5A5F72] hover:text-[#252832]'
+                        ? 'bg-[#243B8A] border-[#243B8A] text-[#FBF9F5] font-semibold'
+                        : 'bg-white border-[#DCD4C0] text-[#57534E] hover:text-[#1C1917]'
                     }`}
                   >
                     {tab.label}
@@ -723,9 +1151,9 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
 
           <div
             data-testid="about-monograph-bento-grid"
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8"
           >
-            {/* Block 01: The language we live in */}
+            {/* Folio 01: The language we live in */}
             <motion.section
               id="about-chapter-02"
               data-about-io-block="folio-01"
@@ -734,61 +1162,83 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
               whileInView="visible"
               viewport={{ once: true, amount: 0.04 }}
               style={{ '--io-block-delay': '0ms' } as React.CSSProperties}
-              className={`akath-seq-step akath-about-io-block bg-white border border-[#E6DFCE] rounded-2xl p-6 sm:p-8 space-y-4 transition-opacity ${
+              className={`akath-seq-step akath-about-io-block bg-white border border-[#DCD4C0] p-6 sm:p-9 flex flex-col justify-between space-y-6 transition-opacity ${
                 activeFolioFilter !== 'all' && activeFolioFilter !== 'language'
                   ? 'hidden md:block md:opacity-45'
                   : 'block opacity-100'
               }`}
             >
-              <div className="space-y-1.5 border-b border-[#E6DFCE] pb-3.5">
-                <span className="block font-mono text-[11px] uppercase tracking-[0.16em] text-[#243B8A]">
-                  01 · भाषा आणि परिसर
-                </span>
-                <h3 className="akath-about-headline-breathe font-editorial-display text-[22px] sm:text-[25px] font-bold text-[#252832] leading-snug">
-                  The language we live in
-                </h3>
+              <div className="space-y-5">
+                <div className="space-y-2 border-b border-[#E6DFCE] pb-4">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-[#243B8A]">
+                    <span className="uppercase tracking-[0.16em] font-semibold">
+                      FOLIO I · 01 · भाषा आणि परिसर
+                    </span>
+                    <span className="text-[#78716C]">मराठवाडा व बहुभाषिक संवेदनशीलता</span>
+                  </div>
+                  <h3 className="akath-about-headline-breathe font-editorial-display text-[24px] sm:text-[28px] font-bold text-[#1C1917] leading-snug">
+                    The language we live in
+                  </h3>
+                  <p className="font-serif text-[14.5px] text-[#174D3A] font-medium">
+                    बोलीभाषेचा जिवंतपणा आणि जगण्यातून आलेली मराठी अधिक अस्सल असते.
+                  </p>
+                </div>
+
+                <div
+                  data-testid="about-prose-breathe-block"
+                  style={{ '--breathe-phase': '1.2s' } as React.CSSProperties}
+                  className="akath-about-prose-breathe space-y-3.5 font-editorial-prose text-[15.5px] text-[#292524] leading-[1.8]"
+                >
+                  <p
+                    data-about-io-para="folio-01-p1"
+                    style={{ '--io-stagger-index': 0 } as React.CSSProperties}
+                    className="akath-about-io-para"
+                  >
+                    Marathi carries many worlds within it. The language of a city is not always the language of a village. The words spoken at home may be different from those found in a classroom or a book. Marathwada has its own rhythms, memories, humour, silences, and ways of looking at life.
+                  </p>
+
+                  <p
+                    data-about-io-para="folio-01-p2"
+                    style={{ '--io-stagger-index': 1 } as React.CSSProperties}
+                    className="akath-about-io-para"
+                  >
+                    We want those differences to find their way into print without being unnecessarily polished away.
+                  </p>
+
+                  <p
+                    data-about-io-para="folio-01-p3"
+                    style={{ '--io-stagger-index': 2 } as React.CSSProperties}
+                    className="akath-about-io-para"
+                  >
+                    For us, publishing in Marathi is not simply about preserving a language. It is about making room for the people who speak it, the lives they lead, the questions they ask, and the worlds they are still imagining.
+                  </p>
+
+                  <p
+                    data-about-io-para="folio-01-p4"
+                    style={{ '--io-stagger-index': 3 } as React.CSSProperties}
+                    className="akath-about-io-para text-[#57534E]"
+                  >
+                    We are equally curious about what happens when one language meets another — through translation, conversation, and the exchange of ideas.
+                  </p>
+                </div>
               </div>
 
-              <div
-                data-testid="about-prose-breathe-block"
-                style={{ '--breathe-phase': '1.2s' } as React.CSSProperties}
-                className="akath-about-prose-breathe space-y-3.5 font-editorial-prose text-[15.5px] text-[#252832] leading-[1.78]"
-              >
-                <p
-                  data-about-io-para="folio-01-p1"
-                  style={{ '--io-stagger-index': 0 } as React.CSSProperties}
-                  className="akath-about-io-para"
+              <div className="pt-4 border-t border-[#E6DFCE] flex items-center justify-between text-[12.5px]">
+                <span className="font-mono text-[11px] text-[#78716C]">
+                  Ref. 01 / Linguistic Pluralism
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/authors')}
+                  className="font-semibold text-[#243B8A] hover:underline inline-flex items-center gap-1 cursor-pointer"
                 >
-                  Marathi carries many worlds within it. The language of a city is not always the language of a village. The words spoken at home may be different from those found in a classroom or a book. Marathwada has its own rhythms, memories, humour, silences, and ways of looking at life.
-                </p>
-
-                <p
-                  data-about-io-para="folio-01-p2"
-                  style={{ '--io-stagger-index': 1 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  We want those differences to find their way into print without being unnecessarily polished away.
-                </p>
-
-                <p
-                  data-about-io-para="folio-01-p3"
-                  style={{ '--io-stagger-index': 2 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  For us, publishing in Marathi is not simply about preserving a language. It is about making room for the people who speak it, the lives they lead, the questions they ask, and the worlds they are still imagining.
-                </p>
-
-                <p
-                  data-about-io-para="folio-01-p4"
-                  style={{ '--io-stagger-index': 3 } as React.CSSProperties}
-                  className="akath-about-io-para text-[#5A5F72]"
-                >
-                  We are equally curious about what happens when one language meets another — through translation, conversation, and the exchange of ideas.
-                </p>
+                  <span>{lang === 'mr' ? 'आमचे लेखक पहा' : 'View Published Voices'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </motion.section>
 
-            {/* Block 02: Books take more than words */}
+            {/* Folio 02: Books take more than words */}
             <motion.section
               id="about-chapter-03"
               data-about-io-block="folio-02"
@@ -797,61 +1247,83 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
               whileInView="visible"
               viewport={{ once: true, amount: 0.04 }}
               style={{ '--io-block-delay': '60ms' } as React.CSSProperties}
-              className={`akath-seq-step akath-about-io-block bg-white border border-[#E6DFCE] rounded-2xl p-6 sm:p-8 space-y-4 transition-opacity ${
+              className={`akath-seq-step akath-about-io-block bg-white border border-[#DCD4C0] p-6 sm:p-9 flex flex-col justify-between space-y-6 transition-opacity ${
                 activeFolioFilter !== 'all' && activeFolioFilter !== 'craft'
                   ? 'hidden md:block md:opacity-45'
                   : 'block opacity-100'
               }`}
             >
-              <div className="space-y-1.5 border-b border-[#E6DFCE] pb-3.5">
-                <span className="block font-mono text-[11px] uppercase tracking-[0.16em] text-[#243B8A]">
-                  02 · मुद्रण आणि संपादन
-                </span>
-                <h3 className="akath-about-headline-breathe font-editorial-display text-[22px] sm:text-[25px] font-bold text-[#252832] leading-snug">
-                  Books take more than words
-                </h3>
+              <div className="space-y-5">
+                <div className="space-y-2 border-b border-[#E6DFCE] pb-4">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-[#243B8A]">
+                    <span className="uppercase tracking-[0.16em] font-semibold">
+                      FOLIO II · 02 · मुद्रण आणि संपादन
+                    </span>
+                    <span className="text-[#78716C]">संपादकीय विश्वास व कारागिरी</span>
+                  </div>
+                  <h3 className="akath-about-headline-breathe font-editorial-display text-[24px] sm:text-[28px] font-bold text-[#1C1917] leading-snug">
+                    Books take more than words
+                  </h3>
+                  <p className="font-serif text-[14.5px] text-[#174D3A] font-medium">
+                    वाक्यरचना, देवनागरी टाइपोग्राफी, कागद आणि बांधणी यांतून पुस्तकाचे आयुष्य ठरते.
+                  </p>
+                </div>
+
+                <div
+                  data-testid="about-prose-breathe-block"
+                  style={{ '--breathe-phase': '2.1s' } as React.CSSProperties}
+                  className="akath-about-prose-breathe space-y-3.5 font-editorial-prose text-[15.5px] text-[#292524] leading-[1.8]"
+                >
+                  <p
+                    data-about-io-para="folio-02-p1"
+                    style={{ '--io-stagger-index': 0 } as React.CSSProperties}
+                    className="akath-about-io-para"
+                  >
+                    There is a particular kind of care that goes into making a book. The sentence that needs another look. The comma that changes the rhythm. The cover that finally feels right. The Devanagari typeface that remains comfortable after a hundred pages. The paper, the binding, the quiet satisfaction of holding a finished book for the first time.
+                  </p>
+
+                  <p
+                    data-about-io-para="folio-02-p2"
+                    style={{ '--io-stagger-index': 1 } as React.CSSProperties}
+                    className="akath-about-io-para"
+                  >
+                    These things may go unnoticed by a reader. That is partly the point.
+                  </p>
+
+                  <p
+                    data-about-io-para="folio-02-p3"
+                    style={{ '--io-stagger-index': 2 } as React.CSSProperties}
+                    className="akath-about-io-para"
+                  >
+                    We want the work behind a book to serve the writing, not compete with it. We want authors to be heard, questions to be discussed honestly, and decisions to be made with care. Publishing should be a relationship built on trust, not a transaction that ends when a manuscript is accepted.
+                  </p>
+
+                  <p
+                    data-about-io-para="folio-02-p4"
+                    style={{ '--io-stagger-index': 3 } as React.CSSProperties}
+                    className="akath-about-io-para text-[#57534E]"
+                  >
+                    Not every manuscript will be right for us. But every decision deserves thought, and every author deserves clarity about the process.
+                  </p>
+                </div>
               </div>
 
-              <div
-                data-testid="about-prose-breathe-block"
-                style={{ '--breathe-phase': '2.1s' } as React.CSSProperties}
-                className="akath-about-prose-breathe space-y-3.5 font-editorial-prose text-[15.5px] text-[#252832] leading-[1.78]"
-              >
-                <p
-                  data-about-io-para="folio-02-p1"
-                  style={{ '--io-stagger-index': 0 } as React.CSSProperties}
-                  className="akath-about-io-para"
+              <div className="pt-4 border-t border-[#E6DFCE] flex items-center justify-between text-[12.5px]">
+                <span className="font-mono text-[11px] text-[#78716C]">
+                  Ref. 02 / Editorial Craftsmanship
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/submit-manuscript')}
+                  className="font-semibold text-[#243B8A] hover:underline inline-flex items-center gap-1 cursor-pointer"
                 >
-                  There is a particular kind of care that goes into making a book. The sentence that needs another look. The comma that changes the rhythm. The cover that finally feels right. The Devanagari typeface that remains comfortable after a hundred pages. The paper, the binding, the quiet satisfaction of holding a finished book for the first time.
-                </p>
-
-                <p
-                  data-about-io-para="folio-02-p2"
-                  style={{ '--io-stagger-index': 1 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  These things may go unnoticed by a reader. That is partly the point.
-                </p>
-
-                <p
-                  data-about-io-para="folio-02-p3"
-                  style={{ '--io-stagger-index': 2 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  We want the work behind a book to serve the writing, not compete with it. We want authors to be heard, questions to be discussed honestly, and decisions to be made with care. Publishing should be a relationship built on trust, not a transaction that ends when a manuscript is accepted.
-                </p>
-
-                <p
-                  data-about-io-para="folio-02-p4"
-                  style={{ '--io-stagger-index': 3 } as React.CSSProperties}
-                  className="akath-about-io-para text-[#5A5F72]"
-                >
-                  Not every manuscript will be right for us. But every decision deserves thought, and every author deserves clarity about the process.
-                </p>
+                  <span>{lang === 'mr' ? 'प्रकाशन प्रक्रिया व संहिता' : 'Manuscript Desk'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </motion.section>
 
-            {/* Block 03: A book is only the beginning */}
+            {/* Folio 03: A book is only the beginning */}
             <motion.section
               id="about-chapter-04"
               data-about-io-block="folio-03"
@@ -860,61 +1332,83 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
               whileInView="visible"
               viewport={{ once: true, amount: 0.04 }}
               style={{ '--io-block-delay': '0ms' } as React.CSSProperties}
-              className={`akath-seq-step akath-about-io-block bg-white border border-[#E6DFCE] rounded-2xl p-6 sm:p-8 space-y-4 transition-opacity ${
+              className={`akath-seq-step akath-about-io-block bg-white border border-[#DCD4C0] p-6 sm:p-9 flex flex-col justify-between space-y-6 transition-opacity ${
                 activeFolioFilter !== 'all' && activeFolioFilter !== 'beginning'
                   ? 'hidden md:block md:opacity-45'
                   : 'block opacity-100'
               }`}
             >
-              <div className="space-y-1.5 border-b border-[#E6DFCE] pb-3.5">
-                <span className="block font-mono text-[11px] uppercase tracking-[0.16em] text-[#243B8A]">
-                  03 · वाचनकट्टा आणि संवाद
-                </span>
-                <h3 className="akath-about-headline-breathe font-editorial-display text-[22px] sm:text-[25px] font-bold text-[#252832] leading-snug">
-                  A book is only the beginning
-                </h3>
+              <div className="space-y-5">
+                <div className="space-y-2 border-b border-[#E6DFCE] pb-4">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-[#243B8A]">
+                    <span className="uppercase tracking-[0.16em] font-semibold">
+                      FOLIO III · 03 · वाचनकट्टा आणि संवाद
+                    </span>
+                    <span className="text-[#78716C]">वाचक, समीक्षा आणि सहवास</span>
+                  </div>
+                  <h3 className="akath-about-headline-breathe font-editorial-display text-[24px] sm:text-[28px] font-bold text-[#1C1917] leading-snug">
+                    A book is only the beginning
+                  </h3>
+                  <p className="font-serif text-[14.5px] text-[#174D3A] font-medium">
+                    छपाईनंतर वाचनकट्ट्यावरील लेख, उतारे आणि चर्चांमधून पुस्तकाचा खरा प्रवास सुरू होतो.
+                  </p>
+                </div>
+
+                <div
+                  data-testid="about-prose-breathe-block"
+                  style={{ '--breathe-phase': '2.9s' } as React.CSSProperties}
+                  className="akath-about-prose-breathe space-y-3.5 font-editorial-prose text-[15.5px] text-[#292524] leading-[1.8]"
+                >
+                  <p
+                    data-about-io-para="folio-03-p1"
+                    style={{ '--io-stagger-index': 0 } as React.CSSProperties}
+                    className="akath-about-io-para"
+                  >
+                    We don&apos;t want our relationship with a book to end when it leaves the printing press.
+                  </p>
+
+                  <p
+                    data-about-io-para="folio-03-p2"
+                    style={{ '--io-stagger-index': 1 } as React.CSSProperties}
+                    className="akath-about-io-para"
+                  >
+                    Through our bookstore and <em>Vachankatta</em>, we hope to make space for the things that grow around reading: an excerpt that makes someone curious, a review that changes their mind, an essay that sends them looking for another book, or a conversation that continues long after everyone has gone home.
+                  </p>
+
+                  <p
+                    data-about-io-para="folio-03-p3"
+                    style={{ '--io-stagger-index': 2 } as React.CSSProperties}
+                    className="akath-about-io-para"
+                  >
+                    Perhaps someone will discover a writer they have never heard of. Perhaps a young reader will find a book that puts an old feeling into words. Perhaps a book published in a small room in Maharashtra will find its way to someone who needs it, somewhere far away.
+                  </p>
+
+                  <p
+                    data-about-io-para="folio-03-p4"
+                    style={{ '--io-stagger-index': 3 } as React.CSSProperties}
+                    className="akath-about-io-para text-[#57534E]"
+                  >
+                    We cannot promise what a book will mean to every reader. We can only give it the attention, honesty, and care it deserves before letting it find its way.
+                  </p>
+                </div>
               </div>
 
-              <div
-                data-testid="about-prose-breathe-block"
-                style={{ '--breathe-phase': '2.9s' } as React.CSSProperties}
-                className="akath-about-prose-breathe space-y-3.5 font-editorial-prose text-[15.5px] text-[#252832] leading-[1.78]"
-              >
-                <p
-                  data-about-io-para="folio-03-p1"
-                  style={{ '--io-stagger-index': 0 } as React.CSSProperties}
-                  className="akath-about-io-para"
+              <div className="pt-4 border-t border-[#E6DFCE] flex items-center justify-between text-[12.5px]">
+                <span className="font-mono text-[11px] text-[#78716C]">
+                  Ref. 03 / Vachankatta Literary Forum
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/vachankatta')}
+                  className="font-semibold text-[#243B8A] hover:underline inline-flex items-center gap-1 cursor-pointer"
                 >
-                  We don&apos;t want our relationship with a book to end when it leaves the printing press.
-                </p>
-
-                <p
-                  data-about-io-para="folio-03-p2"
-                  style={{ '--io-stagger-index': 1 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  Through our bookstore and <em>Vachankatta</em>, we hope to make space for the things that grow around reading: an excerpt that makes someone curious, a review that changes their mind, an essay that sends them looking for another book, or a conversation that continues long after everyone has gone home.
-                </p>
-
-                <p
-                  data-about-io-para="folio-03-p3"
-                  style={{ '--io-stagger-index': 2 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  Perhaps someone will discover a writer they have never heard of. Perhaps a young reader will find a book that puts an old feeling into words. Perhaps a book published in a small room in Maharashtra will find its way to someone who needs it, somewhere far away.
-                </p>
-
-                <p
-                  data-about-io-para="folio-03-p4"
-                  style={{ '--io-stagger-index': 3 } as React.CSSProperties}
-                  className="akath-about-io-para text-[#5A5F72]"
-                >
-                  We cannot promise what a book will mean to every reader. We can only give it the attention, honesty, and care it deserves before letting it find its way.
-                </p>
+                  <span>{lang === 'mr' ? 'वाचनकट्टा लेख वाचा' : 'Visit Vachankatta'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </motion.section>
 
-            {/* Block 04: Why the tortoise? */}
+            {/* Folio 04: Why the tortoise? */}
             <motion.section
               id="about-chapter-05"
               data-about-io-block="folio-04"
@@ -923,66 +1417,217 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
               whileInView="visible"
               viewport={{ once: true, amount: 0.04 }}
               style={{ '--io-block-delay': '60ms' } as React.CSSProperties}
-              className={`akath-seq-step akath-about-io-block bg-white border border-[#E6DFCE] rounded-2xl p-6 sm:p-8 space-y-4 transition-opacity ${
+              className={`akath-seq-step akath-about-io-block bg-white border border-[#DCD4C0] p-6 sm:p-9 flex flex-col justify-between space-y-6 transition-opacity ${
                 activeFolioFilter !== 'all' && activeFolioFilter !== 'tortoise'
                   ? 'hidden md:block md:opacity-45'
                   : 'block opacity-100'
               }`}
             >
-              <div className="space-y-1.5 border-b border-[#E6DFCE] pb-3.5">
-                <span className="block font-mono text-[11px] uppercase tracking-[0.16em] text-[#174D3A]">
-                  04 · कासवाची संथ पावले
-                </span>
-                <h3 className="akath-about-headline-breathe font-editorial-display text-[22px] sm:text-[25px] font-bold text-[#252832] leading-snug">
-                  Why the tortoise?
-                </h3>
+              <div className="space-y-5">
+                <div className="space-y-2 border-b border-[#E6DFCE] pb-4">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-[#174D3A]">
+                    <span className="uppercase tracking-[0.16em] font-semibold">
+                      FOLIO IV · 04 · कासवाची संथ पावले
+                    </span>
+                    <span className="text-[#78716C]">संथ गती आणि चिरंतन मूल्य</span>
+                  </div>
+                  <h3 className="akath-about-headline-breathe font-editorial-display text-[24px] sm:text-[28px] font-bold text-[#1C1917] leading-snug">
+                    Why the tortoise?
+                  </h3>
+                  <p className="font-serif text-[14.5px] text-[#174D3A] font-medium">
+                    संख्येने अधिक पुस्तके छापण्यापेक्षा, वर्षानुवर्षे टिकणारी मोजकीच पुस्तके घडवण्याचा आमचा आग्रह आहे.
+                  </p>
+                </div>
+
+                <div
+                  data-testid="about-prose-breathe-block"
+                  style={{ '--breathe-phase': '3.7s' } as React.CSSProperties}
+                  className="akath-about-prose-breathe space-y-3.5 font-editorial-prose text-[15.5px] text-[#292524] leading-[1.8]"
+                >
+                  <p
+                    data-about-io-para="folio-04-p1"
+                    style={{ '--io-stagger-index': 0 } as React.CSSProperties}
+                    className="akath-about-io-para"
+                  >
+                    We chose a tortoise for a reason. It isn&apos;t in a hurry. It carries its home with it. And it reminds us that getting somewhere slowly is still getting somewhere.
+                  </p>
+
+                  <p
+                    data-about-io-para="folio-04-p2"
+                    style={{ '--io-stagger-index': 1 } as React.CSSProperties}
+                    className="akath-about-io-para"
+                  >
+                    Publishing has its own pressures to move faster, publish more, and follow what is already selling. We understand those realities. But we also believe there is value in pausing over a sentence, taking another look at a manuscript, and making a book we can stand behind years later.
+                  </p>
+
+                  <p
+                    data-about-io-para="folio-04-p3"
+                    style={{ '--io-stagger-index': 2 } as React.CSSProperties}
+                    className="akath-about-io-para"
+                  >
+                    We would rather build a small list of books we believe in than fill a catalogue simply to make it bigger.
+                  </p>
+
+                  <p
+                    data-about-io-para="folio-04-p4"
+                    style={{ '--io-stagger-index': 3 } as React.CSSProperties}
+                    className="akath-about-io-para font-semibold text-[#174D3A]"
+                  >
+                    Akath Prakashan is our attempt to do just that — one manuscript, one book, one reader at a time.
+                  </p>
+                </div>
               </div>
 
-              <div
-                data-testid="about-prose-breathe-block"
-                style={{ '--breathe-phase': '3.7s' } as React.CSSProperties}
-                className="akath-about-prose-breathe space-y-3.5 font-editorial-prose text-[15.5px] text-[#252832] leading-[1.78]"
-              >
-                <p
-                  data-about-io-para="folio-04-p1"
-                  style={{ '--io-stagger-index': 0 } as React.CSSProperties}
-                  className="akath-about-io-para"
+              <div className="pt-4 border-t border-[#E6DFCE] flex items-center justify-between text-[12.5px]">
+                <span className="font-mono text-[11px] text-[#78716C]">
+                  Ref. 04 / Slow Publishing Ethos
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/books')}
+                  className="font-semibold text-[#174D3A] hover:underline inline-flex items-center gap-1 cursor-pointer"
                 >
-                  We chose a tortoise for a reason. It isn&apos;t in a hurry. It carries its home with it. And it reminds us that getting somewhere slowly is still getting somewhere.
-                </p>
-
-                <p
-                  data-about-io-para="folio-04-p2"
-                  style={{ '--io-stagger-index': 1 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  Publishing has its own pressures to move faster, publish more, and follow what is already selling. We understand those realities. But we also believe there is value in pausing over a sentence, taking another look at a manuscript, and making a book we can stand behind years later.
-                </p>
-
-                <p
-                  data-about-io-para="folio-04-p3"
-                  style={{ '--io-stagger-index': 2 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  We would rather build a small list of books we believe in than fill a catalogue simply to make it bigger.
-                </p>
-
-                <p
-                  data-about-io-para="folio-04-p4"
-                  style={{ '--io-stagger-index': 3 } as React.CSSProperties}
-                  className="akath-about-io-para font-medium text-[#174D3A]"
-                >
-                  Akath Prakashan is our attempt to do just that — one manuscript, one book, one reader at a time.
-                </p>
+                  <span>{lang === 'mr' ? 'निवडक ग्रंथसूची पहा' : 'Browse Our Curated List'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </motion.section>
           </div>
         </div>
 
         {/* =================================================================
-            SECTION 4: CLOSING MOTTO & PATIENT TORTOISE TRAVERSE
+            SECTION 4: INTERACTIVE ANATOMY OF AN AKATH EDITION
+            (4-Stage Curatorial Craft & Materiality Inspector)
+            ================================================================= */}
+        <section
+          id="about-craft-anatomy"
+          aria-label="Anatomy of an Akath Edition"
+          className="scroll-mt-28 bg-[#F4EFE4] border border-[#DCD4C0] p-6 sm:p-10 lg:p-12 space-y-8"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-[#DCD4C0] pb-6">
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#174D3A] font-semibold">
+                Chapter IV · Materiality &amp; Editorial Process · पुस्तकाची घडण
+              </p>
+              <h2 className="font-editorial-display text-[26px] sm:text-[34px] font-bold text-[#1C1917] leading-tight">
+                {lang === 'mr'
+                  ? 'हस्तलिखितापासून वाचकाच्या हातातील पुस्तकापर्यंत'
+                  : 'The Anatomy of an Akath Edition'}
+              </h2>
+            </div>
+
+            <p className="text-[14px] font-editorial-prose text-[#57534E] max-w-[48ch]">
+              {lang === 'mr'
+                ? 'प्रत्येक संहिता खालील चार संपादकीय व मुद्रण टप्प्यांमधून शांतपणे आणि बारकाईने घडवली जाते.'
+                : 'Select any stage below to inspect how manuscripts are evaluated, edited, typeset in Devanagari, and brought into reader conversation.'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            {/* Left 5 Columns: Interactive Stage Selector Rail */}
+            <div className="lg:col-span-5 flex flex-col justify-between divide-y divide-[#DCD4C0] border border-[#DCD4C0] bg-[#FBF9F5]">
+              {craftStages.map((stage, idx) => {
+                const isSelected = activeCraftStage === idx;
+                return (
+                  <button
+                    key={stage.number}
+                    type="button"
+                    onClick={() => setActiveCraftStage(idx)}
+                    className={`w-full text-left p-5 transition-colors cursor-pointer flex items-start justify-between gap-4 ${
+                      isSelected
+                        ? 'bg-[#243B8A] text-[#FBF9F5]'
+                        : 'bg-[#FBF9F5] text-[#1C1917] hover:bg-[#F2ECE1]'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <p
+                        className={`text-[11px] font-mono uppercase tracking-[0.14em] ${
+                          isSelected ? 'text-[#FFD966]' : 'text-[#57534E]'
+                        }`}
+                      >
+                        {lang === 'mr' ? stage.kickerMr : stage.kickerEn}
+                      </p>
+                      <h3 className="font-editorial-display text-[18px] sm:text-[20px] font-bold leading-snug">
+                        {lang === 'mr' ? stage.titleMr : stage.titleEn}
+                      </h3>
+                    </div>
+                    <span
+                      className={`font-mono text-[13px] tabular-nums shrink-0 mt-0.5 ${
+                        isSelected ? 'text-[#FFD966] font-bold' : 'text-[#78716C]'
+                      }`}
+                    >
+                      {stage.number} →
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right 7 Columns: Selected Stage Curatorial Specification Sheet */}
+            <div className="lg:col-span-7 bg-white border border-[#DCD4C0] p-6 sm:p-8 lg:p-10 flex flex-col justify-between space-y-6">
+              <div className="space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[#E6DFCE]">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#243B8A] font-semibold">
+                    {lang === 'mr' ? currentCraft.kickerMr : currentCraft.kickerEn}
+                  </span>
+                  <span className="font-mono text-[11.5px] text-[#174D3A]">
+                    {currentCraft.specCode}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="font-editorial-display text-[24px] sm:text-[28px] font-bold text-[#1C1917] leading-snug">
+                    {currentCraft.titleMr}
+                  </h3>
+                  <p className="font-editorial-display italic text-[17px] text-[#57534E]">
+                    {currentCraft.titleEn}
+                  </p>
+                </div>
+
+                <p className="font-serif text-[16px] text-[#1C1917] leading-[1.82]">
+                  {currentCraft.summaryMr}
+                </p>
+
+                <p className="font-editorial-prose text-[15px] text-[#57534E] leading-[1.78]">
+                  {currentCraft.summaryEn}
+                </p>
+
+                <div className="pt-2 space-y-2.5 border-t border-[#E6DFCE]">
+                  {currentCraft.detailPoints.map((pt, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-2.5 text-[14px] font-editorial-prose text-[#292524]"
+                    >
+                      <Check className="w-4 h-4 text-[#174D3A] shrink-0 mt-1" />
+                      <span>{pt}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-5 border-t border-[#DCD4C0] flex flex-wrap items-center justify-between gap-4">
+                <span className="font-mono text-[11px] text-[#78716C] tabular-nums">
+                  STAGE {currentCraft.number} OF 04 · AKATH EDITORIAL STANDARD
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate(currentCraft.ctaPath)}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1C1917] hover:bg-[#243B8A] text-[#FBF9F5] text-[13px] font-medium rounded-sm transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  <span>{currentCraft.ctaLabel}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* =================================================================
+            SECTION 5: CLOSING MOTTO, PATIENT TORTOISE TRAVERSE & PATHWAYS
             ================================================================= */}
         <motion.footer
+          id="about-colophon-end"
           data-testid="about-closing-colophon"
           data-about-io-block="closing-colophon"
           initial={{ opacity: 0, y: 12 }}
@@ -990,28 +1635,87 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = () => {
           viewport={{ once: true, amount: 0.04 }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           aria-label="अकथ प्रकाशन समारोप ब्रीदवाक्य"
-          className="akath-about-io-block pt-4 border-t border-[#E6DFCE] text-center space-y-5"
+          className="akath-about-io-block scroll-mt-28 pt-10 border-t border-[#1C1917] space-y-10"
         >
-          <div
-            data-about-io-para="closing-motto"
-            style={{ '--io-stagger-index': 0 } as React.CSSProperties}
-            className="akath-about-io-para flex flex-wrap items-baseline justify-center gap-2.5"
-          >
-            <p className="font-editorial-display italic text-[19px] sm:text-[22px] text-[#243B8A] font-medium">
-              अकथ प्रकाशन
+          <div className="text-center space-y-3">
+            <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#57534E]">
+              Chapter V · Imprint Colophon &amp; Motto
             </p>
-            <span aria-hidden="true" className="text-[#C89D54]">
-              —
-            </span>
-            <p
-              data-testid="about-final-marathi-line"
-              className="font-editorial-display italic text-[20px] sm:text-[25px] font-bold text-[#174D3A] leading-snug"
+            <div
+              data-about-io-para="closing-motto"
+              style={{ '--io-stagger-index': 0 } as React.CSSProperties}
+              className="akath-about-io-para flex flex-wrap items-baseline justify-center gap-3"
             >
-              वाचत राहू. विचारत राहू. लिहित राहू.
+              <p className="font-editorial-display italic text-[22px] sm:text-[26px] text-[#243B8A] font-medium">
+                अकथ प्रकाशन
+              </p>
+              <span aria-hidden="true" className="text-[#C89D54]">
+                —
+              </span>
+              <p
+                data-testid="about-final-marathi-line"
+                className="font-editorial-display italic text-[24px] sm:text-[30px] font-bold text-[#174D3A] leading-snug"
+              >
+                वाचत राहू. विचारत राहू. लिहित राहू.
+              </p>
+            </div>
+            <p className="font-editorial-prose text-[14px] text-[#57534E]">
+              Let us keep reading. Let us keep questioning. Let us keep writing.
             </p>
           </div>
 
           <WalkingTortoise />
+
+          {/* Bottom 3-Zone Curatorial Action Strip */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+            <button
+              type="button"
+              onClick={() => onNavigate('/books')}
+              className="group bg-white border border-[#DCD4C0] hover:border-[#243B8A] p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4"
+            >
+              <div>
+                <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#243B8A]">
+                  01 · Catalogue
+                </p>
+                <p className="mt-1 font-editorial-display text-[19px] font-bold text-[#1C1917] group-hover:text-[#243B8A]">
+                  {lang === 'mr' ? 'प्रकाशित पुस्तके पहा' : 'Explore Published Books'}
+                </p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-[#57534E] group-hover:text-[#243B8A] shrink-0" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onNavigate('/vachankatta')}
+              className="group bg-white border border-[#DCD4C0] hover:border-[#243B8A] p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4"
+            >
+              <div>
+                <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#174D3A]">
+                  02 · Literary Journal
+                </p>
+                <p className="mt-1 font-editorial-display text-[19px] font-bold text-[#1C1917] group-hover:text-[#174D3A]">
+                  {lang === 'mr' ? 'वाचनकट्टा आणि पहिलं पान' : 'Read Vachankatta & Excerpts'}
+                </p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-[#57534E] group-hover:text-[#174D3A] shrink-0" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onNavigate('/submit-manuscript')}
+              className="group bg-white border border-[#DCD4C0] hover:border-[#243B8A] p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4"
+            >
+              <div>
+                <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#243B8A]">
+                  03 · For Authors
+                </p>
+                <p className="mt-1 font-editorial-display text-[19px] font-bold text-[#1C1917] group-hover:text-[#243B8A]">
+                  {lang === 'mr' ? 'प्रकाशनार्थ संहिता पाठवा' : 'Submit Your Manuscript'}
+                </p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-[#57534E] group-hover:text-[#243B8A] shrink-0" />
+            </button>
+          </div>
         </motion.footer>
       </article>
     </div>
