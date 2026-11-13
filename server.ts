@@ -2423,6 +2423,61 @@ app.get(
   }
 );
 
+app.post(
+  '/api/account/orders/:id/cancel',
+  requirePermission('account:orders'),
+  (req: AuthenticatedRequest, res: Response) => {
+    const user = req.authUser!;
+    const lang: AppLanguage = req.body?.lang === 'en' ? 'en' : 'mr';
+    const order = ordersStore.find(
+      (o) => o.id === req.params.id || o.orderNumber === req.params.id
+    );
+    if (!order) {
+      res.status(404).json({ error: 'Order not found.' });
+      return;
+    }
+
+    if (!canAccessOrderResource(toPublicUserProfile(user), order)) {
+      res.status(403).json({
+        error: 'Forbidden: You do not have permission to modify this order.',
+      });
+      return;
+    }
+
+    if (
+      order.orderStatus === 'shipped' ||
+      order.orderStatus === 'delivered' ||
+      order.orderStatus === 'cancelled' ||
+      order.orderStatus === 'returned' ||
+      order.orderStatus === 'refunded'
+    ) {
+      res.status(400).json({
+        error:
+          lang === 'mr'
+            ? 'रवाना झालेली किंवा पूर्ण झालेली ऑर्डर रद्द करता येत नाही.'
+            : 'Orders that have already been shipped, delivered, or cancelled cannot be cancelled.',
+      });
+      return;
+    }
+
+    const nowIso = new Date().toISOString();
+    order.orderStatus = 'cancelled';
+    order.updatedAt = nowIso;
+    order.auditTrail.push({
+      timestamp: nowIso,
+      actor: user.email,
+      action: 'STATUS_CANCELLED_BY_CUSTOMER',
+      note:
+        lang === 'mr'
+          ? 'वाचकाने खात्यामधून ऑर्डर रद्द केली.'
+          : 'Order cancelled by customer from Account Order History.',
+    });
+
+    res.json({ ok: true, order });
+  }
+);
+
+
 // Link eligible Guest Order to Verified Reader Account
 app.post(
   '/api/account/orders/link',

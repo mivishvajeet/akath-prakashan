@@ -13,9 +13,11 @@ import {
   getDocFromServer,
   getDoc,
   setDoc,
+  updateDoc,
   deleteDoc,
   collection,
   getDocs,
+  onSnapshot,
   query,
   where,
 } from 'firebase/firestore';
@@ -264,6 +266,29 @@ export async function deleteSavedAddressFromCloud(
   }
 }
 
+export interface FirestoreCloudOrderDoc {
+  id: string;
+  orderNumber: string;
+  userId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  subtotal: number;
+  shippingCost: number;
+  grandTotal: number;
+  status: 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  courierPartner?: string;
+  trackingNumber?: string;
+  dispatchedAt?: string;
+  deliveredAt?: string;
+  shippingAddress?: string;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  itemsSummary?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export async function syncOrderToCloud(order: OrderRecord): Promise<void> {
   const currentUser = auth.currentUser;
   if (!currentUser || !currentUser.emailVerified) return;
@@ -293,12 +318,138 @@ export async function syncOrderToCloud(order: OrderRecord): Promise<void> {
   if (order.customer?.phone) {
     payload.customerPhone = truncateStr(order.customer.phone, 20);
   }
+  if (order.fulfilment?.courierPartner) {
+    payload.courierPartner = truncateStr(order.fulfilment.courierPartner, 100);
+  }
+  if (order.fulfilment?.trackingNumber) {
+    payload.trackingNumber = truncateStr(order.fulfilment.trackingNumber, 80);
+  }
+  if (order.fulfilment?.dispatchedAt) {
+    payload.dispatchedAt = truncateStr(order.fulfilment.dispatchedAt, 64);
+  }
+  if (order.fulfilment?.deliveredAt) {
+    payload.deliveredAt = truncateStr(order.fulfilment.deliveredAt, 64);
+  }
+  if (order.customer?.addressLine1) {
+    const addrParts = [
+      order.customer.addressLine1,
+      order.customer.addressLine2,
+      order.customer.city,
+      order.customer.district,
+      order.customer.state,
+      order.customer.postalCode,
+    ]
+      .filter(Boolean)
+      .join(', ');
+    payload.shippingAddress = truncateStr(addrParts, 360);
+  }
+  if (order.paymentMethod) {
+    payload.paymentMethod = truncateStr(order.paymentMethod, 40);
+  }
+  if (order.paymentStatus) {
+    payload.paymentStatus = truncateStr(order.paymentStatus, 32);
+  }
+  if (Array.isArray(order.items) && order.items.length > 0) {
+    const summaryText = order.items
+      .map(
+        (item) =>
+          `${item.title} (${item.authorName}) × ${item.approvedQuantity} — ₹${item.lineTotal}`
+      )
+      .join(' | ');
+    payload.itemsSummary = truncateStr(summaryText, 600);
+  }
 
   try {
-    await setDoc(doc(db, 'orders', orderId), payload);
+    const existingSnap = await getDoc(doc(db, 'orders', orderId));
+    if (!existingSnap.exists()) {
+      await setDoc(doc(db, 'orders', orderId), payload);
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
+}
+
+export async function cancelOrderInCloud(orderId: string): Promise<void> {
+  const currentUser = auth.currentUser;
+  if (!currentUser || !currentUser.emailVerified) return;
+
+  const cleanId = sanitizeId(orderId, 'ord');
+  const path = `orders/${cleanId}`;
+  try {
+    const existingSnap = await getDoc(doc(db, 'orders', cleanId));
+    if (!existingSnap.exists()) return;
+    const data = existingSnap.data();
+    if (data.status === 'delivered' || data.status === 'cancelled') return;
+    await updateDoc(doc(db, 'orders', cleanId), {
+      status: 'cancelled',
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+export function subscribeToUserOrdersFromFirestore(
+  onOrdersSnapshot: (
+    orders: FirestoreCloudOrderDoc[],
+    connectionMeta: { active: boolean; uid: string | null; syncedAt: string }
+  ) => void
+): () => void {
+  let unsubscribeSnapshot: (() => void) | null = null;
+
+  const attachListenerForUser = (fbUser: FirebaseUser | null) => {
+    if (unsubscribeSnapshot) {
+      unsubscribeSnapshot();
+      unsubscribeSnapshot = null;
+    }
+
+    if (!fbUser || !fbUser.emailVerified) {
+      onOrdersSnapshot([], {
+        active: false,
+        uid: null,
+        syncedAt: new Date().toISOString(),
+      });
+      return;
+    }
+
+    const uid = sanitizeId(fbUser.uid, 'usr');
+    const ordersQuery = query(
+      collection(db, 'orders'),
+      where('userId', '==', uid)
+    );
+
+    unsubscribeSnapshot = onSnapshot(
+      ordersQuery,
+      (snapshot) => {
+        const list: FirestoreCloudOrderDoc[] = [];
+        snapshot.forEach((docSnap) => {
+          list.push(docSnap.data() as FirestoreCloudOrderDoc);
+        });
+        list.sort((a, b) =>
+          String(b.createdAt || '').localeCompare(String(a.createdAt || ''))
+        );
+        onOrdersSnapshot(list, {
+          active: true,
+          uid,
+          syncedAt: new Date().toISOString(),
+        });
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'orders');
+      }
+    );
+  };
+
+  const unsubscribeAuth = onAuthStateChanged(auth, (fbUser) => {
+    attachListenerForUser(fbUser);
+  });
+
+  return () => {
+    unsubscribeAuth();
+    if (unsubscribeSnapshot) {
+      unsubscribeSnapshot();
+    }
+  };
 }
 
 export async function syncManuscriptToCloud(

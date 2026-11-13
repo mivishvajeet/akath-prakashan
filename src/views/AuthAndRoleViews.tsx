@@ -13,11 +13,13 @@ import { validateEmail, validateIndianPhone } from '../utils/validation';
 import { validatePasswordStrength, sanitizeRedirectPath } from '../auth/rbac';
 import { AnimatedTortoiseEmblem } from '../components/SarvamIllustrations';
 import { BookCoverArt } from '../components/BookCoverArt';
+import { OrderHistory } from '../components/OrderHistory';
 import {
   signInWithGooglePopup,
   syncUserProfileToCloud,
   syncSavedAddressToCloud,
   deleteSavedAddressFromCloud,
+  syncOrderToCloud,
   fetchCloudUserBundle,
 } from '../firebase/client';
 import {
@@ -1360,10 +1362,8 @@ export const ReaderAccountView: React.FC<{
   const [prefs, setPrefs] = useState(user.notificationPreferences);
   const [verifyTokenInput, setVerifyTokenInput] = useState('');
 
-  // Orders & guest linking state
+  // Orders state
   const [orders, setOrders] = useState<OrderRecord[]>([]);
-  const [linkOrderNumber, setLinkOrderNumber] = useState('');
-  const [linkGuestToken, setLinkGuestToken] = useState('');
 
   // Addresses state
   const [addresses, setAddresses] = useState<SavedAddress[]>([]);
@@ -1486,16 +1486,56 @@ export const ReaderAccountView: React.FC<{
     }
   };
 
-  const handleLinkGuestOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRefreshOrders = async () => {
+    const ordRes = await authFetch('/api/account/orders', {}, csrfToken);
+    if (ordRes.ok) {
+      const d = await ordRes.json();
+      setOrders(d.orders || []);
+    }
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    setStatusBanner(null);
+    const res = await authFetch(
+      `/api/account/orders/${orderId}/cancel`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ lang }),
+      },
+      csrfToken
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      setStatusBanner({
+        type: 'error',
+        text: data.error || 'Could not cancel order.',
+      });
+      return;
+    }
+    setOrders((prev) =>
+      prev.map((o) => (o.id === data.order.id ? data.order : o))
+    );
+    setStatusBanner({
+      type: 'success',
+      text:
+        lang === 'mr'
+          ? `ऑर्डर ${data.order.orderNumber} रद्द करण्यात आली आहे.`
+          : `Order ${data.order.orderNumber} has been cancelled.`,
+    });
+  };
+
+  const handleLinkGuestOrder = async (
+    orderNumber: string,
+    guestAccessToken: string
+  ) => {
     setStatusBanner(null);
     const res = await authFetch(
       '/api/account/orders/link',
       {
         method: 'POST',
         body: JSON.stringify({
-          orderNumber: linkOrderNumber,
-          guestAccessToken: linkGuestToken,
+          orderNumber,
+          guestAccessToken,
           lang,
         }),
       },
@@ -1513,8 +1553,11 @@ export const ReaderAccountView: React.FC<{
       data.order,
       ...prev.filter((o) => o.id !== data.order.id),
     ]);
-    setLinkOrderNumber('');
-    setLinkGuestToken('');
+    try {
+      await syncOrderToCloud(data.order);
+    } catch {
+      // Non-blocking Firestore sync
+    }
     setStatusBanner({
       type: 'success',
       text:
@@ -1972,97 +2015,19 @@ export const ReaderAccountView: React.FC<{
           </div>
         )}
 
-        {/* TAB 2: MY ORDERS & GUEST ORDER LINKING */}
+        {/* TAB 2: MY ORDERS, REAL-TIME FIRESTORE SYNC & DELIVERY TRACKING */}
         {tab === 'orders' && (
-          <div className="space-y-8">
-            <div className="bg-white rounded-3xl border border-[#E6DFCE] p-6 sm:p-8 space-y-4">
-              <h2 className="type-section-heading text-[#252832]">
-                {lang === 'mr'
-                  ? 'तुमचा ऑर्डर इतिहास'
-                  : 'Your Order History'}
-              </h2>
-              {orders.length === 0 ? (
-                <p className="text-[15px] text-[#5A5F72] py-4">
-                  {lang === 'mr'
-                    ? 'तुमच्या खात्यावर अद्याप कोणतीही ऑर्डर नाही.'
-                    : 'No orders found for your account yet.'}
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {orders.map((ord) => (
-                    <div
-                      key={ord.id}
-                      className="p-5 rounded-2xl bg-[#FFFDF7] border border-[#E6DFCE] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2.5">
-                          <span className="font-mono font-bold text-[#243B8A]">
-                            {ord.orderNumber}
-                          </span>
-                          <span className="px-2.5 py-0.5 rounded-md bg-[#FFD966]/60 text-[#252832] text-[12px] font-semibold">
-                            {ord.orderStatus}
-                          </span>
-                        </div>
-                        <p className="text-[14px] text-[#252832]">
-                          {ord.items
-                            .map((i) => `${i.title} (×${i.approvedQuantity})`)
-                            .join(', ')}
-                        </p>
-                        <p className="text-[12.5px] text-[#5A5F72]">
-                          {ord.createdAt.slice(0, 10)} ·{' '}
-                          {lang === 'mr' ? 'एकूण' : 'Total'}: ₹{ord.grandTotal}
-                        </p>
-                      </div>
-                      {ord.fulfilment.trackingNumber && (
-                        <div className="text-[13px] text-[#243B8A] font-mono">
-                          Tracking: {ord.fulfilment.trackingNumber}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Link Guest Order Card */}
-            <form
-              onSubmit={handleLinkGuestOrder}
-              className="bg-white rounded-3xl border border-[#E6DFCE] p-6 sm:p-8 space-y-4"
-            >
-              <h3 className="font-serif text-[20px] font-bold text-[#252832]">
-                {lang === 'mr'
-                  ? 'पूर्वीची गेस्ट ऑर्डर खात्याशी जोडा'
-                  : 'Link a Previous Guest Order to Your Account'}
-              </h3>
-              <p className="text-[14px] text-[#5A5F72]">
-                {lang === 'mr'
-                  ? 'लॉगिन न करता केलेल्या ऑर्डरचा क्रमांक आणि गेस्ट टोकन टाकून ती ऑर्डर तुमच्या खात्यात समाविष्ट करा.'
-                  : 'Enter your order number and guest access token (or use a verified matching email) to link a guest order.'}
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <input
-                  type="text"
-                  value={linkOrderNumber}
-                  onChange={(e) => setLinkOrderNumber(e.target.value)}
-                  placeholder="AK-2026-1043"
-                  className="px-3.5 py-2.5 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] font-mono text-[14px]"
-                />
-                <input
-                  type="text"
-                  value={linkGuestToken}
-                  onChange={(e) => setLinkGuestToken(e.target.value)}
-                  placeholder="Guest Access Token (gtok-...)"
-                  className="px-3.5 py-2.5 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] font-mono text-[13px]"
-                />
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#243B8A] text-[#FFFDF7] text-[14px] font-semibold"
-                >
-                  {lang === 'mr' ? 'ऑर्डर जोडा' : 'Link Order'}
-                </button>
-              </div>
-            </form>
-          </div>
+          <OrderHistory
+            user={user}
+            orders={orders}
+            books={books}
+            authors={authors}
+            onRefreshOrders={handleRefreshOrders}
+            onCancelOrder={handleCancelOrder}
+            onLinkGuestOrder={handleLinkGuestOrder}
+            onAddToCart={onAddToCart}
+            onNavigate={onNavigate}
+          />
         )}
 
         {/* TAB 3: WISHLIST */}

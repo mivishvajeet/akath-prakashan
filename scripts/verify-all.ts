@@ -2107,13 +2107,59 @@ async function runTests() {
   assert.ok(rulesRaw.includes("rules_version = '2';"));
   assert.ok(rulesRaw.includes('isValidUserProfile(incoming())'));
   assert.ok(rulesRaw.includes("request.auth.token.email == 'vishudhawle11111@gmail.com'"));
+  assert.ok(rulesRaw.includes("'trackingNumber'"));
+  assert.ok(rulesRaw.includes("'courierPartner'"));
   console.log(
     '  [PASS] DB-05: firebase-blueprint.json and hardened firestore.rules verified'
   );
 
+  // Verify Real-Time Firestore OrderHistory Component & Order Cancellation Lifecycle
+  const orderHistorySource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/components/OrderHistory.tsx'),
+    'utf-8'
+  );
+  const firebaseClientSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/firebase/client.ts'),
+    'utf-8'
+  );
+  const authViewsSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/views/AuthAndRoleViews.tsx'),
+    'utf-8'
+  );
+  assert.ok(firebaseClientSource.includes('onSnapshot'));
+  assert.ok(firebaseClientSource.includes('subscribeToUserOrdersFromFirestore'));
+  assert.ok(firebaseClientSource.includes('cancelOrderInCloud'));
+  assert.ok(orderHistorySource.includes('subscribeToUserOrdersFromFirestore'));
+  assert.ok(orderHistorySource.includes('data-testid="account-order-history"'));
+  assert.ok(orderHistorySource.includes('data-testid="order-delivery-tracker"'));
+  assert.ok(orderHistorySource.includes('data-testid="order-status-timeline"'));
+  assert.ok(orderHistorySource.includes('data-testid="order-history-filter-tabs"'));
+  assert.ok(orderHistorySource.includes('data-testid="order-history-search"'));
+  assert.ok(orderHistorySource.includes('data-testid="copy-tracking-btn"'));
+  assert.ok(authViewsSource.includes('<OrderHistory'));
+
+  // Test order cancellation endpoint: shipped seed order cannot be cancelled (400), pending order can be cancelled (200)
+  const cancelShippedRes = await postJson(
+    '/api/account/orders/ord-seed-1041/cancel',
+    { lang: 'en' },
+    { Authorization: `Bearer ${sandboxReader.data.sessionToken}` }
+  );
+  assert.equal(cancelShippedRes.status, 400);
+
+  const cancelPendingRes = await postJson(
+    `/api/account/orders/${linkOrderRes.data.order.id}/cancel`,
+    { lang: 'en' },
+    readerAHeaders
+  );
+  assert.equal(cancelPendingRes.status, 200);
+  assert.equal(cancelPendingRes.data.order.orderStatus, 'cancelled');
+  console.log(
+    '  [PASS] DB-06: Real-time Firestore OrderHistory component (onSnapshot, 4-stage delivery tracker, status log, and order cancellation) verified'
+  );
+
   console.log('\n================================================================');
   console.log(
-    'ALL 95 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS + 11 SEC-01 + 5 SEC-02 + 5 DB/CLOUD) PASSED!'
+    'ALL 96 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS + 11 SEC-01 + 5 SEC-02 + 6 DB/CLOUD) PASSED!'
   );
   console.log('================================================================');
 }
@@ -2122,3 +2168,4 @@ runTests().catch((err) => {
   console.error('Verification failed:', err);
   process.exit(1);
 });
+

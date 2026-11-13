@@ -512,6 +512,11 @@ export default function App() {
     }
     if (outcome === 'success') {
       setCartItems([]);
+      try {
+        await syncOrderToCloud(data.order as OrderRecord);
+      } catch {
+        // Non-blocking cloud sync fallback
+      }
       await fetchBootstrap();
     }
     return { ok: true, order: data.order as OrderRecord };

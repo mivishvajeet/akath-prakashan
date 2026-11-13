@@ -282,6 +282,48 @@
           "maxLength": 32,
           "description": "Order fulfillment status."
         },
+        "courierPartner": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Postal or courier partner handling delivery (e.g., India Post Registered Book Post, BlueDart)."
+        },
+        "trackingNumber": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Courier or postal consignment tracking number."
+        },
+        "dispatchedAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Dispatch timestamp when order was handed to courier."
+        },
+        "deliveredAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Delivery completion timestamp."
+        },
+        "shippingAddress": {
+          "type": "string",
+          "maxLength": 360,
+          "description": "Formatted destination shipping address and PIN code."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Selected payment method."
+        },
+        "paymentStatus": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "Payment verification status."
+        },
+        "itemsSummary": {
+          "type": "string",
+          "maxLength": 600,
+          "description": "Summary of ordered Marathi book editions and quantities."
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",
