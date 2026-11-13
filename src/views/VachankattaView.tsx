@@ -812,7 +812,9 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const handleScroll = () => {
+    let rafId: number | null = null;
+    const updateScrollState = () => {
+      rafId = null;
       const currentY = window.scrollY || 0;
       const docHeight =
         document.documentElement.scrollHeight - window.innerHeight;
@@ -820,21 +822,36 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
         docHeight > 0
           ? Math.min(100, Math.max(0, Math.round((currentY / docHeight) * 100)))
           : 0;
-      setReadingProgress(progress);
+      setReadingProgress((prev) =>
+        progress === 0 || progress === 100 || Math.abs(prev - progress) >= 2
+          ? progress
+          : prev
+      );
 
       const delta = currentY - lastScrollYRef.current;
       if (currentY <= 64) {
-        setIsScrollImmersive(false);
-      } else if (delta > 8 && currentY > 96) {
-        setIsScrollImmersive(true);
-      } else if (delta < -14) {
-        setIsScrollImmersive(false);
+        setIsScrollImmersive((prev) => (prev ? false : prev));
+      } else if (delta > 10 && currentY > 96) {
+        setIsScrollImmersive((prev) => (prev ? prev : true));
+      } else if (delta < -16) {
+        setIsScrollImmersive((prev) => (prev ? false : prev));
       }
       lastScrollYRef.current = currentY;
     };
 
+    const handleScroll = () => {
+      if (rafId === null) {
+        rafId = window.requestAnimationFrame(updateScrollState);
+      }
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
   }, []);
 
   const dynamicLineHeight = computeDynamicMarathiLineHeight(

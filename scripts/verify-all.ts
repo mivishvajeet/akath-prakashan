@@ -1134,17 +1134,15 @@ async function runTests() {
   assert.ok(!homeViewSource.includes('80 GSM'));
   assert.ok(!homeViewSource.includes('Acid-Free Bookpaper'));
   assert.ok(homeViewSource.includes('data-testid="home-manuscript-desk"'));
-  assert.ok(homeViewSource.includes('<SixEditorialStages variant="home"'));
+  assert.ok(!homeViewSource.includes('<SixEditorialStages'));
+  assert.ok(!homeViewSource.includes('Accepted Literary Genres'));
   assert.ok(homeViewSource.includes('data-testid="home-published-books"'));
   assert.ok(homeViewSource.includes('data-testid="home-catalog-horizontal-scroll"'));
   assert.ok(booksAndStoreSource.includes('data-testid="catalogue-mobile-horizontal-scroll"'));
-  assert.ok(booksAndStoreSource.includes('testId="catalogue-category-select"'));
+  assert.ok(!booksAndStoreSource.includes('testId="catalogue-category-select"'));
+  assert.ok(booksAndStoreSource.includes('layoutId="catalogue-category-pill"'));
   assert.ok(booksAndStoreSource.includes('testId="catalogue-sort-select"'));
-  assert.ok(
-    homeViewSource.indexOf('data-testid="home-manuscript-desk"') <
-      homeViewSource.indexOf('<SixEditorialStages variant="home"'),
-    'Open Editorial Desk must appear ABOVE Six Editorial Stages on HomeView'
-  );
+  assert.ok(!booksAndStoreSource.includes('showExcerptSheet'));
   assert.ok(!publishingViewsSource.includes('<SixEditorialStages'));
   assert.ok(publishingViewsSource.includes('data-testid="about-archival-dateline"'));
   assert.ok(publishingViewsSource.includes('data-testid="about-live-date"'));
@@ -1162,7 +1160,6 @@ async function runTests() {
   assert.ok(publishingViewsSource.includes('data-testid="about-prose-breathe-block"'));
   assert.ok(publishingViewsSource.includes('akath-about-headline-breathe'));
   assert.ok(publishingViewsSource.includes('akath-about-prose-breathe'));
-  assert.ok(publishingViewsSource.includes('hidden md:block md:opacity-45'));
   assert.ok(cssSource.includes('@keyframes akath-headline-harmonic-breathe'));
   assert.ok(cssSource.includes('@keyframes akath-prose-harmonic-breathe'));
   assert.ok(
@@ -1171,10 +1168,17 @@ async function runTests() {
   assert.ok(
     publishingViewsSource.includes('Some books end at the last page. Others stay with us.')
   );
-  assert.ok(publishingViewsSource.includes('The language we live in'));
-  assert.ok(publishingViewsSource.includes('Books take more than words'));
-  assert.ok(publishingViewsSource.includes('A book is only the beginning'));
+  assert.ok(!publishingViewsSource.includes('FIG. 01 · IMPRINT SEAL'));
+  assert.ok(!publishingViewsSource.includes('Marginalia 01'));
+  assert.ok(!publishingViewsSource.includes('The language we live in'));
+  assert.ok(!publishingViewsSource.includes('Books take more than words'));
+  assert.ok(!publishingViewsSource.includes('A book is only the beginning'));
+  assert.ok(!publishingViewsSource.includes('data-testid="about-monograph-bento-grid"'));
   assert.ok(publishingViewsSource.includes('Why the tortoise?'));
+  assert.ok(publishingViewsSource.includes('data-testid="about-why-tortoise-feature"'));
+  assert.ok(!publishingViewsSource.includes('Materiality &amp; Editorial Process · पुस्तकाची घडण'));
+  assert.ok(!publishingViewsSource.includes('Curatorial Archive · संपादकीय निवड आणि प्रकाशित पुस्तके'));
+  assert.ok(!publishingViewsSource.includes('Our Approach to Publishing'));
   assert.ok(
     publishingViewsSource.includes(
       'Akath Prakashan is our attempt to do just that — one manuscript, one book, one reader at a time.'
@@ -1183,8 +1187,6 @@ async function runTests() {
   assert.ok(
     publishingViewsSource.includes('data-testid="about-editorial-colophon-desk"')
   );
-  assert.ok(publishingViewsSource.includes('data-testid="about-monograph-bento-grid"'));
-  assert.ok(publishingViewsSource.includes('data-testid="about-folio-filter-bar"'));
   assert.ok(publishingViewsSource.includes('font-editorial-display'));
   assert.ok(publishingViewsSource.includes('font-editorial-prose'));
   assert.ok(cssSource.includes('.font-editorial-display'));

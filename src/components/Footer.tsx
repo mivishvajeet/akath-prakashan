@@ -202,7 +202,7 @@ export const Footer: React.FC<FooterProps> = ({
               <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#FFD966]/85">
                 {t.home.newsletterTitle}
               </p>
-              <p className="font-serif text-[17px] text-[#FFFDF7]/95 leading-[1.6]">
+              <p className="font-serif not-italic text-[17px] text-[#FFFDF7]/95 leading-[1.6]">
                 “{PUBLISHER_IDENTITY.closingMottoMarathi}”
               </p>
 
@@ -614,10 +614,10 @@ export const Footer: React.FC<FooterProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   data-testid="footer-creator-credit"
-                  className="last-page-creator-credit font-serif font-semibold text-[#FFD966] hover:text-[#FFFDF7] rounded px-1 py-0.5"
+                  className="last-page-creator-credit font-serif font-semibold text-[#FFD966] hover:text-[#FFFDF7]"
                 >
                   <span>mivishvajeet</span>
-                  <span aria-hidden="true" className="last-page-creator-mark">
+                  <span aria-hidden="true" className="last-page-creator-mark sr-only">
                     ↗
                   </span>
                 </a>

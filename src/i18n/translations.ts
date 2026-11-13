@@ -693,9 +693,9 @@ export interface LanguageContextValue {
 }
 
 export const LanguageContext = createContext<LanguageContextValue>({
-  lang: 'mr',
+  lang: 'en',
   setLang: () => {},
-  t: TRANSLATIONS.mr,
+  t: TRANSLATIONS.en,
 });
 
 export function useLanguage(): LanguageContextValue {

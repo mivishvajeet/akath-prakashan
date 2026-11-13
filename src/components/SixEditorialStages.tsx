@@ -743,7 +743,7 @@ export const SixEditorialStages: React.FC<SixEditorialStagesProps> = ({
 }) => {
   const { lang } = useLanguage();
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(true);
+  const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isAutoPlaying) return;

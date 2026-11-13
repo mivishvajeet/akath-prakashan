@@ -53,7 +53,7 @@ import {
 } from './views/AuthAndRoleViews';
 
 const CART_STORAGE_KEY = 'akath_cart_v1';
-const LANG_STORAGE_KEY = 'akath_lang_v1';
+const LANG_STORAGE_KEY = 'akath_lang_v2';
 
 function loadInitialCart(): CartItemInput[] {
   try {
@@ -76,9 +76,9 @@ function loadInitialCart(): CartItemInput[] {
 function loadInitialLang(): AppLanguage {
   try {
     const saved = localStorage.getItem(LANG_STORAGE_KEY);
-    return saved === 'en' ? 'en' : 'mr';
+    return saved === 'mr' ? 'mr' : 'en';
   } catch {
-    return 'mr';
+    return 'en';
   }
 }
 
@@ -278,12 +278,77 @@ export default function App() {
     }
   }, [csrfToken, navigate]);
 
-  // Persist cartItems to localStorage and fetch authoritative server quote
+  // Persist cartItems to localStorage, compute instant 0ms client quote, and sync authoritative server quote
   useEffect(() => {
     try {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
     } catch {
       // Ignore storage errors
+    }
+
+    if (books.length > 0) {
+      const mergedMap = new Map<string, number>();
+      for (const entry of cartItems) {
+        if (!entry || typeof entry.bookId !== 'string') continue;
+        const qty = Math.floor(Number(entry.quantity) || 0);
+        if (qty <= 0) continue;
+        mergedMap.set(entry.bookId, (mergedMap.get(entry.bookId) || 0) + qty);
+      }
+
+      const instantLines: CartQuoteResponse['items'] = [];
+      const warnings: string[] = [];
+
+      for (const [bookId, requestedQty] of mergedMap.entries()) {
+        const book = books.find((b) => b.id === bookId);
+        if (!book) continue;
+        const maxAllowed = Math.min(book.stock, 20);
+        if (maxAllowed <= 0) continue;
+        const approvedQty = Math.min(requestedQty, maxAllowed);
+        const author = authors.find((a) => a.id === book.authorId);
+        instantLines.push({
+          bookId: book.id,
+          slug: book.slug,
+          title: book.title,
+          authorName: author?.name || 'अकथ प्रकाशन',
+          format: book.format,
+          unitPrice: book.price,
+          requestedQuantity: requestedQty,
+          approvedQuantity: approvedQty,
+          availableStock: book.stock,
+          lineTotal: book.price * approvedQty,
+          stockWarning:
+            requestedQty > approvedQty
+              ? lang === 'mr'
+                ? `उपलब्ध साठ्यानुसार संख्या ${approvedQty} वर मर्यादित केली आहे.`
+                : `Quantity capped at ${approvedQty} based on available stock.`
+              : undefined,
+        });
+      }
+
+      const subtotal = instantLines.reduce((acc, l) => acc + l.lineTotal, 0);
+      const freeShippingThreshold = 600;
+      const shippingCost =
+        subtotal === 0 ? 0 : subtotal >= freeShippingThreshold ? 0 : 45;
+      const grandTotal = subtotal + shippingCost;
+
+      setCartQuote({
+        items: instantLines,
+        subtotal,
+        discountAmount: 0,
+        shippingCost,
+        shippingRuleNote:
+          subtotal >= freeShippingThreshold
+            ? lang === 'mr'
+              ? '₹६००+ ऑर्डरवर मोफत वितरण लागू'
+              : 'Free India Post shipping applied on ₹600+ orders'
+            : lang === 'mr'
+            ? '₹६०० खालील ऑर्डरसाठी ₹४५ स्पीड पोस्ट शुल्क'
+            : '₹45 India Post dispatch fee on orders below ₹600',
+        grandTotal,
+        currency: 'INR',
+        isValidForCheckout: instantLines.length > 0,
+        validationMessages: warnings,
+      });
     }
 
     let cancelled = false;
@@ -308,7 +373,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [cartItems, lang, books]);
+  }, [cartItems, lang, books, authors]);
 
   // Add to cart (merges quantities if already present, respects available stock)
   const handleAddToCart = useCallback(
@@ -332,7 +397,7 @@ export default function App() {
       setRecentlyAddedBookId(bookId);
       setTimeout(() => {
         setRecentlyAddedBookId((curr) => (curr === bookId ? null : curr));
-      }, 1600);
+      }, 4200);
     },
     [books]
   );
@@ -878,6 +943,68 @@ export default function App() {
           articles={articles}
           onNavigate={navigate}
         />
+
+        {/* Interactive Added-to-Bag Floating Mini-Cart Notification Bar */}
+        {recentlyAddedBookId && currentPath !== '/cart' && currentPath !== '/checkout' && (() => {
+          const addedBook = books.find((b) => b.id === recentlyAddedBookId);
+          if (!addedBook) return null;
+          const itemInCart = cartItems.find((i) => i.bookId === recentlyAddedBookId);
+          const subtotal = cartQuote?.subtotal ?? 0;
+          return (
+            <div
+              role="status"
+              aria-live="polite"
+              data-testid="added-to-cart-toast-bar"
+              className="fixed bottom-4 right-4 left-4 sm:left-auto sm:w-[420px] z-50 rounded-2xl bg-[#152354] text-[#FFFDF7] border border-[#FFD966]/45 shadow-[0_20px_50px_-12px_rgba(18,19,22,0.55)] p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#FFD966]">
+                    {lang === 'mr' ? '✓ पिशवीत समाविष्ट केले' : '✓ Added to Your Book Bag'}
+                  </p>
+                  <p className="font-serif text-[16px] font-bold text-[#FFFDF7] leading-snug">
+                    {addedBook.title}
+                  </p>
+                  <p className="text-[12.5px] text-[#FFFDF7]/80">
+                    {lang === 'mr'
+                      ? `या पुस्तकाच्या प्रती: ${itemInCart?.quantity || 1} · एकूण पिशवी (${totalCartCount}): ₹${subtotal}`
+                      : `Qty in bag: ${itemInCart?.quantity || 1} · Bag Subtotal (${totalCartCount}): ₹${subtotal}`}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setRecentlyAddedBookId(null)}
+                  aria-label="Close notification"
+                  className="text-[#FFFDF7]/60 hover:text-[#FFFDF7] text-[14px] px-1.5 py-0.5 rounded cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="mt-3 pt-3 border-t border-white/15 flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRecentlyAddedBookId(null);
+                    navigate('/cart');
+                  }}
+                  className="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-[#FFFDF7] text-[13px] font-semibold transition-colors cursor-pointer"
+                >
+                  {lang === 'mr' ? `पिशवी पहा (${totalCartCount})` : `View Bag (${totalCartCount})`}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRecentlyAddedBookId(null);
+                    navigate('/checkout');
+                  }}
+                  className="flex-1 py-2 px-3 rounded-xl bg-[#FFD966] hover:bg-[#FFFDF7] text-[#152354] text-[13px] font-bold transition-colors cursor-pointer"
+                >
+                  {lang === 'mr' ? 'थेट ऑर्डर करा →' : 'Checkout Now →'}
+                </button>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </LanguageContext.Provider>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import {
   BookRecord,
   AuthorRecord,
@@ -143,7 +143,7 @@ export const BooksCatalogueView: React.FC<BooksCatalogueViewProps> = ({
           {/* Architectural Filter Toolbar (Mobile & Tablet Responsive) */}
           <div className="mt-8 bg-[#FFFDF7] rounded-2xl border border-[#E6E1D6] p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 sm:gap-4 items-center">
             {/* Search Input */}
-            <div className="sm:col-span-2 lg:col-span-5 relative">
+            <div className="sm:col-span-2 lg:col-span-7 relative">
               <Search className="w-4 h-4 text-[#243B8A] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="search"
@@ -155,26 +155,8 @@ export const BooksCatalogueView: React.FC<BooksCatalogueViewProps> = ({
               />
             </div>
 
-            {/* Category Selector */}
-            <div className="sm:col-span-1 lg:col-span-3">
-              <EditorialSelectDropdown
-                id="catalogue-category"
-                testId="catalogue-category-select"
-                ariaLabel={t.catalogue.allCategories}
-                value={selectedCategory}
-                onChange={(val) => setSelectedCategory(val)}
-                options={[
-                  { value: 'all', label: t.catalogue.allCategories },
-                  ...categories.map(([slug, label]) => ({
-                    value: slug,
-                    label,
-                  })),
-                ]}
-              />
-            </div>
-
             {/* Sort Selector */}
-            <div className="sm:col-span-1 lg:col-span-2">
+            <div className="sm:col-span-1 lg:col-span-3">
               <EditorialSelectDropdown
                 id="catalogue-sort"
                 testId="catalogue-sort-select"
@@ -191,7 +173,7 @@ export const BooksCatalogueView: React.FC<BooksCatalogueViewProps> = ({
             </div>
 
             {/* In-stock Toggle */}
-            <div className="sm:col-span-2 lg:col-span-2 flex items-center justify-start lg:justify-end pt-1 lg:pt-0">
+            <div className="sm:col-span-1 lg:col-span-2 flex items-center justify-start lg:justify-end pt-1 lg:pt-0">
               <label className="inline-flex items-center gap-2 text-[14px] font-medium text-[#252832] cursor-pointer select-none whitespace-nowrap">
                 <input
                   type="checkbox"
@@ -204,7 +186,7 @@ export const BooksCatalogueView: React.FC<BooksCatalogueViewProps> = ({
             </div>
           </div>
 
-          {/* Segmented Category Filter Tabs with Animated Pill */}
+          {/* Single Clean Category Filter Bar */}
           <div className="mt-4 inline-flex items-center gap-1 p-1 rounded-xl bg-[#F7F3E8] border border-[#E6E1D6] overflow-x-auto max-w-full">
             <button
               type="button"
@@ -435,7 +417,6 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
 }) => {
   const { lang, t } = useLanguage();
   const [quantity, setQuantity] = useState(1);
-  const [showExcerptSheet, setShowExcerptSheet] = useState(false);
   const [selectedGalleryId, setSelectedGalleryId] = useState<string>('3d-cover');
 
   useEffect(() => {
@@ -670,14 +651,9 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
                 </div>
               )}
 
-              <div className="flex items-center gap-2 text-[12px] text-[#525665] text-center">
-                <AnimatedTortoiseEmblem
-                  className="w-6 h-6 shrink-0"
-                  variant="forest"
-                  animate={false}
-                />
-                <span>{book.provenanceLabel}</span>
-              </div>
+              <p className="text-[12px] text-[#525665] text-center">
+                {book.provenanceLabel}
+              </p>
             </div>
           </motion.div>
 
@@ -689,13 +665,11 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
             className="lg:col-span-7 space-y-8"
           >
             <div className="space-y-3">
-              {/* Unboxed Metadata */}
+              {/* Unboxed Category Eyebrow */}
               <div className="flex flex-wrap items-center gap-2 text-[13px] text-[#525665]">
                 <span className="text-[#243B8A] font-semibold">
                   {book.category}
                 </span>
-                <span aria-hidden="true">·</span>
-                <span className="font-medium">{book.edition}</span>
               </div>
 
               <h1 className="type-page-heading text-[#252832]">{book.title}</h1>
@@ -724,9 +698,6 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
                 <div>
                   <span className="text-[30px] font-bold text-[#252832] tabular-nums">
                     ₹{book.price}
-                  </span>
-                  <span className="ml-3 text-[14px] text-[#525665]">
-                    ({book.format})
                   </span>
                 </div>
 
@@ -835,11 +806,11 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
                     </span>
                   </button>
 
-                  {/* Read First Page Excerpt */}
+                  {/* Open Dedicated First Page Excerpt Reading Room */}
                   {linkedExcerpt && (
                     <button
                       type="button"
-                      onClick={() => setShowExcerptSheet(!showExcerptSheet)}
+                      onClick={() => onNavigate('/vachankatta/first-page')}
                       className="px-4 py-3 rounded-xl bg-[#FFD966]/35 hover:bg-[#FFD966] text-[14px] font-semibold text-[#252832] inline-flex items-center gap-2 transition-colors whitespace-nowrap shrink-0"
                     >
                       <BookOpen className="w-4 h-4 text-[#243B8A]" />
@@ -877,40 +848,6 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
                 </div>
               </div>
             </div>
-
-            {/* Inline First Page Excerpt Reader (if toggled) */}
-            <AnimatePresence>
-              {showExcerptSheet && linkedExcerpt && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="bg-white rounded-3xl border border-[#243B8A]/30 p-6 sm:p-8 space-y-4"
-                >
-                  <div className="flex items-center justify-between border-b border-[#E6E1D6] pb-3">
-                    <span className="text-[13px] font-semibold text-[#243B8A]">
-                      {t.nav.firstPage} — {book.title}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setShowExcerptSheet(false)}
-                      className="text-[13px] font-medium text-[#525665] hover:text-[#252832]"
-                    >
-                      {lang === 'mr' ? 'बंद करा ✕' : 'Close ✕'}
-                    </button>
-                  </div>
-                  <blockquote className="font-serif text-[20px] text-[#252832] p-5 bg-[#FFD966]/20 border border-[#FFD966] rounded-2xl">
-                    “{linkedExcerpt.highlightedLine}”
-                  </blockquote>
-                  <div className="prose-marathi text-[#252832] space-y-4">
-                    {linkedExcerpt.excerptParagraphs.map((p, idx) => (
-                      <p key={idx}>{p}</p>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             {/* About the Book & Editorial Context */}
             <div className="bg-white rounded-2xl border border-[#E6E1D6] p-6 space-y-6">

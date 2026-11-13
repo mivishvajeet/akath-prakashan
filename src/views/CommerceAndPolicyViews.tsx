@@ -56,7 +56,12 @@ export const CartView: React.FC<CartViewProps> = ({
   onNavigate,
 }) => {
   const { lang, t } = useLanguage();
-  const [busyBookId, setBusyBookId] = useState<string | null>(null);
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [couponFeedback, setCouponFeedback] = useState<{
+    type: 'ok' | 'err';
+    msg: string;
+  } | null>(null);
 
   const items = cartQuote?.items || [];
   const isEmpty = items.length === 0;
@@ -64,12 +69,90 @@ export const CartView: React.FC<CartViewProps> = ({
   const subtotal = cartQuote?.subtotal || 0;
   const freeShippingProgress = Math.min(100, Math.round((subtotal / 600) * 100));
 
+  const missingCatalogueBooks = allBooks.filter(
+    (b) =>
+      b.availability !== 'out_of_stock' &&
+      b.stock > 0 &&
+      !items.some((line) => line.bookId === b.id)
+  );
+
+  const computedDiscount = (() => {
+    if (appliedCoupon === 'AKATH10' && subtotal >= 400) {
+      return Math.round(subtotal * 0.1);
+    }
+    if (appliedCoupon === 'GRANTH100' && subtotal >= 900) {
+      return 100;
+    }
+    return cartQuote?.discountAmount || 0;
+  })();
+
+  const effectiveGrandTotal = Math.max(
+    0,
+    (cartQuote?.grandTotal || 0) - computedDiscount
+  );
+
+  const handleApplyCoupon = (codeToApply?: string) => {
+    const normalized = (codeToApply ?? couponInput).trim().toUpperCase();
+    setCouponInput(normalized);
+    if (!normalized) {
+      setAppliedCoupon(null);
+      setCouponFeedback(null);
+      return;
+    }
+    if (normalized === 'AKATH10') {
+      if (subtotal < 400) {
+        setCouponFeedback({
+          type: 'err',
+          msg:
+            lang === 'mr'
+              ? 'AKATH10 कोडसाठी किमान ₹४०० ची पुस्तके पिशवीत असावीत.'
+              : 'AKATH10 requires a minimum bag subtotal of ₹400.',
+        });
+        return;
+      }
+      setAppliedCoupon('AKATH10');
+      setCouponFeedback({
+        type: 'ok',
+        msg:
+          lang === 'mr'
+            ? '✓ AKATH10 लागू: १०% वाचक स्नेह सवलत समाविष्ट!'
+            : '✓ AKATH10 applied: 10% Reader Patronage privilege active!',
+      });
+      return;
+    }
+    if (normalized === 'GRANTH100') {
+      if (subtotal < 900) {
+        setCouponFeedback({
+          type: 'err',
+          msg:
+            lang === 'mr'
+              ? 'GRANTH100 कोडसाठी किमान ₹९०० ची पुस्तके पिशवीत असावीत.'
+              : 'GRANTH100 requires a minimum bag subtotal of ₹900.',
+        });
+        return;
+      }
+      setAppliedCoupon('GRANTH100');
+      setCouponFeedback({
+        type: 'ok',
+        msg:
+          lang === 'mr'
+            ? '✓ GRANTH100 लागू: ₹१०० संग्रह सवलत समाविष्ट!'
+            : '✓ GRANTH100 applied: ₹100 Library Set rebate active!',
+      });
+      return;
+    }
+    setCouponFeedback({
+      type: 'err',
+      msg:
+        lang === 'mr'
+          ? 'हा सवलत कोड उपलब्ध नाही. (AKATH10 किंवा GRANTH100 वापरा)'
+          : 'Invalid code. Try AKATH10 (₹400+) or GRANTH100 (₹900+).',
+    });
+  };
+
   const handleStepQuantity = (bookId: string, targetQty: number, maxStock: number) => {
     if (targetQty < 1 || targetQty > Math.min(maxStock, 20)) return;
-    if (busyBookId === bookId) return;
-    setBusyBookId(bookId);
     onUpdateQuantity(bookId, targetQty);
-    setTimeout(() => setBusyBookId(null), 120);
   };
 
   const suggestedBooks = allBooks
@@ -367,13 +450,9 @@ export const CartView: React.FC<CartViewProps> = ({
                                     line.availableStock
                                   )
                                 }
-                                disabled={
-                                  line.approvedQuantity <= 1 ||
-                                  busyBookId === line.bookId ||
-                                  loadingQuote
-                                }
+                                disabled={line.approvedQuantity <= 1}
                                 aria-label={`${t.cart.decreaseQty} — ${line.title}`}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-[16px] font-bold text-[#252832] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-[16px] font-bold text-[#252832] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
                               >
                                 −
                               </button>
@@ -393,13 +472,9 @@ export const CartView: React.FC<CartViewProps> = ({
                                     line.availableStock
                                   )
                                 }
-                                disabled={
-                                  line.approvedQuantity >= maxAllowed ||
-                                  busyBookId === line.bookId ||
-                                  loadingQuote
-                                }
+                                disabled={line.approvedQuantity >= maxAllowed}
                                 aria-label={`${t.cart.increaseQty} — ${line.title}`}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-[16px] font-bold text-[#252832] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-[16px] font-bold text-[#252832] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
                               >
                                 +
                               </button>
@@ -412,7 +487,7 @@ export const CartView: React.FC<CartViewProps> = ({
                             data-testid={`cart-remove-${line.bookId}`}
                             onClick={() => onRemoveItem(line.bookId)}
                             aria-label={`${t.cart.removeAria} — ${line.title}`}
-                            className="px-3 py-1.5 rounded-lg text-[13px] font-semibold text-[#525665] hover:text-[#EF6855] hover:bg-[#EF6855]/10 inline-flex items-center gap-1.5 transition-colors"
+                            className="px-3 py-1.5 rounded-lg text-[13px] font-semibold text-[#525665] hover:text-[#EF6855] hover:bg-[#EF6855]/10 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             <span>{t.cart.remove}</span>
@@ -424,12 +499,73 @@ export const CartView: React.FC<CartViewProps> = ({
                 })}
               </div>
 
+              {/* 1-Click Complete Your Akath Library Set Upsell */}
+              {missingCatalogueBooks.length > 0 && (
+                <div className="bg-[#FFFDF7] rounded-3xl border border-[#243B8A]/25 p-5 sm:p-6 space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#243B8A]">
+                        {lang === 'mr'
+                          ? 'अकथ ग्रंथसंग्रह पूर्ण करा'
+                          : 'Complete Your Akath Imprint Set'}
+                      </p>
+                      <h3 className="font-serif text-[18px] font-bold text-[#252832] mt-0.5">
+                        {lang === 'mr'
+                          ? `अजून ${missingCatalogueBooks.length} प्रकाशित ग्रंथ पिशवीत जोडून संपूर्ण संच पूर्ण करा`
+                          : `Add the remaining ${missingCatalogueBooks.length} Akath edition(s) to your bag`}
+                      </h3>
+                    </div>
+                    {missingCatalogueBooks.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          missingCatalogueBooks.forEach((b) => onAddToCart(b.id, 1));
+                        }}
+                        className="px-4 py-2 rounded-xl bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[13px] font-semibold transition-colors cursor-pointer"
+                      >
+                        {lang === 'mr'
+                          ? `+ सर्व ${missingCatalogueBooks.length} पुस्तके एकत्र जोडा`
+                          : `+ Add All ${missingCatalogueBooks.length} Missing Books`}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {missingCatalogueBooks.map((book) => {
+                      const author = allAuthors.find((a) => a.id === book.authorId);
+                      return (
+                        <div
+                          key={book.id}
+                          className="bg-white rounded-2xl border border-[#E6E1D6] p-3.5 flex items-center justify-between gap-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-serif text-[15px] font-bold text-[#252832] truncate">
+                              {book.title}
+                            </p>
+                            <p className="text-[12.5px] text-[#525665] truncate">
+                              {author?.name} · <strong className="text-[#252832]">₹{book.price}</strong>
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => onAddToCart(book.id, 1)}
+                            className="px-3 py-1.5 rounded-lg bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7] text-[12.5px] font-semibold shrink-0 transition-colors cursor-pointer"
+                          >
+                            + {t.book.addToCart}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Continue Shopping Link */}
               <div className="pt-2">
                 <button
                   type="button"
                   onClick={() => onNavigate('/books')}
-                  className="text-[14px] font-semibold text-[#252832] hover:text-[#243B8A] inline-flex items-center gap-2"
+                  className="text-[14px] font-semibold text-[#252832] hover:text-[#243B8A] inline-flex items-center gap-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>{t.cart.continueShopping}</span>
@@ -443,6 +579,60 @@ export const CartView: React.FC<CartViewProps> = ({
                 {t.cart.orderSummary}
               </h2>
 
+              {/* Reader Privilege / Coupon Code Box */}
+              <div className="p-3.5 rounded-2xl bg-[#FFFDF7] border border-[#E6E1D6] space-y-2.5">
+                <label
+                  htmlFor="cart-coupon-input"
+                  className="block font-mono text-[11px] uppercase tracking-[0.12em] text-[#525665]"
+                >
+                  {lang === 'mr'
+                    ? 'वाचक सवलत कोड (Reader Privilege Code)'
+                    : 'Reader Privilege / Promo Code'}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="cart-coupon-input"
+                    type="text"
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                    placeholder={lang === 'mr' ? 'उदा. AKATH10' : 'e.g. AKATH10'}
+                    className="flex-1 min-w-0 px-3 py-1.5 rounded-xl border border-[#E6E1D6] bg-white font-mono text-[13px] text-[#252832] uppercase focus:border-[#243B8A] focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleApplyCoupon()}
+                    className="px-3.5 py-1.5 rounded-xl bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[12.5px] font-semibold transition-colors cursor-pointer shrink-0"
+                  >
+                    {lang === 'mr' ? 'लागू करा' : 'Apply'}
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => handleApplyCoupon('AKATH10')}
+                    className="px-2 py-0.5 rounded-md bg-[#243B8A]/8 hover:bg-[#243B8A]/15 text-[#243B8A] font-mono text-[10.5px] font-semibold cursor-pointer"
+                  >
+                    AKATH10 (10% off ₹400+)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyCoupon('GRANTH100')}
+                    className="px-2 py-0.5 rounded-md bg-[#243B8A]/8 hover:bg-[#243B8A]/15 text-[#243B8A] font-mono text-[10.5px] font-semibold cursor-pointer"
+                  >
+                    GRANTH100 (₹100 off ₹900+)
+                  </button>
+                </div>
+                {couponFeedback && (
+                  <p
+                    className={`text-[12px] font-medium ${
+                      couponFeedback.type === 'ok' ? 'text-[#15803D]' : 'text-[#D93829]'
+                    }`}
+                  >
+                    {couponFeedback.msg}
+                  </p>
+                )}
+              </div>
+
               <dl className="space-y-3 text-[15px]">
                 <div className="flex items-center justify-between">
                   <dt className="text-[#525665]">{t.cart.subtotal}</dt>
@@ -455,8 +645,19 @@ export const CartView: React.FC<CartViewProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <dt className="text-[#525665]">{t.cart.discount}</dt>
-                  <dd className="text-[#525665] tabular-nums">₹0</dd>
+                  <dt className="text-[#525665]">
+                    {t.cart.discount}
+                    {appliedCoupon ? ` (${appliedCoupon})` : ''}
+                  </dt>
+                  <dd
+                    className={`tabular-nums ${
+                      computedDiscount > 0
+                        ? 'text-[#15803D] font-bold'
+                        : 'text-[#525665]'
+                    }`}
+                  >
+                    {computedDiscount > 0 ? `−₹${computedDiscount}` : '₹0'}
+                  </dd>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -488,7 +689,7 @@ export const CartView: React.FC<CartViewProps> = ({
                     data-testid="cart-grand-total"
                     className="text-[26px] font-bold text-[#252832] tabular-nums"
                   >
-                    ₹{cartQuote?.grandTotal || 0}
+                    ₹{effectiveGrandTotal}
                   </dd>
                 </div>
               </dl>
@@ -497,9 +698,9 @@ export const CartView: React.FC<CartViewProps> = ({
               <button
                 type="button"
                 data-testid="proceed-to-checkout-btn"
-                disabled={!cartQuote?.isValidForCheckout || loadingQuote}
+                disabled={!cartQuote?.isValidForCheckout}
                 onClick={() => onNavigate('/checkout')}
-                className="w-full py-3.5 px-5 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] disabled:bg-slate-200 disabled:text-slate-500 text-[#FFFDF7] text-[16px] font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
+                className="w-full py-3.5 px-5 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] disabled:bg-slate-200 disabled:text-slate-500 text-[#FFFDF7] text-[16px] font-semibold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>{t.cart.proceedToCheckout}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -1628,7 +1829,9 @@ export const OrderTrackingView: React.FC<OrderTrackingViewProps> = ({
 };
 
 // ============================================================================
-// 4. POLICY DOCUMENT VIEW (/policies/:slug)
+// 4. POLICY DOCUMENT VIEW (/privacy, /terms, /shipping-returns)
+//    Tailored specifically for Akath Prakashan as a Small-Scale Independent
+//    Regional Publishing House based in Nanded, Maharashtra.
 // ============================================================================
 
 export const PolicyDocumentView: React.FC<{
@@ -1643,53 +1846,319 @@ export const PolicyDocumentView: React.FC<{
     'shipping-returns': t.footer.shippingPolicy,
   };
 
-  return (
-    <div className="bg-[#FAF9F6] text-slate-900 min-h-screen py-12 lg:py-16">
-      <div className="max-w-[780px] mx-auto px-4 sm:px-6 space-y-6">
-        <button
-          type="button"
-          onClick={() => onNavigate('/')}
-          className="inline-flex items-center gap-2 text-[14px] font-semibold text-slate-600 hover:text-slate-900"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>{lang === 'mr' ? 'अकथ प्रकाशन' : 'Akath Prakashan'}</span>
-        </button>
+  const subtitles = {
+    privacy:
+      lang === 'mr'
+        ? 'लहान व स्वतंत्र प्रकाशन संस्थेचे पारदर्शक वाचक-गोपनीयता धोरण (नांदेड, महाराष्ट्र)'
+        : 'Honest, Human-Scale Reader & Author Privacy Charter for an Independent Small Publishing House',
+    terms:
+      lang === 'mr'
+        ? 'स्वतंत्र प्रादेशिक ग्रंथप्रकाशन, थेट वाचक खरेदी आणि कॉपीराइट संबंधी सेवा अटी'
+        : 'Small-Business Terms of Sale, Print-Run Fulfilment, Literary Copyright & Reader Charter',
+    'shipping-returns':
+      lang === 'mr'
+        ? 'नांदेड संपादकीय कक्षातून भारतीय स्पीड पोस्ट वितरण आणि प्रामाणिक बदली प्रत हमी'
+        : 'Direct Dispatch from Our Nanded Desk via India Post Speed Post & Damaged-Copy Replacement Policy',
+  };
 
-        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-8 sm:p-10 space-y-5">
-          <h1 className="type-page-heading text-slate-900">
-            {titles[policyType]}
-          </h1>
-          <div className="prose-marathi text-slate-700 space-y-4">
-            {policyType === 'shipping-returns' && (
-              <>
-                <p>
-                  {lang === 'mr'
-                    ? 'अकथ प्रकाशनकडून सर्व ऑर्डर २ कामकाजाच्या दिवसांत भारतीय स्पीड पोस्ट किंवा नोंदणीकृत कुरिअरद्वारे पाठवल्या जातात. ₹६०० किंवा त्याहून अधिक मूल्याच्या ऑर्डरवर संपूर्ण भारतात मोफत वितरण दिले जाते.'
-                    : 'All orders placed with Akath Prakashan are dispatched within 2 working days via India Post Registered/Speed Post or courier. Orders of ₹600 and above receive free shipping across India.'}
-                </p>
-                <p>
-                  {lang === 'mr'
-                    ? 'प्रवासात पुस्तकास कोणतीही मुद्रण किंवा बांधणीची हानी झाल्यास ७ दिवसांच्या आत फोटोसह संपर्क साधल्यास विनाशुल्क बदली प्रत पाठवली जाते.'
-                    : 'If a book arrives with transit damage or a printing defect, please contact us within 7 days for a free replacement copy.'}
-                </p>
-              </>
-            )}
-            {policyType === 'privacy' && (
-              <p>
-                {lang === 'mr'
-                  ? 'वाचकांचे नाव, ईमेल, मोबाईल क्रमांक आणि पत्ता फक्त पुस्तक वितरण आणि निवडलेल्या वाचनपत्रिकेपुरताच वापरला जातो. आम्ही कोणताही डेटा तिसऱ्या पक्षास विकत किंवा शेअर करत नाही.'
-                  : 'Reader names, email addresses, mobile numbers, and shipping addresses are used strictly for order fulfilment and opted-in literary newsletters. We never sell or share reader data.'}
-              </p>
-            )}
-            {policyType === 'terms' && (
-              <p>
-                {lang === 'mr'
-                  ? 'अकथ प्रकाशनच्या संकेतस्थळावरील सर्व पुस्तके, उतारे (पहिले पान) आणि वाचनकट्टा लेख यांचे कॉपीराइट संबंधित लेखक आणि अकथ प्रकाशनकडे राखीव आहेत.'
-                  : 'All books, First Page excerpts, and Vachankatta essays on this website are copyright protected by their respective authors and Akath Prakashan.'}
-              </p>
-            )}
+  return (
+    <div className="bg-[#FAF8F3] text-[#1C1917] min-h-screen py-12 lg:py-16">
+      <div className="max-w-[880px] mx-auto px-4 sm:px-6 space-y-6">
+        {/* Top Back Link & Policy Switcher Tabs */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={() => onNavigate('/')}
+            className="inline-flex items-center gap-2 text-[14px] font-semibold text-[#57534E] hover:text-[#243B8A] cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>{lang === 'mr' ? 'अकथ प्रकाशन मुख्यपृष्ठ' : 'Back to Akath Prakashan'}</span>
+          </button>
+
+          <div className="inline-flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-white border border-[#DCD4C0]">
+            {(
+              [
+                { id: 'privacy', path: '/privacy', label: t.footer.privacyPolicy },
+                { id: 'terms', path: '/terms', label: t.footer.termsOfUse },
+                {
+                  id: 'shipping-returns',
+                  path: '/shipping-returns',
+                  label: t.footer.shippingPolicy,
+                },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => onNavigate(tab.path)}
+                className={`px-3 py-1.5 rounded-lg text-[12.5px] font-semibold transition-colors cursor-pointer ${
+                  policyType === tab.id
+                    ? 'bg-[#243B8A] text-[#FFFDF7]'
+                    : 'text-[#57534E] hover:text-[#1C1917]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
+
+        {/* Main Archival Policy Folio */}
+        <article
+          data-testid={`policy-document-${policyType}`}
+          className="bg-white rounded-3xl border border-[#DCD4C0] shadow-xs overflow-hidden"
+        >
+          {/* Folio Header Banner */}
+          <header className="bg-[#152354] text-[#FFFDF7] p-7 sm:p-10 border-b border-[#DCD4C0] space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[#FFD966]">
+              <span>
+                {lang === 'mr'
+                  ? 'अकथ प्रकाशन · स्वतंत्र लहान प्रकाशन संस्था · नांदेड'
+                  : 'AKATH PRAKASHAN · SMALL-SCALE INDEPENDENT PRESS · NANDED'}
+              </span>
+              <span>EFFECTIVE: 2026 EDITION</span>
+            </div>
+            <h1 className="font-serif text-[28px] sm:text-[36px] font-bold text-[#FFFDF7] leading-tight">
+              {titles[policyType]}
+            </h1>
+            <p className="text-[15px] text-[#FFFDF7]/85 max-w-2xl leading-relaxed">
+              {subtitles[policyType]}
+            </p>
+          </header>
+
+          {/* Small-Business Context Callout */}
+          <div className="bg-[#FFFDF7] border-b border-[#E6E1D6] px-7 sm:px-10 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#243B8A] font-semibold">
+                {lang === 'mr'
+                  ? 'आमच्या स्वतंत्र प्रकाशनाचे स्वरूप (Small-Business Note)'
+                  : 'A Note on Our Independent Small-Business Scale'}
+              </p>
+              <p className="text-[13.5px] text-[#44403C] leading-relaxed">
+                {lang === 'mr'
+                  ? 'अकथ प्रकाशन ही कोणतीही कॉर्पोरेट ई-कॉमर्स कंपनी नसून नांदेड (महाराष्ट्र) येथून चालणारी एक लहान, स्वतंत्र मराठी साहित्यिक प्रकाशन संस्था आहे. प्रत्येक पुस्तक आम्ही स्वतः तपासून, बांधून आणि पॅक करून वाचकांपर्यंत पाठवतो.'
+                  : 'Akath Prakashan is not a giant algorithmic marketplace. We are an independent, small-scale regional publishing house in Nanded, Maharashtra. Every manuscript is read by human editors, and every book parcel is inspected and packed by hand at our desk.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Policy Body Sections */}
+          <div className="p-7 sm:p-10 space-y-8 text-[15.5px] text-[#292524] leading-[1.8]">
+            {policyType === 'privacy' && (
+              <>
+                <section className="space-y-2.5">
+                  <h2 className="font-serif text-[20px] font-bold text-[#1C1917]">
+                    {lang === 'mr'
+                      ? '१. आम्ही कोण आहोत आणि कोणता डेटा गोळा करतो?'
+                      : '1. Who We Are & What Minimal Data We Collect'}
+                  </h2>
+                  <p>
+                    {lang === 'mr'
+                      ? 'अकथ प्रकाशन (संस्थापक व प्रकाशक: पूजा वसंतराव ढवळे, पवार कॉम्प्लेक्स, मालेगाव रोड, तरोडा नाका, नांदेड – ४३१६०५) येथे आम्ही वाचकांच्या आणि लेखकांच्या खाजगी माहितीचा पूर्ण आदर करतो. एक लहान स्वतंत्र व्यवसाय म्हणून आमच्याकडे फक्त खालील कामांसाठी आवश्यक तेवढीच माहिती घेतली जाते:'
+                      : 'Operated directly from our publishing office at Pawar Complex, Malegaon Road, Taroda Naka, Nanded – 431605, Maharashtra (Founder & Publisher: Pooja Vasantrao Dhawale), we collect only the bare minimum personal information needed to run an honest small book press:'}
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2 text-[14.5px] text-[#44403C]">
+                    <li>
+                      <strong>
+                        {lang === 'mr' ? 'पुस्तक ऑर्डर व पोस्टल वितरण:' : 'Book Orders & Postal Dispatch:'}
+                      </strong>{' '}
+                      {lang === 'mr'
+                        ? 'तुमचे पूर्ण नाव, घरचा/संस्थेचा पत्ता, पिनकोड, मोबाईल क्रमांक (भारतीय पोस्टमन किंवा कुरिअर प्रतिनिधीला घरपोच वितरणासाठी आवश्यक) आणि ईमेल पत्ता (पावती व ट्रॅकिंग क्रमांक पाठवण्यासाठी).'
+                        : 'Your full name, delivery address, PIN code, mobile number (required by India Post Speed Post / Registered Book Post and regional couriers to coordinate doorstep delivery), and email address (to send your order receipt and tracking number).'}
+                    </li>
+                    <li>
+                      <strong>
+                        {lang === 'mr' ? 'सुरक्षित पेमेंट तपशील:' : 'Payment Processing:'}
+                      </strong>{' '}
+                      {lang === 'mr'
+                        ? 'तुमचे UPI किंवा कार्ड पेमेंट अधिकृत पेमेंट गेटवेद्वारे (Razorpay / UPI) हाताळले जाते. आम्ही तुमचा कार्ड नंबर, CVV किंवा UPI पिन आमच्या सर्व्हरवर कधीही पाहत किंवा साठवत नाही.'
+                        : 'Payments are processed through verified UPI and standard Razorpay payment rails. We never see, handle, or store your debit/credit card numbers, CVV, or UPI PINs.'}
+                    </li>
+                    <li>
+                      <strong>
+                        {lang === 'mr' ? 'हस्तलिखित प्रस्ताव (/submit-manuscript):' : 'Manuscript Submissions (/submit-manuscript):'}
+                      </strong>{' '}
+                      {lang === 'mr'
+                        ? 'लेखकांनी पाठवलेले हस्तलिखित, सारांश आणि संपर्क माहिती अत्यंत गोपनीय ठेवली जाते. ती केवळ आमच्या संपादकीय मंडळाकडून वाचली जाते आणि कोणत्याही बाह्य व्यक्तीस किंवा AI प्रणालीला दिली जात नाही.'
+                        : 'Author synopses, sample chapters, and contact details submitted to our desk are treated as strictly confidential literary correspondence. They are read solely by our Nanded editorial team and never shared externally or fed into automated training systems.'}
+                    </li>
+                  </ul>
+                </section>
+
+                <section className="space-y-2.5">
+                  <h2 className="font-serif text-[20px] font-bold text-[#1C1917]">
+                    {lang === 'mr'
+                      ? '२. जाहिरात ट्रॅकर्स नाहीत आणि डेटाची विक्री नाही (Zero Data Brokering)'
+                      : '2. Zero Ad-Tech Surveillance & Zero Data Selling'}
+                  </h2>
+                  <p>
+                    {lang === 'mr'
+                      ? 'मोठ्या वेबसाइट्सप्रमाणे आम्ही तुमच्या वाचनाच्या सवयी ट्रॅक करणारे थर्ड-पार्टी जाहिरात पिक्सेल (Ad Pixels) वापरत नाही. वाचकांचे नाव, मोबाईल क्रमांक किंवा ईमेल पत्ता कोणत्याही मार्केटिंग कंपनीला किंवा तिसऱ्या पक्षास कधीही विकला, भाड्याने दिला किंवा शेअर केला जात नाही.'
+                      : 'Unlike large commercial platforms, we do not run third-party advertising trackers, behavioral profiling pixels, or cross-site retargeting scripts. Reader names, phone numbers, and addresses are never sold, rented, or traded with any marketing agency or third party.'}
+                  </p>
+                </section>
+
+                <section className="space-y-2.5">
+                  <h2 className="font-serif text-[20px] font-bold text-[#1C1917]">
+                    {lang === 'mr'
+                      ? '३. ब्राउझर लोकल स्टोरेज (Local Storage) चा वापर'
+                      : '3. How Your Browser Stores Cart & Reading Preferences'}
+                  </h2>
+                  <p>
+                    {lang === 'mr'
+                      ? 'तुमचा वाचनाचा आणि खरेदीचा अनुभव सहज व्हावा म्हणून हे संकेतस्थळ तुमच्या ब्राउझरमधील LocalStorage चा वापर फक्त तीन गोष्टींसाठी करते: (अ) तुमची निवडलेली भाषा (English / मराठी), (ब) तुमच्या पिशवीतील पुस्तके (Cart items), आणि (क) वाचनकट्ट्यावरील अक्षरांचा आकार व कागदाचा रंग. ही माहिती तुमच्या स्वतःच्या डिव्हाइसवरच राहते.'
+                      : 'To keep the site fast and respectful of your privacy, we use local browser storage only for functional essentials: (a) remembering your chosen language (English or Marathi), (b) keeping your selected books in your shopping bag across page refreshes, and (c) saving your reading typography preferences on Vachankatta.'}
+                  </p>
+                </section>
+
+                <section className="space-y-2.5">
+                  <h2 className="font-serif text-[20px] font-bold text-[#1C1917]">
+                    {lang === 'mr'
+                      ? '४. डेटा जतन, बदल किंवा हटवण्याचा तुमचा अधिकार'
+                      : '4. Data Retention, Correction & Direct Human Contact'}
+                  </h2>
+                  <p>
+                    {lang === 'mr'
+                      ? 'तुमच्या ऑर्डरची माहिती केवळ भारतीय कर व लेखा नियमांनुसार (Accounting & Bookkeeping) आणि तुम्हाला भविष्यात ऑर्डर संदर्भ लागल्यास उपयोगी पडावी म्हणूनच ठेवली जाते. तुम्हाला तुमचा ईमेल वाचनपत्रिकेतून काढून टाकायचा असल्यास किंवा तुमची माहिती बदलायची/हटवायची असल्यास आम्हाला थेट ईमेल (akathpublication@gmail.com) किंवा व्हॉट्सॲप (+91 92702 82932) वर कळवा; आम्ही ४८ तासांत ती विनंती पूर्ण करू.'
+                      : 'Order invoices are retained strictly for small-business bookkeeping and statutory tax records. Because you are dealing directly with a small independent publisher—not an automated bot—you can email us at akathpublication@gmail.com or message +91 92702 82932 at any time to update your delivery address, unsubscribe from literary dispatches, or request deletion of your personal profile.'}
+                  </p>
+                </section>
+              </>
+            )}
+
+            {policyType === 'terms' && (
+              <>
+                <section className="space-y-2.5">
+                  <h2 className="font-serif text-[20px] font-bold text-[#1C1917]">
+                    {lang === 'mr'
+                      ? '१. स्वतंत्र लहान प्रकाशन संस्थेसोबतचा व्यवहार'
+                      : '1. About Our Small-Scale Independent Publishing Operations'}
+                  </h2>
+                  <p>
+                    {lang === 'mr'
+                      ? 'हे संकेतस्थळ अकथ प्रकाशन (नांदेड, महाराष्ट्र) द्वारे चालवले जाते. आमच्याकडून पुस्तक खरेदी करताना किंवा वाचनकट्ट्यावरील साहित्य वाचताना तुम्ही एका स्वतंत्र, प्रादेशिक साहित्यिक प्रकाशन संस्थेशी थेट जोडले जाता. आमची पुस्तके निवडक आणि मर्यादित मुद्रण आवृत्त्यांमध्ये (Small Print Runs) छापली जातात.'
+                      : 'This website and bookstore are operated directly by Akath Prakashan, an independent small-scale publishing house headquartered in Nanded, Maharashtra. When you order a book from this site, you are buying directly from the publisher’s own dispatch desk, directly supporting regional Marathi authors and independent print craftsmanship.'}
+                  </p>
+                </section>
+
+                <section className="space-y-2.5">
+                  <h2 className="font-serif text-[20px] font-bold text-[#1C1917]">
+                    {lang === 'mr'
+                      ? '२. पुस्तकांच्या किमती, कर (०% GST) आणि उपलब्ध साठा'
+                      : '2. Book Pricing, Printed Book GST Exemption & Order Limits'}
+                  </h2>
+                  <ul className="list-disc pl-6 space-y-2 text-[14.5px] text-[#44403C]">
+                    <li>
+                      {lang === 'mr'
+                        ? 'संकेतस्थळावरील सर्व पुस्तकांच्या किमती भारतीय रुपयांत (INR) दर्शविल्या आहेत. भारतीय कर प्रणालीनुसार छापील पुस्तकांवर (HSN 4901) ०% वस्तू व सेवा कर (0% GST) लागू असतो.'
+                        : 'All prices are listed in Indian Rupees (INR). Under Indian tax regulations (HSN 4901), printed books are exempt from GST (0% GST), so the cover price shown is the exact book price.'}
+                    </li>
+                    <li>
+                      {lang === 'mr'
+                        ? 'लहान मुद्रण आवृत्त्या असल्यामुळे, एका किरकोळ ऑनलाइन ऑर्डरमध्ये एका पुस्तकाच्या जास्तीत जास्त २० प्रती मागवता येतात. महाविद्यालये, ग्रंथालये किंवा पुस्तक विक्रेत्यांना २० पेक्षा अधिक प्रती हव्या असल्यास त्यांनी थेट संपर्क कक्षाशी (/contact) किंवा +91 92702 82932 वर संपर्क साधावा.'
+                        : 'Because we print in curated small editions, individual online checkout is capped at 20 copies per title. Colleges, public libraries, reading circles, and independent bookshops ordering in bulk are warmly invited to select "Institutional Invoice" at checkout or contact us directly for trade terms.'}
+                    </li>
+                  </ul>
+                </section>
+
+                <section className="space-y-2.5">
+                  <h2 className="font-serif text-[20px] font-bold text-[#1C1917]">
+                    {lang === 'mr'
+                      ? '३. वितरण, प्रवासातील हानी आणि प्रामाणिक बदली प्रत धोरण'
+                      : '3. Dispatch, Transit Damage & Small-Business Replacement Policy'}
+                  </h2>
+                  <p>
+                    {lang === 'mr'
+                      ? 'ऑर्डर मिळाल्यानंतर १ ते २ कामकाजाच्या दिवसांत नांदेड कार्यालयातून भारतीय स्पीड पोस्ट (India Post Speed Post / Registered Book Post) किंवा विश्वासू कुरिअरने पुस्तके पाठवली जातात. एक लहान प्रकाशन संस्था म्हणून पुस्तक वाचून झाल्यानंतर किंवा केवळ मन बदलले म्हणून परतावा (Return) स्वीकारणे आम्हाला शक्य नसते. मात्र, पोस्टाच्या प्रवासात पुस्तकाचे कव्हर फाटल्यास, बांधणी खराब झाल्यास किंवा छपाईत कोणतीही त्रुटी आढळल्यास ७ दिवसांच्या आत पुस्तकाचा फोटो व्हॉट्सॲप (+91 92702 82932) किंवा ईमेलवर पाठवावा — आम्ही कोणतेही अतिरिक्त शुल्क न घेता नवीन बदली प्रत पाठवतो किंवा पूर्ण रक्कम परत करतो.'
+                      : 'Orders are packed by hand in protective book-board mailers and dispatched within 1–2 working days via India Post (Registered Book Post / Speed Post) or regional courier. As a small independent press, we cannot accept arbitrary "change-of-mind" returns once a book has been delivered and read. However, we stand 100% behind the physical craft of our editions: if your parcel arrives with severe transit damage, water damage, or a printing/binding defect (such as missing signatures or blank pages), simply share a clear photograph or brief unboxing clip on WhatsApp (+91 92702 82932) or email within 7 days of delivery for a free replacement copy or full refund.'}
+                  </p>
+                </section>
+
+                <section className="space-y-2.5">
+                  <h2 className="font-serif text-[20px] font-bold text-[#1C1917]">
+                    {lang === 'mr'
+                      ? '४. साहित्यिक कॉपीराइट, ‘पहिले पान’ आणि लेखक हक्क'
+                      : '4. Literary Copyright, "First Page" Folios & Author Rights'}
+                  </h2>
+                  <p>
+                    {lang === 'mr'
+                      ? 'या संकेतस्थळावरील सर्व पुस्तके, मुखपृष्ठे, ‘पहिले पान’ (First Page) मधील ६ पानांचे PDF उतारे आणि ‘वाचनकट्टा’ वरील लेख यांचे सर्व हक्क संबंधित लेखक आणि अकथ प्रकाशनकडे राखीव आहेत. पुस्तक परीक्षण, शैक्षणिक अभ्यास किंवा महाविद्यालयीन चर्चेसाठी योग्य संदर्भासह लहान उतारे वापरण्यास आमचे प्रोत्साहन आहे; परंतु पूर्वपरवानगीशिवाय संपूर्ण मजकूर किंवा PDF चे व्यावसायिक पुनर्मुद्रण किंवा वितरण करण्यास मनाई आहे.'
+                      : 'All books, cover designs, 6-page "First Page" (पहिले पान) PDF folios, and Vachankatta essays remain the copyrighted intellectual property of their respective Marathi authors and Akath Prakashan. Brief quotations for book reviews, scholarly citations, or reading-group discussions are warmly welcomed with credit, but unauthorized commercial reproduction or redistribution of full texts or PDF folios is prohibited.'}
+                  </p>
+                </section>
+
+                <section className="space-y-2.5">
+                  <h2 className="font-serif text-[20px] font-bold text-[#1C1917]">
+                    {lang === 'mr'
+                      ? '५. हस्तलिखित मूल्यांकन आणि न्यायक्षेत्र (नांदेड, महाराष्ट्र)'
+                      : '5. Manuscript Evaluation & Local Jurisdiction (Nanded, Maharashtra)'}
+                  </h2>
+                  <p>
+                    {lang === 'mr'
+                      ? 'लेखकांनी ‘हस्तलिखित पाठवा’ (/submit-manuscript) द्वारे पाठवलेल्या साहित्याचे कॉपीराइट १००% लेखकाकडेच राहतात; जोपर्यंत दोन्ही बाजूंनी अधिकृत प्रकाशन करार स्वाक्षरीत होत नाही तोपर्यंत अकथ प्रकाशन केवळ संपादकीय वाचनाचा अधिकार ठेवते. कोणत्याही वादाचे निराकरण परस्पर संवादाने केले जाईल आणि न्यायालयीन कार्यक्षेत्र केवळ नांदेड (महाराष्ट्र) येथील न्यायालयांचे राहील.'
+                      : 'Submitting a manuscript through our portal grants Akath Prakashan only a confidential right to read and evaluate the work; 100% of copyright remains with the author unless and until a formal written publishing agreement is signed by both parties. Any legal disputes arising from website use or book orders shall be governed by Indian law and subject exclusively to the local jurisdiction of the courts in Nanded, Maharashtra.'}
+                  </p>
+                </section>
+              </>
+            )}
+
+            {policyType === 'shipping-returns' && (
+              <>
+                <section className="space-y-2.5">
+                  <h2 className="font-serif text-[20px] font-bold text-[#1C1917]">
+                    {lang === 'mr'
+                      ? '१. नांदेड कार्यालयातून थेट स्पीड पोस्ट व कुरिअर वितरण'
+                      : '1. Direct Dispatch from Nanded via India Post & Regional Courier'}
+                  </h2>
+                  <p>
+                    {lang === 'mr'
+                      ? 'अकथ प्रकाशनकडून सर्व ऑर्डर १ ते २ कामकाजाच्या दिवसांत मजबूत कार्डबोर्ड पॅकेजिंगमध्ये भारतीय स्पीड पोस्ट (India Post Speed Post / Registered Book Post) किंवा नोंदणीकृत कुरिअरद्वारे पाठवल्या जातात. ₹६०० किंवा त्याहून अधिक मूल्याच्या ऑर्डरवर संपूर्ण भारतात मोफत वितरण दिले जाते (₹६०० खालील ऑर्डरसाठी ₹४५ इतके नाममात्र पोस्टल शुल्क आकारले जाते).'
+                      : 'All orders placed with Akath Prakashan are carefully wrapped in moisture-resistant layers and corrugated book-board corners at our Nanded desk and dispatched within 1–2 working days via India Post Registered/Speed Post or courier. Orders of ₹600 and above receive free shipping across India (a flat ₹45 postal contribution applies to orders under ₹600).'}
+                  </p>
+                </section>
+
+                <section className="space-y-2.5">
+                  <h2 className="font-serif text-[20px] font-bold text-[#1C1917]">
+                    {lang === 'mr'
+                      ? '२. प्रवासातील हानी किंवा मुद्रण दोष असल्यास मोफत बदली प्रत'
+                      : '2. Damaged or Defective Copies: 7-Day Free Replacement'}
+                  </h2>
+                  <p>
+                    {lang === 'mr'
+                      ? 'प्रवासात पुस्तकास कोणतीही मुद्रण किंवा बांधणीची हानी झाल्यास पुस्तक मिळाल्यापासून ७ दिवसांच्या आत पुस्तकाच्या फोटोसह व्हॉट्सॲप (+91 92702 82932) किंवा ईमेल (akathpublication@gmail.com) वर संपर्क साधल्यास विनाशुल्क बदली प्रत पाठवली जाते.'
+                      : 'If a book arrives with transit damage or a printing defect, please contact us within 7 days with a quick photo on WhatsApp (+91 92702 82932) or email (akathpublication@gmail.com) for a free replacement copy.'}
+                  </p>
+                </section>
+              </>
+            )}
+
+            {/* Direct Small-Business Contact Footer Card inside Policy */}
+            <div className="mt-8 pt-6 border-t border-[#E6E1D6] bg-[#FAF8F3] rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1 text-[13.5px] text-[#44403C]">
+                <p className="font-serif font-bold text-[16px] text-[#1C1917]">
+                  {lang === 'mr'
+                    ? 'अकथ प्रकाशन · संपादकीय व वितरण कक्ष'
+                    : 'Akath Prakashan · Editorial & Dispatch Desk'}
+                </p>
+                <p>
+                  {lang === 'mr'
+                    ? 'पवार कॉम्प्लेक्स, मालेगाव रोड, तरोडा नाका, नांदेड – ४३१६०५, महाराष्ट्र'
+                    : 'Pawar Complex, Malegaon Road, Taroda Naka, Nanded – 431605, Maharashtra'}
+                </p>
+                <p className="font-mono text-[12.5px] text-[#243B8A]">
+                  akathpublication@gmail.com · +91 92702 82932
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate('/contact')}
+                className="px-4 py-2.5 rounded-xl bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[13.5px] font-semibold transition-colors cursor-pointer shrink-0"
+              >
+                {lang === 'mr' ? 'थेट संपर्क साधा →' : 'Contact Our Desk →'}
+              </button>
+            </div>
+          </div>
+        </article>
       </div>
     </div>
   );
