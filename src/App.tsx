@@ -1,884 +1,165 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  BookRecord,
-  AuthorRecord,
-  EditorialArticle,
-  FirstPageExcerpt,
-  ReadingList,
-  CartItemInput,
-  CartQuoteResponse,
-  OrderRecord,
-  ManuscriptSubmission,
-  PublicUserProfile,
-} from './types/publishing';
-import { LanguageContext, TRANSLATIONS } from './i18n/translations';
-import { AppLanguage } from './utils/validation';
-import {
-  getGitHubPagesBasePath,
-  normalizeAppRoutePath,
-  getStaticBooks,
-  getStaticAuthors,
-  getStaticArticles,
-  getStaticExcerpts,
-  getStaticReadingLists,
-  withResolvedBookAssets,
-  withResolvedExcerptAssets,
-} from './utils/githubPagesAdapter';
-import { Navbar } from './components/Navbar';
-import { Footer } from './components/Footer';
-import { SearchModal } from './components/SearchModal';
-import { HomeView } from './views/HomeView';
-import { BooksCatalogueView, BookDetailView } from './views/BooksAndStoreView';
-import { VachankattaHubView, ArticleDetailView } from './views/VachankattaView';
-import {
-  AuthorsListView,
-  AuthorDetailView,
-  AboutAkathView,
-  SubmitManuscriptView,
-  ContactView,
-} from './views/PublishingHouseViews';
-import {
-  CartView,
-  CheckoutView,
-  OrderTrackingView,
-  PolicyDocumentView,
-} from './views/CommerceAndPolicyViews';
-import { AdminDashboardView, TechnicalAuditView } from './views/AdminAndAuditViews';
-import {
-  AuthPageView,
-  ReaderAccountView,
-  AuthorPortalView,
-  authFetch,
-  setAuthSessionTokens,
-} from './views/AuthAndRoleViews';
+import React, { useEffect, useMemo, useState } from 'react';
+import { INITIAL_ARTICLES, INITIAL_AUTHORS, INITIAL_BOOKS } from './data/seedData';
+import type { BookRecord, EditorialArticle } from './types/publishing';
 
-const CART_STORAGE_KEY = 'akath_cart_v1';
-const LANG_STORAGE_KEY = 'akath_lang_v1';
+type Language = 'mr' | 'en';
+type Route = { page: 'home' | 'books' | 'book' | 'authors' | 'author' | 'journal' | 'article' | 'about' | 'contact' | 'not-found'; slug?: string };
 
-function loadInitialCart(): CartItemInput[] {
-  try {
-    const raw = localStorage.getItem(CART_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (item) =>
-        item &&
-        typeof item.bookId === 'string' &&
-        typeof item.quantity === 'number' &&
-        item.quantity >= 1
-    );
-  } catch {
-    return [];
+const copy = {
+  mr: {
+    home: 'मुख्यपृष्ठ', books: 'ग्रंथदालन', journal: 'वाचनकट्टा', authors: 'लेखक', about: 'आमच्याविषयी', contact: 'संपर्क',
+    eyebrow: 'स्वतंत्र मराठी साहित्य प्रकाशन', hero: 'मराठी साहित्य. नवे आवाज. दीर्घ संवाद.',
+    intro: 'काही पुस्तकं संपतात. काही वाचकांसोबत राहतात. आशयघन लेखन, नव्या जाणिवा आणि दीर्घकाळ टिकणाऱ्या साहित्याचा एक निवांत पत्ता.',
+    explore: 'पुस्तके पाहा', read: 'वाचनकट्टा वाचा', featured: 'निवडक ग्रंथ', featuredSub: 'अकथच्या संपादकीय निवडीतून काही पुस्तकं.',
+    allBooks: 'सर्व पुस्तके पाहा', latest: 'वाचनकट्टा', latestSub: 'लेख, समीक्षा आणि लेखकांशी संवाद.',
+    authorsTitle: 'लेखक आणि त्यांचे विश्व', aboutTitle: 'अकथ प्रकाशन', aboutText: 'वेगळ्या जाणिवांचे लेखन शोधणारी, त्याला संपादकीय साक्षेपाने घडवणारी आणि पुस्तक, लेखक व वाचक यांच्यात दीर्घकालीन नाते निर्माण करणारी स्वतंत्र मराठी साहित्य प्रकाशन संस्था.',
+    catalogue: 'ग्रंथदालन', catalogueSub: 'कादंबरी, कविता, कथा, समीक्षा आणि वैचारिक लेखन.',
+    search: 'पुस्तक किंवा लेखक शोधा…', all: 'सर्व पुस्तके', noBooks: 'या शोधाशी जुळणारी पुस्तके सापडली नाहीत.',
+    author: 'लेखक', details: 'पुस्तकाविषयी', enquire: 'या पुस्तकाबद्दल चौकशी करा', isbn: 'ISBN', pages: 'पृष्ठे', format: 'स्वरूप',
+    journalTitle: 'वाचनकट्टा', journalSub: 'समकालीन मराठी साहित्याचे वाचन, चिंतन आणि संवाद.',
+    readArticle: 'लेख वाचा', aboutHeading: 'शब्दांना वेळ देणारे प्रकाशन', contactHeading: 'अकथशी संवाद साधा',
+    contactText: 'पुस्तके, ग्रंथालयीन मागणी, वितरण किंवा संपादकीय संवादासाठी ईमेल किंवा WhatsApp द्वारे संपर्क साधा.',
+    email: 'ईमेल लिहा', whatsapp: 'WhatsApp वर संपर्क', back: 'मागे जा', allRights: 'सर्व हक्क राखीव.',
+    noContent: 'हे पान सध्या उपलब्ध नाही.', language: 'English'
+  },
+  en: {
+    home: 'Home', books: 'Books', journal: 'Vachankatta', authors: 'Authors', about: 'About', contact: 'Contact',
+    eyebrow: 'Independent Marathi Literary Publisher', hero: 'Words That Stay. Stories That Travel.',
+    intro: 'Some books end. Others stay with their readers. A considered home for distinctive writing, new sensibilities and literature that lasts.',
+    explore: 'Explore books', read: 'Read Vachankatta', featured: 'Selected titles', featuredSub: 'A few books from the Akath editorial catalogue.',
+    allBooks: 'View all books', latest: 'Vachankatta', latestSub: 'Essays, reviews and conversations with writers.',
+    authorsTitle: 'Writers and their worlds', aboutTitle: 'Akath Prakashan', aboutText: 'An independent Marathi literary publisher that discovers distinctive writing, gives it the editorial attention it deserves, and builds lasting relationships between books, writers, and readers.',
+    catalogue: 'The catalogue', catalogueSub: 'Fiction, poetry, short stories, criticism and ideas.',
+    search: 'Search books or authors…', all: 'All books', noBooks: 'No books matched your search.',
+    author: 'Author', details: 'About this book', enquire: 'Enquire about this book', isbn: 'ISBN', pages: 'Pages', format: 'Format',
+    journalTitle: 'Vachankatta', journalSub: 'Reading, reflection and conversation around contemporary Marathi literature.',
+    readArticle: 'Read article', aboutHeading: 'A publishing house that gives words time', contactHeading: 'Start a conversation',
+    contactText: 'For books, library enquiries, distribution or editorial correspondence, reach us by email or WhatsApp.',
+    email: 'Write an email', whatsapp: 'Message on WhatsApp', back: 'Go back', allRights: 'All rights reserved.',
+    noContent: 'This page is not available at the moment.', language: 'मराठी'
   }
+};
+
+function readRoute(pathname: string): Route {
+  const parts = pathname.split('/').filter(Boolean);
+  if (!parts.length) return { page: 'home' };
+  if (parts[0] === 'books' && parts[1]) return { page: 'book', slug: parts[1] };
+  if (parts[0] === 'books') return { page: 'books' };
+  if (parts[0] === 'authors' && parts[1]) return { page: 'author', slug: parts[1] };
+  if (parts[0] === 'authors') return { page: 'authors' };
+  if (parts[0] === 'vachankatta' && parts[1]) return { page: 'article', slug: parts[1] };
+  if (parts[0] === 'vachankatta') return { page: 'journal' };
+  if (parts[0] === 'about') return { page: 'about' };
+  if (parts[0] === 'contact') return { page: 'contact' };
+  return { page: 'not-found' };
 }
 
-function loadInitialLang(): AppLanguage {
-  try {
-    const saved = localStorage.getItem(LANG_STORAGE_KEY);
-    return saved === 'en' ? 'en' : 'mr';
-  } catch {
-    return 'mr';
-  }
+const publicBooks = (INITIAL_BOOKS as BookRecord[]).filter(book => book.publicationStatus !== 'draft');
+const publicAuthors = INITIAL_AUTHORS.filter(author => author.publicProfileStatus === 'published');
+const publicArticles = (INITIAL_ARTICLES as EditorialArticle[]).filter(article => article.workflowStatus === 'published');
+
+function BookTile({ book, lang }: { book: BookRecord; lang: Language }) {
+  const author = publicAuthors.find(item => item.id === book.authorId);
+  return <article className="group rounded-2xl border border-[#E6E1D6] bg-white p-4 transition hover:-translate-y-1 hover:shadow-xl">
+    <a href={`/books/${book.slug}`} className="block">
+      <div className="mb-4 flex aspect-[4/5] items-center justify-center overflow-hidden rounded-xl bg-[#F7F3E8] p-5">
+        {book.coverImageUrl ? <img src={book.coverImageUrl} alt={book.title} loading="lazy" className="h-full w-auto max-w-full object-contain shadow-lg transition group-hover:scale-[1.02]" /> : <div className="text-center font-serif text-2xl text-[#243B8A]">{book.title}</div>}
+      </div>
+      <p className="text-xs font-semibold uppercase tracking-wide text-[#9A6B2F]">{book.category}</p>
+      <h3 className="mt-2 font-serif text-xl font-semibold leading-snug text-[#252832]">{book.title}</h3>
+      <p className="mt-1 text-sm text-[#68665F]">{author?.name ?? ''}</p>
+    </a>
+    <div className="mt-4 flex items-center justify-between border-t border-[#EEE9DF] pt-3">
+      <span className="font-semibold text-[#252832]">{book.price > 0 ? `₹${book.price}` : (lang === 'mr' ? 'माहितीसाठी संपर्क' : 'Contact for details')}</span>
+      <a className="text-sm font-semibold text-[#243B8A] hover:underline" href={`/books/${book.slug}`}>{lang === 'mr' ? 'तपशील' : 'Details'} ↗</a>
+    </div>
+  </article>;
 }
 
 export default function App() {
-  const [lang, setLangState] = useState<AppLanguage>(loadInitialLang);
-  const [currentPath, setCurrentPath] = useState<string>(() =>
-    normalizeAppRoutePath(window.location.pathname)
-  );
-  const [searchOpen, setSearchOpen] = useState(false);
-
-  // Authentication & Session state
-  const [authUser, setAuthUser] = useState<PublicUserProfile | null>(null);
-  const [csrfToken, setCsrfToken] = useState<string | null>(null);
-
-  const [books, setBooks] = useState<BookRecord[]>(() => getStaticBooks());
-  const [authors, setAuthors] = useState<AuthorRecord[]>(() => getStaticAuthors());
-  const [articles, setArticles] = useState<EditorialArticle[]>(() => getStaticArticles());
-  const [excerpts, setExcerpts] = useState<FirstPageExcerpt[]>(() => getStaticExcerpts());
-  const [readingLists, setReadingLists] = useState<ReadingList[]>(() =>
-    getStaticReadingLists()
-  );
-  const [loadingBootstrap, setLoadingBootstrap] = useState(true);
-
-  const [cartItems, setCartItems] = useState<CartItemInput[]>(loadInitialCart);
-  const [cartQuote, setCartQuote] = useState<CartQuoteResponse | null>(null);
-  const [loadingQuote, setLoadingQuote] = useState(false);
-  const [recentlyAddedBookId, setRecentlyAddedBookId] = useState<string | null>(null);
-  const [isImmersiveNavHidden, setIsImmersiveNavHidden] = useState(false);
-
-  // Sync HTML lang attribute and localStorage when language changes
-  const setLang = useCallback((nextLang: AppLanguage) => {
-    setLangState(nextLang);
-    document.documentElement.lang = nextLang;
-    try {
-      localStorage.setItem(LANG_STORAGE_KEY, nextLang);
-    } catch {
-      // Ignore storage quota errors
-    }
-  }, []);
+  const [lang, setLang] = useState<Language>(() => localStorage.getItem('akath_public_lang') === 'en' ? 'en' : 'mr');
+  const [route, setRoute] = useState<Route>(() => readRoute(window.location.pathname));
+  const [query, setQuery] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const t = copy[lang];
 
   useEffect(() => {
-    document.documentElement.lang = lang;
-  }, [lang]);
-
-  // History popstate listener
-  useEffect(() => {
-    const onPopState = () => {
-      setCurrentPath(normalizeAppRoutePath(window.location.pathname));
-    };
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
+    const onPop = () => setRoute(readRoute(window.location.pathname));
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
   }, []);
 
-  const navigate = useCallback((path: string) => {
-    const [rawPathname, queryPart] = (path || '/').split('?');
-    const normalizedRoute = normalizeAppRoutePath(rawPathname);
-    const base = getGitHubPagesBasePath();
-    const fullPathname =
-      base && normalizedRoute === '/'
-        ? `${base}/`
-        : base
-          ? `${base}${normalizedRoute}`
-          : normalizedRoute;
-    const fullHistoryUrl = queryPart ? `${fullPathname}?${queryPart}` : fullPathname;
-    window.history.pushState({}, '', fullHistoryUrl);
-    setCurrentPath(normalizedRoute);
-    setIsImmersiveNavHidden(false);
+  useEffect(() => { document.documentElement.lang = lang; localStorage.setItem('akath_public_lang', lang); }, [lang]);
+
+  const navigate = (path: string) => {
+    window.history.pushState({}, '', path);
+    setRoute(readRoute(path));
+    setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
-  // Fetch initial publishing bootstrap data
-  const fetchBootstrap = useCallback(async () => {
-    try {
-      const res = await fetch('/api/bootstrap');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data.books) && data.books.length > 0) {
-          setBooks(data.books.map(withResolvedBookAssets));
-        }
-        if (Array.isArray(data.authors) && data.authors.length > 0) {
-          setAuthors(data.authors);
-        }
-        if (Array.isArray(data.articles)) {
-          setArticles(data.articles);
-        }
-        if (Array.isArray(data.excerpts)) {
-          setExcerpts(data.excerpts.map(withResolvedExcerptAssets));
-        }
-        if (Array.isArray(data.readingLists)) {
-          setReadingLists(data.readingLists);
-        }
-      }
-    } catch {
-      // Static fallback already initialized via getStaticBooks(), etc.
-    } finally {
-      setLoadingBootstrap(false);
-    }
-  }, []);
-
-  // Fetch current authenticated user session on mount
-  const fetchAuthSession = useCallback(async () => {
-    try {
-      const res = await authFetch('/api/auth/me');
-      if (res.ok) {
-        const data = await res.json();
-        setAuthUser(data.user || null);
-        if (data.csrfToken) {
-          setCsrfToken(data.csrfToken);
-        }
-      }
-    } catch {
-      // Ignore network error
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchBootstrap();
-    fetchAuthSession();
-  }, [fetchBootstrap, fetchAuthSession]);
-
-  const handleAuthSuccess = useCallback(
-    (payload: {
-      user: PublicUserProfile;
-      sessionToken?: string | null;
-      csrfToken: string | null;
-      mergedCart?: CartItemInput[];
-      redirectTo?: string;
-    }) => {
-      if (payload.sessionToken !== undefined) {
-        setAuthSessionTokens(payload.sessionToken, payload.csrfToken);
-      }
-      setAuthUser(payload.user);
-      setCsrfToken(payload.csrfToken);
-      if (Array.isArray(payload.mergedCart) && payload.mergedCart.length > 0) {
-        setCartItems(payload.mergedCart);
-      }
-      navigate(payload.redirectTo || '/account');
-    },
-    [navigate]
-  );
-
-  const handleQuickPersonaSwitch = useCallback(
-    async (
-      persona: 'reader' | 'author' | 'admin' | 'guest',
-      targetPath?: string
-    ) => {
-      if (persona === 'guest') {
-        setAuthSessionTokens(null, null);
-        setAuthUser(null);
-        setCsrfToken(null);
-        navigate(targetPath || '/');
-        return;
-      }
-      try {
-        const res = await fetch('/api/auth/sandbox-persona', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ persona }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.user) {
-            setAuthSessionTokens(
-              data.sessionToken || null,
-              data.csrfToken || null
-            );
-            setAuthUser(data.user);
-            setCsrfToken(data.csrfToken || null);
-            if (Array.isArray(data.mergedCart) && data.mergedCart.length > 0) {
-              setCartItems(data.mergedCart);
-            }
-            navigate(targetPath || data.redirectTo || '/account');
-          }
-        }
-      } catch {
-        // Ignore network error
-      }
-    },
-    [navigate]
-  );
-
-  const handleLogout = useCallback(async () => {
-    try {
-      await authFetch(
-        '/api/auth/logout',
-        {
-          method: 'POST',
-        },
-        csrfToken
-      );
-    } finally {
-      setAuthSessionTokens(null, null);
-      setAuthUser(null);
-      setCsrfToken(null);
-      navigate('/');
-    }
-  }, [csrfToken, navigate]);
-
-  // Persist cartItems to localStorage and fetch authoritative server quote
-  useEffect(() => {
-    try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
-    } catch {
-      // Ignore storage errors
-    }
-
-    let cancelled = false;
-    const syncCartQuote = async () => {
-      setLoadingQuote(true);
-      try {
-        const res = await fetch('/api/cart/quote', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: cartItems, lang }),
-        });
-        if (res.ok && !cancelled) {
-          const quote: CartQuoteResponse = await res.json();
-          setCartQuote(quote);
-        }
-      } finally {
-        if (!cancelled) setLoadingQuote(false);
-      }
-    };
-
-    syncCartQuote();
-    return () => {
-      cancelled = true;
-    };
-  }, [cartItems, lang, books]);
-
-  // Add to cart (merges quantities if already present, respects available stock)
-  const handleAddToCart = useCallback(
-    (bookId: string, addQty = 1) => {
-      const qtyToAdd = Math.max(1, Math.floor(addQty));
-      setCartItems((prev) => {
-        const existingIndex = prev.findIndex((item) => item.bookId === bookId);
-        const book = books.find((b) => b.id === bookId);
-        const maxStock = book ? Math.min(book.stock, 20) : 20;
-        if (maxStock <= 0) return prev;
-
-        if (existingIndex > -1) {
-          const updated = [...prev];
-          const nextQty = Math.min(maxStock, updated[existingIndex].quantity + qtyToAdd);
-          updated[existingIndex] = { bookId, quantity: nextQty };
-          return updated;
-        }
-        return [...prev, { bookId, quantity: Math.min(maxStock, qtyToAdd) }];
-      });
-
-      setRecentlyAddedBookId(bookId);
-      setTimeout(() => {
-        setRecentlyAddedBookId((curr) => (curr === bookId ? null : curr));
-      }, 1600);
-    },
-    [books]
-  );
-
-  // Update quantity in cart (strictly >= 1; removal uses handleRemoveCartItem)
-  const handleUpdateCartQuantity = useCallback(
-    (bookId: string, newQuantity: number) => {
-      if (newQuantity < 1) return;
-      setCartItems((prev) =>
-        prev.map((item) =>
-          item.bookId === bookId
-            ? { ...item, quantity: Math.max(1, Math.floor(newQuantity)) }
-            : item
-        )
-      );
-    },
-    []
-  );
-
-  const handleRemoveCartItem = useCallback((bookId: string) => {
-    setCartItems((prev) => prev.filter((item) => item.bookId !== bookId));
-  }, []);
-
-  const handleClearCart = useCallback(() => {
-    setCartItems([]);
-  }, []);
-
-  // Excerpt reaction handler
-  const handleReactExcerpt = async (
-    excerptId: string,
-    reactionType: 'readMore' | 'struckByLine' | 'wantContext'
-  ) => {
-    const res = await fetch(`/api/excerpts/${excerptId}/react`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reactionType }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setExcerpts((prev) =>
-        prev.map((ex) =>
-          ex.id === excerptId ? { ...ex, reactions: data.reactions } : ex
-        )
-      );
-    }
   };
 
-  // Place Order handler
-  const handlePlaceOrder = async (payload: {
-    idempotencyKey: string;
-    customer: OrderRecord['customer'];
-    paymentMethod: OrderRecord['paymentMethod'];
-  }) => {
-    const res = await authFetch(
-      '/api/orders',
-      {
-        method: 'POST',
-        body: JSON.stringify({
-          ...payload,
-          items: cartItems,
-          lang,
-        }),
-      },
-      csrfToken
-    );
-    const data = await res.json();
-    if (!res.ok) {
-      return {
-        ok: false,
-        error: data.error,
-        fieldErrors: data.fieldErrors,
-      };
-    }
-    return { ok: true, order: data.order as OrderRecord };
-  };
+  const filteredBooks = useMemo(() => publicBooks.filter(book => {
+    const term = query.trim().toLocaleLowerCase();
+    if (!term) return true;
+    const author = publicAuthors.find(item => item.id === book.authorId);
+    return [book.title, book.transliteratedTitle, book.category, ...(book.topics || []), author?.name || '', author?.transliteratedName || ''].join(' ').toLocaleLowerCase().includes(term);
+  }), [query]);
 
-  // Verify Order Payment handler (calls server-side ownership-verified & HMAC-signed checkout endpoint)
-  const handleVerifyPayment = async (
-    orderId: string,
-    outcome: 'success' | 'failed',
-    guestAccessToken?: string
-  ) => {
-    const res = await authFetch(
-      `/api/orders/${orderId}/checkout-payment`,
-      {
-        method: 'POST',
-        headers: {
-          ...(guestAccessToken
-            ? { 'X-Guest-Access-Token': guestAccessToken }
-            : {}),
-        },
-        body: JSON.stringify({ outcome, lang, guestAccessToken }),
-      },
-      csrfToken
-    );
-    const data = await res.json();
-    if (!res.ok) {
-      return { ok: false, error: data.error };
-    }
-    if (outcome === 'success') {
-      setCartItems([]);
-      await fetchBootstrap();
-    }
-    return { ok: true, order: data.order as OrderRecord };
-  };
+  const book = route.page === 'book' ? publicBooks.find(item => item.slug === route.slug) : undefined;
+  const author = route.page === 'author' ? publicAuthors.find(item => item.slug === route.slug) : undefined;
+  const article = route.page === 'article' ? publicArticles.find(item => item.slug === route.slug) : undefined;
 
-  // Order lookup handler
-  const handleLookupOrder = async (orderNumber: string, contact: string) => {
-    const params = new URLSearchParams({ orderNumber, contact, lang });
-    const res = await fetch(`/api/orders/lookup?${params.toString()}`);
-    const data = await res.json();
-    if (!res.ok) {
-      return { ok: false, error: data.error };
-    }
-    return { ok: true, order: data.order as OrderRecord };
-  };
+  const navLinks = [{ label: t.home, path: '/' }, { label: t.books, path: '/books' }, { label: t.journal, path: '/vachankatta' }, { label: t.authors, path: '/authors' }, { label: t.about, path: '/about' }, { label: t.contact, path: '/contact' }];
 
-  // Newsletter subscription handler
-  const handleSubscribeNewsletter = async (email: string, name?: string) => {
-    const res = await fetch('/api/newsletter/subscribe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        name,
-        consentConfirmed: true,
-        source: currentPath,
-        lang,
-      }),
-    });
-    const data = await res.json();
-    return {
-      ok: res.ok,
-      message: data.message || data.error || '',
-    };
-  };
-
-  // Manuscript submission handler
-  const handleSubmitManuscript = async (payload: Record<string, unknown>) => {
-    const res = await fetch('/api/manuscripts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, lang }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      return {
-        ok: false,
-        error: data.error,
-        fieldErrors: data.fieldErrors,
-      };
-    }
-    return { ok: true, submission: data.submission as ManuscriptSubmission };
-  };
-
-  // Contact submission handler
-  const handleSubmitContact = async (payload: Record<string, unknown>) => {
-    const res = await fetch('/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, lang }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      return {
-        ok: false,
-        error: data.error,
-        fieldErrors: data.fieldErrors,
-      };
-    }
-    return { ok: true, message: data.message, inquiry: data.inquiry };
-  };
-
-  const totalCartCount = cartQuote
-    ? cartQuote.items.reduce((sum, l) => sum + l.approvedQuantity, 0)
-    : cartItems.reduce((sum, i) => sum + i.quantity, 0);
-
-  // Route matching
-  const renderMainView = () => {
-    if (loadingBootstrap && books.length === 0) {
-      return (
-        <div className="max-w-[1200px] mx-auto px-4 py-20 text-center text-[#706D65]">
-          {lang === 'mr' ? 'अकथ प्रकाशन लोड होत आहे...' : 'Loading Akath Prakashan...'}
+  return <div className="min-h-screen bg-[#FFFDF7] text-[#252832]">
+    <header className="sticky top-0 z-40 border-b border-[#1B2D6B] bg-[#243B8A] text-[#FFFDF7] shadow-lg">
+      <div className="h-1 bg-gradient-to-r from-[#243B8A] via-[#FFD966] to-[#EF6855]" />
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <a href="/" onClick={e => {e.preventDefault(); navigate('/');}} className="flex items-center gap-3">
+          <img src="/assets/akath/akath-logo.png" alt="" className="h-11 w-11 rounded-full object-cover" />
+          <span><span className="block font-serif text-xl font-bold">अकथ प्रकाशन</span><span className="block text-[10px] tracking-wider text-[#FFD966]">AKATH PRAKASHAN · MARATHI LITERATURE</span></span>
+        </a>
+        <nav className="hidden items-center gap-5 lg:flex">{navLinks.map(link => <a key={link.path} href={link.path} onClick={e => {e.preventDefault(); navigate(link.path);}} className="text-sm font-medium text-white/90 transition hover:text-[#FFD966]">{link.label}</a>)}</nav>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setLang(lang === 'mr' ? 'en' : 'mr')} className="rounded-lg border border-white/25 px-3 py-2 text-xs font-semibold hover:bg-white/10">{t.language}</button>
+          <button onClick={() => setMenuOpen(!menuOpen)} className="rounded-lg border border-white/25 px-3 py-2 text-sm lg:hidden" aria-label="Toggle menu">☰</button>
         </div>
-      );
-    }
-
-    // 1. Authentication Views (/login, /register, /forgot-password, /reset-password, /verify-email)
-    const authModes: Record<
-      string,
-      'login' | 'register' | 'forgot-password' | 'reset-password' | 'verify-email'
-    > = {
-      '/login': 'login',
-      '/register': 'register',
-      '/forgot-password': 'forgot-password',
-      '/reset-password': 'reset-password',
-      '/verify-email': 'verify-email',
-    };
-
-    if (authModes[currentPath]) {
-      const searchParams = new URLSearchParams(window.location.search);
-      const redirectParam = searchParams.get('redirect') || undefined;
-      return (
-        <AuthPageView
-          initialMode={authModes[currentPath]}
-          redirectPath={redirectParam}
-          guestCart={cartItems}
-          onAuthSuccess={handleAuthSuccess}
-          onNavigate={navigate}
-        />
-      );
-    }
-
-    // 2. Reader Account Routes (/account, /account/orders, /account/wishlist, /account/addresses, /account/security)
-    if (currentPath === '/account' || currentPath.startsWith('/account/')) {
-      if (!authUser) {
-        return (
-          <AuthPageView
-            initialMode="login"
-            redirectPath={currentPath}
-            guestCart={cartItems}
-            onAuthSuccess={handleAuthSuccess}
-            onNavigate={navigate}
-          />
-        );
-      }
-      const sub = currentPath.replace('/account', '').replace(/^\//, '');
-      const validTabs = ['profile', 'orders', 'wishlist', 'addresses', 'security'];
-      const tab = (validTabs.includes(sub) ? sub : 'profile') as
-        | 'profile'
-        | 'orders'
-        | 'wishlist'
-        | 'addresses'
-        | 'security';
-
-      return (
-        <ReaderAccountView
-          user={authUser}
-          csrfToken={csrfToken}
-          activeSubTab={tab}
-          books={books}
-          authors={authors}
-          onUserUpdated={setAuthUser}
-          onLogout={handleLogout}
-          onNavigate={navigate}
-          onAddToCart={(id, qty) => handleAddToCart(id, qty || 1)}
-        />
-      );
-    }
-
-    // 3. Author Portal & Author Application Routes (/author/apply, /author/dashboard, /author/books)
-    if (currentPath === '/author' || currentPath.startsWith('/author/')) {
-      if (!authUser) {
-        return (
-          <AuthPageView
-            initialMode="login"
-            redirectPath={currentPath}
-            guestCart={cartItems}
-            onAuthSuccess={handleAuthSuccess}
-            onNavigate={navigate}
-          />
-        );
-      }
-      const sub = currentPath.replace('/author', '').replace(/^\//, '');
-      const mode: 'apply' | 'dashboard' | 'books' =
-        sub === 'apply' ? 'apply' : sub === 'books' ? 'books' : 'dashboard';
-
-      return (
-        <AuthorPortalView
-          user={authUser}
-          csrfToken={csrfToken}
-          subRoute={mode}
-          onNavigate={navigate}
-          onRefreshCatalog={fetchBootstrap}
-        />
-      );
-    }
-
-    // 4. Administrator Routes (/admin, /admin/users, /admin/books, /admin/orders)
-    if (currentPath === '/admin' || currentPath.startsWith('/admin/')) {
-      const sub = currentPath.replace('/admin', '').replace(/^\//, '');
-      const validAdminRoutes = [
-        'overview',
-        'users',
-        'authors',
-        'books',
-        'orders',
-        'audit',
-      ];
-      const adminSubRoute = (
-        validAdminRoutes.includes(sub) ? sub : 'overview'
-      ) as 'overview' | 'users' | 'authors' | 'books' | 'orders' | 'audit';
-
-      return (
-        <AdminDashboardView
-          user={authUser}
-          csrfToken={csrfToken}
-          activeSubRoute={adminSubRoute}
-          onNavigate={navigate}
-          onRefreshBootstrap={fetchBootstrap}
-          onQuickPersonaSwitch={handleQuickPersonaSwitch}
-        />
-      );
-    }
-
-    if (currentPath === '/' || currentPath === '') {
-      return (
-        <HomeView
-          books={books}
-          authors={authors}
-          articles={articles}
-          excerpts={excerpts}
-          onNavigate={navigate}
-          onAddToCart={(id) => handleAddToCart(id, 1)}
-          recentlyAddedBookId={recentlyAddedBookId}
-        />
-      );
-    }
-
-    if (currentPath === '/books') {
-      return (
-        <BooksCatalogueView
-          books={books}
-          authors={authors}
-          onNavigate={navigate}
-          onAddToCart={handleAddToCart}
-          recentlyAddedBookId={recentlyAddedBookId}
-        />
-      );
-    }
-
-    if (currentPath.startsWith('/books/')) {
-      const slug = currentPath.replace('/books/', '').trim();
-      const book = books.find((b) => b.slug === slug || b.id === slug);
-      if (book) {
-        const author = authors.find((a) => a.id === book.authorId);
-        return (
-          <BookDetailView
-            book={book}
-            author={author}
-            allBooks={books}
-            allAuthors={authors}
-            excerpts={excerpts}
-            articles={articles}
-            onNavigate={navigate}
-            onAddToCart={handleAddToCart}
-            recentlyAddedBookId={recentlyAddedBookId}
-            user={authUser}
-            csrfToken={csrfToken}
-            onUpdateUser={setAuthUser}
-          />
-        );
-      }
-      // Category fallback
-      return (
-        <BooksCatalogueView
-          books={books}
-          authors={authors}
-          initialCategory={slug}
-          onNavigate={navigate}
-          onAddToCart={handleAddToCart}
-          recentlyAddedBookId={recentlyAddedBookId}
-        />
-      );
-    }
-
-    if (currentPath === '/vachankatta' || currentPath.startsWith('/vachankatta/')) {
-      const sub = currentPath.replace('/vachankatta', '').replace(/^\//, '');
-      const categorySlugs = [
-        'articles',
-        'reviews',
-        'interviews',
-        'first-page',
-        'reading-lists',
-        'literary-world',
-      ];
-      if (!sub || categorySlugs.includes(sub)) {
-        return (
-          <VachankattaHubView
-            articles={articles}
-            excerpts={excerpts}
-            readingLists={readingLists}
-            books={books}
-            authors={authors}
-            activeSubRoute={sub || 'all'}
-            onNavigate={navigate}
-            onAddToCart={(id) => handleAddToCart(id, 1)}
-            onReactExcerpt={handleReactExcerpt}
-            recentlyAddedBookId={recentlyAddedBookId}
-          />
-        );
-      }
-
-      const matchedArticle = articles.find((a) => a.slug === sub || a.id === sub);
-      if (matchedArticle) {
-        return (
-          <ArticleDetailView
-            article={matchedArticle}
-            allBooks={books}
-            allAuthors={authors}
-            allArticles={articles}
-            onNavigate={navigate}
-            onAddToCart={(id) => handleAddToCart(id, 1)}
-            onImmersiveChange={setIsImmersiveNavHidden}
-          />
-        );
-      }
-    }
-
-    if (currentPath === '/authors') {
-      return <AuthorsListView authors={authors} books={books} onNavigate={navigate} />;
-    }
-
-    if (currentPath.startsWith('/authors/')) {
-      const slug = currentPath.replace('/authors/', '').trim();
-      const author = authors.find((a) => a.slug === slug || a.id === slug);
-      if (author) {
-        return (
-          <AuthorDetailView
-            author={author}
-            books={books}
-            articles={articles}
-            onNavigate={navigate}
-            onAddToCart={(id) => handleAddToCart(id, 1)}
-            recentlyAddedBookId={recentlyAddedBookId}
-          />
-        );
-      }
-    }
-
-    if (currentPath === '/about') {
-      return <AboutAkathView onNavigate={navigate} />;
-    }
-
-    if (currentPath === '/submit-manuscript') {
-      return <SubmitManuscriptView onSubmitManuscript={handleSubmitManuscript} />;
-    }
-
-    if (currentPath === '/contact') {
-      return <ContactView onSubmitContact={handleSubmitContact} onNavigate={navigate} />;
-    }
-
-    if (currentPath === '/cart') {
-      return (
-        <CartView
-          cartQuote={cartQuote}
-          loadingQuote={loadingQuote}
-          allBooks={books}
-          allAuthors={authors}
-          onUpdateQuantity={handleUpdateCartQuantity}
-          onRemoveItem={handleRemoveCartItem}
-          onClearCart={handleClearCart}
-          onAddToCart={handleAddToCart}
-          onNavigate={navigate}
-        />
-      );
-    }
-
-    if (currentPath === '/checkout') {
-      return (
-        <CheckoutView
-          cartQuote={cartQuote}
-          onPlaceOrder={handlePlaceOrder}
-          onVerifyPayment={handleVerifyPayment}
-          onNavigate={navigate}
-        />
-      );
-    }
-
-    if (currentPath === '/track-order') {
-      return <OrderTrackingView onLookupOrder={handleLookupOrder} />;
-    }
-
-    if (
-      currentPath.startsWith('/policies/') ||
-      currentPath === '/privacy' ||
-      currentPath === '/terms' ||
-      currentPath === '/shipping-returns'
-    ) {
-      const pType = (
-        currentPath.startsWith('/policies/')
-          ? currentPath.replace('/policies/', '')
-          : currentPath.replace(/^\//, '')
-      ) as 'privacy' | 'terms' | 'shipping-returns';
-      return <PolicyDocumentView policyType={pType} onNavigate={navigate} />;
-    }
-
-    if (currentPath === '/audit') {
-      return <TechnicalAuditView />;
-    }
-
-    // 404 Not Found
-    return (
-      <div className="max-w-xl mx-auto px-4 py-20 text-center space-y-4">
-        <h1 className="type-page-heading text-[#252832]">
-          {lang === 'mr' ? 'हे पान सापडले नाही (४०४)' : 'Page Not Found (404)'}
-        </h1>
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="px-6 py-3 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7] text-[15px] font-semibold transition-colors"
-        >
-          {lang === 'mr' ? 'मुख्यपृष्ठावर जा' : 'Return Home'}
-        </button>
       </div>
-    );
-  };
+      {menuOpen && <nav className="grid gap-1 border-t border-white/15 px-4 py-3 lg:hidden">{navLinks.map(link => <a key={link.path} href={link.path} onClick={e => {e.preventDefault(); navigate(link.path);}} className="rounded-lg px-3 py-2 hover:bg-white/10">{link.label}</a>)}</nav>}
+    </header>
 
-  return (
-    <LanguageContext.Provider
-      value={{
-        lang,
-        setLang,
-        t: TRANSLATIONS[lang],
-      }}
-    >
-      <div className="min-h-screen flex flex-col bg-[#FFFDF7] text-[#252832]">
-        <Navbar
-          currentPath={currentPath}
-          onNavigate={navigate}
-          cartCount={totalCartCount}
-          onOpenSearch={() => setSearchOpen(true)}
-          user={authUser}
-          onLogout={handleLogout}
-          onQuickPersonaSwitch={handleQuickPersonaSwitch}
-          immersiveHidden={isImmersiveNavHidden}
-        />
+    <main>
+      {route.page === 'home' && <>
+        <section className="relative isolate overflow-hidden bg-[#F3EEDF]">
+          <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 md:grid-cols-[1.05fr_.95fr] md:py-24">
+            <div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#9A6B2F]">{t.eyebrow}</p><h1 className="max-w-3xl font-serif text-4xl font-semibold leading-[1.2] sm:text-5xl lg:text-6xl">{t.hero}</h1><p className="mt-6 max-w-xl text-base leading-8 text-[#5C5A53]">{t.intro}</p><div className="mt-8 flex flex-wrap gap-3"><button onClick={() => navigate('/books')} className="rounded-xl bg-[#243B8A] px-6 py-3 font-semibold text-white hover:bg-[#1B2D6B]">{t.explore}</button><button onClick={() => navigate('/vachankatta')} className="rounded-xl border border-[#243B8A]/30 px-6 py-3 font-semibold text-[#243B8A] hover:bg-white">{t.read}</button></div></div>
+            <div className="relative"><img src="/assets/akath/hero-books.jpg" alt="A selection of books from Akath Prakashan" className="w-full rounded-[2rem] object-cover shadow-2xl" /><span className="absolute -bottom-4 -left-3 rounded-xl bg-[#FFD966] px-4 py-3 font-serif text-sm font-semibold text-[#252832] shadow-lg">अकथ प्रकाशन · नांदेड</span></div>
+          </div>
+        </section>
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6"><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#9A6B2F]">01 · AKATH CATALOGUE</p><h2 className="mt-2 font-serif text-3xl font-semibold">{t.featured}</h2><p className="mt-2 text-[#68665F]">{t.featuredSub}</p></div><button onClick={() => navigate('/books')} className="font-semibold text-[#243B8A] hover:underline">{t.allBooks} ↗</button></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{publicBooks.filter(item => item.isFeatured).slice(0,4).map(item => <BookTile key={item.id} book={item} lang={lang}/>)}</div></section>
+        <section className="bg-[#F7F3E8] py-16"><div className="mx-auto max-w-7xl px-4 sm:px-6"><div className="mb-8"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#9A6B2F]">02 · VACHANKATTA</p><h2 className="mt-2 font-serif text-3xl font-semibold">{t.latest}</h2><p className="mt-2 text-[#68665F]">{t.latestSub}</p></div><div className="grid gap-5 md:grid-cols-3">{publicArticles.slice(0,3).map(item => <a key={item.id} href={`/vachankatta/${item.slug}`} onClick={e => {e.preventDefault();navigate(`/vachankatta/${item.slug}`);}} className="rounded-2xl border border-[#E6E1D6] bg-white p-6 hover:shadow-lg"><p className="text-xs font-semibold text-[#9A6B2F]">{item.categoryMarathi}</p><h3 className="mt-3 font-serif text-xl font-semibold">{item.title}</h3><p className="mt-3 text-sm leading-6 text-[#68665F]">{item.summary}</p><span className="mt-5 inline-block text-sm font-semibold text-[#243B8A]">{t.readArticle} ↗</span></a>)}</div></div></section>
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6"><h2 className="font-serif text-3xl font-semibold">{t.aboutTitle}</h2><p className="mt-4 max-w-3xl text-lg leading-8 text-[#68665F]">{t.aboutText}</p><button onClick={() => navigate('/about')} className="mt-6 font-semibold text-[#243B8A] hover:underline">{t.about} ↗</button></section>
+      </>}
 
-        <main id="main-content" className="flex-1">
-          {renderMainView()}
-        </main>
+      {route.page === 'books' && <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#9A6B2F]">AKATH · CATALOGUE</p><h1 className="mt-2 font-serif text-4xl font-semibold">{t.catalogue}</h1><p className="mt-3 text-[#68665F]">{t.catalogueSub}</p><input value={query} onChange={e => setQuery(e.target.value)} placeholder={t.search} className="mt-7 w-full max-w-xl rounded-xl border border-[#DCD5C8] bg-white px-4 py-3 outline-none focus:border-[#243B8A]"/><p className="mb-5 mt-7 text-sm text-[#68665F]">{filteredBooks.length} {lang === 'mr' ? 'पुस्तके' : 'titles'}</p><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{filteredBooks.map(item => <BookTile key={item.id} book={item} lang={lang}/>)}</div>{filteredBooks.length === 0 && <p className="py-12 text-center text-[#68665F]">{t.noBooks}</p>}</section>}
 
-        <Footer
-          onNavigate={navigate}
-          onSubscribeNewsletter={handleSubscribeNewsletter}
-        />
+      {route.page === 'book' && book && <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6"><button onClick={() => navigate('/books')} className="mb-8 text-sm font-semibold text-[#243B8A]">← {t.back}</button><div className="grid gap-10 md:grid-cols-[.8fr_1.2fr]"><div className="flex justify-center rounded-3xl bg-[#F3EEDF] p-8"><img src={book.coverImageUrl || '/assets/akath/akath-logo.png'} alt={book.title} className="max-h-[560px] max-w-full object-contain shadow-2xl"/></div><div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#9A6B2F]">{book.category}</p><h1 className="mt-3 font-serif text-4xl font-semibold leading-tight">{book.title}</h1><p className="mt-3 text-lg text-[#68665F]">{publicAuthors.find(item => item.id === book.authorId)?.name}</p><p className="mt-6 text-2xl font-semibold">{book.price > 0 ? `₹${book.price}` : ''}</p><h2 className="mt-8 font-serif text-xl font-semibold">{t.details}</h2><p className="mt-3 whitespace-pre-line leading-8 text-[#5C5A53]">{book.description}</p><dl className="mt-8 grid grid-cols-2 gap-4 border-y border-[#E6E1D6] py-5 text-sm"><div><dt className="text-[#8B887F]">{t.isbn}</dt><dd className="mt-1 font-medium">{book.isbn || '—'}</dd></div><div><dt className="text-[#8B887F]">{t.pages}</dt><dd className="mt-1 font-medium">{book.pageCount || '—'}</dd></div><div><dt className="text-[#8B887F]">{t.format}</dt><dd className="mt-1 font-medium">{book.format}</dd></div><div><dt className="text-[#8B887F]">{t.author}</dt><dd className="mt-1 font-medium">{publicAuthors.find(item => item.id === book.authorId)?.name || '—'}</dd></div></dl><a href={`mailto:akathpublication@gmail.com?subject=${encodeURIComponent(`Enquiry about ${book.title}`)}`} className="mt-8 inline-flex rounded-xl bg-[#243B8A] px-6 py-3 font-semibold text-white hover:bg-[#1B2D6B]">{t.enquire}</a></div></div></section>}
+      {route.page === 'book' && !book && <NotFound text={t.noContent}/>}
+      {route.page === 'authors' && <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6"><h1 className="font-serif text-4xl font-semibold">{t.authorsTitle}</h1><div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{publicAuthors.map(item => <a key={item.id} href={`/authors/${item.slug}`} onClick={e => {e.preventDefault();navigate(`/authors/${item.slug}`);}} className="rounded-2xl border border-[#E6E1D6] bg-white p-6 hover:shadow-lg"><p className="text-xs font-semibold text-[#9A6B2F]">{item.literaryRole}</p><h2 className="mt-2 font-serif text-2xl font-semibold">{item.name}</h2><p className="mt-2 text-sm leading-6 text-[#68665F]">{item.biography.slice(0,220)}…</p></a>)}</div></section>}
+      {route.page === 'author' && author && <section className="mx-auto max-w-4xl px-4 py-16"><button onClick={() => navigate('/authors')} className="mb-8 text-sm font-semibold text-[#243B8A]">← {t.back}</button><p className="text-xs font-bold uppercase tracking-wider text-[#9A6B2F]">{author.literaryRole}</p><h1 className="mt-3 font-serif text-4xl font-semibold">{author.name}</h1><p className="mt-6 text-lg leading-8 text-[#68665F]">{author.biography}</p><div className="mt-10 grid gap-4 sm:grid-cols-2">{publicBooks.filter(item => item.authorId === author.id).map(item => <BookTile key={item.id} book={item} lang={lang}/>)}</div></section>}
+      {route.page === 'author' && !author && <NotFound text={t.noContent}/>}
+      {route.page === 'journal' && <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6"><h1 className="font-serif text-4xl font-semibold">{t.journalTitle}</h1><p className="mt-3 text-[#68665F]">{t.journalSub}</p><div className="mt-8 grid gap-5 md:grid-cols-2">{publicArticles.map(item => <a key={item.id} href={`/vachankatta/${item.slug}`} onClick={e => {e.preventDefault();navigate(`/vachankatta/${item.slug}`);}} className="rounded-2xl border border-[#E6E1D6] bg-white p-7 hover:shadow-lg"><p className="text-xs font-semibold text-[#9A6B2F]">{item.categoryMarathi} · {item.readingTimeMinutes} min</p><h2 className="mt-3 font-serif text-2xl font-semibold">{item.title}</h2><p className="mt-3 leading-7 text-[#68665F]">{item.summary}</p></a>)}</div></section>}
+      {route.page === 'article' && article && <article className="mx-auto max-w-3xl px-4 py-16"><button onClick={() => navigate('/vachankatta')} className="mb-8 text-sm font-semibold text-[#243B8A]">← {t.back}</button><p className="text-xs font-bold uppercase tracking-wider text-[#9A6B2F]">{article.categoryMarathi} · {article.readingTimeMinutes} min</p><h1 className="mt-4 font-serif text-4xl font-semibold leading-tight">{article.title}</h1><p className="mt-5 text-lg leading-8 text-[#68665F]">{article.leadParagraph}</p><div className="prose prose-lg mt-10 max-w-none">{article.sections.map(section => <section key={section.id} className="mb-8"><h2 className="font-serif text-2xl font-semibold">{section.heading}</h2>{section.paragraphs.map((paragraph,index) => <p key={index} className="mt-4 leading-8 text-[#45443F]">{paragraph}</p>)}</section>)}</div></article>}
+      {route.page === 'article' && !article && <NotFound text={t.noContent}/>}
+      {route.page === 'about' && <section className="mx-auto max-w-4xl px-4 py-20"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#9A6B2F]">OUR STORY</p><h1 className="mt-3 font-serif text-4xl font-semibold">{t.aboutHeading}</h1><p className="mt-7 text-lg leading-9 text-[#5C5A53]">{t.aboutText}</p><blockquote className="mt-10 border-l-4 border-[#FFD966] pl-6 font-serif text-2xl italic text-[#243B8A]">“{lang === 'mr' ? 'चांगल्या पुस्तकाला घडण्यासाठी आपला संथ, संयमी वेळ लागतो — आणि म्हणूनच ते पिढ्यानपिढ्या टिकून राहते.' : 'Like the turtle, a good book takes its time — and lasts for generations.'}”</blockquote></section>}
+      {route.page === 'contact' && <section className="mx-auto max-w-3xl px-4 py-20"><h1 className="font-serif text-4xl font-semibold">{t.contactHeading}</h1><p className="mt-5 text-lg leading-8 text-[#68665F]">{t.contactText}</p><div className="mt-8 flex flex-wrap gap-3"><a href="mailto:akathpublication@gmail.com" className="rounded-xl bg-[#243B8A] px-6 py-3 font-semibold text-white">{t.email}</a><a href="https://wa.me/919270282932" target="_blank" rel="noreferrer" className="rounded-xl border border-[#243B8A]/30 px-6 py-3 font-semibold text-[#243B8A]">{t.whatsapp}</a></div><p className="mt-8 text-sm text-[#68665F]">akathpublication@gmail.com · +91 92702 82932</p></section>}
+      {route.page === 'not-found' && <NotFound text={t.noContent}/>}
+    </main>
 
-        <SearchModal
-          isOpen={searchOpen}
-          onClose={() => setSearchOpen(false)}
-          books={books}
-          authors={authors}
-          articles={articles}
-          onNavigate={navigate}
-        />
-      </div>
-    </LanguageContext.Provider>
-  );
+    <footer className="mt-16 bg-[#243B8A] text-white"><div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-3"><div><h2 className="font-serif text-2xl font-semibold">अकथ प्रकाशन</h2><p className="mt-3 max-w-sm text-sm leading-7 text-white/75">{t.aboutText}</p></div><div><h3 className="font-semibold text-[#FFD966]">{t.books} · {t.journal}</h3><div className="mt-3 grid gap-2 text-sm text-white/80">{navLinks.map(link => <a key={link.path} href={link.path} onClick={e => {e.preventDefault();navigate(link.path);}} className="hover:text-[#FFD966]">{link.label}</a>)}</div></div><div><h3 className="font-semibold text-[#FFD966]">{t.contact}</h3><a className="mt-3 block text-sm text-white/80 hover:text-white" href="mailto:akathpublication@gmail.com">akathpublication@gmail.com</a><a className="mt-2 block text-sm text-white/80 hover:text-white" href="https://wa.me/919270282932">+91 92702 82932</a><p className="mt-6 text-xs text-white/60">© 2026 Akath Prakashan. {t.allRights}</p></div></div><div className="border-t border-white/15 py-4 text-center text-xs text-white/60">मराठी साहित्य. नवे आवाज. दीर्घ संवाद.</div></footer>
+  </div>;
+}
+
+function NotFound({ text }: { text: string }) {
+  return <section className="mx-auto max-w-xl px-4 py-24 text-center"><h1 className="font-serif text-3xl font-semibold">404</h1><p className="mt-3 text-[#68665F]">{text}</p><a href="/" className="mt-6 inline-block font-semibold text-[#243B8A]">← Akath Prakashan</a></section>;
 }
