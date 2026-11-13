@@ -1134,10 +1134,20 @@ async function runTests() {
   assert.ok(!homeViewSource.includes('80 GSM'));
   assert.ok(!homeViewSource.includes('Acid-Free Bookpaper'));
   assert.ok(homeViewSource.includes('data-testid="home-manuscript-desk"'));
-  assert.ok(!homeViewSource.includes('<SixEditorialStages'));
+  assert.ok(homeViewSource.includes('<SixEditorialStages variant="home"'));
   assert.ok(!homeViewSource.includes('Accepted Literary Genres'));
   assert.ok(homeViewSource.includes('data-testid="home-published-books"'));
   assert.ok(homeViewSource.includes('data-testid="home-catalog-horizontal-scroll"'));
+  assert.ok(
+    homeViewSource.indexOf('data-testid="home-manuscript-desk"') <
+      homeViewSource.indexOf('<SixEditorialStages variant="home"'),
+    'Publish Your Manuscript with Akath Prakashan must appear ABOVE Six Editorial Stages on HomeView'
+  );
+  assert.ok(
+    homeViewSource.indexOf('<SixEditorialStages variant="home"') <
+      homeViewSource.indexOf('data-testid="home-published-books"'),
+    'Curated Marathi Editions must appear AT THE BOTTOM below Six Editorial Stages on HomeView'
+  );
   assert.ok(booksAndStoreSource.includes('data-testid="catalogue-mobile-horizontal-scroll"'));
   assert.ok(!booksAndStoreSource.includes('testId="catalogue-category-select"'));
   assert.ok(booksAndStoreSource.includes('layoutId="catalogue-category-pill"'));

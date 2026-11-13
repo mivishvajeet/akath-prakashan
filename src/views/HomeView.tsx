@@ -20,6 +20,7 @@ import { resolvePublicAssetUrl } from '../utils/githubPagesAdapter';
 import { BookCard } from '../components/BookCard';
 import { BookCoverArt } from '../components/BookCoverArt';
 import { AnimatedTortoiseEmblem } from '../components/SarvamIllustrations';
+import { SixEditorialStages } from '../components/SixEditorialStages';
 import { useLanguage } from '../i18n/translations';
 
 /**
@@ -96,6 +97,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
   });
   const [deskSectionRef, isDeskVisible] = useIntersectionReveal<HTMLElement>({
     threshold: 0.14,
+    rootMargin: '0px 0px -32px 0px',
+  });
+  const [stagesWrapperRef, isStagesVisible] = useIntersectionReveal<HTMLDivElement>({
+    threshold: 0.12,
     rootMargin: '0px 0px -32px 0px',
   });
   const [catalogSectionRef, isCatalogVisible] = useIntersectionReveal<HTMLElement>({
@@ -430,7 +435,92 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </section>
 
       {/* =====================================================================
-          2. PUBLISHED EDITIONS CATALOGUE (CLEAN 3-BOOK SHOWCASE)
+          2. PUBLISH YOUR MANUSCRIPT WITH AKATH PRAKASHAN (AT THE TOP)
+          ===================================================================== */}
+      <section
+        ref={deskSectionRef}
+        data-testid="home-manuscript-desk"
+        className={`akath-io-section ${
+          isDeskVisible ? 'is-visible' : ''
+        } py-12 sm:py-16 bg-[#FFFDF7] border-b border-[#E6E1D6]`}
+      >
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+          <div className="akath-io-stagger-1 rounded-sm bg-[#243B8A] text-[#FFFDF7] p-7 sm:p-10 relative overflow-hidden shadow-sm border border-[#1B2D6B] flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-0 top-0 h-1.5"
+              style={{
+                background:
+                  'linear-gradient(90deg, #FFD966 0%, #EF6855 50%, #FFD966 100%)',
+              }}
+            />
+
+            <div className="space-y-3 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-[#FFD966] text-[#252832] text-xs font-bold tracking-wider uppercase">
+                <Feather className="w-3.5 h-3.5" />
+                <span>
+                  {lang === 'mr'
+                    ? 'नवीन संहिता आमंत्रण • लेखक व अनुवादकांसाठी'
+                    : 'Open Editorial Desk • For Authors & Translators'}
+                </span>
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#FFFDF7] leading-tight">
+                {lang === 'mr'
+                  ? 'तुमच्या हस्तलिखिताला अकथ प्रकाशनचे संपादकीय आणि मुद्रण अधिष्ठान द्या.'
+                  : 'Publish Your Manuscript with Akath Prakashan.'}
+              </h2>
+
+              <p className="text-sm sm:text-base text-[#FFFDF7]/85 leading-relaxed">
+                {lang === 'mr'
+                  ? 'संहितेची साहित्यिक गुणवत्ता आणि भाषिक ताकद यांवर निवड केली जाते; निवडलेल्या संहितेचा संपूर्ण संपादन व मुद्रण खर्च अकथ प्रकाशन करते.'
+                  : 'Manuscripts are selected strictly on literary depth and linguistic craft, with full editorial, design, and production stewardship provided by the house.'}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => onNavigate('/submit-manuscript')}
+                className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-sm bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] font-semibold text-sm sm:text-base transition-colors cursor-pointer"
+              >
+                <FileText className="w-4 h-4" />
+                <span>
+                  {lang === 'mr'
+                    ? 'प्रकाशनार्थ संहिता पाठवा'
+                    : 'Submit Manuscript Proposal'}
+                </span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onNavigate('/about')}
+                className="inline-flex items-center gap-2 px-5 py-3.5 rounded-sm bg-[#FFFDF7]/10 hover:bg-[#FFFDF7]/20 text-[#FFFDF7] border border-[#FFFDF7]/25 font-semibold text-sm transition-colors cursor-pointer"
+              >
+                <span>
+                  {lang === 'mr'
+                    ? 'संपादकीय भूमिका वाचा'
+                    : 'Read Editorial Ethos'}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================================
+          3. SIX EDITORIAL STAGES FROM MANUSCRIPT TO PRINTED BOOK
+          ===================================================================== */}
+      <div
+        ref={stagesWrapperRef}
+        className={`akath-io-section ${isStagesVisible ? 'is-visible' : ''}`}
+      >
+        <SixEditorialStages variant="home" onNavigate={onNavigate} />
+      </div>
+
+      {/* =====================================================================
+          4. CURATED MARATHI EDITIONS (AT THE BOTTOM)
           ===================================================================== */}
       <section
         ref={catalogSectionRef}
@@ -501,81 +591,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* =====================================================================
-          3. CONCISE MANUSCRIPT SUBMISSION CALL-TO-ACTION BANNER
-          ===================================================================== */}
-      <section
-        ref={deskSectionRef}
-        data-testid="home-manuscript-desk"
-        className={`akath-io-section ${
-          isDeskVisible ? 'is-visible' : ''
-        } py-12 sm:py-16 bg-[#FFFDF7] border-b border-[#E6E1D6]`}
-      >
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
-          <div className="akath-io-stagger-1 rounded-sm bg-[#243B8A] text-[#FFFDF7] p-7 sm:p-10 relative overflow-hidden shadow-sm border border-[#1B2D6B] flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div
-              aria-hidden="true"
-              className="absolute inset-x-0 top-0 h-1.5"
-              style={{
-                background:
-                  'linear-gradient(90deg, #FFD966 0%, #EF6855 50%, #FFD966 100%)',
-              }}
-            />
-
-            <div className="space-y-3 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-[#FFD966] text-[#252832] text-xs font-bold tracking-wider uppercase">
-                <Feather className="w-3.5 h-3.5" />
-                <span>
-                  {lang === 'mr'
-                    ? 'नवीन संहिता आमंत्रण • लेखक व अनुवादकांसाठी'
-                    : 'Open Editorial Desk • For Authors & Translators'}
-                </span>
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#FFFDF7] leading-tight">
-                {lang === 'mr'
-                  ? 'तुमच्या हस्तलिखिताला अकथ प्रकाशनचे संपादकीय आणि मुद्रण अधिष्ठान द्या.'
-                  : 'Publish Your Manuscript with Akath Prakashan.'}
-              </h2>
-
-              <p className="text-sm sm:text-base text-[#FFFDF7]/85 leading-relaxed">
-                {lang === 'mr'
-                  ? 'संहितेची साहित्यिक गुणवत्ता आणि भाषिक ताकद यांवर निवड केली जाते; निवडलेल्या संहितेचा संपूर्ण संपादन व मुद्रण खर्च अकथ प्रकाशन करते.'
-                  : 'Manuscripts are selected strictly on literary depth and linguistic craft, with full editorial, design, and production stewardship provided by the house.'}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3.5 shrink-0">
-              <button
-                type="button"
-                onClick={() => onNavigate('/submit-manuscript')}
-                className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-sm bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] font-semibold text-sm sm:text-base transition-colors cursor-pointer"
-              >
-                <FileText className="w-4 h-4" />
-                <span>
-                  {lang === 'mr'
-                    ? 'प्रकाशनार्थ संहिता पाठवा'
-                    : 'Submit Manuscript Proposal'}
-                </span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onNavigate('/about')}
-                className="inline-flex items-center gap-2 px-5 py-3.5 rounded-sm bg-[#FFFDF7]/10 hover:bg-[#FFFDF7]/20 text-[#FFFDF7] border border-[#FFFDF7]/25 font-semibold text-sm transition-colors cursor-pointer"
-              >
-                <span>
-                  {lang === 'mr'
-                    ? 'संपादकीय भूमिका वाचा'
-                    : 'Read Editorial Ethos'}
-                </span>
-              </button>
-            </div>
           </div>
         </div>
       </section>
