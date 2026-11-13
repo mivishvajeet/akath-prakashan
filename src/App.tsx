@@ -40,6 +40,16 @@ const copy = {
   }
 };
 
+function initialPath(): string {
+  const search = window.location.search;
+  if (search.startsWith('?/')) {
+    const decoded = search.slice(2).split('&').map(part => part.replace(/~and~/g, '&')).join('?');
+    const clean = decoded.startsWith('/') ? decoded.slice(1) : decoded;
+    return `/${clean}`;
+  }
+  return window.location.pathname;
+}
+
 function readRoute(pathname: string): Route {
   const parts = pathname.split('/').filter(Boolean);
   if (!parts.length) return { page: 'home' };
@@ -78,7 +88,7 @@ function BookTile({ book, lang }: { book: BookRecord; lang: Language }) {
 
 export default function App() {
   const [lang, setLang] = useState<Language>(() => localStorage.getItem('akath_public_lang') === 'en' ? 'en' : 'mr');
-  const [route, setRoute] = useState<Route>(() => readRoute(window.location.pathname));
+  const [route, setRoute] = useState<Route>(() => readRoute(initialPath()));
   const [query, setQuery] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const t = copy[lang];
@@ -136,7 +146,7 @@ export default function App() {
             <div className="relative"><img src="/assets/akath/hero-books.jpg" alt="A selection of books from Akath Prakashan" className="w-full rounded-[2rem] object-cover shadow-2xl" /><span className="absolute -bottom-4 -left-3 rounded-xl bg-[#FFD966] px-4 py-3 font-serif text-sm font-semibold text-[#252832] shadow-lg">अकथ प्रकाशन · नांदेड</span></div>
           </div>
         </section>
-        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6"><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#9A6B2F]">01 · AKATH CATALOGUE</p><h2 className="mt-2 font-serif text-3xl font-semibold">{t.featured}</h2><p className="mt-2 text-[#68665F]">{t.featuredSub}</p></div><button onClick={() => navigate('/books')} className="font-semibold text-[#243B8A] hover:underline">{t.allBooks} ↗</button></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{publicBooks.filter(item => item.isFeatured).slice(0,4).map(item => <BookTile key={item.id} book={item} lang={lang}/>)}</div></section>
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6"><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#9A6B2F]">01 · AKATH CATALOGUE</p><h2 className="mt-2 font-serif text-3xl font-semibold">{t.featured}</h2><p className="mt-2 text-[#68665F]">{t.featuredSub}</p></div><button onClick={() => navigate('/books')} className="font-semibold text-[#243B8A] hover:underline">{t.allBooks} ↗</button></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{(publicBooks.filter(item => item.isFeatured).length ? publicBooks.filter(item => item.isFeatured) : publicBooks).slice(0,4).map(item => <BookTile key={item.id} book={item} lang={lang}/>)}</div></section>
         <section className="bg-[#F7F3E8] py-16"><div className="mx-auto max-w-7xl px-4 sm:px-6"><div className="mb-8"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#9A6B2F]">02 · VACHANKATTA</p><h2 className="mt-2 font-serif text-3xl font-semibold">{t.latest}</h2><p className="mt-2 text-[#68665F]">{t.latestSub}</p></div><div className="grid gap-5 md:grid-cols-3">{publicArticles.slice(0,3).map(item => <a key={item.id} href={`/vachankatta/${item.slug}`} onClick={e => {e.preventDefault();navigate(`/vachankatta/${item.slug}`);}} className="rounded-2xl border border-[#E6E1D6] bg-white p-6 hover:shadow-lg"><p className="text-xs font-semibold text-[#9A6B2F]">{item.categoryMarathi}</p><h3 className="mt-3 font-serif text-xl font-semibold">{item.title}</h3><p className="mt-3 text-sm leading-6 text-[#68665F]">{item.summary}</p><span className="mt-5 inline-block text-sm font-semibold text-[#243B8A]">{t.readArticle} ↗</span></a>)}</div></div></section>
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6"><h2 className="font-serif text-3xl font-semibold">{t.aboutTitle}</h2><p className="mt-4 max-w-3xl text-lg leading-8 text-[#68665F]">{t.aboutText}</p><button onClick={() => navigate('/about')} className="mt-6 font-semibold text-[#243B8A] hover:underline">{t.about} ↗</button></section>
       </>}
