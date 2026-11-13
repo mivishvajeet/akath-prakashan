@@ -14,6 +14,13 @@ import { validatePasswordStrength, sanitizeRedirectPath } from '../auth/rbac';
 import { AnimatedTortoiseEmblem } from '../components/SarvamIllustrations';
 import { BookCoverArt } from '../components/BookCoverArt';
 import {
+  signInWithGooglePopup,
+  syncUserProfileToCloud,
+  syncSavedAddressToCloud,
+  deleteSavedAddressFromCloud,
+  fetchCloudUserBundle,
+} from '../firebase/client';
+import {
   Eye,
   EyeOff,
   ShieldAlert,
@@ -566,6 +573,83 @@ export const AuthPageView: React.FC<{
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setFieldErrors({});
+    setSubmitting(true);
+    try {
+      const googleAuth = await signInWithGooglePopup();
+      const res = await fetch('/api/auth/google', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idToken: googleAuth.idToken,
+          uid: googleAuth.uid,
+          email: googleAuth.email,
+          name: googleAuth.name,
+          emailVerified: googleAuth.emailVerified,
+          guestCart,
+          redirectTo:
+            entryContext === 'author'
+              ? '/author/apply'
+              : redirectPath || '/account',
+          lang,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Google authentication failed.');
+        return;
+      }
+
+      setAuthSessionTokens(data.sessionToken || null, data.csrfToken || null);
+
+      try {
+        await syncUserProfileToCloud(data.user);
+        const cloudBundle = await fetchCloudUserBundle();
+        if (cloudBundle) {
+          await authFetch(
+            '/api/auth/cloud-sync',
+            {
+              method: 'POST',
+              body: JSON.stringify(cloudBundle),
+            },
+            data.csrfToken || null
+          );
+        }
+      } catch {
+        // Non-blocking cloud sync fallback
+      }
+
+      onAuthSuccess({
+        user: data.user,
+        sessionToken: data.sessionToken || null,
+        csrfToken: data.csrfToken || null,
+        mergedCart: data.mergedCart,
+        redirectTo:
+          entryContext === 'author' && data.user.role === 'reader'
+            ? '/author/apply'
+            : sanitizeRedirectPath(
+                redirectPath || data.redirectTo,
+                data.user.role === 'admin' ? '/admin' : '/account'
+              ),
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Google sign-in popup was closed.';
+      if (!message.includes('auth/popup-closed-by-user')) {
+        setError(
+          lang === 'mr'
+            ? 'गूगल लॉगिन पूर्ण होऊ शकले नाही. कृपया पुन्हा प्रयत्न करा किंवा ईमेल/पासवर्ड वापरा.'
+            : 'Could not complete Google Sign-In. Please try again or sign in with email and password.'
+        );
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="bg-[#FFFDF7] text-[#252832] min-h-screen py-8 sm:py-12 px-4 sm:px-6">
       <div className="max-w-[980px] mx-auto space-y-6">
@@ -827,6 +911,53 @@ export const AuthPageView: React.FC<{
               <code className="block font-mono text-[12px] bg-white px-2.5 py-1.5 rounded border border-[#E6DFCE] break-all">
                 {devTokenNotice}
               </code>
+            </div>
+          )}
+
+          {/* GOOGLE SIGN-IN POPUP BUTTON (AVAILABLE IN LOGIN & REGISTER MODES) */}
+          {(mode === 'login' || mode === 'register') && (
+            <div className="space-y-4">
+              <button
+                type="button"
+                disabled={submitting}
+                data-testid="auth-google-signin"
+                onClick={handleGoogleSignIn}
+                className="w-full py-3 px-4 rounded-xl bg-[#FFFDF7] hover:bg-[#FFD966]/20 border border-[#E6DFCE] text-[#252832] text-[14.5px] font-semibold transition-colors flex items-center justify-center gap-3 shadow-2xs disabled:opacity-60"
+              >
+                <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="#4285F4"
+                    d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
+                  />
+                </svg>
+                <span>
+                  {lang === 'mr'
+                    ? 'गूगल खात्याद्वारे पुढे जा (Continue with Google)'
+                    : 'Continue with Google'}
+                </span>
+              </button>
+
+              <div className="flex items-center gap-3 text-[12px] text-[#5A5F72]">
+                <div className="h-px flex-1 bg-[#E6DFCE]" />
+                <span>
+                  {lang === 'mr'
+                    ? 'किंवा ईमेल आणि पासवर्ड वापरा'
+                    : 'or continue with email & password'}
+                </span>
+                <div className="h-px flex-1 bg-[#E6DFCE]" />
+              </div>
             </div>
           )}
 
@@ -1304,6 +1435,11 @@ export const ReaderAccountView: React.FC<{
       return;
     }
     onUserUpdated(data.user);
+    try {
+      await syncUserProfileToCloud(data.user);
+    } catch {
+      // Non-blocking Firestore sync when signed in with local email/password
+    }
     setStatusBanner({
       type: 'success',
       text:
@@ -1417,6 +1553,11 @@ export const ReaderAccountView: React.FC<{
       return;
     }
     setAddresses((prev) => [data.address, ...prev]);
+    try {
+      await syncSavedAddressToCloud(data.address);
+    } catch {
+      // Non-blocking Firestore sync
+    }
     setAddrLine1('');
     setAddrPin('');
     setStatusBanner({
@@ -1433,6 +1574,11 @@ export const ReaderAccountView: React.FC<{
     );
     if (res.ok) {
       setAddresses((prev) => prev.filter((a) => a.id !== id));
+      try {
+        await deleteSavedAddressFromCloud(id);
+      } catch {
+        // Non-blocking Firestore sync
+      }
     }
   };
 
@@ -1445,6 +1591,11 @@ export const ReaderAccountView: React.FC<{
     const data = await res.json();
     if (res.ok && data.user) {
       onUserUpdated(data.user);
+      try {
+        await syncUserProfileToCloud(data.user);
+      } catch {
+        // Non-blocking Firestore sync
+      }
     }
   };
 

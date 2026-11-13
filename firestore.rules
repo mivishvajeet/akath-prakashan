@@ -1,0 +1,475 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 1: Global Default-Deny Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // =========================================================================
+    // GLOBAL HARDENED PRIMITIVES
+    // =========================================================================
+
+    function isValidId(id) {
+      return id is string && id.size() >= 2 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrappedAdminEmail() {
+      return isVerifiedUser() && request.auth.token.email == 'vishudhawle11111@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdminEmail() || (
+        isVerifiedUser() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // =========================================================================
+    // VALIDATION BLUEPRINTS (Pillar 2: Anti-Update-Gap & Strict Schema Checks)
+    // =========================================================================
+
+    function isValidAdminMember(data) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'createdAt']) &&
+        data.uid is string && data.uid.size() >= 2 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 254 &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 64;
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll([
+          'id',
+          'ownerUid',
+          'name',
+          'email',
+          'role',
+          'accountStatus',
+          'emailVerified',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id',
+          'ownerUid',
+          'name',
+          'email',
+          'phone',
+          'city',
+          'bio',
+          'role',
+          'accountStatus',
+          'emailVerified',
+          'wishlistBookIds',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.id is string && data.id.size() >= 2 && data.id.size() <= 128 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerUid is string && data.ownerUid.size() >= 2 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerUid == request.auth.uid &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 120 &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 254 &&
+        (!('phone' in data) || (data.phone is string && data.phone.size() == 10 && data.phone.matches('^[6-9][0-9]{9}$'))) &&
+        (!('city' in data) || (data.city is string && data.city.size() <= 80)) &&
+        (!('bio' in data) || (data.bio is string && data.bio.size() <= 1000)) &&
+        data.role is string && data.role.size() <= 20 && data.role in ['reader', 'author', 'staff', 'admin'] &&
+        data.accountStatus is string && data.accountStatus.size() <= 20 && data.accountStatus in ['active', 'suspended', 'deactivated'] &&
+        data.emailVerified is bool &&
+        (!('wishlistBookIds' in data) || (
+          data.wishlistBookIds is list &&
+          data.wishlistBookIds.size() <= 50 &&
+          (data.wishlistBookIds.size() == 0 || (data.wishlistBookIds[0] is string && data.wishlistBookIds[0].size() <= 128))
+        )) &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 64 &&
+        data.updatedAt is string && data.updatedAt.size() >= 10 && data.updatedAt.size() <= 64;
+    }
+
+    function isValidSavedAddress(data) {
+      return data.keys().hasAll([
+          'id',
+          'userId',
+          'label',
+          'fullName',
+          'phone',
+          'addressLine1',
+          'city',
+          'district',
+          'state',
+          'postalCode',
+          'isDefault',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id',
+          'userId',
+          'label',
+          'fullName',
+          'phone',
+          'addressLine1',
+          'city',
+          'district',
+          'state',
+          'postalCode',
+          'isDefault',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.id is string && data.id.size() >= 2 && data.id.size() <= 128 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.userId is string && data.userId.size() >= 2 && data.userId.size() <= 128 && data.userId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.userId == request.auth.uid &&
+        data.label is string && data.label.size() >= 1 && data.label.size() <= 80 &&
+        data.fullName is string && data.fullName.size() >= 2 && data.fullName.size() <= 120 &&
+        data.phone is string && data.phone.size() == 10 && data.phone.matches('^[6-9][0-9]{9}$') &&
+        data.addressLine1 is string && data.addressLine1.size() >= 3 && data.addressLine1.size() <= 240 &&
+        data.city is string && data.city.size() >= 2 && data.city.size() <= 80 &&
+        data.district is string && data.district.size() >= 2 && data.district.size() <= 80 &&
+        data.state is string && data.state.size() >= 2 && data.state.size() <= 80 &&
+        data.postalCode is string && data.postalCode.size() == 6 && data.postalCode.matches('^[1-9][0-9]{5}$') &&
+        data.isDefault is bool &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 64 &&
+        data.updatedAt is string && data.updatedAt.size() >= 10 && data.updatedAt.size() <= 64;
+    }
+
+    function isValidOrderRecord(data) {
+      return data.keys().hasAll([
+          'id',
+          'orderNumber',
+          'userId',
+          'customerName',
+          'customerEmail',
+          'subtotal',
+          'shippingCost',
+          'grandTotal',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id',
+          'orderNumber',
+          'userId',
+          'customerName',
+          'customerEmail',
+          'customerPhone',
+          'subtotal',
+          'shippingCost',
+          'grandTotal',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.id is string && data.id.size() >= 2 && data.id.size() <= 128 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.orderNumber is string && data.orderNumber.size() >= 3 && data.orderNumber.size() <= 64 && data.orderNumber.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.userId is string && data.userId.size() >= 2 && data.userId.size() <= 128 && data.userId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.userId == request.auth.uid &&
+        data.customerName is string && data.customerName.size() >= 2 && data.customerName.size() <= 120 &&
+        data.customerEmail is string && data.customerEmail.size() >= 3 && data.customerEmail.size() <= 254 &&
+        (!('customerPhone' in data) || (data.customerPhone is string && data.customerPhone.size() <= 20)) &&
+        data.subtotal is number && data.subtotal >= 0 && data.subtotal <= 1000000 &&
+        data.shippingCost is number && data.shippingCost >= 0 && data.shippingCost <= 10000 &&
+        data.grandTotal is number && data.grandTotal >= 0 && data.grandTotal <= 1010000 &&
+        data.status is string && data.status.size() <= 32 && data.status in ['confirmed', 'processing', 'shipped', 'delivered', 'cancelled'] &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 64 &&
+        data.updatedAt is string && data.updatedAt.size() >= 10 && data.updatedAt.size() <= 64;
+    }
+
+    function isValidManuscriptSubmission(data) {
+      return data.keys().hasAll([
+          'id',
+          'referenceCode',
+          'authorUserId',
+          'penName',
+          'email',
+          'manuscriptTitle',
+          'genre',
+          'synopsis',
+          'status',
+          'submittedAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id',
+          'referenceCode',
+          'authorUserId',
+          'penName',
+          'email',
+          'phone',
+          'manuscriptTitle',
+          'genre',
+          'synopsis',
+          'status',
+          'submittedAt',
+          'updatedAt'
+        ]) &&
+        data.id is string && data.id.size() >= 2 && data.id.size() <= 128 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.referenceCode is string && data.referenceCode.size() >= 3 && data.referenceCode.size() <= 64 && data.referenceCode.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.authorUserId is string && data.authorUserId.size() >= 2 && data.authorUserId.size() <= 128 && data.authorUserId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.authorUserId == request.auth.uid &&
+        data.penName is string && data.penName.size() >= 2 && data.penName.size() <= 120 &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 254 &&
+        (!('phone' in data) || (data.phone is string && data.phone.size() <= 20)) &&
+        data.manuscriptTitle is string && data.manuscriptTitle.size() >= 2 && data.manuscriptTitle.size() <= 200 &&
+        data.genre is string && data.genre.size() >= 1 && data.genre.size() <= 64 &&
+        data.synopsis is string && data.synopsis.size() >= 10 && data.synopsis.size() <= 5000 &&
+        data.status is string && data.status.size() <= 32 && data.status in ['received', 'editorial_review', 'shortlisted', 'accepted', 'declined'] &&
+        data.submittedAt is string && data.submittedAt.size() >= 10 && data.submittedAt.size() <= 64 &&
+        data.updatedAt is string && data.updatedAt.size() >= 10 && data.updatedAt.size() <= 64;
+    }
+
+    function isValidBookReview(data) {
+      return data.keys().hasAll([
+          'id',
+          'bookId',
+          'userId',
+          'reviewerName',
+          'rating',
+          'title',
+          'comment',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id',
+          'bookId',
+          'userId',
+          'reviewerName',
+          'rating',
+          'title',
+          'comment',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.id is string && data.id.size() >= 2 && data.id.size() <= 128 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.bookId is string && data.bookId.size() >= 2 && data.bookId.size() <= 128 && data.bookId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.userId is string && data.userId.size() >= 2 && data.userId.size() <= 128 && data.userId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.userId == request.auth.uid &&
+        data.reviewerName is string && data.reviewerName.size() >= 2 && data.reviewerName.size() <= 120 &&
+        data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+        data.title is string && data.title.size() >= 2 && data.title.size() <= 160 &&
+        data.comment is string && data.comment.size() >= 5 && data.comment.size() <= 2500 &&
+        data.status is string && data.status.size() <= 24 && data.status in ['published', 'hidden', 'flagged'] &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 64 &&
+        data.updatedAt is string && data.updatedAt.size() >= 10 && data.updatedAt.size() <= 64;
+    }
+
+    function isValidServerSnapshot(data) {
+      return data.keys().hasAll(['bucketId', 'updatedAt', 'version']) &&
+        data.keys().hasOnly(['bucketId', 'updatedAt', 'version', 'payloadJson']) &&
+        data.bucketId is string && data.bucketId.size() >= 2 && data.bucketId.size() <= 64 && data.bucketId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.updatedAt is string && data.updatedAt.size() >= 10 && data.updatedAt.size() <= 64 &&
+        data.version is number && data.version >= 1 &&
+        (!('payloadJson' in data) || (data.payloadJson is string && data.payloadJson.size() <= 900000));
+    }
+
+    // =========================================================================
+    // COLLECTION 1: /admins/{adminId}
+    // =========================================================================
+    match /admins/{adminId} {
+      allow get: if isVerifiedUser() && isValidId(adminId) && (request.auth.uid == adminId || isAdmin());
+      allow list: if isVerifiedUser() && resource.data.uid == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(adminId) && isValidAdminMember(incoming()) && isAdmin();
+      allow update: if isVerifiedUser() && isValidId(adminId) && isValidAdminMember(incoming()) && isAdmin() &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['email']);
+      allow delete: if isVerifiedUser() && isValidId(adminId) && isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION 2: /users/{userId} (PII Isolated to Owner & Admin)
+    // =========================================================================
+    match /users/{userId} {
+      allow get: if isVerifiedUser() && isValidId(userId) && (request.auth.uid == userId || existing().ownerUid == request.auth.uid || isAdmin());
+      allow list: if isVerifiedUser() && resource.data.ownerUid == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(userId) &&
+        request.auth.uid == userId &&
+        isValidUserProfile(incoming()) &&
+        incoming().id == userId &&
+        incoming().accountStatus == 'active' &&
+        (incoming().role == 'reader' || (isBootstrappedAdminEmail() && incoming().role == 'admin'));
+      allow update: if isVerifiedUser() && isValidId(userId) && isValidUserProfile(incoming()) && (
+        isAdmin() || (
+          request.auth.uid == userId &&
+          existing().ownerUid == request.auth.uid &&
+          incoming().id == existing().id &&
+          incoming().ownerUid == existing().ownerUid &&
+          incoming().email == existing().email &&
+          incoming().role == existing().role &&
+          incoming().accountStatus == existing().accountStatus &&
+          incoming().createdAt == existing().createdAt &&
+          existing().accountStatus == 'active' &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'name',
+            'phone',
+            'city',
+            'bio',
+            'wishlistBookIds',
+            'emailVerified',
+            'updatedAt'
+          ])
+        )
+      );
+      allow delete: if isVerifiedUser() && isValidId(userId) && isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION 3: /addresses/{addressId} (PII Isolated to Owner & Admin)
+    // =========================================================================
+    match /addresses/{addressId} {
+      allow get: if isVerifiedUser() && isValidId(addressId) && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isVerifiedUser() && resource.data.userId == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(addressId) &&
+        isValidSavedAddress(incoming()) &&
+        incoming().id == addressId &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser() && isValidId(addressId) && isValidSavedAddress(incoming()) && (
+        isAdmin() || (
+          existing().userId == request.auth.uid &&
+          incoming().id == existing().id &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'label',
+            'fullName',
+            'phone',
+            'addressLine1',
+            'city',
+            'district',
+            'state',
+            'postalCode',
+            'isDefault',
+            'updatedAt'
+          ])
+        )
+      );
+      allow delete: if isVerifiedUser() && isValidId(addressId) && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // =========================================================================
+    // COLLECTION 4: /orders/{orderId} (PII Isolated + Terminal State Lock)
+    // =========================================================================
+    match /orders/{orderId} {
+      allow get: if isVerifiedUser() && isValidId(orderId) && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isVerifiedUser() && resource.data.userId == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(orderId) &&
+        isValidOrderRecord(incoming()) &&
+        incoming().id == orderId &&
+        incoming().status == 'confirmed' &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser() && isValidId(orderId) && isValidOrderRecord(incoming()) && (
+        isAdmin() || (
+          existing().userId == request.auth.uid &&
+          !(existing().status in ['delivered', 'cancelled']) &&
+          incoming().id == existing().id &&
+          incoming().orderNumber == existing().orderNumber &&
+          incoming().userId == existing().userId &&
+          incoming().subtotal == existing().subtotal &&
+          incoming().shippingCost == existing().shippingCost &&
+          incoming().grandTotal == existing().grandTotal &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().status == 'cancelled' &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+        )
+      );
+      allow delete: if isVerifiedUser() && isValidId(orderId) && isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION 5: /manuscripts/{manuscriptId} (Author & Admin + Terminal Lock)
+    // =========================================================================
+    match /manuscripts/{manuscriptId} {
+      allow get: if isVerifiedUser() && isValidId(manuscriptId) && (existing().authorUserId == request.auth.uid || isAdmin());
+      allow list: if isVerifiedUser() && resource.data.authorUserId == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(manuscriptId) &&
+        isValidManuscriptSubmission(incoming()) &&
+        incoming().id == manuscriptId &&
+        incoming().status == 'received' &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser() && isValidId(manuscriptId) && isValidManuscriptSubmission(incoming()) && (
+        isAdmin() || (
+          existing().authorUserId == request.auth.uid &&
+          !(existing().status in ['accepted', 'declined']) &&
+          incoming().id == existing().id &&
+          incoming().referenceCode == existing().referenceCode &&
+          incoming().authorUserId == existing().authorUserId &&
+          incoming().status == existing().status &&
+          incoming().submittedAt == existing().submittedAt &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'penName',
+            'phone',
+            'manuscriptTitle',
+            'genre',
+            'synopsis',
+            'updatedAt'
+          ])
+        )
+      );
+      allow delete: if isVerifiedUser() && isValidId(manuscriptId) && isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION 6: /reviews/{reviewId}
+    // =========================================================================
+    match /reviews/{reviewId} {
+      allow get: if isValidId(reviewId) && (existing().status == 'published' || (isVerifiedUser() && (existing().userId == request.auth.uid || isAdmin())));
+      allow list: if resource.data.status == 'published';
+      allow create: if isVerifiedUser() && isValidId(reviewId) &&
+        isValidBookReview(incoming()) &&
+        incoming().id == reviewId &&
+        incoming().status == 'published' &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser() && isValidId(reviewId) && isValidBookReview(incoming()) && (
+        isAdmin() || (
+          existing().userId == request.auth.uid &&
+          existing().status == 'published' &&
+          incoming().id == existing().id &&
+          incoming().bookId == existing().bookId &&
+          incoming().userId == existing().userId &&
+          incoming().status == existing().status &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'reviewerName',
+            'rating',
+            'title',
+            'comment',
+            'updatedAt'
+          ])
+        )
+      );
+      allow delete: if isVerifiedUser() && isValidId(reviewId) && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // =========================================================================
+    // COLLECTION 7: /server_snapshots/{bucketId} (Admin-Only Cloud Backup)
+    // =========================================================================
+    match /server_snapshots/{bucketId} {
+      allow get: if isVerifiedUser() && isValidId(bucketId) && isAdmin();
+      allow list: if false;
+      allow create: if isVerifiedUser() && isValidId(bucketId) && isValidServerSnapshot(incoming()) && isAdmin();
+      allow update: if isVerifiedUser() && isValidId(bucketId) && isValidServerSnapshot(incoming()) && isAdmin() &&
+        incoming().bucketId == existing().bucketId &&
+        incoming().version > existing().version &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['updatedAt', 'version', 'payloadJson']);
+      allow delete: if isVerifiedUser() && isValidId(bucketId) && isAdmin();
+    }
+  }
+}

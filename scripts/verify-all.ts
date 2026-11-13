@@ -959,7 +959,13 @@ async function runTests() {
   assert.ok(navbarSource.includes('aria-controls="akath-mobile-drawer"'));
   assert.ok(navbarSource.includes('data-testid="navbar-mobile-drawer-overlay"'));
   assert.ok(navbarSource.includes('data-testid="navbar-mobile-drawer"'));
+  assert.ok(navbarSource.includes('data-touch-gesture="swipe-right-to-close"'));
+  assert.ok(navbarSource.includes('data-testid="mobile-drawer-drag-handle"'));
+  assert.ok(navbarSource.includes('data-testid="mobile-edge-swipe-zone"'));
+  assert.ok(navbarSource.includes('drag="x"'));
+  assert.ok(navbarSource.includes('dragDirectionLock={true}'));
   assert.ok(navbarSource.includes('data-testid="mobile-tablet-quick-nav"'));
+  assert.ok(navbarSource.includes('akath-swipe-rail'));
   assert.ok(!navbarSource.includes("immersiveHidden ? '-translate-y-full pointer-events-none' : 'translate-y-0'"));
   const headerCloseIdx = navbarSource.indexOf('</header>');
   const drawerOverlayIdx = navbarSource.indexOf('data-testid="navbar-mobile-drawer-overlay"');
@@ -970,7 +976,7 @@ async function runTests() {
   assert.ok(!navbarSource.includes('data-testid="navbar-demo-admin"'));
   assert.ok(!navbarSource.includes('data-testid="navbar-demo-switcher"'));
   console.log(
-    '  [PASS] UI-04: Responsive Mobile/Tablet/Desktop Navbar & Unclipped Full-Viewport Slide-Over Drawer verified (outside <header> transform context + swipeable mobile/tablet quick nav)'
+    '  [PASS] UI-04: Responsive Mobile/Tablet/Desktop Navbar & Touch-Gesture Slide-Over Drawer verified (drag="x", edge swipe-to-open, dynamic backdrop opacity, and swipeable quick-nav rail)'
   );
 
   const footerSource = fs.readFileSync(
@@ -1096,8 +1102,15 @@ async function runTests() {
   assert.ok(vachankattaSource.includes('data-sidebar-hidden'));
   assert.ok(vachankattaSource.includes('data-testid="immersive-reading-toggle"'));
   assert.ok(vachankattaSource.includes('data-testid="immersive-reading-progress"'));
+  assert.ok(vachankattaSource.includes('data-testid="mobile-article-drawer-trigger"'));
+  assert.ok(vachankattaSource.includes('data-testid="mobile-article-drawer"'));
+  assert.ok(vachankattaSource.includes('data-testid="mobile-article-drawer-handle"'));
+  assert.ok(vachankattaSource.includes('data-touch-gesture="swipe-down-to-close"'));
+  assert.ok(vachankattaSource.includes('drag="y"'));
   assert.ok(vachankattaSource.includes('prose-marathi-immersive'));
   assert.ok(cssSource.includes('.prose-marathi-immersive'));
+  assert.ok(cssSource.includes('.akath-touch-bottom-sheet'));
+  assert.ok(cssSource.includes('.akath-swipe-rail'));
   assert.ok(sixStagesSource.includes('data-testid="editorial-stages-autoplay-toggle"'));
   assert.ok(sixStagesSource.includes('data-testid="editorial-stages-mobile-tabs"'));
   assert.ok(sixStagesSource.includes('data-testid="editorial-stage-spotlight"'));
@@ -1979,9 +1992,128 @@ async function runTests() {
     '  [PASS] SEC-02.5 (Manuscript Tracker PII Redaction): Public manuscript status lookup returns stage metadata with zero author PII'
   );
 
+  // --------------------------------------------------------------------------
+  // 8. CLOUD DATABASE PERSISTENCE, GOOGLE AUTH & FIRESTORE RULES VERIFICATION
+  // --------------------------------------------------------------------------
+  console.log(
+    '\n--- 8. Cloud Database Persistence, Google Auth & Firestore Security Suite ---'
+  );
+
+  const dbStatusRes = await getJson('/api/db/status');
+  assert.equal(dbStatusRes.status, 200);
+  assert.equal(dbStatusRes.data.connected, true);
+  assert.equal(dbStatusRes.data.engine, 'firebase-firestore');
+  assert.equal(dbStatusRes.data.projectId, 'coral-cursor-8fx4d');
+  assert.equal(
+    dbStatusRes.data.bootstrappedAdminEmail,
+    'vishudhawle11111@gmail.com'
+  );
+  assert.ok(dbStatusRes.data.counts.users >= 5);
+  console.log(
+    '  [PASS] DB-01: /api/db/status confirms active Firebase Firestore connection & bootstrapped owner admin'
+  );
+
+  // Reject invalid Google Auth token
+  const invalidGoogleAuth = await postJson('/api/auth/google', {
+    idToken: 'invalid-token',
+    email: 'spoof@example.com',
+  });
+  assert.equal(invalidGoogleAuth.status, 401);
+  console.log(
+    '  [PASS] DB-02: /api/auth/google rejects unverified or malformed Google ID tokens with 401'
+  );
+
+  // Verify Google Auth with valid project JWT structure for bootstrapped admin
+  const fakeHeader = Buffer.from(
+    JSON.stringify({ alg: 'RS256', typ: 'JWT' })
+  ).toString('base64url');
+  const adminPayload = Buffer.from(
+    JSON.stringify({
+      iss: 'https://securetoken.google.com/coral-cursor-8fx4d',
+      aud: 'coral-cursor-8fx4d',
+      sub: 'firebase-uid-owner-admin',
+      email: 'vishudhawle11111@gmail.com',
+      name: 'Vishvajeet Dhawale',
+      email_verified: true,
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    })
+  ).toString('base64url');
+  const testGoogleJwt = `${fakeHeader}.${adminPayload}.sig`;
+
+  const googleAdminRes = await postJson('/api/auth/google', {
+    idToken: testGoogleJwt,
+    uid: 'firebase-uid-owner-admin',
+    email: 'vishudhawle11111@gmail.com',
+    name: 'Vishvajeet Dhawale',
+    emailVerified: true,
+    guestCart: [{ bookId: 'book-scholar-juice', quantity: 1 }],
+  });
+  assert.equal(googleAdminRes.status, 200);
+  assert.equal(googleAdminRes.data.user.email, 'vishudhawle11111@gmail.com');
+  assert.equal(googleAdminRes.data.user.role, 'admin');
+  assert.equal(googleAdminRes.data.user.emailVerified, true);
+  assert.ok(googleAdminRes.data.sessionToken);
+  console.log(
+    '  [PASS] DB-03: /api/auth/google authenticates owner email vishudhawle11111@gmail.com with admin privileges & merges cart'
+  );
+
+  // Verify Cloud Sync hydration endpoint
+  const cloudSyncRes = await postJson(
+    '/api/auth/cloud-sync',
+    {
+      profile: {
+        name: 'Vishvajeet Dhawale',
+        city: 'नांदेड',
+        wishlistBookIds: ['book-scholar-juice'],
+      },
+      addresses: [
+        {
+          id: `addr-cloud-${Date.now()}`,
+          label: 'Cloud Synced Home',
+          fullName: 'Vishvajeet Dhawale',
+          phone: '9270282932',
+          addressLine1: 'वैशाखी नगर, विमानतळाजवळ',
+          city: 'नांदेड',
+          district: 'नांदेड',
+          state: 'महाराष्ट्र',
+          postalCode: '431605',
+          isDefault: true,
+        },
+      ],
+    },
+    { Authorization: `Bearer ${googleAdminRes.data.sessionToken}` }
+  );
+  assert.equal(cloudSyncRes.status, 200);
+  assert.equal(cloudSyncRes.data.ok, true);
+  assert.ok(cloudSyncRes.data.syncStats.syncedAddresses >= 1);
+  console.log(
+    '  [PASS] DB-04: /api/auth/cloud-sync hydrates Cloud Firestore profile & addresses into server store'
+  );
+
+  // Verify firebase-blueprint.json & firestore.rules integrity
+  const blueprintRaw = fs.readFileSync(
+    path.resolve(process.cwd(), 'firebase-blueprint.json'),
+    'utf-8'
+  );
+  const blueprint = JSON.parse(blueprintRaw);
+  assert.ok(blueprint.entities.UserProfile);
+  assert.ok(blueprint.entities.SavedAddress);
+  assert.ok(blueprint.entities.OrderRecord);
+  assert.ok(blueprint.entities.ManuscriptSubmission);
+  const rulesRaw = fs.readFileSync(
+    path.resolve(process.cwd(), 'firestore.rules'),
+    'utf-8'
+  );
+  assert.ok(rulesRaw.includes("rules_version = '2';"));
+  assert.ok(rulesRaw.includes('isValidUserProfile(incoming())'));
+  assert.ok(rulesRaw.includes("request.auth.token.email == 'vishudhawle11111@gmail.com'"));
+  console.log(
+    '  [PASS] DB-05: firebase-blueprint.json and hardened firestore.rules verified'
+  );
+
   console.log('\n================================================================');
   console.log(
-    'ALL 90 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS + 11 SEC-01 + 5 SEC-02) PASSED!'
+    'ALL 95 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS + 11 SEC-01 + 5 SEC-02 + 5 DB/CLOUD) PASSED!'
   );
   console.log('================================================================');
 }

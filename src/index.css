@@ -101,7 +101,38 @@
   box-shadow:
     -16px 0 48px -12px rgba(36, 59, 138, 0.22),
     -1px 0 0 0 #E6E1D6;
+  will-change: transform;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  backface-visibility: hidden;
 }
+
+.akath-touch-bottom-sheet {
+  background-color: #FFFDF7;
+  background-image: radial-gradient(
+    circle at 50% 0%,
+    rgba(255, 217, 102, 0.2) 0%,
+    rgba(36, 59, 138, 0.04) 55%,
+    transparent 75%
+  );
+  box-shadow:
+    0 -18px 48px -12px rgba(36, 59, 138, 0.24),
+    0 -1px 0 0 #E6E1D6;
+  will-change: transform;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  backface-visibility: hidden;
+}
+
+.akath-swipe-rail {
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+}
+
 
 /* Subtle Architectural Grid & Ambient Aura (Midnight Cobalt + Butter Yellow + Warm White) */
 .sarvam-aura {
@@ -1551,7 +1582,9 @@
   .akath-footer-mote-a,
   .akath-footer-mote-b,
   .akath-footer-mote-c,
-  .akath-footer-star {
+  .akath-footer-star,
+  .archival-drawer-surface,
+  .akath-touch-bottom-sheet {
     animation: none !important;
     transition: none !important;
     transform: none !important;

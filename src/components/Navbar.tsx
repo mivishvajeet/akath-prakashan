@@ -1,5 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+  type PanInfo,
+} from 'motion/react';
 import {
   Search,
   ShoppingBag,
@@ -43,6 +49,37 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { lang, setLang, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const prevCartCountRef = useRef<number>(cartCount);
+  const [isCartPopping, setIsCartPopping] = useState(false);
+  const quickNavRef = useRef<HTMLElement | null>(null);
+
+  // Touch-gesture motion values for buttery-smooth drawer dragging & backdrop interpolation
+  const drawerDragX = useMotionValue(0);
+  const backdropOpacity = useTransform(drawerDragX, [0, 320], [1, 0.12]);
+  const drawerTouchRef = useRef<{
+    startX: number;
+    startY: number;
+    startTime: number;
+    trackingHorizontal: boolean | null;
+  } | null>(null);
+  const edgeSwipeRef = useRef<{
+    startX: number;
+    startY: number;
+    startTime: number;
+  } | null>(null);
+
+  // Trigger a subtle 'pop' animation on the cart counter whenever a book is added
+  useEffect(() => {
+    if (cartCount > prevCartCountRef.current) {
+      setIsCartPopping(true);
+      const timer = window.setTimeout(() => {
+        setIsCartPopping(false);
+      }, 380);
+      prevCartCountRef.current = cartCount;
+      return () => window.clearTimeout(timer);
+    }
+    prevCartCountRef.current = cartCount;
+  }, [cartCount]);
 
   // Close mobile menu if immersive reading hides the navbar
   useEffect(() => {
@@ -51,8 +88,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   }, [immersiveHidden, mobileMenuOpen]);
 
-  // Close mobile drawer on Escape key and lock background scroll while open
+  // Reset drag offset whenever drawer opens/closes and lock body scroll cleanly
   useEffect(() => {
+    drawerDragX.set(0);
     if (!mobileMenuOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -60,13 +98,121 @@ export const Navbar: React.FC<NavbarProps> = ({
       }
     };
     const originalOverflow = document.body.style.overflow;
+    const originalOverscroll = document.body.style.overscrollBehavior;
     document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'contain';
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       document.body.style.overflow = originalOverflow;
+      document.body.style.overscrollBehavior = originalOverscroll;
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, drawerDragX]);
+
+  // Center the active tab in the mobile/tablet quick-navigation rail on route transitions
+  useEffect(() => {
+    const container = quickNavRef.current;
+    if (!container) return;
+    const activeChip = container.querySelector<HTMLElement>(
+      '[data-active-quick-link="true"]'
+    );
+    if (activeChip && typeof activeChip.scrollIntoView === 'function') {
+      activeChip.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest',
+      });
+    }
+  }, [currentPath]);
+
+  const handleDrawerDragEnd = (
+    _event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => {
+    if (info.offset.x > 68 || info.velocity.x > 360) {
+      setMobileMenuOpen(false);
+    } else {
+      drawerDragX.set(0);
+    }
+  };
+
+  const handleDrawerTouchStart = (e: React.TouchEvent<HTMLElement>) => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    drawerTouchRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      startTime: Date.now(),
+      trackingHorizontal: null,
+    };
+  };
+
+  const handleDrawerTouchMove = (e: React.TouchEvent<HTMLElement>) => {
+    const state = drawerTouchRef.current;
+    if (!state || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - state.startX;
+    const deltaY = touch.clientY - state.startY;
+
+    if (state.trackingHorizontal === null) {
+      if (Math.abs(deltaX) < 8 && Math.abs(deltaY) < 8) return;
+      state.trackingHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * 1.2;
+    }
+
+    if (state.trackingHorizontal && deltaX > 0) {
+      drawerDragX.set(Math.min(340, deltaX));
+    }
+  };
+
+  const handleDrawerTouchEnd = (e: React.TouchEvent<HTMLElement>) => {
+    const state = drawerTouchRef.current;
+    drawerTouchRef.current = null;
+    if (!state || e.changedTouches.length === 0) return;
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - state.startX;
+    const deltaY = touch.clientY - state.startY;
+    const elapsed = Math.max(1, Date.now() - state.startTime);
+    const velocityX = (deltaX / elapsed) * 1000;
+
+    if (
+      state.trackingHorizontal &&
+      Math.abs(deltaX) > Math.abs(deltaY) * 1.15 &&
+      (deltaX > 68 || velocityX > 380)
+    ) {
+      setMobileMenuOpen(false);
+    } else {
+      drawerDragX.set(0);
+    }
+  };
+
+  const handleEdgeSwipeStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length !== 1 || immersiveHidden || mobileMenuOpen) return;
+    const touch = e.touches[0];
+    edgeSwipeRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      startTime: Date.now(),
+    };
+  };
+
+  const handleEdgeSwipeEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    const state = edgeSwipeRef.current;
+    edgeSwipeRef.current = null;
+    if (!state || e.changedTouches.length === 0) return;
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - state.startX;
+    const deltaY = touch.clientY - state.startY;
+    const elapsed = Math.max(1, Date.now() - state.startTime);
+    const velocityX = (deltaX / elapsed) * 1000;
+
+    if (
+      deltaX < -36 &&
+      Math.abs(deltaX) > Math.abs(deltaY) * 1.25 &&
+      (deltaX < -48 || velocityX < -280)
+    ) {
+      setMobileMenuOpen(true);
+    }
+  };
 
   const navItems = [
     { label: lang === 'mr' ? 'मुख्यपृष्ठ' : 'Home', path: '/' },
@@ -325,12 +471,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <ShoppingBag className="w-4 h-4 text-[#FFFDF7] shrink-0" />
                 <span className="hidden sm:inline">{t.nav.cart}</span>
-                <span
+                <motion.span
                   data-testid="navbar-cart-count"
-                  className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-bold tabular-nums bg-[#FFD966] text-[#252832]"
+                  data-cart-pop={isCartPopping ? 'true' : 'false'}
+                  animate={
+                    isCartPopping
+                      ? { scale: [1, 1.34, 0.92, 1.06, 1], y: [0, -2, 0] }
+                      : { scale: 1, y: 0 }
+                  }
+                  transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+                  className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-bold tabular-nums transition-colors ${
+                    isCartPopping
+                      ? 'bg-[#FFFDF7] text-[#243B8A] ring-2 ring-[#FFD966]'
+                      : 'bg-[#FFD966] text-[#252832]'
+                  }`}
                 >
                   {cartCount}
-                </span>
+                </motion.span>
               </button>
 
               {/* Mobile & Tablet Menu Toggle (Visible below xl so 375px, 768px & 1024px viewports have full menu access) */}
@@ -478,11 +635,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Horizontal Swipeable Quick Navigation Links for Mobile & Tablet */}
             <nav
+              ref={quickNavRef}
               aria-label={
                 lang === 'mr' ? 'द्रुत दुवे' : 'Quick Navigation'
               }
               data-testid="mobile-tablet-quick-nav"
-              className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 min-w-0 flex-1 justify-start md:justify-end"
+              className="akath-swipe-rail touch-pan-x scroll-smooth snap-x flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 min-w-0 flex-1 justify-start md:justify-end"
             >
               {navItems.map((item) => {
                 const active = isActive(item.path);
@@ -490,8 +648,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     key={item.path}
                     type="button"
+                    data-active-quick-link={active ? 'true' : 'false'}
                     onClick={() => handleNav(item.path)}
-                    className={`px-2.5 py-1 rounded-lg text-[11.5px] sm:text-[12px] font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                    className={`snap-center px-2.5 py-1 rounded-lg text-[11.5px] sm:text-[12px] font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                       active
                         ? 'bg-[#FFD966] text-[#252832] font-semibold'
                         : 'bg-[#1B2D6B]/70 text-[#FFFDF7]/90 hover:text-[#FFD966]'
@@ -506,6 +665,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </header>
 
+      {/* Right-Edge Touch Swipe-to-Open Sensor Strip on Mobile & Tablet */}
+      {!mobileMenuOpen && !immersiveHidden && (
+        <div
+          data-testid="mobile-edge-swipe-zone"
+          aria-hidden="true"
+          onTouchStart={handleEdgeSwipeStart}
+          onTouchEnd={handleEdgeSwipeEnd}
+          className="fixed top-20 right-0 bottom-16 w-4 z-40 xl:hidden touch-pan-y select-none"
+        />
+      )}
+
       {/* =====================================================================
           MOBILE & TABLET SLIDE-IN DRAWER (RENDERED OUTSIDE <header> AT z-[100]
           SO FIXED POSITIONING IS NEVER CLIPPED BY HEADER TRANSFORM CONTEXT)
@@ -519,24 +689,35 @@ export const Navbar: React.FC<NavbarProps> = ({
             aria-modal="true"
             aria-label={lang === 'mr' ? 'मोबाईल नेव्हिगेशन मेनू' : 'Navigation Menu'}
           >
-            {/* Archival Paper Frosted-Glass Backdrop Overlay */}
+            {/* Archival Paper Frosted-Glass Backdrop Overlay (opacity tracks drag X) */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              style={{ opacity: backdropOpacity }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
               onClick={() => setMobileMenuOpen(false)}
               className="fixed inset-0 archival-frosted-overlay"
               aria-hidden="true"
             />
 
-            {/* Right-to-Left Slide-In Archival Paper Drawer */}
+            {/* Right-to-Left Slide-In Archival Paper Drawer with Touch-Gesture Drag */}
             <motion.nav
               id="akath-mobile-drawer"
               data-testid="navbar-mobile-drawer"
+              data-touch-gesture="swipe-right-to-close"
+              style={{ x: drawerDragX }}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 360 }}
+              dragDirectionLock={true}
+              dragElastic={{ left: 0.04, right: 0.5 }}
+              onDragEnd={handleDrawerDragEnd}
+              onTouchStart={handleDrawerTouchStart}
+              onTouchMove={handleDrawerTouchMove}
+              onTouchEnd={handleDrawerTouchEnd}
               transition={{
                 type: 'spring',
                 stiffness: 340,
@@ -545,6 +726,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className="fixed top-0 right-0 bottom-0 h-[100dvh] max-h-[100dvh] w-[88vw] max-w-[360px] archival-drawer-surface bg-[#FFFDF7] text-[#252832] flex flex-col justify-between overflow-y-auto overscroll-contain z-10 shadow-2xl"
             >
+              {/* Left-Edge Tactile Grab Handle Pill for Swipe-Right Dismissal */}
+              <div
+                data-testid="mobile-drawer-drag-handle"
+                aria-hidden="true"
+                title={
+                  lang === 'mr'
+                    ? 'मेनू बंद करण्यासाठी उजवीकडे स्वाइप करा'
+                    : 'Swipe right to close drawer'
+                }
+                className="fixed left-1.5 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-2.5 h-16 pointer-events-none"
+              >
+                <span className="w-1 h-12 rounded-full bg-[#243B8A]/25" />
+              </div>
+
               {/* Drawer Header */}
               <div className="p-4 sm:p-5 border-b border-[#E6E1D6] flex items-center justify-between bg-[#243B8A] text-[#FFFDF7] sticky top-0 z-20">
                 <div className="flex items-center gap-2.5 min-w-0">

@@ -1,0 +1,541 @@
+{
+  "entities": {
+    "AdminMember": {
+      "title": "AdminMember",
+      "description": "Verified editorial administrator record used by Firestore security rules.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the administrator."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254,
+          "description": "Verified administrator email address."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Creation timestamp."
+        }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Reader, Author, Staff, or Admin account profile and preferences for Akath Prakashan.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique user identifier."
+        },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID or server owner ID."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120,
+          "description": "Full display name of the reader or author."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 254,
+          "description": "Normalized email address."
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 20,
+          "pattern": "^[6-9][0-9]{9}$",
+          "description": "10-digit Indian mobile number."
+        },
+        "city": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "City or town name."
+        },
+        "bio": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Reader or author short literary biography."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["reader", "author", "staff", "admin"],
+          "maxLength": 20,
+          "description": "Server-governed RBAC role."
+        },
+        "accountStatus": {
+          "type": "string",
+          "enum": ["active", "suspended", "deactivated"],
+          "maxLength": 20,
+          "description": "Account lifecycle status."
+        },
+        "emailVerified": {
+          "type": "boolean",
+          "description": "Whether the user's email address has been verified."
+        },
+        "wishlistBookIds": {
+          "type": "array",
+          "description": "Bounded list of wishlisted book IDs (max 50)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Account creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Last profile update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "ownerUid",
+        "name",
+        "email",
+        "role",
+        "accountStatus",
+        "emailVerified",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SavedAddress": {
+      "title": "SavedAddress",
+      "description": "Saved shipping address for a registered reader or author.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique address ID."
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner user ID."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Address label such as Home or Office."
+        },
+        "fullName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120,
+          "description": "Recipient full name."
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 20,
+          "pattern": "^[6-9][0-9]{9}$",
+          "description": "Recipient 10-digit Indian phone number."
+        },
+        "addressLine1": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 240,
+          "description": "Primary street address line."
+        },
+        "city": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "description": "City or town."
+        },
+        "district": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "description": "District."
+        },
+        "state": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "description": "State."
+        },
+        "postalCode": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 6,
+          "pattern": "^[1-9][0-9]{5}$",
+          "description": "6-digit Indian PIN code."
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Whether this is the default shipping address."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Address creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Address update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "label",
+        "fullName",
+        "phone",
+        "addressLine1",
+        "city",
+        "district",
+        "state",
+        "postalCode",
+        "isDefault",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "OrderRecord": {
+      "title": "OrderRecord",
+      "description": "Customer book order persisted in Cloud Firestore.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique order ID."
+        },
+        "orderNumber": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Human-readable Akath order number."
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner user ID."
+        },
+        "customerName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120,
+          "description": "Customer full name."
+        },
+        "customerEmail": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254,
+          "description": "Customer email address."
+        },
+        "customerPhone": {
+          "type": "string",
+          "maxLength": 20,
+          "description": "Customer phone number."
+        },
+        "subtotal": {
+          "type": "number",
+          "description": "Order subtotal in INR."
+        },
+        "shippingCost": {
+          "type": "number",
+          "description": "Shipping fee in INR."
+        },
+        "grandTotal": {
+          "type": "number",
+          "description": "Final order total in INR."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["confirmed", "processing", "shipped", "delivered", "cancelled"],
+          "maxLength": 32,
+          "description": "Order fulfillment status."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Order creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Order update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "orderNumber",
+        "userId",
+        "customerName",
+        "customerEmail",
+        "subtotal",
+        "shippingCost",
+        "grandTotal",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ManuscriptSubmission": {
+      "title": "ManuscriptSubmission",
+      "description": "Literary manuscript submitted to Akath Prakashan editorial desk.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique manuscript ID."
+        },
+        "referenceCode": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Editorial tracking reference code."
+        },
+        "authorUserId": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Submitting user ID."
+        },
+        "penName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120,
+          "description": "Author name or pen name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254,
+          "description": "Author contact email."
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 20,
+          "description": "Author contact phone."
+        },
+        "manuscriptTitle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200,
+          "description": "Title of the Marathi manuscript."
+        },
+        "genre": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Literary genre."
+        },
+        "synopsis": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 5000,
+          "description": "Editorial synopsis."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["received", "editorial_review", "shortlisted", "accepted", "declined"],
+          "maxLength": 32,
+          "description": "Manuscript editorial status."
+        },
+        "submittedAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Submission timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Last update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "referenceCode",
+        "authorUserId",
+        "penName",
+        "email",
+        "manuscriptTitle",
+        "genre",
+        "synopsis",
+        "status",
+        "submittedAt",
+        "updatedAt"
+      ]
+    },
+    "BookReview": {
+      "title": "BookReview",
+      "description": "Reader review on a published Akath Prakashan edition.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Review ID."
+        },
+        "bookId": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Target book ID."
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Reviewer user ID."
+        },
+        "reviewerName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120,
+          "description": "Reviewer display name."
+        },
+        "rating": {
+          "type": "number",
+          "description": "Star rating from 1 to 5."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 160,
+          "description": "Review headline."
+        },
+        "comment": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 2500,
+          "description": "Review body text."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["published", "hidden", "flagged"],
+          "maxLength": 24,
+          "description": "Moderation status."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "bookId",
+        "userId",
+        "reviewerName",
+        "rating",
+        "title",
+        "comment",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ServerStateSnapshot": {
+      "title": "ServerStateSnapshot",
+      "description": "Authoritative cloud state synchronization document for Express server stores.",
+      "type": "object",
+      "properties": {
+        "bucketId": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "State bucket identifier (auth, orders, catalog, cms)."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64,
+          "description": "Last sync timestamp."
+        },
+        "version": {
+          "type": "number",
+          "description": "Monotonic sync version counter."
+        }
+      },
+      "required": ["bucketId", "updatedAt", "version"]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": "AdminMember",
+      "description": "Trusted administrator membership registry."
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Persistent user profiles and preferences."
+    },
+    "/addresses/{addressId}": {
+      "schema": "SavedAddress",
+      "description": "Saved delivery addresses isolated by owner userId."
+    },
+    "/orders/{orderId}": {
+      "schema": "OrderRecord",
+      "description": "Customer book orders isolated by owner userId."
+    },
+    "/manuscripts/{manuscriptId}": {
+      "schema": "ManuscriptSubmission",
+      "description": "Literary manuscript submissions isolated by authorUserId."
+    },
+    "/reviews/{reviewId}": {
+      "schema": "BookReview",
+      "description": "Published reader book reviews."
+    },
+    "/server_snapshots/{bucketId}": {
+      "schema": "ServerStateSnapshot",
+      "description": "Express server cloud persistence synchronization buckets."
+    }
+  }
+}

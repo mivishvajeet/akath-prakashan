@@ -51,6 +51,11 @@ import {
   authFetch,
   setAuthSessionTokens,
 } from './views/AuthAndRoleViews';
+import {
+  signOutFirebaseClient,
+  syncOrderToCloud,
+  syncManuscriptToCloud,
+} from './firebase/client';
 
 const CART_STORAGE_KEY = 'akath_cart_v1';
 const LANG_STORAGE_KEY = 'akath_lang_v2';
@@ -263,13 +268,16 @@ export default function App() {
 
   const handleLogout = useCallback(async () => {
     try {
-      await authFetch(
-        '/api/auth/logout',
-        {
-          method: 'POST',
-        },
-        csrfToken
-      );
+      await Promise.allSettled([
+        authFetch(
+          '/api/auth/logout',
+          {
+            method: 'POST',
+          },
+          csrfToken
+        ),
+        signOutFirebaseClient(),
+      ]);
     } finally {
       setAuthSessionTokens(null, null);
       setAuthUser(null);
@@ -471,6 +479,11 @@ export default function App() {
         fieldErrors: data.fieldErrors,
       };
     }
+    try {
+      await syncOrderToCloud(data.order as OrderRecord);
+    } catch {
+      // Non-blocking cloud sync fallback
+    }
     return { ok: true, order: data.order as OrderRecord };
   };
 
@@ -549,6 +562,11 @@ export default function App() {
         error: data.error,
         fieldErrors: data.fieldErrors,
       };
+    }
+    try {
+      await syncManuscriptToCloud(data.submission as ManuscriptSubmission);
+    } catch {
+      // Non-blocking cloud sync fallback
     }
     return { ok: true, submission: data.submission as ManuscriptSubmission };
   };

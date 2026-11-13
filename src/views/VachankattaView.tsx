@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+  type PanInfo,
+} from 'motion/react';
 import {
   EditorialArticle,
   FirstPageExcerpt,
@@ -25,6 +31,8 @@ import {
   Minimize2,
   BookOpen,
   SlidersHorizontal,
+  List,
+  X,
 } from 'lucide-react';
 
 // ============================================================================
@@ -772,7 +780,18 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
     'cream' | 'sepia' | 'ink'
   >('cream');
   const [copiedQuoteKey, setCopiedQuoteKey] = useState<string | null>(null);
+  const [mobileOutlineOpen, setMobileOutlineOpen] = useState(false);
   const lastScrollYRef = useRef<number>(0);
+
+  // Touch-gesture motion values for the mobile reading companion bottom-sheet drawer
+  const sheetDragY = useMotionValue(0);
+  const sheetBackdropOpacity = useTransform(sheetDragY, [0, 320], [1, 0.12]);
+  const sheetTouchRef = useRef<{
+    startX: number;
+    startY: number;
+    startTime: number;
+    trackingVertical: boolean | null;
+  } | null>(null);
 
   const handleCopyPullQuote = (quoteText: string, key: string) => {
     const formatted = `“${quoteText}” — ${article.title} (${article.contributorName}, अकथ प्रकाशन वाचनकट्टा)`;
@@ -784,8 +803,9 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
   };
 
   const isImmersiveActive =
-    immersivePreference === 'on' ||
-    (immersivePreference === 'auto' && isScrollImmersive);
+    !mobileOutlineOpen &&
+    (immersivePreference === 'on' ||
+      (immersivePreference === 'auto' && isScrollImmersive));
 
   // Sync primary Navbar visibility with parent App
   useEffect(() => {
@@ -797,6 +817,84 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
       onImmersiveChange?.(false);
     };
   }, [onImmersiveChange]);
+
+  // Reset bottom-sheet drag offset and handle Escape key when open
+  useEffect(() => {
+    sheetDragY.set(0);
+    if (!mobileOutlineOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileOutlineOpen(false);
+      }
+    };
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mobileOutlineOpen, sheetDragY]);
+
+  const handleSheetDragEnd = (
+    _event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => {
+    if (info.offset.y > 72 || info.velocity.y > 380) {
+      setMobileOutlineOpen(false);
+    } else {
+      sheetDragY.set(0);
+    }
+  };
+
+  const handleSheetTouchStart = (e: React.TouchEvent<HTMLElement>) => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    sheetTouchRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      startTime: Date.now(),
+      trackingVertical: null,
+    };
+  };
+
+  const handleSheetTouchMove = (e: React.TouchEvent<HTMLElement>) => {
+    const state = sheetTouchRef.current;
+    if (!state || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - state.startX;
+    const deltaY = touch.clientY - state.startY;
+
+    if (state.trackingVertical === null) {
+      if (Math.abs(deltaX) < 8 && Math.abs(deltaY) < 8) return;
+      state.trackingVertical = Math.abs(deltaY) > Math.abs(deltaX) * 1.2;
+    }
+
+    if (state.trackingVertical && deltaY > 0) {
+      sheetDragY.set(Math.min(380, deltaY));
+    }
+  };
+
+  const handleSheetTouchEnd = (e: React.TouchEvent<HTMLElement>) => {
+    const state = sheetTouchRef.current;
+    sheetTouchRef.current = null;
+    if (!state || e.changedTouches.length === 0) return;
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - state.startX;
+    const deltaY = touch.clientY - state.startY;
+    const elapsed = Math.max(1, Date.now() - state.startTime);
+    const velocityY = (deltaY / elapsed) * 1000;
+
+    if (
+      state.trackingVertical &&
+      Math.abs(deltaY) > Math.abs(deltaX) * 1.15 &&
+      (deltaY > 72 || velocityY > 380)
+    ) {
+      setMobileOutlineOpen(false);
+    } else {
+      sheetDragY.set(0);
+    }
+  };
 
   // Track viewport width to dynamically optimize Devanagari line-height
   useEffect(() => {
@@ -1000,6 +1098,20 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
                 </button>
               ))}
             </div>
+
+            <button
+              type="button"
+              data-testid="mobile-article-drawer-trigger"
+              aria-expanded={mobileOutlineOpen}
+              aria-controls="akath-mobile-article-drawer"
+              onClick={() => setMobileOutlineOpen(true)}
+              className="lg:hidden px-2.5 py-1.5 rounded-lg bg-[#F7F3E8] hover:bg-[#FFD966]/45 border border-[#E6DFCE] text-[#243B8A] text-[12px] font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <List className="w-3.5 h-3.5 text-[#243B8A]" />
+              <span>
+                {lang === 'mr' ? 'लेखाची रूपरेषा' : 'Essay Outline'}
+              </span>
+            </button>
 
             <button
               type="button"
@@ -1289,6 +1401,14 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
       >
         <button
           type="button"
+          onClick={() => setMobileOutlineOpen(true)}
+          className="lg:hidden px-3 py-2 rounded-xl bg-white/95 backdrop-blur-md border border-[#E6DFCE] shadow-md text-[12px] font-semibold text-[#243B8A] inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+        >
+          <List className="w-3.5 h-3.5" />
+          <span>{lang === 'mr' ? 'रूपरेषा' : 'Outline'}</span>
+        </button>
+        <button
+          type="button"
           onClick={handleCycleLeading}
           className="px-3 py-2 rounded-xl bg-white/95 backdrop-blur-md border border-[#E6DFCE] shadow-md text-[12px] font-mono text-[#252832] hover:border-[#243B8A] transition-colors cursor-pointer tabular-nums"
         >
@@ -1306,6 +1426,195 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
           </span>
         </button>
       </div>
+
+      {/* =====================================================================
+          MOBILE & TABLET READING COMPANION BOTTOM-SHEET DRAWER (SWIPE DOWN TO DISMISS)
+          ===================================================================== */}
+      <AnimatePresence>
+        {mobileOutlineOpen && (
+          <div
+            data-testid="mobile-article-drawer-overlay"
+            className="fixed inset-0 z-[95] lg:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label={
+              lang === 'mr'
+                ? 'लेखाची रूपरेषा आणि वाचन साधने'
+                : 'Essay Outline and Reading Companion'
+            }
+          >
+            {/* Dynamic Frosted Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{ opacity: sheetBackdropOpacity }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              onClick={() => setMobileOutlineOpen(false)}
+              className="fixed inset-0 archival-frosted-overlay"
+              aria-hidden="true"
+            />
+
+            {/* Touch-Gesture Bottom Sheet */}
+            <motion.div
+              id="akath-mobile-article-drawer"
+              data-testid="mobile-article-drawer"
+              data-touch-gesture="swipe-down-to-close"
+              style={{ y: sheetDragY }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 420 }}
+              dragDirectionLock={true}
+              dragElastic={{ top: 0.05, bottom: 0.55 }}
+              onDragEnd={handleSheetDragEnd}
+              onTouchStart={handleSheetTouchStart}
+              onTouchMove={handleSheetTouchMove}
+              onTouchEnd={handleSheetTouchEnd}
+              transition={{
+                type: 'spring',
+                stiffness: 350,
+                damping: 34,
+                mass: 0.9,
+              }}
+              className="fixed inset-x-0 bottom-0 max-h-[82dvh] rounded-t-3xl akath-touch-bottom-sheet text-[#252832] flex flex-col overflow-hidden z-10"
+            >
+              {/* Tactile Top Grab Handle Bar */}
+              <div
+                data-testid="mobile-article-drawer-handle"
+                className="pt-3 pb-2 px-5 flex flex-col items-center justify-center border-b border-[#E6DFCE] bg-[#FFFDF7] shrink-0 select-none"
+              >
+                <span className="w-12 h-1.5 rounded-full bg-[#243B8A]/25 mb-2.5" />
+                <div className="w-full flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-[13px] font-bold text-[#243B8A]">
+                    <BookOpen className="w-4 h-4" />
+                    <span>
+                      {lang === 'mr'
+                        ? 'वाचनकट्टा सोबती · रूपरेषा व ग्रंथ'
+                        : 'Reading Companion · Outline & Books'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    data-testid="mobile-article-drawer-close"
+                    onClick={() => setMobileOutlineOpen(false)}
+                    aria-label={lang === 'mr' ? 'बंद करा' : 'Close companion drawer'}
+                    className="p-1.5 rounded-xl bg-[#F7F3E8] hover:bg-[#FFD966]/40 text-[#252832] transition-colors cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Scrollable Sheet Body */}
+              <div className="p-5 space-y-5 overflow-y-auto overscroll-contain">
+                {/* Reading Comfort Quick Bar */}
+                <div className="p-3.5 rounded-2xl bg-[#F7F3E8] border border-[#E6DFCE] flex flex-wrap items-center justify-between gap-2.5">
+                  <span className="text-[12px] font-semibold text-[#252832]">
+                    {lang === 'mr' ? 'कागद व ओळींमधील अंतर' : 'Paper & Line Spacing'}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {(
+                      [
+                        { id: 'cream', label: lang === 'mr' ? 'कागद' : 'Cream' },
+                        { id: 'sepia', label: lang === 'mr' ? 'सेपिया' : 'Sepia' },
+                        { id: 'ink', label: lang === 'mr' ? 'रात्र' : 'Night' },
+                      ] as const
+                    ).map((surf) => (
+                      <button
+                        key={surf.id}
+                        type="button"
+                        onClick={() => setReadingSurface(surf.id)}
+                        className={`px-2.5 py-1 rounded-lg text-[11.5px] font-semibold transition-colors cursor-pointer ${
+                          readingSurface === surf.id
+                            ? 'bg-[#243B8A] text-[#FFFDF7]'
+                            : 'bg-white text-[#5A5F72] border border-[#E6DFCE]'
+                        }`}
+                      >
+                        {surf.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Essay Section Outline */}
+                {article.sections.some((s) => Boolean(s.heading)) && (
+                  <div className="space-y-2.5">
+                    <h4 className="text-[11.5px] font-mono uppercase tracking-[0.14em] text-[#243B8A] font-semibold">
+                      {lang === 'mr' ? 'लेखातील विभाग' : 'Essay Sections'}
+                    </h4>
+                    <div className="grid grid-cols-1 gap-1.5">
+                      {article.sections
+                        .filter((s) => Boolean(s.heading))
+                        .map((sec, idx) => (
+                          <a
+                            key={sec.id}
+                            href={`#section-${sec.id}`}
+                            onClick={() => setMobileOutlineOpen(false)}
+                            className="px-3.5 py-2.5 rounded-xl bg-white border border-[#E6DFCE] hover:border-[#243B8A] text-[14px] text-[#252832] flex items-baseline gap-2.5 transition-colors"
+                          >
+                            <span className="font-mono text-[11px] font-bold text-[#243B8A]">
+                              0{idx + 1}.
+                            </span>
+                            <span className="font-medium">{sec.heading}</span>
+                          </a>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Books Discussed in This Essay */}
+                {relatedBooks.length > 0 && (
+                  <div className="space-y-3 pt-2 border-t border-[#E6DFCE]">
+                    <h4 className="text-[13.5px] font-serif font-bold text-[#252832]">
+                      {lang === 'mr'
+                        ? 'या लेखाशी संबंधित पुस्तके'
+                        : 'Books Discussed in This Essay'}
+                    </h4>
+                    <div className="grid grid-cols-1 gap-3">
+                      {relatedBooks.map((book) => {
+                        const author = allAuthors.find(
+                          (a) => a.id === book.authorId
+                        );
+                        return (
+                          <div
+                            key={book.id}
+                            className="p-3 rounded-2xl bg-white border border-[#E6DFCE] flex items-center justify-between gap-3"
+                          >
+                            <div className="min-w-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMobileOutlineOpen(false);
+                                  onNavigate(`/books/${book.slug}`);
+                                }}
+                                className="font-serif text-[15px] font-bold text-[#252832] hover:text-[#243B8A] text-left block truncate cursor-pointer"
+                              >
+                                {book.title}
+                              </button>
+                              <span className="text-[12px] text-[#5A5F72] block">
+                                {author?.name} · ₹{book.price}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => onAddToCart(book.id)}
+                              className="px-3 py-1.5 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7] text-[12px] font-semibold shrink-0 cursor-pointer"
+                            >
+                              {t.book.addToCart}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

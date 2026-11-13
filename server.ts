@@ -94,6 +94,14 @@ import {
   backupSnapshotsStore,
   saveCmsBackupSnapshot,
 } from './src/server/cmsStore';
+import {
+  BOOTSTRAPPED_ADMIN_EMAIL,
+  initDatabasePersistence,
+  persistDatabaseState,
+  getDatabaseStatusSummary,
+  verifyFirebaseGoogleIdentity,
+  mergeCloudBundleIntoServer,
+} from './src/server/cloudPersistence';
 
 const app = express();
 app.disable('x-powered-by');
@@ -148,7 +156,7 @@ app.use((req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   );
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https: ws: wss:; frame-ancestors *; base-uri 'self'; form-action 'self'; object-src 'none'"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseapp.com https://*.googleapis.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://*.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https: ws: wss:; frame-ancestors *; base-uri 'self'; form-action 'self'; object-src 'none'"
   );
 
   if (
@@ -178,6 +186,17 @@ app.use((req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       outcome: 'denied',
       details:
         'Stripped forbidden prototype-pollution keys (__proto__/constructor/prototype) from incoming request payload.',
+    });
+  }
+
+  if (
+    req.path.startsWith('/api/') &&
+    ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method.toUpperCase())
+  ) {
+    res.on('finish', () => {
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        persistDatabaseState();
+      }
     });
   }
 
@@ -402,6 +421,11 @@ const inquiriesStore: ContactInquiry[] = [
 ];
 const analyticsStore: AnalyticsEvent[] = [];
 const TECHNICAL_AUDIT_SUMMARY = PHASE_0_AUDIT_REPORT;
+
+initDatabasePersistence({
+  ordersStore,
+  manuscriptsStore,
+});
 
 function sanitizeText(input: unknown, maxLen = 2000): string {
   if (typeof input !== 'string') return '';
@@ -1664,6 +1688,179 @@ app.post('/api/auth/sandbox-persona', (req: AuthenticatedRequest, res: Response)
     redirectTo: getDefaultDashboardForRole(targetUser.role),
     permissions: ROLE_PERMISSIONS[targetUser.role],
   });
+});
+
+// ============================================================================
+// GOOGLE SIGN-IN POPUP + CLOUD FIRESTORE SYNCHRONIZATION ENDPOINTS
+// ============================================================================
+
+app.post('/api/auth/google', async (req: AuthenticatedRequest, res: Response) => {
+  const ip = req.ip || '127.0.0.1';
+  const lang: AppLanguage = req.body?.lang === 'en' ? 'en' : 'mr';
+
+  if (!checkRateLimit(ip, 'auth_google', 25, 60_000)) {
+    res.status(429).json({
+      error:
+        lang === 'mr'
+          ? 'कृपया काही वेळाने पुन्हा प्रयत्न करा.'
+          : 'Too many sign-in attempts. Please try again shortly.',
+    });
+    return;
+  }
+
+  const verifiedIdentity = await verifyFirebaseGoogleIdentity({
+    idToken: req.body?.idToken,
+    uid: req.body?.uid,
+    email: req.body?.email,
+    name: req.body?.name,
+    emailVerified: req.body?.emailVerified,
+  });
+
+  if (!verifiedIdentity || !verifiedIdentity.email) {
+    recordSecurityAudit({
+      actorUserId: null,
+      actorEmail: typeof req.body?.email === 'string' ? req.body.email : undefined,
+      actorRole: 'guest',
+      ipAddress: ip,
+      action: 'AUTH_GOOGLE_FAILED',
+      targetType: 'user',
+      outcome: 'failure',
+      details: 'Invalid or unverified Firebase Google ID token.',
+    });
+    res.status(401).json({
+      error:
+        lang === 'mr'
+          ? 'गूगल लॉगिन पडताळणी होऊ शकली नाही. कृपया पुन्हा प्रयत्न करा.'
+          : 'Google sign-in verification failed. Please try again.',
+    });
+    return;
+  }
+
+  const normalizedEmail = verifiedIdentity.email.toLowerCase();
+  const isOwnerAdmin = normalizedEmail === BOOTSTRAPPED_ADMIN_EMAIL.toLowerCase();
+  const nowIso = new Date().toISOString();
+
+  let user = usersStore.find((u) => u.email.toLowerCase() === normalizedEmail);
+  const guestCart: CartItemInput[] = Array.isArray(req.body?.guestCart)
+    ? req.body.guestCart
+    : [];
+
+  if (!user) {
+    const mergedCart = mergeCartItems([], guestCart, (bookId) => {
+      const b = booksStore.find((bk) => bk.id === bookId && isBookPubliclyVisible(bk));
+      return b ? b.stock : 0;
+    });
+
+    const cleanUid = verifiedIdentity.uid.replace(/[^a-zA-Z0-9_\-]/g, '-').slice(0, 96);
+    user = {
+      id: cleanUid ? `usr-ggl-${cleanUid}` : `usr-${Date.now()}-${generateOpaqueToken(3)}`,
+      name: sanitizeText(verifiedIdentity.name, 120) || 'Akath Reader',
+      email: normalizedEmail,
+      role: isOwnerAdmin ? 'admin' : 'reader',
+      accountStatus: 'active',
+      emailVerified: true,
+      wishlistBookIds: [],
+      personalReadingList: [],
+      notificationPreferences: {
+        newReleases: true,
+        orderUpdates: true,
+        vachankattaDigest: true,
+        publishingAlerts: isOwnerAdmin,
+      },
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      passwordHash: hashPassword(generateOpaqueToken(24)),
+      savedCart: mergedCart,
+    };
+    usersStore.unshift(user);
+  } else {
+    if (user.accountStatus !== 'active' && !isOwnerAdmin) {
+      res.status(403).json({
+        error:
+          lang === 'mr'
+            ? 'तुमचे खाते निष्क्रिय किंवा निलंबित करण्यात आले आहे.'
+            : 'Your account is currently suspended or deactivated.',
+        code: 'ACCOUNT_INACTIVE',
+      });
+      return;
+    }
+    if (isOwnerAdmin) {
+      user.role = 'admin';
+      user.accountStatus = 'active';
+    }
+    user.emailVerified = true;
+    user.updatedAt = nowIso;
+    if (guestCart.length > 0) {
+      user.savedCart = mergeCartItems(user.savedCart, guestCart, (bookId) => {
+        const b = booksStore.find(
+          (bk) => bk.id === bookId && isBookPubliclyVisible(bk)
+        );
+        return b ? b.stock : 0;
+      });
+    }
+  }
+
+  const { rawToken: sessionToken, csrfToken } = createSessionForUser(
+    user,
+    req,
+    res
+  );
+
+  persistDatabaseState();
+
+  const redirectTo = sanitizeRedirectPath(
+    req.body?.redirectTo,
+    getDefaultDashboardForRole(user.role)
+  );
+
+  recordSecurityAudit({
+    actorUserId: user.id,
+    actorEmail: user.email,
+    actorRole: user.role,
+    ipAddress: ip,
+    action: 'AUTH_GOOGLE_LOGIN_SUCCESS',
+    targetType: 'user',
+    targetId: user.id,
+    outcome: 'success',
+    details: `Authenticated via Firebase Google Sign-In as '${user.role}'.`,
+  });
+
+  res.json({
+    user: toPublicUserProfile(user),
+    sessionToken,
+    csrfToken,
+    mergedCart: user.savedCart,
+    redirectTo,
+    permissions: ROLE_PERMISSIONS[user.role],
+    authProvider: 'google-firebase',
+  });
+});
+
+app.post(
+  '/api/auth/cloud-sync',
+  requireAuth,
+  (req: AuthenticatedRequest, res: Response) => {
+    const user = req.authUser!;
+    const syncStats = mergeCloudBundleIntoServer(user, {
+      profile: req.body?.profile || null,
+      addresses: Array.isArray(req.body?.addresses) ? req.body.addresses : [],
+      orders: Array.isArray(req.body?.orders) ? req.body.orders : [],
+    });
+
+    const userAddresses = addressesStore.filter((a) => a.userId === user.id);
+
+    res.json({
+      ok: true,
+      user: toPublicUserProfile(user),
+      addresses: userAddresses,
+      syncStats,
+      databaseStatus: getDatabaseStatusSummary(),
+    });
+  }
+);
+
+app.get('/api/db/status', (_req: Request, res: Response) => {
+  res.json(getDatabaseStatusSummary());
 });
 
 // ============================================================================
