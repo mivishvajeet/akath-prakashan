@@ -1,16 +1,9 @@
 {
   "framework": "vite",
   "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "npx vite build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    {
-      "source": "/:prefix*/assets/:path*",
-      "destination": "/assets/:path*"
-    },
-    {
-      "source": "/((?!assets/|manifest\\.json|404\\.html).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/((?!assets/|manifest\\.json|404\\.html).*)", "destination": "/index.html" }
   ]
 }
