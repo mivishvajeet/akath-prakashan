@@ -4,11 +4,8 @@ import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 
 function normalizeBasePath(rawBase?: string): string {
-  const trimmed = (rawBase || '').trim();
-  if (!trimmed || trimmed === '/') return '/';
-  const withLeading = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-  const collapsed = withLeading.replace(/\\+/g, '/');
-  return collapsed.endsWith('/') ? collapsed : `${collapsed}/`;
+  const segments = (rawBase || '').trim().split('/').filter(Boolean);
+  return segments.length ? `/${segments.join('/')}/` : '/';
 }
 
 export default defineConfig(({ mode }) => {
