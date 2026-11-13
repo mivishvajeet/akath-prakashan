@@ -9,9 +9,8 @@
         var path = window.location.pathname;
         var search = window.location.search;
         var hash = window.location.hash;
-        var base = '/';
-        var route = path.replace(/^\\//, '');
-        window.location.replace(base + '?/' + route.replace(/&/g, '~and~') + (search ? '&' + search.slice(1).replace(/&/g, '~and~') : '') + hash);
+        var route = path.charAt(0) === '/' ? path.slice(1) : path;
+        window.location.replace('/?/' + route.replace(/&/g, '~and~') + (search ? '&' + search.slice(1).replace(/&/g, '~and~') : '') + hash);
       })();
     </script>
   </head>
