@@ -228,4 +228,10 @@ Contributions and suggestions are welcome. Before submitting a change:
 
 ## License
 
-No license file was present in the repository at the time this README was prepared. Unless a license is added, the project should not be assumed to grant permission for reuse, redistribution or modification.
+This repository is proprietary and all rights are reserved. The terms are set out in the [LICENSE](./LICENSE) file.
+
+Unless you have prior written permission from the applicable rights holder, you may not copy, modify, distribute, publish, sublicense, or create derivative works from the project's original code, design, branding, illustrations, editorial content, or other protected materials.
+
+Third-party dependencies and assets remain subject to their own licenses and terms. This notice does not claim ownership of third-party materials or override rights that cannot be restricted under applicable law.
+
+For permission requests, contact **akathpublication@gmail.com**.
