@@ -9,9 +9,7 @@ import {
   Mail,
   Phone,
 } from 'lucide-react';
-import {
-  HorizonArchIllustration,
-} from './SarvamIllustrations';
+import { StorybookFooterLandscape } from './StorybookFooterLandscape';
 import { PUBLISHER_IDENTITY } from '../data/seedData';
 
 interface FooterProps {
@@ -52,7 +50,6 @@ export const Footer: React.FC<FooterProps> = ({
     el.style.setProperty('--wordmark-spot-y', `${y}px`);
   };
 
-  // Trigger a one-time, restrained entrance animation when the footer enters the viewport
   useEffect(() => {
     const node = footerRef.current;
     if (!node) return;
@@ -79,7 +76,7 @@ export const Footer: React.FC<FooterProps> = ({
           }
         }
       },
-      { threshold: 0.12, rootMargin: '0px 0px -16px 0px' }
+      { threshold: 0.08, rootMargin: '0px 0px -16px 0px' }
     );
 
     observer.observe(node);
@@ -171,39 +168,118 @@ export const Footer: React.FC<FooterProps> = ({
           : 'The Last Page — Akath Prakashan Editorial Footer & Colophon'
       }
       data-testid="the-last-page-footer"
-      className="last-page-footer relative bg-[#243B8A] text-[#FFFDF7] overflow-hidden mt-24 border-t border-[#1B2D6B]"
+      className="last-page-footer relative text-[#F5EBDD] overflow-hidden mt-20 border-t border-[#E8BC69]/30"
+      style={{
+        background:
+          'linear-gradient(180deg, #0C152C 0%, #132247 42%, #1D3162 76%, #2D4238 93%, #302C25 100%)',
+      }}
     >
-      {/* Top Book-Edge Binding Ribbon */}
+      {/* Subtle Top Literary Gold-Leaf Hairline */}
       <div
         aria-hidden="true"
-        className="h-1.5 w-full"
+        className="h-[2px] w-full"
         style={{
           background:
-            'linear-gradient(90deg, #243B8A 0%, #FFD966 42%, #EF6855 72%, #243B8A 100%)',
+            'linear-gradient(90deg, #0C152C 0%, #E8BC69 50%, #0C152C 100%)',
         }}
       />
 
-      {/* Subtle Architectural Stepwell Arch Backdrop */}
+      {/* =====================================================================
+          MINIMAL CELESTIAL TWILIGHT SKY BACKDROP (CLEAN TWINKLING STARS & MOON)
+          ===================================================================== */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 text-[#FFFDF7]/10 flex justify-center"
+        className="pointer-events-none absolute inset-0 overflow-hidden select-none z-0"
       >
-        <HorizonArchIllustration className="w-full max-w-[1160px] h-[300px]" />
+        <svg
+          viewBox="0 0 1440 680"
+          preserveAspectRatio="xMidYMin slice"
+          shapeRendering="crispEdges"
+          className="w-full h-full block"
+        >
+          <defs>
+            {/* 4-Point Celestial Diamond Star (Large) */}
+            <g id="akathCelestialStarLg">
+              <rect x="-6" y="-1" width="12" height="2" fill="#FFD966" fillOpacity="0.28" />
+              <rect x="-1" y="-6" width="2" height="12" fill="#FFD966" fillOpacity="0.28" />
+              <rect x="-2" y="-2" width="4" height="4" fill="#FFD966" fillOpacity="0.88" />
+              <rect x="-1" y="-1" width="2" height="2" fill="#FFFDF7" />
+            </g>
+
+            {/* 4-Point Celestial Cross Star (Medium) */}
+            <g id="akathCelestialStarMd">
+              <rect x="-4" y="-1" width="8" height="2" fill="#E8BC69" fillOpacity="0.38" />
+              <rect x="-1" y="-4" width="2" height="8" fill="#E8BC69" fillOpacity="0.38" />
+              <rect x="-1" y="-1" width="2" height="2" fill="#FFFDF7" fillOpacity="0.9" />
+            </g>
+
+            {/* Delicate Distant Star (Small) */}
+            <g id="akathCelestialStarSm">
+              <rect x="-1" y="-1" width="2" height="2" fill="#F5EBDD" fillOpacity="0.7" />
+            </g>
+          </defs>
+
+          {/* Phase A Stars */}
+          <g className="storybook-star-twinkle-a">
+            <use href="#akathCelestialStarLg" x="110" y="38" />
+            <use href="#akathCelestialStarSm" x="340" y="26" />
+            <use href="#akathCelestialStarMd" x="560" y="34" />
+            <use href="#akathCelestialStarSm" x="780" y="24" />
+            <use href="#akathCelestialStarLg" x="980" y="32" />
+            <use href="#akathCelestialStarSm" x="1190" y="28" />
+          </g>
+
+          {/* Phase B Stars */}
+          <g className="storybook-star-twinkle-b">
+            <use href="#akathCelestialStarMd" x="210" y="54" />
+            <use href="#akathCelestialStarSm" x="456" y="48" />
+            <use href="#akathCelestialStarLg" x="676" y="46" />
+            <use href="#akathCelestialStarMd" x="880" y="52" />
+            <use href="#akathCelestialStarSm" x="1110" y="58" />
+          </g>
+
+          {/* Phase C Stars */}
+          <g className="storybook-star-twinkle-c">
+            <use href="#akathCelestialStarSm" x="64" y="72" />
+            <use href="#akathCelestialStarSm" x="518" y="74" />
+            <use href="#akathCelestialStarMd" x="1042" y="70" />
+            <use href="#akathCelestialStarSm" x="1360" y="56" />
+          </g>
+
+          {/* Subtle Crescent Moon (Upper Right Sky) */}
+          <g transform="translate(1296, 30)">
+            <rect x="-6" y="-2" width="28" height="28" fill="#FFD966" fillOpacity="0.08" />
+            <rect x="8" y="0" width="10" height="3" fill="#FFD966" fillOpacity="0.9" />
+            <rect x="4" y="3" width="10" height="3" fill="#FFD966" fillOpacity="0.9" />
+            <rect x="0" y="6" width="8" height="10" fill="#FFD966" fillOpacity="0.9" />
+            <rect x="4" y="16" width="10" height="3" fill="#FFD966" fillOpacity="0.9" />
+            <rect x="8" y="19" width="10" height="3" fill="#FFD966" fillOpacity="0.9" />
+          </g>
+        </svg>
       </div>
 
-      <div className="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 pb-8">
-        {/* =====================================================================
-            ROW 1: MINIMALIST DISPATCH & 4-COLUMN DIRECTORY
-            ===================================================================== */}
-        <div className="pb-10 sm:pb-12 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 border-b border-[#FFFDF7]/12">
-          {/* Left 4 Columns: Minimal Literary Dispatch & Three-Word Motto */}
-          <div className="lg:col-span-4 space-y-5 flex flex-col justify-between">
+      {/* =====================================================================
+          UPPER & MIDDLE FOOTER CONTENT (MINIMAL REFINED MIDNIGHT-VELLUM PANEL)
+          ===================================================================== */}
+      <div className="relative z-20 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12 pb-4">
+        {/* ROW 1: UNIFIED AKATH LITERARY NEWSLETTER & 4-COLUMN DIRECTORY */}
+        <div className="rounded-xl bg-[#0F1B3A]/85 backdrop-blur-md border border-[#E8BC69]/25 p-6 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 shadow-[0_18px_42px_-20px_rgba(6,11,26,0.65)]">
+          {/* Left 5 Columns: Akath Literary Newsletter */}
+          <div className="lg:col-span-5 lg:border-r lg:border-[#E8BC69]/20 lg:pr-8 flex flex-col justify-between space-y-4">
             <div className="space-y-3">
-              <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#FFD966]/85">
-                {t.home.newsletterTitle}
-              </p>
-              <p className="font-serif not-italic text-[17px] text-[#FFFDF7]/95 leading-[1.6]">
-                “{PUBLISHER_IDENTITY.closingMottoMarathi}”
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-mono font-bold uppercase tracking-[0.18em] text-[#FFD966]">
+                  {t.home.newsletterTitle}
+                </p>
+                <span className="inline-block w-2 h-2 rounded-full bg-[#E8BC69]" />
+              </div>
+
+              <p className="font-serif not-italic text-[16px] sm:text-[17.5px] text-[#F5EBDD] font-semibold leading-[1.52]">
+                “
+                {lang === 'mr'
+                  ? PUBLISHER_IDENTITY.closingMottoMarathi
+                  : PUBLISHER_IDENTITY.closingMottoEnglish}
+                ”
               </p>
 
               <form
@@ -211,7 +287,7 @@ export const Footer: React.FC<FooterProps> = ({
                 noValidate
                 action="/api/newsletter"
                 method="post"
-                className="space-y-2 pt-1"
+                className="space-y-2.5 pt-1"
               >
                 <div className="flex flex-col sm:flex-row gap-2">
                   <div className="flex-1">
@@ -235,17 +311,17 @@ export const Footer: React.FC<FooterProps> = ({
                       aria-describedby={
                         emailError ? 'footer-email-error' : 'footer-email-privacy'
                       }
-                      className={`w-full px-3.5 py-2 rounded-lg bg-[#152354]/90 border text-[13.5px] text-[#FFFDF7] placeholder:text-[#FFFDF7]/50 transition-colors ${
+                      className={`w-full rounded-lg px-3.5 py-2.5 bg-[#0A1228]/90 border text-[13.5px] text-[#F5EBDD] placeholder:text-[#F5EBDD]/50 transition-colors focus:outline-none ${
                         emailError
                           ? 'border-red-400 focus:border-red-400'
-                          : 'border-white/20 focus:border-[#FFD966]'
+                          : 'border-[#E8BC69]/35 focus:border-[#FFD966]'
                       }`}
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-4 py-2 rounded-lg bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7] text-[13px] font-semibold transition-colors whitespace-nowrap shrink-0 disabled:opacity-60 cursor-pointer"
+                    className="rounded-lg px-4 py-2.5 bg-[#E8BC69] hover:bg-[#FFD966] text-[#1C1917] text-[12.5px] font-mono font-bold uppercase tracking-wider transition-colors whitespace-nowrap shrink-0 disabled:opacity-60 cursor-pointer"
                   >
                     {t.home.newsletterSubmit}
                   </button>
@@ -253,7 +329,7 @@ export const Footer: React.FC<FooterProps> = ({
 
                 <p
                   id="footer-email-privacy"
-                  className="text-[11.5px] text-[#FFFDF7]/60"
+                  className="text-[11.5px] text-[#F5EBDD]/70"
                 >
                   {t.home.newsletterPrivacyNote}
                 </p>
@@ -282,17 +358,17 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
           </div>
 
-          {/* Right 8 Columns: Clean 4-Column Architectural Index */}
-          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-8">
+          {/* Right 7 Columns: Clean 4-Column Architectural Index inside the Harmonized Panel */}
+          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-7 pt-1">
             {/* Column I: Bookstore & Catalogue */}
             <nav
               aria-label={t.footer.booksAndCatalogue}
               className="space-y-3"
             >
-              <h4 className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#FFD966]/85">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]">
                 {t.footer.booksAndCatalogue}
               </h4>
-              <ul className="space-y-2 text-[13.5px] text-[#FFFDF7]/85">
+              <ul className="space-y-2 text-[13.5px] text-[#F5EBDD]/90">
                 <li>
                   <a
                     href="/books"
@@ -341,10 +417,10 @@ export const Footer: React.FC<FooterProps> = ({
               aria-label={t.footer.editorialJournal}
               className="space-y-3"
             >
-              <h4 className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#FFD966]/85">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]">
                 {t.footer.editorialJournal}
               </h4>
-              <ul className="space-y-2 text-[13.5px] text-[#FFFDF7]/85">
+              <ul className="space-y-2 text-[13.5px] text-[#F5EBDD]/90">
                 <li>
                   <a
                     href="/vachankatta/first-page"
@@ -391,10 +467,10 @@ export const Footer: React.FC<FooterProps> = ({
               aria-label={t.footer.readerServices}
               className="space-y-3"
             >
-              <h4 className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#FFD966]/85">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]">
                 {t.footer.readerServices}
               </h4>
-              <ul className="space-y-2 text-[13.5px] text-[#FFFDF7]/85">
+              <ul className="space-y-2 text-[13.5px] text-[#F5EBDD]/90">
                 <li>
                   <a
                     href="/track-order"
@@ -436,10 +512,10 @@ export const Footer: React.FC<FooterProps> = ({
 
             {/* Column IV: Contact & Editorial Correspondence */}
             <div className="space-y-3">
-              <h4 className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#FFD966]/85">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]">
                 {t.nav.contact}
               </h4>
-              <address className="not-italic space-y-2 text-[13px] text-[#FFFDF7]/85 leading-relaxed">
+              <address className="not-italic space-y-2 text-[13px] text-[#F5EBDD]/90 leading-relaxed">
                 <div className="flex items-start gap-2">
                   <MapPin
                     className="w-3.5 h-3.5 text-[#FFD966] shrink-0 mt-1"
@@ -498,17 +574,12 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
         </div>
 
-        {/* =====================================================================
-            ROW 2: MINIMAL EDITORIAL SIGNATURE COLOPHON
-            Every story leaves a mark.
-            Thoughtfully crafted by mivishvajeet ↗
-            Akath Prakashan · 2026
-            ===================================================================== */}
+        {/* ROW 2: EDITORIAL SIGNATURE COLOPHON FLOATING IN THE TWILIGHT SKY */}
         <div
           data-testid="footer-signature-colophon"
-          className="pt-8 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-6"
+          className="pt-5 pb-2 flex flex-col sm:flex-row sm:items-end justify-between gap-4"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3.5">
             <div
               data-testid="footer-animated-book-constellation"
               aria-hidden="true"
@@ -516,40 +587,19 @@ export const Footer: React.FC<FooterProps> = ({
             >
               <svg
                 viewBox="0 0 240 84"
-                className="w-24 sm:w-28 h-auto overflow-visible"
+                className="w-20 sm:w-24 h-auto overflow-visible"
               >
                 <path
                   d="M28 66 Q120 46 212 66"
                   stroke="#FFD966"
-                  strokeOpacity="0.32"
+                  strokeOpacity="0.35"
                   strokeWidth="1.2"
                   strokeDasharray="3 4"
                   fill="none"
                 />
-                <circle
-                  cx="66"
-                  cy="44"
-                  r="2.4"
-                  fill="#FFD966"
-                  className="akath-footer-mote-a"
-                />
-                <circle
-                  cx="120"
-                  cy="28"
-                  r="3"
-                  fill="#EF6855"
-                  className="akath-footer-mote-b"
-                />
-                <circle
-                  cx="174"
-                  cy="42"
-                  r="2.2"
-                  fill="#FFD966"
-                  className="akath-footer-mote-c"
-                />
                 <g className="akath-footer-star">
                   <path
-                    d="M120 10 L122.5 18.5 L131 21 L122.5 23.5 L120 32 L117.5 23.5 L109 21 L117.5 18.5 Z"
+                    d="M120 12 L122 19 L129 21 L122 23 L120 30 L118 23 L111 21 L118 19 Z"
                     fill="#FFD966"
                   />
                 </g>
@@ -591,23 +641,23 @@ export const Footer: React.FC<FooterProps> = ({
                   x2="120"
                   y2="65"
                   stroke="#EF6855"
-                  strokeWidth="2.4"
+                  strokeWidth="2.2"
                   strokeLinecap="round"
                 />
-                <circle cx="120" cy="67" r="2.5" fill="#FFD966" />
+                <circle cx="120" cy="67" r="2.2" fill="#FFD966" />
               </svg>
             </div>
 
             <div
               data-testid="footer-closing-line"
-              className={`last-page-closing-quote space-y-1.5 ${
+              className={`last-page-closing-quote space-y-0.5 ${
                 hasEnteredView ? 'is-entering' : ''
               }`}
             >
-              <p className="font-serif text-[20px] sm:text-[23px] font-medium text-[#FFFDF7] leading-[1.35] tracking-[-0.01em]">
+              <p className="font-serif not-italic text-[18px] sm:text-[20px] font-bold text-[#F5EBDD] leading-[1.3] tracking-[-0.01em]">
                 Every story leaves a mark.
               </p>
-              <p className="text-[13.5px] text-[#FFFDF7]/80 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+              <p className="text-[12.5px] text-[#F5EBDD]/85 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                 <span>Thoughtfully crafted by</span>
                 <a
                   href="https://github.com/mivishvajeet"
@@ -627,7 +677,7 @@ export const Footer: React.FC<FooterProps> = ({
 
           <p
             data-testid="footer-copyright"
-            className="font-mono text-[12.5px] tracking-[0.06em] text-[#FFFDF7]/75 tabular-nums"
+            className="font-mono text-[12px] tracking-[0.08em] text-[#E8BC69]/90 tabular-nums"
           >
             Akath Prakashan · 2026
           </p>
@@ -635,9 +685,8 @@ export const Footer: React.FC<FooterProps> = ({
       </div>
 
       {/* =======================================================================
-          SARVAM-STYLE EDGE-TO-EDGE MONUMENTAL MARATHI WORDMARK ("अकथ प्रकाशन")
-          Full-bleed architectural Devanagari display with animated Shirorekha beam,
-          flowing gold-leaf shimmer, stepwell grid, and interactive pointer aura
+          MONUMENTAL MARATHI WORDMARK ("अकथ प्रकाशन") + 16-BIT PIXEL-ART PARALLAX
+          COUNTRYSIDE & SPRITE TORTOISE STAGE (CLEAN HORIZON ALIGNMENT)
           ======================================================================= */}
       <div
         ref={wordmarkBannerRef}
@@ -645,83 +694,18 @@ export const Footer: React.FC<FooterProps> = ({
         data-testid="footer-monumental-wordmark"
         className={`akath-sarvam-wordmark-stage ${
           hasEnteredView ? 'is-visible' : ''
-        } group relative w-full overflow-hidden pt-6 sm:pt-10 pb-0 select-none border-t border-[#FFFDF7]/12`}
+        } group relative w-full overflow-hidden pt-2 sm:pt-3 pb-0 select-none`}
       >
-        {/* Animated Shirorekha Golden Light Beam gliding along top horizon */}
-        <div
-          aria-hidden="true"
-          className="akath-wordmark-shirorekha-beam pointer-events-none absolute top-0 left-0 h-[2px] w-48 sm:w-80"
-        />
-
-        {/* Subtle Architectural Stepwell Lattice & Horizon Arc */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-25 akath-wordmark-grid-backdrop"
-        />
-
-        {/* Ambient Breathing Horizon Glow + Interactive Cursor-Tracking Gold Spotlight */}
-        <div
-          aria-hidden="true"
-          className="akath-wordmark-horizon-glow pointer-events-none absolute inset-x-0 bottom-0 h-full"
-        />
-        <div
-          aria-hidden="true"
-          className="akath-wordmark-cursor-spotlight pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        />
-
-        {/* Rising Golden Literary Ink Motes behind the Devanagari Wordmark */}
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 1200 180"
-          className="pointer-events-none absolute inset-x-0 bottom-0 w-full h-full overflow-visible"
-          preserveAspectRatio="none"
-        >
-          <circle
-            cx="180"
-            cy="120"
-            r="2.5"
-            fill="#FFD966"
-            className="akath-footer-mote-a"
-          />
-          <circle
-            cx="420"
-            cy="95"
-            r="2"
-            fill="#EF6855"
-            className="akath-footer-mote-b"
-          />
-          <circle
-            cx="600"
-            cy="75"
-            r="3"
-            fill="#FFD966"
-            className="akath-footer-mote-c"
-          />
-          <circle
-            cx="820"
-            cy="105"
-            r="2.2"
-            fill="#EF6855"
-            className="akath-footer-mote-a"
-          />
-          <circle
-            cx="1040"
-            cy="115"
-            r="2.6"
-            fill="#FFD966"
-            className="akath-footer-mote-b"
-          />
-        </svg>
-
+        {/* Monumental Marathi Wordmark ("अकथ प्रकाशन") Framed Cleanly Above the Horizon */}
         <a
           href="/"
           onClick={(e) => handleNavClick(e, '/')}
           aria-label="अकथ प्रकाशन — मुख्यपृष्ठ"
-          className="relative z-10 block w-full text-center focus:outline-none px-2 sm:px-6"
+          className="relative z-10 block w-full text-center focus:outline-none px-4 sm:px-6 -mb-8 sm:-mb-12 lg:-mb-16"
         >
           <span
             data-testid="footer-monumental-marathi-text"
-            className="akath-sarvam-wordmark-text inline-flex items-baseline justify-center gap-[0.22em] font-serif font-bold whitespace-nowrap tracking-[-0.02em] leading-[0.88] text-[clamp(3.35rem,15.2vw,13.5rem)] translate-y-[6%]"
+            className="akath-sarvam-wordmark-text inline-flex items-baseline justify-center gap-[0.18em] sm:gap-[0.22em] font-serif font-bold whitespace-nowrap tracking-[-0.02em] leading-[0.9] text-[clamp(2.6rem,11vw,8.5rem)] opacity-85"
           >
             <span className="akath-wordmark-part akath-wordmark-part-1 inline-block">
               अकथ
@@ -731,6 +715,11 @@ export const Footer: React.FC<FooterProps> = ({
             </span>
           </span>
         </a>
+
+        {/* Unified 16-Bit Pixel-Art Side-Scrolling Landscape & Sprite Tortoise Stage */}
+        <div className="relative z-20">
+          <StorybookFooterLandscape />
+        </div>
       </div>
     </footer>
   );

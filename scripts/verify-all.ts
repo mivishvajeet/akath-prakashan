@@ -1027,49 +1027,70 @@ async function runTests() {
   assert.ok(cssSource.includes('akath-footer-wing-left'));
   assert.ok(cssSource.includes('akath-footer-wing-right'));
   assert.ok(cssSource.includes('prefers-reduced-motion: reduce'));
-  console.log(
-    '  [PASS] UI-05: "The Last Page" Editorial Footer verified (Monumental "अकथ प्रकाशन" wordmark, "Every story leaves a mark. / Thoughtfully crafted by mivishvajeet ↗ / Akath Prakashan · 2026", Tortoise & date removed, semantic <nav>/<address>/<a> links, and reduced-motion compliance)'
-  );
 
-  // Verify Researched Tortoise Colophon Seal in AboutAkathView after “वाचत राहू. विचारत राहू. लिहित राहू.”
-  const walkingTortoiseSource = fs.readFileSync(
-    path.resolve(process.cwd(), 'src/components/WalkingTortoise.tsx'),
+  const storybookFooterSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/components/StorybookFooterLandscape.tsx'),
     'utf-8'
   );
+  assert.ok(footerSource.includes('<StorybookFooterLandscape />'));
+  assert.ok(
+    footerSource.indexOf('data-testid="footer-monumental-marathi-text"') <
+      footerSource.indexOf('<StorybookFooterLandscape />'),
+    'StorybookFooterLandscape must be merged into the unified bottom monumental wordmark stage of Footer.tsx'
+  );
+  assert.ok(storybookFooterSource.includes('data-testid="storybook-footer-landscape"'));
+  assert.ok(storybookFooterSource.includes('data-render-mode="16bit-pixel-art-parallax"'));
+  assert.ok(storybookFooterSource.includes('shapeRendering="crispEdges"'));
+  assert.ok(storybookFooterSource.includes('data-sprite-engine="16bit-stepped-sprite"'));
+  assert.ok(storybookFooterSource.includes('data-testid="storybook-tortoise-protagonist"'));
+  assert.ok(storybookFooterSource.includes('data-testid="storybook-tortoise-body"'));
+  assert.ok(storybookFooterSource.includes('data-testid="storybook-tortoise-head"'));
+  assert.ok(storybookFooterSource.includes('data-testid="storybook-tortoise-legs-far"'));
+  assert.ok(storybookFooterSource.includes('data-testid="storybook-tortoise-legs-near"'));
+  assert.ok(storybookFooterSource.includes('data-testid="storybook-tortoise-shell"'));
+  assert.ok(storybookFooterSource.includes('data-testid="storybook-tortoise-books"'));
+  assert.ok(storybookFooterSource.includes('data-testid="storybook-marathi-signboard"'));
+  assert.ok(storybookFooterSource.includes('वाचन हाच प्रवास'));
+  assert.ok(storybookFooterSource.includes('#F5EBDD'));
+  assert.ok(storybookFooterSource.includes('#78845A'));
+  assert.ok(storybookFooterSource.includes('#354B37'));
+  assert.ok(storybookFooterSource.includes('#997451'));
+  assert.ok(storybookFooterSource.includes('#B86F50'));
+  assert.ok(storybookFooterSource.includes('#E8BC69'));
+  assert.ok(storybookFooterSource.includes('#302C25'));
+  assert.ok(cssSource.includes('image-rendering: pixelated'));
+  assert.ok(cssSource.includes('steps(4, end)'));
+  assert.ok(cssSource.includes('@keyframes storybook-scroll-tile'));
+  assert.ok(cssSource.includes('@keyframes storybook-tortoise-choreography'));
+  assert.ok(cssSource.includes('@keyframes storybook-butterfly-encounter'));
+  assert.ok(cssSource.includes('@keyframes storybook-tortoise-blink-choreography'));
+  console.log(
+    '  [PASS] UI-05: Unified "The Last Page" Editorial & 16-Bit Pixel-Art Animated Footer ("वाचन हाच प्रवास") verified (Multi-layer parallax countryside, steps(4) sprite tortoise, Monumental "अकथ प्रकाशन" wordmark, and reduced-motion compliance)'
+  );
+
+  // Verify Chapter IV motto and duplicate tortoise logo removed from AboutAkathView per user request
   const publishingViewsSource = fs.readFileSync(
     path.resolve(process.cwd(), 'src/views/PublishingHouseViews.tsx'),
     'utf-8'
   );
-  assert.ok(walkingTortoiseSource.includes('data-testid="about-walking-tortoise"'));
-  assert.ok(walkingTortoiseSource.includes('data-testid="about-tortoise-colophon-seal"'));
-  assert.ok(walkingTortoiseSource.includes('data-testid="about-tortoise-traverse-track"'));
-  assert.ok(walkingTortoiseSource.includes('data-testid="about-tortoise-traverse-runner"'));
-  assert.ok(walkingTortoiseSource.includes('data-testid="about-tortoise-play-toggle"'));
-  assert.ok(walkingTortoiseSource.includes('akath-patient-traverse-track'));
-  assert.ok(walkingTortoiseSource.includes('akath-patient-tortoise-runner'));
-  assert.ok(walkingTortoiseSource.includes('akath-patient-tortoise-flip'));
-  assert.ok(!walkingTortoiseSource.includes('data-testid="walking-tortoise-traveler"'));
-  assert.ok(walkingTortoiseSource.includes('#174D3A'));
-  assert.ok(cssSource.includes('container-type: inline-size'));
-  assert.ok(cssSource.includes('calc(100cqw - 92px)'));
-  assert.ok(cssSource.includes('@media (hover: hover) and (pointer: fine)'));
-  assert.ok(cssSource.includes('@keyframes akath-patient-traverse'));
-  assert.ok(cssSource.includes('@keyframes akath-patient-turn'));
-  assert.ok(cssSource.includes('@keyframes akath-colophon-orbit'));
-  assert.ok(cssSource.includes('@keyframes akath-colophon-page-breathe-left'));
-  assert.ok(cssSource.includes('@keyframes akath-colophon-shell-breathe'));
   assert.ok(
-    publishingViewsSource.includes('data-testid="about-final-marathi-line"')
+    !publishingViewsSource.includes('<WalkingTortoise'),
+    'WalkingTortoise animation below Chapter IV must be removed from PublishingHouseViews.tsx'
   );
-  assert.ok(publishingViewsSource.includes('<WalkingTortoise'));
-  const mottoIdx = publishingViewsSource.indexOf('data-testid="about-final-marathi-line"');
-  const tortoiseIdx = publishingViewsSource.indexOf('<WalkingTortoise');
   assert.ok(
-    tortoiseIdx > mottoIdx,
-    'WalkingTortoise Traverse must appear AFTER the final Marathi line “वाचत राहू. विचारत राहू. लिहित राहू.”'
+    !publishingViewsSource.includes('TortoiseStageIllustration'),
+    'Duplicate second tortoise logo (TortoiseStageIllustration) must be removed from AboutAkathView'
+  );
+  assert.ok(
+    !publishingViewsSource.includes('data-testid="about-chapter-iv-footer-logo"'),
+    'Chapter IV duplicate footer logo block must be removed from AboutAkathView'
+  );
+  assert.ok(
+    !publishingViewsSource.includes('Let us keep reading. Let us keep questioning. Let us keep writing.'),
+    'Chapter IV motto must be removed from AboutAkathView'
   );
   console.log(
-    '  [PASS] UI-06: Mobile, Tablet & Desktop CSS Patient Tortoise Traverse Animation verified on About page (GPU container-query 100cqw transform, responsive 20s/26s/32s cycle, touch-safe play/pause toggle, hover-media guard, and reduced-motion fallback)'
+    '  [PASS] UI-06: About Page Single Tortoise Emblem & Chapter IV Removal verified (Single AnimatedTortoiseEmblem in Why the Tortoise; Chapter IV motto and duplicate logo removed)'
   );
 
   // Verify SixEditorialStages component, HomeView layout, Mobile Horizontal Catalog Scroll, and redesigned 60-68ch AboutAkathView with physics-based breathe animation
@@ -1123,43 +1144,55 @@ async function runTests() {
   assert.ok(sixStagesSource.includes('akath-stage-caliper'));
   assert.ok(sixStagesSource.includes('akath-stage-book'));
   assert.ok(homeViewSource.includes('data-testid="home-publishing-hero"'));
-  assert.ok(homeViewSource.includes('काळजात उतरणारे मराठी ग्रंथप्रकाशन.'));
-  assert.ok(homeViewSource.includes('Enduring Marathi Book Publishing.'));
-  assert.ok(!homeViewSource.includes('Words That Stay.'));
-  assert.ok(!homeViewSource.includes('Independent Marathi Literary Publishing House (Nanded'));
+  assert.ok(homeViewSource.includes('मराठी प्रकाशन संस्था'));
+  assert.ok(homeViewSource.includes('शब्दांना पुस्तकाचं रूप देणारी'));
+  assert.ok(homeViewSource.includes('Discovering stories. Developing manuscripts. Publishing books.'));
+  assert.ok(homeViewSource.includes('Explore Our Books'));
+  assert.ok(homeViewSource.includes('Publish With Us'));
+  assert.ok(homeViewSource.includes('data-testid="home-what-we-do"'));
+  assert.ok(homeViewSource.includes('From Manuscript to Bookshelf.'));
+  assert.ok(homeViewSource.includes('Manuscript Development'));
+  assert.ok(homeViewSource.includes('Editing & Proofreading'));
+  assert.ok(homeViewSource.includes('Book Design & Production'));
+  assert.ok(homeViewSource.includes('Publishing & Distribution'));
+  assert.ok(homeViewSource.includes('data-testid="home-how-we-publish"'));
+  assert.ok(homeViewSource.includes('An Idea Becomes a Book.'));
+  assert.ok(homeViewSource.includes('DISCOVER'));
+  assert.ok(homeViewSource.includes('REVIEW'));
+  assert.ok(homeViewSource.includes('DEVELOP'));
+  assert.ok(homeViewSource.includes('PRODUCE'));
+  assert.ok(homeViewSource.includes('PUBLISH'));
+  assert.ok(homeViewSource.includes('data-testid="home-published-books"'));
+  assert.ok(homeViewSource.includes('Books We Bring to Life.'));
+  assert.ok(homeViewSource.includes('Explore the Catalogue →'));
+  assert.ok(homeViewSource.includes('data-testid="home-catalog-horizontal-scroll"'));
+  assert.ok(homeViewSource.includes('data-testid="home-manuscript-desk"'));
+  assert.ok(homeViewSource.includes('Submit Your Manuscript'));
+  assert.ok(homeViewSource.includes('data-testid="home-about-akath"'));
+  assert.ok(homeViewSource.includes('Rooted in Language. Driven by Stories.'));
+  assert.ok(homeViewSource.includes('About Akath Prakashan'));
   assert.ok(!homeViewSource.includes('Pune'));
   assert.ok(!navbarSource.includes('Pune'));
   assert.ok(!navbarSource.includes('पुणे'));
   assert.ok(!footerSource.includes('Pune'));
   assert.ok(!footerSource.includes('पुणे'));
-  assert.ok(!walkingTortoiseSource.includes('PUNE'));
-  assert.ok(!walkingTortoiseSource.includes('पुणे'));
   assert.ok(!publishingViewsSource.includes('Pune'));
   assert.ok(!publishingViewsSource.includes('पुणे'));
   assert.ok(!sixStagesSource.includes('Pune'));
   assert.ok(!sixStagesSource.includes('पुणे'));
-  assert.ok(!homeViewSource.includes('Manuscript to Archival Edition'));
-  assert.ok(!homeViewSource.includes('Smyth-Sewn Binding'));
-  assert.ok(!homeViewSource.includes('Official ISBN-13 Registration'));
-  assert.ok(!homeViewSource.includes('Four Production Pillars of Every Akath Edition'));
-  assert.ok(!homeViewSource.includes('data-testid="home-publishing-standards"'));
-  assert.ok(!homeViewSource.includes('data-testid="home-section-gateway"'));
-  assert.ok(!homeViewSource.includes('80 GSM'));
-  assert.ok(!homeViewSource.includes('Acid-Free Bookpaper'));
-  assert.ok(homeViewSource.includes('data-testid="home-manuscript-desk"'));
-  assert.ok(homeViewSource.includes('<SixEditorialStages variant="home"'));
-  assert.ok(!homeViewSource.includes('Accepted Literary Genres'));
-  assert.ok(homeViewSource.includes('data-testid="home-published-books"'));
-  assert.ok(homeViewSource.includes('data-testid="home-catalog-horizontal-scroll"'));
+  const heroIdx = homeViewSource.indexOf('data-testid="home-publishing-hero"');
+  const whatWeDoIdx = homeViewSource.indexOf('data-testid="home-what-we-do"');
+  const howWePublishIdx = homeViewSource.indexOf('data-testid="home-how-we-publish"');
+  const ourBooksIdx = homeViewSource.indexOf('data-testid="home-published-books"');
+  const forAuthorsIdx = homeViewSource.indexOf('data-testid="home-manuscript-desk"');
+  const aboutAkathIdx = homeViewSource.indexOf('data-testid="home-about-akath"');
   assert.ok(
-    homeViewSource.indexOf('data-testid="home-manuscript-desk"') <
-      homeViewSource.indexOf('<SixEditorialStages variant="home"'),
-    'Publish Your Manuscript with Akath Prakashan must appear ABOVE Six Editorial Stages on HomeView'
-  );
-  assert.ok(
-    homeViewSource.indexOf('<SixEditorialStages variant="home"') <
-      homeViewSource.indexOf('data-testid="home-published-books"'),
-    'Curated Marathi Editions must appear AT THE BOTTOM below Six Editorial Stages on HomeView'
+    heroIdx < whatWeDoIdx &&
+      whatWeDoIdx < howWePublishIdx &&
+      howWePublishIdx < ourBooksIdx &&
+      ourBooksIdx < forAuthorsIdx &&
+      forAuthorsIdx < aboutAkathIdx,
+    'HomeView must follow the exact 6-section priority order: Hero -> What We Do -> How We Publish -> Our Books -> For Authors -> About Akath'
   );
   assert.ok(booksAndStoreSource.includes('data-testid="catalogue-mobile-horizontal-scroll"'));
   assert.ok(!booksAndStoreSource.includes('testId="catalogue-category-select"'));
@@ -1358,19 +1391,21 @@ async function runTests() {
     '  [PASS] CMS-01: No-Code Admin CMS endpoints verified (Visual Book Creation, Editorial Article Publishing, and Storefront Site Config)'
   );
 
-  // Verify Minimal Standard ContactView UI (Address, Channels & Form), Accessible Dropdowns, and Live /api/contact Integration
+  // Verify Contact Form-only ContactView UI, Accessible Dropdowns, and Live /api/contact Integration
   assert.ok(publishingViewsSource.includes('export const EditorialSelectDropdown'));
   assert.ok(publishingViewsSource.includes('aria-haspopup="listbox"'));
   assert.ok(publishingViewsSource.includes('role="listbox"'));
   assert.ok(publishingViewsSource.includes("isOpen ? 'z-50' : 'z-10'"));
   assert.ok(publishingViewsSource.includes('z-[70]'));
   assert.ok(publishingViewsSource.includes('data-testid="contact-editorial-view"'));
-  assert.ok(publishingViewsSource.includes('data-testid="contact-address-block"'));
-  assert.ok(publishingViewsSource.includes('data-testid="contact-channels-block"'));
   assert.ok(publishingViewsSource.includes('data-testid="contact-form-folio"'));
   assert.ok(publishingViewsSource.includes('testId="contact-role-select"'));
   assert.ok(publishingViewsSource.includes('testId="ms-category-select"'));
   assert.ok(publishingViewsSource.includes('data-testid="contact-receipt-card"'));
+  assert.ok(publishingViewsSource.includes('data-testid="contact-submit-btn"'));
+  assert.ok(!publishingViewsSource.includes('data-testid="contact-destinations-grid"'));
+  assert.ok(!publishingViewsSource.includes('data-testid="contact-address-block"'));
+  assert.ok(!publishingViewsSource.includes('data-testid="contact-channels-block"'));
   assert.ok(!publishingViewsSource.includes('data-testid="contact-desk-cards"'));
   assert.ok(!publishingViewsSource.includes('FOLIO · AKATH-CORR-2026'));
 
@@ -1392,7 +1427,7 @@ async function runTests() {
     'ग्रंथालय संच / पुस्तक विक्रेता घाऊक मागणी'
   );
   console.log(
-    '  [PASS] UI-08: Minimal Standard Contact View (Address, Channels, and Form), Mobile-Safe Z-Indexed Dropdowns, and live /api/contact dispatch verified'
+    '  [PASS] UI-08: Clean Contact Form-Only View, Mobile-Safe Z-Indexed Dropdowns, and live /api/contact dispatch verified'
   );
 
   // --------------------------------------------------------------------------

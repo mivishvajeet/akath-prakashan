@@ -53,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isCartPopping, setIsCartPopping] = useState(false);
   const quickNavRef = useRef<HTMLElement | null>(null);
 
-  // Touch-gesture motion values for buttery-smooth drawer dragging & backdrop interpolation
+  // Touch-gesture motion values for drawer dragging & backdrop interpolation
   const drawerDragX = useMotionValue(0);
   const backdropOpacity = useTransform(drawerDragX, [0, 320], [1, 0.12]);
   const drawerTouchRef = useRef<{
@@ -218,7 +218,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     { label: lang === 'mr' ? 'मुख्यपृष्ठ' : 'Home', path: '/' },
     { label: t.nav.books, path: '/books' },
     { label: t.nav.vachankatta, path: '/vachankatta' },
-    { label: t.nav.firstPage, path: '/vachankatta/first-page' },
     { label: t.nav.authors, path: '/authors' },
     { label: t.nav.about, path: '/about' },
     { label: t.nav.submitManuscript, path: '/submit-manuscript' },
@@ -227,13 +226,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const isActive = (path: string) => {
     if (path === '/') return currentPath === '/';
-    if (path === '/vachankatta') {
-      return (
-        currentPath === '/vachankatta' ||
-        (currentPath.startsWith('/vachankatta/') &&
-          currentPath !== '/vachankatta/first-page')
-      );
-    }
     return currentPath === path || currentPath.startsWith(`${path}/`);
   };
 
@@ -265,60 +257,96 @@ export const Navbar: React.FC<NavbarProps> = ({
         data-testid="primary-navbar"
         data-immersive-hidden={immersiveHidden ? 'true' : 'false'}
         aria-hidden={immersiveHidden ? true : undefined}
-        className={`sticky top-0 z-50 bg-[#243B8A] text-[#FFFDF7] border-b border-[#1B2D6B] shadow-[0_6px_24px_-10px_rgba(36,59,138,0.45)] w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`sticky top-0 z-50 bg-[#FFFDF7]/95 backdrop-blur-md text-[#1C1917] border-b border-[#DCD4C0] shadow-[0_1px_0_rgba(220,212,192,0.6)] w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           immersiveHidden
             ? '-translate-y-full opacity-0 pointer-events-none'
             : 'opacity-100'
         }`}
       >
-        {/* Top Butter-Yellow & Coral-Red Editorial Hairline */}
+        {/* Signature Publishing House Top Accent Rule */}
         <div
-          className="h-1 w-full"
+          className="h-[2.5px] w-full"
           style={{
             background:
-              'linear-gradient(90deg, #243B8A 0%, #FFD966 38%, #EF6855 68%, #243B8A 100%)',
+              'linear-gradient(90deg, #243B8A 0%, #C89D54 45%, #EF6855 75%, #243B8A 100%)',
           }}
         />
 
-        <div className="max-w-[1280px] mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="max-w-[1380px] mx-auto px-3 sm:px-6 lg:px-8">
           {/* =================================================================
-              TIER 1: BRAND IDENTITY + SEARCH + LANGUAGE + ACCOUNT + CART + MENU
+              MAIN EDITORIAL HEADER ROW (SINGLE-ROW ON DESKTOP lg+)
+              Zone 1: Brand Identity | Zone 2: Nav Links | Zone 3: Utilities
               ================================================================= */}
-          <div className="min-h-[60px] sm:min-h-[68px] py-2 flex items-center justify-between gap-1.5 sm:gap-3">
-            {/* 1. Brand Identity: Animated Tortoise + Open Book Emblem + Devanagari Logotype */}
+          <div className="min-h-[58px] sm:min-h-[64px] py-1.5 flex items-center justify-between gap-2 sm:gap-3 lg:gap-5">
+            {/* ZONE 1: Brand Identity (Logo kept rounded-full as requested) */}
             <button
               type="button"
               onClick={() => handleNav('/')}
-              className="group flex items-center gap-2 sm:gap-3 text-left focus:outline-none shrink min-w-0 cursor-pointer"
+              className="group flex items-center gap-2.5 text-left focus:outline-none shrink-0 cursor-pointer"
               aria-label={
                 lang === 'mr'
                   ? 'अकथ प्रकाशन — मुख्यपृष्ठ'
                   : 'Akath Prakashan — Home'
               }
             >
-              <AnimatedTortoiseEmblem
-                className="w-9 h-9 sm:w-11 sm:h-11 shrink-0"
-                variant="light"
-                animate={true}
-              />
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="font-serif text-[17px] sm:text-[21px] font-bold text-[#FFFDF7] group-hover:text-[#FFD966] transition-colors leading-tight truncate">
-                    अकथ प्रकाशन
-                  </span>
-                  <span className="hidden xl:inline-block text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#FFD966] text-[#252832] whitespace-nowrap">
-                    {lang === 'mr' ? 'नांदेड' : 'Nanded'}
-                  </span>
-                </div>
-                <span className="hidden min-[360px]:block text-[10px] sm:text-[11px] text-[#FFD966]/90 font-medium tracking-wide truncate">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#FAF6EC] border border-[#DCD4C0] group-hover:border-[#243B8A] flex items-center justify-center p-0.5 transition-colors shrink-0">
+                <AnimatedTortoiseEmblem
+                  className="w-8 h-8 sm:w-9 sm:h-9 shrink-0"
+                  variant="indigo"
+                  animate={true}
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-serif not-italic text-[17.5px] sm:text-[20px] font-extrabold text-[#1C1917] group-hover:text-[#243B8A] transition-colors leading-none tracking-tight whitespace-nowrap">
+                  अकथ प्रकाशन
+                </span>
+                <span className="mt-1 text-[9px] sm:text-[9.5px] font-mono uppercase tracking-[0.16em] text-[#57534E] whitespace-nowrap">
                   {lang === 'mr'
-                    ? 'Akath Prakashan · मराठी साहित्य'
-                    : 'Akath Prakashan · Marathi Literature'}
+                    ? 'मराठी प्रकाशन संस्था'
+                    : 'PUBLISHING HOUSE'}
                 </span>
               </div>
             </button>
 
-            {/* 2. Right Action Cluster: Search, Language, Role/Account, Cart, Drawer Toggle */}
+            {/* ZONE 2 (DESKTOP lg+): Clean Editorial Navigation Links with Smooth Rounded States */}
+            <nav
+              aria-label={
+                lang === 'mr' ? 'मुख्य नेव्हिगेशन' : 'Primary Navigation'
+              }
+              className="hidden lg:flex items-center gap-1 xl:gap-1.5"
+            >
+              {navItems.map((item) => {
+                const active = isActive(item.path);
+                return (
+                  <button
+                    key={item.path}
+                    type="button"
+                    onClick={() => handleNav(item.path)}
+                    aria-current={active ? 'page' : undefined}
+                    className={`relative px-2.5 xl:px-3 py-1.5 rounded-lg text-[13px] xl:text-[13.5px] transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                      active
+                        ? 'text-[#243B8A] font-bold bg-[#FAF6EC]'
+                        : 'text-[#292524] font-medium hover:text-[#243B8A] hover:bg-[#FAF6EC]/80'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    {active && (
+                      <motion.span
+                        layoutId="akath-active-nav-pill"
+                        className="absolute left-2.5 right-2.5 bottom-0.5 h-[2px] rounded-full bg-[#243B8A]"
+                        transition={{
+                          type: 'spring',
+                          stiffness: 400,
+                          damping: 34,
+                        }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* ZONE 3: Right Utility & Action Cluster (Smooth rounded-lg controls) */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {/* Search Trigger */}
               <button
@@ -326,28 +354,24 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={onOpenSearch}
                 aria-label={t.nav.searchAria}
                 data-testid="navbar-search-btn"
-                className="inline-flex items-center justify-center gap-2 min-h-[40px] px-2.5 sm:px-3.5 py-2 rounded-xl bg-[#1B2D6B] hover:bg-[#152354] border border-white/15 text-[#FFFDF7] text-[13px] font-medium transition-all shrink-0 cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 min-h-[36px] px-2.5 py-1.5 rounded-lg bg-[#FAF6EC] hover:bg-[#F2ECE1] border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] text-[12px] font-medium transition-colors shrink-0 cursor-pointer"
               >
-                <Search className="w-4 h-4 text-[#FFD966] shrink-0" />
-                <span className="hidden md:inline max-w-[130px] lg:max-w-[170px] truncate text-[#FFFDF7]/90">
+                <Search className="w-3.5 h-3.5 text-[#243B8A] shrink-0" />
+                <span className="hidden xl:inline max-w-[96px] truncate text-[#57534E]">
                   {t.nav.search}
                 </span>
-                <kbd className="hidden xl:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-[#243B8A] rounded border border-white/20 text-[#FFD966]">
+                <kbd className="hidden 2xl:inline-block px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#FFFDF7] border border-[#DCD4C0] text-[#57534E]">
                   ⌘K
                 </kbd>
               </button>
 
-              {/* Language Switcher — Contained Segmented Pill (Visible on sm+ in Tier 1, and in Tier 2 / Drawer on <sm) */}
+              {/* Language Switcher — Smooth Archival Segmented Toggle */}
               <div
                 role="group"
                 aria-label={lang === 'mr' ? 'भाषा निवडा' : 'Select language'}
                 data-testid="desktop-lang-switcher"
-                className="hidden sm:inline-flex items-center rounded-xl bg-[#1B2D6B] p-0.5 border border-white/15 shrink-0"
+                className="hidden sm:inline-flex items-center rounded-lg bg-[#FAF6EC] p-0.5 border border-[#DCD4C0] shrink-0"
               >
-                <Globe
-                  className="w-3.5 h-3.5 text-[#FFD966] ml-2 mr-1 hidden lg:block shrink-0"
-                  aria-hidden="true"
-                />
                 {(
                   [
                     { code: 'mr', label: 'मराठी' },
@@ -362,10 +386,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onClick={() => handleLanguageChange(item.code)}
                       aria-pressed={active}
                       data-testid={`lang-btn-${item.code}`}
-                      className={`relative px-2.5 py-1 rounded-lg text-[12px] font-semibold transition-colors whitespace-nowrap cursor-pointer ${
+                      className={`px-2 py-1 rounded-md text-[11px] font-mono font-bold transition-colors whitespace-nowrap cursor-pointer ${
                         active
-                          ? 'bg-[#FFD966] text-[#252832] shadow-2xs'
-                          : 'text-[#FFFDF7]/85 hover:text-[#FFD966]'
+                          ? 'bg-[#243B8A] text-[#FFFDF7]'
+                          : 'text-[#57534E] hover:text-[#1C1917]'
                       }`}
                     >
                       <span>{item.label}</span>
@@ -374,7 +398,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 })}
               </div>
 
-              {/* Authenticated Role Workspace Pill or Sign-In Button (Visible on md+ in Tier 1, and in Tier 2 + Drawer on <md) */}
+              {/* Authenticated Role Controls or Sign-In Button */}
               {user ? (
                 <div className="hidden md:flex items-center gap-1.5 shrink-0">
                   {user.role === 'admin' && (
@@ -382,15 +406,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                       type="button"
                       data-testid="navbar-admin-link"
                       onClick={() => handleNav('/admin')}
-                      className={`px-2.5 py-2 rounded-xl text-[12px] font-semibold inline-flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                      className={`px-2.5 py-1.5 rounded-lg text-[11.5px] font-semibold inline-flex items-center gap-1.5 border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                         currentPath.startsWith('/admin')
-                          ? 'bg-[#FFD966] text-[#252832]'
-                          : 'bg-[#1B2D6B] hover:bg-[#152354] text-[#FFD966] border border-[#FFD966]/40'
+                          ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A]'
+                          : 'bg-[#FAF6EC] hover:border-[#243B8A] text-[#243B8A] border-[#DCD4C0]'
                       }`}
                     >
                       <Shield className="w-3.5 h-3.5 shrink-0" />
-                      <span className="hidden lg:inline">
-                        {lang === 'mr' ? 'प्रशासक कक्ष' : 'Admin Console'}
+                      <span className="hidden xl:inline">
+                        {lang === 'mr' ? 'प्रशासक' : 'Admin'}
                       </span>
                     </button>
                   )}
@@ -400,15 +424,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                       type="button"
                       data-testid="navbar-author-link"
                       onClick={() => handleNav('/author/dashboard')}
-                      className={`px-2.5 py-2 rounded-xl text-[12px] font-semibold inline-flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                      className={`px-2.5 py-1.5 rounded-lg text-[11.5px] font-semibold inline-flex items-center gap-1.5 border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                         currentPath.startsWith('/author')
-                          ? 'bg-[#FFD966] text-[#252832]'
-                          : 'bg-[#1B2D6B] hover:bg-[#152354] text-[#FFFDF7] border border-white/15'
+                          ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A]'
+                          : 'bg-[#FAF6EC] hover:border-[#243B8A] text-[#1C1917] border-[#DCD4C0]'
                       }`}
                     >
-                      <Feather className="w-3.5 h-3.5 text-[#FFD966] shrink-0" />
-                      <span className="hidden xl:inline">
-                        {lang === 'mr' ? 'लेखक दालन' : 'Author Studio'}
+                      <Feather className="w-3.5 h-3.5 text-[#EF6855] shrink-0" />
+                      <span className="hidden 2xl:inline">
+                        {lang === 'mr' ? 'लेखक दालन' : 'Studio'}
                       </span>
                     </button>
                   )}
@@ -417,18 +441,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                     type="button"
                     data-testid="navbar-account-btn"
                     onClick={() => handleNav('/account')}
-                    className={`px-2.5 py-2 rounded-xl text-[12px] font-semibold inline-flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                    className={`px-2.5 py-1.5 rounded-lg text-[11.5px] font-semibold inline-flex items-center gap-1.5 border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                       currentPath.startsWith('/account')
-                        ? 'bg-[#FFD966] text-[#252832]'
-                        : 'bg-[#1B2D6B] hover:bg-[#152354] text-[#FFFDF7] border border-white/15'
+                        ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A]'
+                        : 'bg-[#FAF6EC] hover:border-[#243B8A] text-[#1C1917] border-[#DCD4C0]'
                     }`}
                   >
-                    <User className="w-3.5 h-3.5 text-[#FFD966] shrink-0" />
-                    <span className="max-w-[96px] truncate">
+                    <User className="w-3.5 h-3.5 text-[#243B8A] shrink-0" />
+                    <span className="max-w-[76px] truncate">
                       {user.name.split(' ')[0]}
-                    </span>
-                    <span className="hidden xl:inline-block px-1.5 py-0.5 rounded bg-white/15 text-[10px] uppercase tracking-wider text-[#FFD966]">
-                      {roleBadgeLabel}
                     </span>
                   </button>
 
@@ -439,7 +460,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onClick={() => onLogout()}
                       title={lang === 'mr' ? 'लॉगआउट' : 'Sign Out'}
                       aria-label={lang === 'mr' ? 'लॉगआउट' : 'Sign Out'}
-                      className="p-2 rounded-xl bg-[#1B2D6B] hover:bg-[#EF6855] text-[#FFFDF7] border border-white/15 transition-colors shrink-0 cursor-pointer"
+                      className="p-1.5 rounded-lg bg-[#FAF6EC] hover:bg-[#EF6855] text-[#1C1917] hover:text-[#FFFDF7] border border-[#DCD4C0] transition-colors shrink-0 cursor-pointer"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                     </button>
@@ -450,26 +471,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                   type="button"
                   data-testid="navbar-signin-btn"
                   onClick={() => handleNav('/login')}
-                  className={`hidden md:inline-flex px-3 py-2 rounded-xl text-[12.5px] font-semibold items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                  className={`hidden md:inline-flex min-h-[36px] px-2.5 py-1.5 rounded-lg text-[12px] font-semibold items-center gap-1.5 border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                     currentPath === '/login' || currentPath === '/register'
-                      ? 'bg-[#FFD966] text-[#252832]'
-                      : 'bg-[#1B2D6B] hover:bg-[#FFD966] text-[#FFFDF7] hover:text-[#252832] border border-[#FFD966]/45'
+                      ? 'bg-[#1C1917] text-[#FFFDF7] border-[#1C1917]'
+                      : 'bg-[#FAF6EC] hover:border-[#243B8A] text-[#1C1917] hover:text-[#243B8A] border-[#DCD4C0]'
                   }`}
                 >
-                  <User className="w-3.5 h-3.5 text-[#FFD966] shrink-0" />
-                  <span>{lang === 'mr' ? 'लॉगिन / खाते' : 'Sign In'}</span>
+                  <User className="w-3.5 h-3.5 text-[#243B8A] shrink-0" />
+                  <span>{lang === 'mr' ? 'लॉगिन' : 'Sign In'}</span>
                 </button>
               )}
 
-              {/* Cart Button — Coral Red (#EF6855) Purchase CTA */}
+              {/* Cart Button — Matching Smooth Editorial Primary Button */}
               <button
                 type="button"
                 onClick={() => handleNav('/cart')}
                 aria-label={`${t.nav.cart} (${cartCount})`}
                 data-testid="navbar-cart-btn"
-                className="relative inline-flex items-center gap-1.5 min-h-[40px] px-2.5 sm:px-3.5 py-2 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7] text-[13px] font-semibold transition-all shadow-xs whitespace-nowrap shrink-0 cursor-pointer"
+                className="relative inline-flex items-center gap-1.5 min-h-[36px] px-3 py-1.5 rounded-lg bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[12px] font-semibold transition-colors whitespace-nowrap shrink-0 cursor-pointer"
               >
-                <ShoppingBag className="w-4 h-4 text-[#FFFDF7] shrink-0" />
+                <ShoppingBag className="w-3.5 h-3.5 text-[#FFD966] shrink-0" />
                 <span className="hidden sm:inline">{t.nav.cart}</span>
                 <motion.span
                   data-testid="navbar-cart-count"
@@ -480,17 +501,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                       : { scale: 1, y: 0 }
                   }
                   transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
-                  className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-bold tabular-nums transition-colors ${
+                  className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-md text-[10px] font-mono font-bold tabular-nums transition-colors ${
                     isCartPopping
-                      ? 'bg-[#FFFDF7] text-[#243B8A] ring-2 ring-[#FFD966]'
-                      : 'bg-[#FFD966] text-[#252832]'
+                      ? 'bg-[#EF6855] text-[#FFFDF7]'
+                      : 'bg-[#FFD966] text-[#1C1917]'
                   }`}
                 >
                   {cartCount}
                 </motion.span>
               </button>
 
-              {/* Mobile & Tablet Menu Toggle (Visible below xl so 375px, 768px & 1024px viewports have full menu access) */}
+              {/* Mobile & Tablet Menu Toggle (<lg) */}
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen((prev) => !prev)}
@@ -506,18 +527,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                     : 'Open navigation menu'
                 }
                 data-testid="navbar-mobile-menu-btn"
-                className={`xl:hidden inline-flex items-center gap-1.5 min-h-[40px] px-2.5 py-2 rounded-xl border transition-colors shrink-0 cursor-pointer ${
+                className={`lg:hidden inline-flex items-center gap-1.5 min-h-[36px] px-2.5 py-1.5 rounded-lg border transition-colors shrink-0 cursor-pointer ${
                   mobileMenuOpen
-                    ? 'bg-[#FFD966] text-[#252832] border-[#FFD966]'
-                    : 'bg-[#1B2D6B] border-white/20 text-[#FFFDF7] hover:bg-[#152354]'
+                    ? 'bg-[#1C1917] text-[#FFFDF7] border-[#1C1917]'
+                    : 'bg-[#FAF6EC] border-[#DCD4C0] text-[#1C1917] hover:border-[#243B8A]'
                 }`}
               >
                 {mobileMenuOpen ? (
-                  <X className="w-5 h-5 text-[#252832]" />
+                  <X className="w-4 h-4 text-[#FFD966]" />
                 ) : (
-                  <Menu className="w-5 h-5 text-[#FFD966]" />
+                  <Menu className="w-4 h-4 text-[#243B8A]" />
                 )}
-                <span className="hidden sm:inline text-[12px] font-semibold">
+                <span className="hidden sm:inline text-[11.5px] font-semibold">
                   {lang === 'mr' ? 'मेनू' : 'Menu'}
                 </span>
               </button>
@@ -525,69 +546,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* =================================================================
-              TIER 2 (DESKTOP xl+): PRIMARY NAVIGATION LINKS
+              MOBILE & TABLET (<lg) COMPACT SWIPEABLE QUICK-NAV RAIL
               ================================================================= */}
-          <div className="hidden xl:flex items-center justify-between gap-3 py-2 border-t border-white/12">
-            <nav
-              aria-label={
-                lang === 'mr' ? 'मुख्य नेव्हिगेशन' : 'Primary Navigation'
-              }
-              className="flex items-center gap-1 flex-wrap"
-            >
-              {navItems.map((item) => {
-                const active = isActive(item.path);
-                return (
-                  <button
-                    key={item.path}
-                    type="button"
-                    onClick={() => handleNav(item.path)}
-                    aria-current={active ? 'page' : undefined}
-                    className={`relative px-3 py-1.5 rounded-xl text-[13.5px] font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                      active
-                        ? 'text-[#252832] font-semibold'
-                        : 'text-[#FFFDF7]/90 hover:text-[#FFD966] hover:bg-white/5'
-                    }`}
-                  >
-                    {active && (
-                      <motion.span
-                        layoutId="akath-active-nav-pill"
-                        className="absolute inset-0 rounded-xl bg-[#FFD966] -z-10"
-                        transition={{
-                          type: 'spring',
-                          stiffness: 380,
-                          damping: 32,
-                        }}
-                      />
-                    )}
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-
-            {/* Editorial Submission CTA on Desktop Tier 2 */}
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => handleNav('/submit-manuscript')}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#1B2D6B] hover:bg-[#152354] border border-[#FFD966]/30 text-[#FFD966] text-[12px] font-semibold transition-colors whitespace-nowrap cursor-pointer"
-              >
-                <Feather className="w-3.5 h-3.5 text-[#EF6855]" />
-                <span>{t.nav.submitManuscript}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* =================================================================
-              TIER 2 (TABLET & MOBILE <xl): SCROLLABLE QUICK ACCESS & UTILITY BAR
-              ================================================================= */}
-          <div className="xl:hidden flex items-center justify-between gap-2 py-2 border-t border-white/12">
-            {/* Mobile (<sm) Language Switcher + Sign In / Account Quick Pill */}
-            <div className="flex sm:hidden items-center gap-1.5 shrink-0">
+          <div className="lg:hidden flex items-center justify-between gap-2 py-1.5 border-t border-[#E5DEC9]">
+            {/* Mobile (<sm) Language Switcher */}
+            <div className="flex sm:hidden items-center gap-1 shrink-0">
               <div
                 role="group"
                 aria-label={lang === 'mr' ? 'भाषा निवडा' : 'Select language'}
-                className="inline-flex items-center rounded-lg bg-[#1B2D6B] p-0.5 border border-white/15"
+                className="inline-flex items-center rounded-lg bg-[#FAF6EC] p-0.5 border border-[#DCD4C0]"
               >
                 {(
                   [
@@ -602,10 +569,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                       type="button"
                       onClick={() => handleLanguageChange(item.code)}
                       aria-pressed={active}
-                      className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-colors cursor-pointer ${
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold transition-colors cursor-pointer ${
                         active
-                          ? 'bg-[#FFD966] text-[#252832]'
-                          : 'text-[#FFFDF7]/85'
+                          ? 'bg-[#243B8A] text-[#FFFDF7]'
+                          : 'text-[#57534E]'
                       }`}
                     >
                       {item.label}
@@ -613,34 +580,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                   );
                 })}
               </div>
-
-              {user ? (
-                <button
-                  type="button"
-                  onClick={() => handleNav('/account')}
-                  className="px-2 py-1 rounded-lg bg-[#1B2D6B] text-[#FFD966] border border-white/15 text-[11px] font-semibold truncate max-w-[88px] cursor-pointer"
-                >
-                  {user.name.split(' ')[0]}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => handleNav('/login')}
-                  className="px-2 py-1 rounded-lg bg-[#1B2D6B] text-[#FFFDF7] border border-[#FFD966]/40 text-[11px] font-semibold whitespace-nowrap cursor-pointer"
-                >
-                  {lang === 'mr' ? 'लॉगिन' : 'Sign In'}
-                </button>
-              )}
             </div>
 
-            {/* Horizontal Swipeable Quick Navigation Links for Mobile & Tablet */}
+            {/* Horizontal Swipeable Quick Navigation Links */}
             <nav
               ref={quickNavRef}
               aria-label={
                 lang === 'mr' ? 'द्रुत दुवे' : 'Quick Navigation'
               }
               data-testid="mobile-tablet-quick-nav"
-              className="akath-swipe-rail touch-pan-x scroll-smooth snap-x flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 min-w-0 flex-1 justify-start md:justify-end"
+              className="akath-swipe-rail touch-pan-x scroll-smooth snap-x snap-mandatory flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 min-w-0 flex-1 justify-start md:justify-end"
             >
               {navItems.map((item) => {
                 const active = isActive(item.path);
@@ -650,10 +599,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     type="button"
                     data-active-quick-link={active ? 'true' : 'false'}
                     onClick={() => handleNav(item.path)}
-                    className={`snap-center px-2.5 py-1 rounded-lg text-[11.5px] sm:text-[12px] font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                    className={`snap-center px-2.5 py-1 rounded-md text-[11px] sm:text-[11.5px] transition-colors whitespace-nowrap shrink-0 cursor-pointer border ${
                       active
-                        ? 'bg-[#FFD966] text-[#252832] font-semibold'
-                        : 'bg-[#1B2D6B]/70 text-[#FFFDF7]/90 hover:text-[#FFD966]'
+                        ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A] font-semibold'
+                        : 'bg-[#FAF6EC] text-[#292524] border-[#E5DEC9] hover:border-[#243B8A]'
                     }`}
                   >
                     {item.label}
@@ -672,24 +621,23 @@ export const Navbar: React.FC<NavbarProps> = ({
           aria-hidden="true"
           onTouchStart={handleEdgeSwipeStart}
           onTouchEnd={handleEdgeSwipeEnd}
-          className="fixed top-20 right-0 bottom-16 w-4 z-40 xl:hidden touch-pan-y select-none"
+          className="fixed top-20 right-0 bottom-16 w-4 z-40 lg:hidden touch-pan-y select-none"
         />
       )}
 
       {/* =====================================================================
-          MOBILE & TABLET SLIDE-IN DRAWER (RENDERED OUTSIDE <header> AT z-[100]
-          SO FIXED POSITIONING IS NEVER CLIPPED BY HEADER TRANSFORM CONTEXT)
+          MOBILE & TABLET SLIDE-IN ARCHIVAL DRAWER (RENDERED OUTSIDE <header>)
           ===================================================================== */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <div
             data-testid="navbar-mobile-drawer-overlay"
-            className="fixed inset-0 z-[100] xl:hidden"
+            className="fixed inset-0 z-[100] lg:hidden"
             role="dialog"
             aria-modal="true"
             aria-label={lang === 'mr' ? 'मोबाईल नेव्हिगेशन मेनू' : 'Navigation Menu'}
           >
-            {/* Archival Paper Frosted-Glass Backdrop Overlay (opacity tracks drag X) */}
+            {/* Archival Paper Frosted-Glass Backdrop Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -701,7 +649,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               aria-hidden="true"
             />
 
-            {/* Right-to-Left Slide-In Archival Paper Drawer with Touch-Gesture Drag */}
+            {/* Right-to-Left Slide-In Archival Paper Drawer (Smooth Left Corners) */}
             <motion.nav
               id="akath-mobile-drawer"
               data-testid="navbar-mobile-drawer"
@@ -724,9 +672,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 damping: 34,
                 mass: 0.9,
               }}
-              className="fixed top-0 right-0 bottom-0 h-[100dvh] max-h-[100dvh] w-[88vw] max-w-[360px] archival-drawer-surface bg-[#FFFDF7] text-[#252832] flex flex-col justify-between overflow-y-auto overscroll-contain z-10 shadow-2xl"
+              className="fixed top-0 right-0 bottom-0 h-[100dvh] max-h-[100dvh] w-[88vw] max-w-[360px] rounded-l-xl archival-drawer-surface bg-[#FAF6EC] text-[#1C1917] border-l border-[#DCD4C0] flex flex-col justify-between overflow-y-auto overscroll-contain z-10 shadow-2xl"
             >
-              {/* Left-Edge Tactile Grab Handle Pill for Swipe-Right Dismissal */}
+              {/* Left-Edge Tactile Grab Handle */}
               <div
                 data-testid="mobile-drawer-drag-handle"
                 aria-hidden="true"
@@ -741,21 +689,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
 
               {/* Drawer Header */}
-              <div className="p-4 sm:p-5 border-b border-[#E6E1D6] flex items-center justify-between bg-[#243B8A] text-[#FFFDF7] sticky top-0 z-20">
+              <div className="p-4 sm:p-5 border-b border-[#DCD4C0] flex items-center justify-between bg-[#FFFDF7] text-[#1C1917] sticky top-0 z-20">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <AnimatedTortoiseEmblem
-                    className="w-9 h-9 shrink-0"
-                    variant="light"
-                    animate={true}
-                  />
+                  <div className="w-9 h-9 rounded-full bg-[#FAF6EC] border border-[#DCD4C0] flex items-center justify-center p-0.5 shrink-0">
+                    <AnimatedTortoiseEmblem
+                      className="w-8 h-8 shrink-0"
+                      variant="indigo"
+                      animate={true}
+                    />
+                  </div>
                   <div className="min-w-0">
-                    <span className="font-serif text-[18px] font-bold text-[#FFFDF7] block leading-tight truncate">
+                    <span className="font-serif not-italic text-[18px] font-extrabold text-[#1C1917] block leading-tight truncate">
                       अकथ प्रकाशन
                     </span>
-                    <span className="text-[11px] text-[#FFD966] font-medium block truncate">
+                    <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-[#57534E] block truncate">
                       {lang === 'mr'
-                        ? 'कासव मुद्रा · नांदेड'
-                        : 'Tortoise Imprint · Nanded'}
+                        ? 'मराठी प्रकाशन संस्था · नांदेड'
+                        : 'AKATH PRAKASHAN · NANDED'}
                     </span>
                   </div>
                 </div>
@@ -764,21 +714,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                   data-testid="navbar-mobile-drawer-close"
                   onClick={() => setMobileMenuOpen(false)}
                   aria-label={lang === 'mr' ? 'मेनू बंद करा' : 'Close menu'}
-                  className="p-2 rounded-xl bg-[#1B2D6B] border border-white/15 text-[#FFD966] hover:bg-[#152354] transition-colors shrink-0 cursor-pointer"
+                  className="p-2 rounded-lg bg-[#FAF6EC] border border-[#DCD4C0] text-[#1C1917] hover:border-[#243B8A] transition-colors shrink-0 cursor-pointer"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Drawer Body: Language Switcher + Nav Links + Secondary Actions */}
+              {/* Drawer Body */}
               <div className="p-4 sm:p-5 space-y-4 flex-1">
                 {/* Language Switcher inside Drawer */}
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F7F3E8] border border-[#E6E1D6]">
-                  <span className="text-[12.5px] font-semibold text-[#252832] inline-flex items-center gap-1.5">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-[#FFFDF7] border border-[#DCD4C0]">
+                  <span className="text-[12px] font-semibold text-[#1C1917] inline-flex items-center gap-1.5">
                     <Globe className="w-4 h-4 text-[#243B8A]" />
-                    <span>{lang === 'mr' ? 'भाषा निवडा' : 'Select Language'}</span>
+                    <span>{lang === 'mr' ? 'भाषा निवडा' : 'Language'}</span>
                   </span>
-                  <div className="inline-flex rounded-xl bg-white p-0.5 border border-[#E6E1D6]">
+                  <div className="inline-flex rounded-lg bg-[#FAF6EC] p-0.5 border border-[#DCD4C0]">
                     {(
                       [
                         { code: 'mr', label: 'मराठी' },
@@ -791,10 +741,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                           key={item.code}
                           type="button"
                           onClick={() => handleLanguageChange(item.code)}
-                          className={`px-3 py-1 rounded-lg text-[12px] font-semibold transition-colors cursor-pointer ${
+                          className={`px-3 py-1 rounded-md text-[11.5px] font-semibold transition-colors cursor-pointer ${
                             active
                               ? 'bg-[#243B8A] text-[#FFFDF7]'
-                              : 'text-[#525665] hover:text-[#243B8A]'
+                              : 'text-[#57534E] hover:text-[#1C1917]'
                           }`}
                         >
                           {item.label}
@@ -804,8 +754,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                 </div>
 
-                {/* Primary Navigation Links */}
-                <div className="space-y-1">
+                {/* Primary Navigation Links (Smooth rounded-lg cards) */}
+                <div className="space-y-1.5">
                   {navItems.map((item, idx) => {
                     const active = isActive(item.path);
                     return (
@@ -813,32 +763,30 @@ export const Navbar: React.FC<NavbarProps> = ({
                         key={item.path}
                         type="button"
                         data-testid={`mobile-drawer-link-${item.path}`}
-                        initial={{ opacity: 0, x: 12 }}
+                        initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.025 * idx, duration: 0.18 }}
+                        transition={{ delay: 0.02 * idx, duration: 0.16 }}
                         onClick={() => handleNav(item.path)}
                         aria-current={active ? 'page' : undefined}
-                        className={`w-full px-4 py-3 rounded-xl text-left text-[15px] font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                        className={`w-full px-4 py-3 rounded-lg text-left text-[14.5px] flex items-center justify-between border transition-colors cursor-pointer ${
                           active
-                            ? 'bg-[#243B8A] text-[#FFFDF7] font-semibold shadow-xs'
-                            : 'text-[#252832] hover:bg-[#FFD966]/30'
+                            ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A] font-semibold'
+                            : 'bg-[#FFFDF7] text-[#1C1917] border-[#E5DEC9] hover:border-[#243B8A]'
                         }`}
                       >
                         <span>{item.label}</span>
-                        {active && (
-                          <span className="w-2 h-2 rounded-full bg-[#FFD966]" />
-                        )}
+                        <ArrowUpRight className="w-4 h-4 opacity-70" />
                       </motion.button>
                     );
                   })}
                 </div>
 
                 {/* Secondary Actions: Track Order + Account / Auth */}
-                <div className="pt-3 border-t border-[#E6E1D6] grid grid-cols-1 gap-2">
+                <div className="pt-3 border-t border-[#DCD4C0] grid grid-cols-1 gap-2">
                   <button
                     type="button"
                     onClick={() => handleNav('/track-order')}
-                    className="px-3.5 py-2.5 rounded-xl bg-white border border-[#E6E1D6] text-[13.5px] font-medium text-[#252832] hover:border-[#243B8A] flex items-center justify-between transition-colors cursor-pointer"
+                    className="px-4 py-2.5 rounded-lg bg-[#FFFDF7] border border-[#DCD4C0] text-[13.5px] font-medium text-[#1C1917] hover:border-[#243B8A] flex items-center justify-between transition-colors cursor-pointer"
                   >
                     <span className="inline-flex items-center gap-2">
                       <BookOpen className="w-4 h-4 text-[#243B8A]" />
@@ -852,7 +800,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <button
                         type="button"
                         onClick={() => handleNav('/account')}
-                        className="px-3.5 py-2.5 rounded-xl bg-[#243B8A] text-[#FFFDF7] text-[13.5px] font-semibold flex items-center justify-between cursor-pointer"
+                        className="px-4 py-2.5 rounded-lg bg-[#243B8A] text-[#FFFDF7] text-[13.5px] font-semibold flex items-center justify-between cursor-pointer"
                       >
                         <span className="inline-flex items-center gap-2">
                           <User className="w-4 h-4 text-[#FFD966]" />
@@ -867,7 +815,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <button
                           type="button"
                           onClick={() => handleNav('/author/dashboard')}
-                          className="px-3.5 py-2.5 rounded-xl bg-white border border-[#E6E1D6] text-[13.5px] font-semibold text-[#243B8A] flex items-center justify-between cursor-pointer"
+                          className="px-4 py-2.5 rounded-lg bg-[#FFFDF7] border border-[#DCD4C0] text-[13.5px] font-semibold text-[#243B8A] flex items-center justify-between cursor-pointer"
                         >
                           <span className="inline-flex items-center gap-2">
                             <Feather className="w-4 h-4 text-[#EF6855]" />
@@ -883,7 +831,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <button
                           type="button"
                           onClick={() => handleNav('/admin')}
-                          className="px-3.5 py-2.5 rounded-xl bg-[#FFD966] text-[#252832] text-[13.5px] font-bold flex items-center justify-between cursor-pointer"
+                          className="px-4 py-2.5 rounded-lg bg-[#FFD966] text-[#1C1917] text-[13.5px] font-bold flex items-center justify-between cursor-pointer"
                         >
                           <span className="inline-flex items-center gap-2">
                             <Shield className="w-4 h-4 text-[#243B8A]" />
@@ -901,7 +849,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                       type="button"
                       onClick={() => handleNav('/login')}
-                      className="px-3.5 py-2.5 rounded-xl bg-[#EF6855] text-[#FFFDF7] text-[14px] font-semibold flex items-center justify-between cursor-pointer"
+                      className="px-4 py-2.5 rounded-lg bg-[#EF6855] text-[#FFFDF7] text-[13.5px] font-semibold flex items-center justify-between cursor-pointer"
                     >
                       <span className="inline-flex items-center gap-2">
                         <User className="w-4 h-4 text-[#FFFDF7]" />
@@ -918,10 +866,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
 
               {/* Drawer Footer Colophon */}
-              <div className="p-4 border-t border-[#E6E1D6] bg-[#FFFDF7] text-[12px] text-[#525665] flex items-center justify-between">
+              <div className="p-4 border-t border-[#DCD4C0] bg-[#FFFDF7] text-[11.5px] font-mono text-[#57534E] flex items-center justify-between">
                 <span>© अकथ प्रकाशन</span>
                 <span className="text-[#243B8A] font-semibold">
-                  {lang === 'mr' ? 'मराठी साहित्य विश्व' : 'Marathi Literary Imprint'}
+                  {lang === 'mr' ? 'मराठी साहित्य विश्व' : 'Marathi Publishing House'}
                 </span>
               </div>
             </motion.nav>

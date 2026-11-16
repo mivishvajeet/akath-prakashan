@@ -7,10 +7,7 @@ import {
   ManuscriptSubmission,
 } from '../types/publishing';
 import { BookCard } from '../components/BookCard';
-import {
-  AnimatedTortoiseEmblem,
-} from '../components/SarvamIllustrations';
-import { WalkingTortoise } from '../components/WalkingTortoise';
+import { AnimatedTortoiseEmblem } from '../components/SarvamIllustrations';
 import { PUBLISHER_IDENTITY } from '../data/seedData';
 import { useLanguage } from '../i18n/translations';
 import { validateEmail, validateIndianPhone } from '../utils/validation';
@@ -20,13 +17,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Upload,
-  Clock,
-  MapPin,
   ChevronDown,
   Check,
-  Mail,
-  Phone,
-  MessageSquare,
 } from 'lucide-react';
 
 // ============================================================================
@@ -387,10 +379,9 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
   const { lang } = useLanguage();
   const aboutArticleRef = useRef<HTMLElement | null>(null);
   const [now, setNow] = useState<Date>(() => new Date());
-  const [readingLens, setReadingLens] = useState<'bilingual' | 'marathi' | 'english'>('bilingual');
   const [activeChapterId, setActiveChapterId] = useState<string>('about-manifesto-top');
 
-  useAboutParagraphScrollReveal(aboutArticleRef, readingLens);
+  useAboutParagraphScrollReveal(aboutArticleRef, lang);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -486,97 +477,61 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
       labelMr: 'संस्थापक व अधिष्ठान',
       labelEn: 'Founder & Imprint',
     },
-    {
-      id: 'about-colophon-end',
-      index: 'IV',
-      labelMr: 'ब्रीदवाक्य',
-      labelEn: 'Colophon',
-    },
   ];
 
   return (
-    <div className="bg-[#FBF9F5] text-[#1C1917] min-h-screen selection:bg-[#243B8A]/15 selection:text-[#1C1917]">
+    <div className="bg-[#FFFDF7] text-[#1C1917] min-h-screen selection:bg-[#243B8A]/15 selection:text-[#1C1917]">
       {/* ===================================================================
           0. ARCHIVAL DATELINE & STICKY CHAPTER NAVIGATION RIBBON
           =================================================================== */}
       <div
         data-testid="about-archival-dateline"
-        className="border-b border-[#DCD4C0] bg-[#FBF9F5]/95 backdrop-blur-sm sticky top-0 z-20"
+        className="border-b border-[#DCD4C0] bg-[#FAF6EC]/95 backdrop-blur-sm sticky top-0 z-20"
       >
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10">
-          {/* Top Archival Metadata Row */}
-          <div className="py-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#57534E] border-b border-[#E6DFCE]/80">
-            <div className="flex items-center gap-2">
-              <span className="uppercase tracking-[0.18em] text-[#1C1917] font-semibold">
-                Akath Prakashan · अकथ प्रकाशन
-              </span>
-              <span aria-hidden="true">·</span>
-              <span>Nanded, Maharashtra</span>
-              <span aria-hidden="true" className="hidden md:inline">·</span>
-              <span className="hidden md:inline text-[#243B8A]">
-                Curatorial Monograph &amp; Imprint Charter
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 tabular-nums">
-              <span data-testid="about-live-date">{formattedDate}</span>
-              <span aria-hidden="true">·</span>
-              <span data-testid="about-live-time">{formattedTime} IST</span>
-              <span aria-hidden="true" className="hidden sm:inline">·</span>
-              <span className="hidden sm:inline font-editorial-prose text-[11.5px] text-[#174D3A] font-medium">
-                {literaryWatchLabel}
-              </span>
-            </div>
-          </div>
-
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 py-2.5 flex flex-wrap items-center justify-between gap-4">
           {/* Interactive Exhibition Chapter Rail */}
           <nav
             aria-label="About Monograph Chapters"
-            className="py-2 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar"
+            className="flex items-center gap-5 sm:gap-7 overflow-x-auto no-scrollbar"
           >
-            <div className="flex items-center gap-5 sm:gap-7 shrink-0">
-              {chapterRailItems.map((item) => {
-                const isCurrent = activeChapterId === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => scrollToChapter(item.id)}
-                    className={`group inline-flex items-baseline gap-1.5 text-[12px] whitespace-nowrap shrink-0 transition-colors cursor-pointer py-0.5 ${
-                      isCurrent
-                        ? 'text-[#243B8A] font-semibold'
-                        : 'text-[#57534E] hover:text-[#1C1917]'
-                    }`}
-                  >
-                    <span className="font-mono text-[10.5px] text-[#78716C] group-hover:text-[#243B8A]">
-                      {item.index}.
-                    </span>
-                    <span className="font-editorial-prose">
-                      {lang === 'mr' ? item.labelMr : item.labelEn}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="hidden lg:flex items-center gap-4 shrink-0 text-[11.5px] font-mono">
-              <button
-                type="button"
-                onClick={() => onNavigate('/books')}
-                className="text-[#243B8A] hover:underline whitespace-nowrap shrink-0 cursor-pointer"
-              >
-                {lang === 'mr' ? 'प्रकाशित ग्रंथसूची →' : 'Published Catalogue →'}
-              </button>
-              <span aria-hidden="true" className="text-[#DCD4C0]">|</span>
-              <button
-                type="button"
-                onClick={() => onNavigate('/submit-manuscript')}
-                className="text-[#174D3A] hover:underline whitespace-nowrap shrink-0 cursor-pointer"
-              >
-                {lang === 'mr' ? 'संहिता पाठवा →' : 'Submit Manuscript →'}
-              </button>
-            </div>
+            {chapterRailItems.map((item) => {
+              const isCurrent = activeChapterId === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => scrollToChapter(item.id)}
+                  className={`group inline-flex items-baseline gap-1.5 text-[12px] whitespace-nowrap shrink-0 transition-colors cursor-pointer py-0.5 ${
+                    isCurrent
+                      ? 'text-[#243B8A] font-semibold'
+                      : 'text-[#57534E] hover:text-[#1C1917]'
+                  }`}
+                >
+                  <span className="font-mono text-[10.5px] text-[#78716C] group-hover:text-[#243B8A]">
+                    {item.index}.
+                  </span>
+                  <span className="font-editorial-prose not-italic">
+                    {lang === 'mr' ? item.labelMr : item.labelEn}
+                  </span>
+                </button>
+              );
+            })}
           </nav>
+
+          {/* Compact Archival Clock & Imprint Location */}
+          <div className="flex items-center gap-2 text-[11px] font-mono text-[#57534E] tabular-nums">
+            <span className="hidden md:inline uppercase tracking-[0.16em] text-[#1C1917] font-semibold">
+              Nanded, Maharashtra
+            </span>
+            <span aria-hidden="true" className="hidden md:inline">·</span>
+            <span data-testid="about-live-date">{formattedDate}</span>
+            <span aria-hidden="true">·</span>
+            <span data-testid="about-live-time">{formattedTime} IST</span>
+            <span aria-hidden="true" className="hidden sm:inline">·</span>
+            <span className="hidden sm:inline text-[#174D3A] font-medium">
+              {literaryWatchLabel}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -590,79 +545,39 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
         className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-14 lg:py-20 space-y-16 sm:space-y-24"
       >
         {/* =================================================================
-            SECTION 1: ASYMMETRIC BROADSHEET HERO & MARGINALIA CANVAS
-            (8-Column 65ch Lead Manifesto + 4-Column Curatorial Margin Rail)
+            SECTION 1: CENTERED UPRIGHT EDITORIAL MANIFESTO
             ================================================================= */}
         <div
           id="about-manifesto-top"
-          className="scroll-mt-28 space-y-10"
+          className="scroll-mt-28 space-y-8 sm:space-y-10"
         >
-          {/* Top Broadsheet Marquee Header */}
-          <div className="border-b border-[#1C1917] pb-8 lg:pb-10">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
-              <p
-                data-about-io-para="lead-eyebrow"
-                style={{ '--io-stagger-index': 0 } as React.CSSProperties}
-                className="akath-about-io-para text-[11.5px] font-mono uppercase tracking-[0.2em] text-[#243B8A] font-semibold"
-              >
-                About Akath Prakashan · संपादकीय जाहीरनामा · Nanded Imprint
-              </p>
+          {/* Centered Upright Editorial Header */}
+          <div className="border-b border-[#DCD4C0] pb-8 lg:pb-10 space-y-4 max-w-4xl mx-auto text-center">
+            <p
+              data-about-io-para="lead-eyebrow"
+              style={{ '--io-stagger-index': 0 } as React.CSSProperties}
+              className="akath-about-io-para text-[11.5px] font-mono uppercase tracking-[0.2em] text-[#243B8A] font-bold"
+            >
+              About Akath Prakashan · संपादकीय भूमिका · Nanded Imprint
+            </p>
 
-              {/* Interactive Reading Lens Segmented Switcher */}
-              <div
-                role="group"
-                aria-label="Reading Language Lens"
-                className="inline-flex items-center gap-1 p-1 bg-[#F2ECE1] border border-[#DCD4C0] rounded-sm"
-              >
-                {(
-                  [
-                    { id: 'bilingual', label: 'द्विभाषिक · Bilingual' },
-                    { id: 'marathi', label: 'मराठी सार' },
-                    { id: 'english', label: 'English Essay' },
-                  ] as const
-                ).map((mode) => (
-                  <button
-                    key={mode.id}
-                    type="button"
-                    onClick={() => setReadingLens(mode.id)}
-                    className={`px-2.5 py-1 text-[11px] font-mono whitespace-nowrap shrink-0 transition-colors cursor-pointer rounded-sm ${
-                      readingLens === mode.id
-                        ? 'bg-[#1C1917] text-[#FBF9F5] font-medium'
-                        : 'text-[#57534E] hover:text-[#1C1917]'
-                    }`}
-                  >
-                    {mode.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <h1
+              data-testid="about-headline-breathe"
+              className="akath-about-headline-breathe font-editorial-display not-italic text-[32px] sm:text-[44px] lg:text-[52px] font-extrabold text-[#1C1917] leading-[1.16] tracking-tight"
+            >
+              काही पुस्तकं वाचून संपतात. काही आपल्यासोबत राहतात.
+            </h1>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-end">
-              <div className="lg:col-span-8 space-y-3">
-                <h1
-                  data-testid="about-headline-breathe"
-                  className="akath-about-headline-breathe font-editorial-display text-[32px] sm:text-[44px] lg:text-[52px] font-bold text-[#1C1917] leading-[1.18] tracking-tight"
-                >
-                  काही पुस्तकं वाचून संपतात. काही आपल्यासोबत राहतात.
-                </h1>
-                <p className="akath-about-lead-breathe font-editorial-display italic text-[20px] sm:text-[25px] text-[#57534E] leading-[1.4]">
-                  Some books end at the last page. Others stay with us.
-                </p>
-              </div>
-
-              <div className="lg:col-span-4 lg:border-l lg:border-[#DCD4C0] lg:pl-8 space-y-2 text-[13.5px] font-editorial-prose text-[#57534E]">
-                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#174D3A] font-semibold">
-                  संपादकीय अधिष्ठान · Imprint Ethos
-                </p>
-                <p className="leading-relaxed text-[#292524]">
-                  नांदेड येथून कार्यरत असलेली स्वतंत्र मराठी साहित्य प्रकाशन संस्था — कथा, कादंबरी, कविता, समीक्षा, प्रवासवर्णन आणि भाषांतरित साहित्याचे मूल्यनिष्ठ दालन.
-                </p>
-              </div>
-            </div>
+            <p className="akath-about-lead-breathe font-editorial-display not-italic font-bold text-[20px] sm:text-[26px] text-[#243B8A] leading-[1.35]">
+              Some books end at the last page. Others stay with us.
+            </p>
           </div>
 
-          {/* Focused Single-Column 65ch Reading Canvas */}
-          <div className="max-w-[65ch]" data-testid="about-prose-measure">
+          {/* Centered Single-Column 65ch Reading Canvas */}
+          <div
+            className="max-w-[65ch] mx-auto text-center"
+            data-testid="about-prose-measure"
+          >
             <motion.section
               data-testid="about-hero-manifesto"
               data-about-io-block="lead-manifesto"
@@ -670,37 +585,18 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.04 }}
-              className="akath-about-io-block space-y-7"
+              className="akath-about-io-block"
             >
-              {/* Marathi Distilled Synthesis Callout (Shown in Bilingual or Marathi mode) */}
-              {readingLens !== 'english' && (
-                <motion.div
-                  variants={aboutItemSequentialVariants}
-                  className="bg-[#F4EFE4] border border-[#DCD4C0] p-5 sm:p-6 space-y-3"
-                >
-                  <div className="flex items-center justify-between gap-2 text-[11px] font-mono uppercase tracking-[0.16em] text-[#243B8A]">
-                    <span>संपादकीय प्रस्तावना · Marathi Editorial Note</span>
-                    <span>नांदेड · महाराष्ट्र</span>
-                  </div>
-                  <p className="font-serif text-[16px] sm:text-[17px] text-[#1C1917] leading-[1.85]">
-                    पुस्तक प्रकाशित करणे म्हणजे केवळ कागदावर अक्षरे छापणे नव्हे; तर एका अस्वस्थ करणाऱ्या अनुभवाला, काळजात मुरलेल्या शब्दांना आणि नव्या जाणिवांना त्यांचे हक्काचे घर मिळवून देणे होय. अकथ प्रकाशन हे घाईगडबडीच्या बाजारपेठेत शांतपणे, संहितेच्या गुणवत्तेवर आणि लेखकाच्या शब्दांवर विश्वास ठेवून काम करणारे प्रकाशन गृह आहे.
-                  </p>
-                </motion.div>
-              )}
-
-              {/* Main English Editorial Essay with Drop Cap */}
               <motion.div variants={aboutItemSequentialVariants}>
                 <div
                   data-testid="about-prose-breathe-block"
                   style={{ '--breathe-phase': '0.4s' } as React.CSSProperties}
-                  className={`akath-about-prose-breathe space-y-5 font-editorial-prose text-[16.5px] sm:text-[17.5px] text-[#1C1917] leading-[1.85] ${
-                    readingLens === 'marathi' ? 'opacity-90' : 'opacity-100'
-                  }`}
+                  className="akath-about-prose-breathe space-y-5 font-editorial-prose not-italic text-[17px] sm:text-[18.5px] text-[#1C1917] leading-[1.85]"
                 >
                   <p
                     data-about-io-para="lead-p1"
                     style={{ '--io-stagger-index': 1 } as React.CSSProperties}
-                    className="akath-about-io-para first-letter:text-5xl first-letter:font-editorial-display first-letter:font-bold first-letter:float-left first-letter:mr-3.5 first-letter:mt-1 first-letter:leading-none first-letter:text-[#243B8A]"
+                    className="akath-about-io-para font-semibold text-[#1C1917] text-[18.5px] sm:text-[20px] leading-[1.72]"
                   >
                     Akath Prakashan grew out of a simple feeling: there are books worth bringing into the world, and there should be people willing to take the time to do it properly.
                   </p>
@@ -708,29 +604,23 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
                   <p
                     data-about-io-para="lead-p2"
                     style={{ '--io-stagger-index': 2 } as React.CSSProperties}
-                    className="akath-about-io-para"
+                    className="akath-about-io-para text-[#292524]"
                   >
                     A manuscript is a strange, wonderful thing. Sometimes it arrives as a finished story. Sometimes it is a collection of scattered thoughts, a voice still finding its shape, or an experience that has waited years to be put into words. Before it becomes a book, it needs someone willing to read it carefully, ask the right questions, and understand what the writer is trying to say.
                   </p>
 
-                  {/* Editorial Pull Quote — Hairline Top/Bottom Framing */}
-                  <blockquote
+                  <p
                     data-about-io-para="lead-callout"
                     style={{ '--io-stagger-index': 3 } as React.CSSProperties}
-                    className="akath-about-io-para my-8 py-6 border-y border-[#1C1917]/20 space-y-2"
+                    className="akath-about-io-para font-editorial-display not-italic font-bold text-[20px] sm:text-[23px] text-[#243B8A] leading-[1.45] py-1"
                   >
-                    <p className="font-editorial-display italic text-[21px] sm:text-[24px] text-[#243B8A] leading-[1.42]">
-                      &ldquo;That is the kind of work we want to do. We don&apos;t think literature always needs to be loud to matter.&rdquo;
-                    </p>
-                    <footer className="text-[12px] font-mono text-[#57534E]">
-                      साहित्याला स्वतःचे महत्त्व सिद्ध करण्यासाठी गोंगाटाची गरज नसते · Editorial Principle I
-                    </footer>
-                  </blockquote>
+                    That is the kind of work we want to do. We don&apos;t think literature always needs to be loud to matter.
+                  </p>
 
                   <p
                     data-about-io-para="lead-p3"
                     style={{ '--io-stagger-index': 4 } as React.CSSProperties}
-                    className="akath-about-io-para"
+                    className="akath-about-io-para text-[#292524]"
                   >
                     Based in Nanded, Akath Prakashan is an independent publishing house devoted to Marathi literature and writing across languages. We work with fiction, poetry, essays, criticism, and translations — not because every category needs to be represented, but because good writing can come from anywhere and speak to anyone.
                   </p>
@@ -738,7 +628,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
                   <p
                     data-about-io-para="lead-p4"
                     style={{ '--io-stagger-index': 5 } as React.CSSProperties}
-                    className="akath-about-io-para"
+                    className="akath-about-io-para text-[#292524]"
                   >
                     We are interested in writing that notices what others overlook. Stories that make familiar places feel different. Poems that find words for things we have felt but never quite known how to express. Essays that leave us with better questions than the ones we started with.
                   </p>
@@ -750,7 +640,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
 
         {/* =================================================================
             SECTION 2: PROMINENT CENTERPIECE — WHY THE TORTOISE?
-            (Dedicated, Unmistakable Showcase of Akath's Tortoise Symbol & Ethos)
+            (Single Centered Emblem Medallion + Animated Walking Tortoise Track)
             ================================================================= */}
         <motion.section
           id="about-why-tortoise"
@@ -760,114 +650,171 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.04 }}
-          className="akath-seq-step akath-about-io-block scroll-mt-28 rounded-3xl bg-[#174D3A] text-[#FFFDF7] border-2 border-[#FFD966]/45 p-7 sm:p-11 lg:p-14 shadow-[0_24px_60px_-18px_rgba(23,77,58,0.35)] space-y-10"
+          className="akath-seq-step akath-about-io-block scroll-mt-28 max-w-5xl mx-auto rounded-xl bg-[#FAF6EC] text-[#1C1917] border border-[#DCD4C0] p-6 sm:p-10 lg:p-12 space-y-8"
         >
-          {/* Top Header & Emblem Medallion */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center border-b border-white/15 pb-8">
-            <div className="lg:col-span-4 flex flex-col items-center justify-center p-6 sm:p-8 rounded-2xl bg-[#FFFDF7] text-[#1C1917] border border-[#FFD966] shadow-inner space-y-3">
-              <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#174D3A] font-bold">
-                THE AKATH EMBLEM · IMPRINT COLOPHON
-              </span>
-              <AnimatedTortoiseEmblem className="w-32 h-32 sm:w-36 sm:h-36" variant="forest" />
-              <div className="text-center space-y-0.5 pt-1">
-                <p className="font-serif text-[17px] font-bold text-[#174D3A]">
-                  The Patient Tortoise
+          {/* Centered Header */}
+          <div className="max-w-2xl mx-auto text-center space-y-2.5">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#243B8A] font-bold">
+              Chapter II · Imprint Symbol &amp; Philosophy
+            </p>
+            <h2 className="akath-about-headline-breathe font-editorial-display not-italic text-[32px] sm:text-[42px] lg:text-[46px] font-extrabold text-[#1C1917] leading-[1.15] tracking-tight">
+              Why the tortoise?
+            </h2>
+          </div>
+
+          {/* Central Animated Tortoise Literary Stage (Single Logo Medallion + Walking Track) */}
+          <div className="rounded-xl bg-[#FFFDF7] border border-[#DCD4C0] p-5 sm:p-8 space-y-6">
+            <div className="flex flex-col items-center justify-center text-center space-y-3.5">
+              {/* Single Orbital Tortoise Medallion Seal */}
+              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-[#FAF6EC] border border-[#C89D54] flex items-center justify-center shrink-0 shadow-sm">
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-2 rounded-full border border-dashed border-[#243B8A]/30"
+                />
+                <AnimatedTortoiseEmblem
+                  className="w-20 h-20 sm:w-24 sm:h-24"
+                  variant="indigo"
+                  animate={true}
+                  hideAndSeekOnHover={true}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <p className="font-editorial-display not-italic text-[18px] sm:text-[20px] font-bold text-[#243B8A]">
+                  The Patient Tortoise · संथ आणि ठाम पावले
                 </p>
-                <p className="font-mono text-[11px] text-[#57534E]">
+                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#57534E]">
                   One Manuscript · One Book · One Reader at a Time
                 </p>
               </div>
             </div>
 
-            <div className="lg:col-span-8 space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFD966]/15 border border-[#FFD966]/40 text-[#FFD966] font-mono text-[11px] uppercase tracking-[0.16em]">
-                <span>✦ THE SYMBOL OF AKATH PRAKASHAN</span>
+            {/* Live Animated Walking Tortoise Horizon Track */}
+            <div className="rounded-lg bg-[#FAF6EC] border border-[#E5DEC9] px-4 sm:px-6 py-3.5 space-y-2">
+              <div className="flex items-center justify-between text-[10px] font-mono font-bold uppercase tracking-[0.16em] text-[#243B8A]">
+                <span>01 · MANUSCRIPT</span>
+                <span>02 · EDITING</span>
+                <span>03 · PRESSWORK</span>
+                <span>04 · READER</span>
               </div>
-              <h2 className="akath-about-headline-breathe font-editorial-display text-[32px] sm:text-[42px] lg:text-[48px] font-bold text-[#FFFDF7] leading-[1.15]">
-                Why the tortoise?
-              </h2>
-
-              <div
-                data-testid="about-prose-breathe-block"
-                className="akath-about-prose-breathe space-y-4 font-editorial-prose text-[17px] sm:text-[18px] text-[#FFFDF7]/95 leading-[1.85] max-w-[65ch]"
-              >
-                <p
-                  data-about-io-para="folio-04-p1"
-                  style={{ '--io-stagger-index': 0 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  We chose a tortoise for a reason. It isn&apos;t in a hurry. It carries its home with it. And it reminds us that getting somewhere slowly is still getting somewhere.
-                </p>
-
-                <p
-                  data-about-io-para="folio-04-p2"
-                  style={{ '--io-stagger-index': 1 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  Publishing has its own pressures to move faster, publish more, and follow what is already selling. We understand those realities. But we also believe there is value in pausing over a sentence, taking another look at a manuscript, and making a book we can stand behind years later.
-                </p>
-
-                <p
-                  data-about-io-para="folio-04-p3"
-                  style={{ '--io-stagger-index': 2 } as React.CSSProperties}
-                  className="akath-about-io-para"
-                >
-                  We would rather build a small list of books we believe in than fill a catalogue simply to make it bigger.
-                </p>
-
-                <p
-                  data-about-io-para="folio-04-p4"
-                  style={{ '--io-stagger-index': 3 } as React.CSSProperties}
-                  className="akath-about-io-para font-semibold text-[#FFD966] pt-1"
-                >
-                  Akath Prakashan is our attempt to do just that — one manuscript, one book, one reader at a time.
-                </p>
+              <div className="relative h-9 overflow-hidden flex items-center">
+                <div className="absolute inset-x-0 bottom-1.5 border-b border-dashed border-[#C89D54]" />
+                <div className="akath-patient-tortoise-runner relative z-10 inline-flex items-center">
+                  <svg
+                    viewBox="0 0 68 38"
+                    className="w-14 h-8 overflow-visible"
+                    aria-label="Animated tortoise carrying a manuscript"
+                  >
+                    <g className="akath-walking-tortoise-body">
+                      {/* Open Book Carried on Shell */}
+                      <path
+                        d="M19 11 L30 14 L41 11 L41 16 L30 19 L19 16 Z"
+                        fill="#FFFDF7"
+                        stroke="#243B8A"
+                        strokeWidth="1.3"
+                      />
+                      {/* Tortoise Dome Shell */}
+                      <path
+                        d="M14 27 C14 14, 45 14, 45 27 Z"
+                        fill="#243B8A"
+                        stroke="#1C1917"
+                        strokeWidth="1.4"
+                      />
+                      <path
+                        d="M21 26 C22 18, 37 18, 38 26"
+                        fill="none"
+                        stroke="#FFD966"
+                        strokeWidth="1.4"
+                      />
+                      <line
+                        x1="30"
+                        y1="16"
+                        x2="30"
+                        y2="26"
+                        stroke="#FFD966"
+                        strokeWidth="1.4"
+                      />
+                      {/* Head */}
+                      <g className="akath-walking-tortoise-head">
+                        <path
+                          d="M44 24 C49 24, 54 20, 56 22 C58 24, 55 27, 45 27 Z"
+                          fill="#C89D54"
+                          stroke="#1C1917"
+                          strokeWidth="1.3"
+                        />
+                        <circle cx="53" cy="22.5" r="1.2" fill="#1C1917" />
+                      </g>
+                      {/* Legs */}
+                      <rect
+                        x="18"
+                        y="27"
+                        width="4.5"
+                        height="5.5"
+                        rx="1.5"
+                        fill="#C89D54"
+                        stroke="#1C1917"
+                        strokeWidth="1.2"
+                        className="akath-walking-tortoise-leg-a"
+                      />
+                      <rect
+                        x="36"
+                        y="27"
+                        width="4.5"
+                        height="5.5"
+                        rx="1.5"
+                        fill="#C89D54"
+                        stroke="#1C1917"
+                        strokeWidth="1.2"
+                        className="akath-walking-tortoise-leg-b"
+                      />
+                    </g>
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* 3 Concrete Pillars of the Tortoise Philosophy (English Only) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
-            <div className="bg-[#123D2E] rounded-2xl border border-white/15 p-5 space-y-2">
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#FFD966]">
-                01 · Unhurried Craft
-              </p>
-              <h3 className="font-editorial-display text-[21px] font-bold text-[#FFFDF7]">
-                Patience Over Speed
-              </h3>
-              <p className="text-[14px] text-[#FFFDF7]/85 leading-relaxed">
-                We never rush a book to meet a commercial trend. Every sentence, proof, and page margin is given the time it deserves.
-              </p>
-            </div>
+          {/* Centered 4-Paragraph Tortoise Philosophy */}
+          <div
+            data-testid="about-prose-breathe-block"
+            className="akath-about-prose-breathe space-y-4 font-editorial-prose not-italic text-[16.5px] sm:text-[18px] text-[#292524] leading-[1.82] max-w-[65ch] mx-auto text-center"
+          >
+            <p
+              data-about-io-para="folio-04-p1"
+              style={{ '--io-stagger-index': 0 } as React.CSSProperties}
+              className="akath-about-io-para font-semibold text-[#1C1917]"
+            >
+              We chose a tortoise for a reason. It isn&apos;t in a hurry. It carries its home with it. And it reminds us that getting somewhere slowly is still getting somewhere.
+            </p>
 
-            <div className="bg-[#123D2E] rounded-2xl border border-white/15 p-5 space-y-2">
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#FFD966]">
-                02 · Carries Its Home
-              </p>
-              <h3 className="font-editorial-display text-[21px] font-bold text-[#FFFDF7]">
-                Rooted Regional Voice
-              </h3>
-              <p className="text-[14px] text-[#FFFDF7]/85 leading-relaxed">
-                Like the tortoise carrying its shell, our books carry the authentic lived idioms of Nanded, Marathwada, and Maharashtra.
-              </p>
-            </div>
+            <p
+              data-about-io-para="folio-04-p2"
+              style={{ '--io-stagger-index': 1 } as React.CSSProperties}
+              className="akath-about-io-para"
+            >
+              Publishing has its own pressures to move faster, publish more, and follow what is already selling. We understand those realities. But we also believe there is value in pausing over a sentence, taking another look at a manuscript, and making a book we can stand behind years later.
+            </p>
 
-            <div className="bg-[#123D2E] rounded-2xl border border-white/15 p-5 space-y-2">
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#FFD966]">
-                03 · Long Lifespan
-              </p>
-              <h3 className="font-editorial-display text-[21px] font-bold text-[#FFFDF7]">
-                Books That Endure
-              </h3>
-              <p className="text-[14px] text-[#FFFDF7]/85 leading-relaxed">
-                Tortoises outlive fleeting seasons. We publish a small, fiercely curated list of books meant to stay with readers for decades.
-              </p>
-            </div>
+            <p
+              data-about-io-para="folio-04-p3"
+              style={{ '--io-stagger-index': 2 } as React.CSSProperties}
+              className="akath-about-io-para"
+            >
+              We would rather build a small list of books we believe in than fill a catalogue simply to make it bigger.
+            </p>
+
+            <p
+              data-about-io-para="folio-04-p4"
+              style={{ '--io-stagger-index': 3 } as React.CSSProperties}
+              className="akath-about-io-para font-bold text-[#243B8A] pt-1"
+            >
+              Akath Prakashan is our attempt to do just that — one manuscript, one book, one reader at a time.
+            </p>
           </div>
         </motion.section>
 
         {/* =================================================================
-            SECTION 3: MUSEUM ACCESSION LEDGER & FOUNDER STEWARDSHIP DESK
+            SECTION 3: REDESIGNED FOUNDER & IMPRINT STEWARDSHIP DESK
             ================================================================= */}
         <motion.section
           id="about-chapter-06"
@@ -878,200 +825,167 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
           whileInView="visible"
           viewport={{ once: true, amount: 0.04 }}
           style={{ '--io-block-delay': '60ms' } as React.CSSProperties}
-          className="akath-seq-step akath-about-io-block scroll-mt-28 bg-white border border-[#DCD4C0] p-6 sm:p-10 lg:p-12 space-y-8"
+          className="akath-seq-step akath-about-io-block scroll-mt-28 max-w-5xl mx-auto rounded-xl bg-white border border-[#DCD4C0] overflow-hidden shadow-[0_14px_36px_-22px_rgba(28,25,23,0.12)]"
         >
-          <motion.div variants={aboutItemSequentialVariants} className="space-y-8">
-            {/* Top Accession Header Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[#DCD4C0] text-[11px] font-mono text-[#57534E]">
-              <span className="uppercase tracking-[0.18em] text-[#243B8A] font-semibold">
-                Chapter III · Imprint Stewardship &amp; Accession Record
-              </span>
-              <span>REG. NANDED · MAHARASHTRA · INDIA</span>
-            </div>
+          {/* Top Editorial Accent Bar */}
+          <div className="bg-[#FAF6EC] border-b border-[#DCD4C0] px-6 sm:px-10 py-4 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#57534E]">
+            <span className="uppercase tracking-[0.18em] text-[#243B8A] font-bold">
+              Chapter III · Founder &amp; Imprint Stewardship
+            </span>
+            <span className="uppercase tracking-[0.14em] text-[#174D3A] font-semibold">
+              NANDED · MAHARASHTRA · INDIA
+            </span>
+          </div>
 
+          <motion.div
+            variants={aboutItemSequentialVariants}
+            className="p-6 sm:p-10 lg:p-12 space-y-10"
+          >
             <div
               style={{ '--breathe-phase': '4.3s' } as React.CSSProperties}
-              className="akath-about-prose-breathe grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start"
+              className="akath-about-prose-breathe grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch"
             >
-              {/* Left 6 Cols: Founder Identity & Publisher's Statement */}
+              {/* Left 6 Cols: Redesigned Founder Dossier & Editorial Note */}
               <div
                 data-about-io-para="colophon-founder"
                 style={{ '--io-stagger-index': 0 } as React.CSSProperties}
-                className="akath-about-io-para lg:col-span-6 space-y-4"
+                className="akath-about-io-para lg:col-span-6 rounded-xl bg-[#FAF6EC]/85 border border-[#E5DEC9] p-6 sm:p-8 flex flex-col justify-between space-y-6"
               >
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#243B8A] font-medium">
-                    Founder &amp; Publisher · संस्थापक आणि प्रकाशक
-                  </p>
-                  <h2
-                    data-testid="about-founder-name"
-                    className="akath-about-headline-breathe font-editorial-display text-[28px] sm:text-[34px] font-bold text-[#1C1917] leading-tight"
-                  >
-                    Pooja Vasantrao Dhawale
-                  </h2>
-                  <p className="font-serif text-[19px] text-[#174D3A] font-semibold">
-                    पूजा वसंतराव ढवळे
+                <div className="space-y-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#243B8A]/10 text-[#243B8A] text-[11px] font-mono uppercase tracking-[0.16em] font-bold">
+                    <span>Founder &amp; Publisher · संस्थापक आणि प्रकाशक</span>
+                  </div>
+
+                  <div className="space-y-1.5 pt-1">
+                    <h2
+                      data-testid="about-founder-name"
+                      className="akath-about-headline-breathe font-editorial-display not-italic text-[30px] sm:text-[36px] font-extrabold text-[#1C1917] leading-[1.12] tracking-tight"
+                    >
+                      Pooja Vasantrao Dhawale
+                    </h2>
+                    <p className="font-editorial-display not-italic text-[21px] sm:text-[23px] text-[#243B8A] font-bold">
+                      पूजा वसंतराव ढवळे
+                    </p>
+                  </div>
+
+                  <p className="text-[16px] sm:text-[16.5px] font-editorial-prose not-italic text-[#292524] leading-[1.8]">
+                    Leading editorial direction, manuscript selection, and imprint stewardship at Akath Prakashan with a dedication to patient literary dialogue, transparent author partnerships, and enduring print craftsmanship.
                   </p>
                 </div>
 
-                <p className="text-[15px] font-editorial-prose text-[#292524] leading-[1.8]">
-                  Editorial Direction, Manuscript Selection &amp; Imprint Stewardship. Guiding Akath Prakashan with a commitment to patient editorial dialogue, transparent author partnerships, and enduring print craftsmanship.
-                </p>
-
-                <div className="pt-2 border-t border-[#E6DFCE] text-[14px] font-serif text-[#57534E] leading-relaxed">
-                  &ldquo;प्रत्येक चांगल्या संहितेला तिचा स्वतःचा वेळ, संपादकीय आदर आणि वाचकांपर्यंत पोहोचणारा प्रामाणिक मार्ग मिळायला हवा, हाच अकथ प्रकाशनाचा पाया आहे.&rdquo;
+                <div className="pt-4 border-t border-[#DCD4C0] flex items-center justify-between gap-4 text-[12px] font-mono text-[#57534E]">
+                  <span>EDITORIAL STEWARDSHIP</span>
+                  <span className="text-[#174D3A] font-semibold">
+                    AKATH PRAKASHAN · NANDED
+                  </span>
                 </div>
               </div>
 
-              {/* Right 6 Cols: Museum Accession Definition List (dl) */}
+              {/* Right 6 Cols: Architectural Imprint Registry Grid */}
               <dl
                 data-about-io-para="colophon-header"
                 style={{ '--io-stagger-index': 1 } as React.CSSProperties}
-                className="akath-about-io-para lg:col-span-6 lg:border-l lg:border-[#DCD4C0] lg:pl-10 space-y-4 text-[14px]"
+                className="akath-about-io-para lg:col-span-6 flex flex-col justify-between divide-y divide-[#E6DFCE] text-[14.5px]"
               >
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-3.5 border-b border-[#E6DFCE]">
-                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E]">
+                <div className="pb-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E] font-semibold">
                     Imprint Name
                   </dt>
-                  <dd className="font-editorial-prose font-semibold text-[#1C1917]">
+                  <dd className="font-editorial-display not-italic text-[17px] font-bold text-[#1C1917]">
                     Akath Prakashan · अकथ प्रकाशन
                   </dd>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-3.5 border-b border-[#E6DFCE]">
-                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E]">
+                <div className="py-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E] font-semibold">
                     Headquarters
                   </dt>
-                  <dd className="font-editorial-prose font-medium text-[#1C1917]">
+                  <dd className="font-editorial-prose not-italic font-semibold text-[#1C1917]">
                     Nanded, Maharashtra · नांदेड (४३१६०२)
                   </dd>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-3.5 border-b border-[#E6DFCE]">
-                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E]">
+                <div className="py-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E] font-semibold">
                     Editorial Scope
                   </dt>
-                  <dd className="font-editorial-prose font-medium text-[#1C1917]">
+                  <dd className="font-editorial-prose not-italic font-medium text-[#1C1917]">
                     Fiction, Poetry, Essays, Travelogues &amp; Vachankatta
                   </dd>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-3.5 border-b border-[#E6DFCE]">
-                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E]">
+                <div className="py-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E] font-semibold">
                     Publishing Model
                   </dt>
-                  <dd className="font-editorial-prose font-medium text-[#174D3A]">
+                  <dd className="font-editorial-prose not-italic font-semibold text-[#174D3A]">
                     100% Merit-Based · House-Funded Production
                   </dd>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E]">
+                <div className="pt-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                  <dt className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E] font-semibold">
                     Editorial Desk
                   </dt>
-                  <dd className="font-mono text-[13px] text-[#243B8A]">
+                  <dd className="font-mono text-[13px] text-[#243B8A] font-medium">
                     {PUBLISHER_IDENTITY.email} · {PUBLISHER_IDENTITY.phoneDisplay}
                   </dd>
                 </div>
               </dl>
             </div>
+
+            {/* Bottom 3-Zone Curatorial Action Strip */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-[#E6DFCE]">
+              <button
+                type="button"
+                onClick={() => onNavigate('/books')}
+                className="group rounded-lg bg-[#FFFDF7] border border-[#DCD4C0] hover:border-[#243B8A] p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4"
+              >
+                <div>
+                  <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#243B8A] font-bold">
+                    01 · Catalogue
+                  </p>
+                  <p className="mt-1 font-editorial-display not-italic text-[18px] font-bold text-[#1C1917] group-hover:text-[#243B8A]">
+                    {lang === 'mr' ? 'प्रकाशित पुस्तके पहा' : 'Explore Published Books'}
+                  </p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-[#57534E] group-hover:text-[#243B8A] shrink-0" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onNavigate('/vachankatta')}
+                className="group rounded-lg bg-[#FFFDF7] border border-[#DCD4C0] hover:border-[#243B8A] p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4"
+              >
+                <div>
+                  <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#174D3A] font-bold">
+                    02 · Literary Journal
+                  </p>
+                  <p className="mt-1 font-editorial-display not-italic text-[18px] font-bold text-[#1C1917] group-hover:text-[#174D3A]">
+                    {lang === 'mr' ? 'वाचनकट्टा आणि साहित्य' : 'Read Vachankatta Journal'}
+                  </p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-[#57534E] group-hover:text-[#174D3A] shrink-0" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onNavigate('/submit-manuscript')}
+                className="group rounded-lg bg-[#FFFDF7] border border-[#DCD4C0] hover:border-[#243B8A] p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4"
+              >
+                <div>
+                  <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#243B8A] font-bold">
+                    03 · For Authors
+                  </p>
+                  <p className="mt-1 font-editorial-display not-italic text-[18px] font-bold text-[#1C1917] group-hover:text-[#243B8A]">
+                    {lang === 'mr' ? 'प्रकाशनार्थ संहिता पाठवा' : 'Submit Your Manuscript'}
+                  </p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-[#57534E] group-hover:text-[#243B8A] shrink-0" />
+              </button>
+            </div>
           </motion.div>
         </motion.section>
-
-        {/* =================================================================
-            SECTION 4: CLOSING MOTTO, PATIENT TORTOISE TRAVERSE & PATHWAYS
-            ================================================================= */}
-        <motion.footer
-          id="about-colophon-end"
-          data-testid="about-closing-colophon"
-          data-about-io-block="closing-colophon"
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.04 }}
-          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          aria-label="अकथ प्रकाशन समारोप ब्रीदवाक्य"
-          className="akath-about-io-block scroll-mt-28 pt-10 border-t border-[#1C1917] space-y-10"
-        >
-          <div className="text-center space-y-3">
-            <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#57534E]">
-              Chapter IV · Imprint Colophon &amp; Motto
-            </p>
-            <div
-              data-about-io-para="closing-motto"
-              style={{ '--io-stagger-index': 0 } as React.CSSProperties}
-              className="akath-about-io-para flex flex-wrap items-baseline justify-center gap-3"
-            >
-              <p className="font-editorial-display italic text-[22px] sm:text-[26px] text-[#243B8A] font-medium">
-                अकथ प्रकाशन
-              </p>
-              <span aria-hidden="true" className="text-[#C89D54]">
-                —
-              </span>
-              <p
-                data-testid="about-final-marathi-line"
-                className="font-editorial-display not-italic text-[24px] sm:text-[30px] font-bold text-[#174D3A] leading-snug"
-              >
-                वाचत राहू. विचारत राहू. लिहित राहू.
-              </p>
-            </div>
-            <p className="font-editorial-prose text-[14px] text-[#57534E]">
-              Let us keep reading. Let us keep questioning. Let us keep writing.
-            </p>
-          </div>
-
-          <WalkingTortoise />
-
-          {/* Bottom 3-Zone Curatorial Action Strip */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-            <button
-              type="button"
-              onClick={() => onNavigate('/books')}
-              className="group bg-white border border-[#DCD4C0] hover:border-[#243B8A] p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4"
-            >
-              <div>
-                <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#243B8A]">
-                  01 · Catalogue
-                </p>
-                <p className="mt-1 font-editorial-display text-[19px] font-bold text-[#1C1917] group-hover:text-[#243B8A]">
-                  {lang === 'mr' ? 'प्रकाशित पुस्तके पहा' : 'Explore Published Books'}
-                </p>
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#57534E] group-hover:text-[#243B8A] shrink-0" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('/vachankatta')}
-              className="group bg-white border border-[#DCD4C0] hover:border-[#243B8A] p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4"
-            >
-              <div>
-                <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#174D3A]">
-                  02 · Literary Journal
-                </p>
-                <p className="mt-1 font-editorial-display text-[19px] font-bold text-[#1C1917] group-hover:text-[#174D3A]">
-                  {lang === 'mr' ? 'वाचनकट्टा आणि पहिलं पान' : 'Read Vachankatta & Excerpts'}
-                </p>
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#57534E] group-hover:text-[#174D3A] shrink-0" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('/submit-manuscript')}
-              className="group bg-white border border-[#DCD4C0] hover:border-[#243B8A] p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4"
-            >
-              <div>
-                <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#243B8A]">
-                  03 · For Authors
-                </p>
-                <p className="mt-1 font-editorial-display text-[19px] font-bold text-[#1C1917] group-hover:text-[#243B8A]">
-                  {lang === 'mr' ? 'प्रकाशनार्थ संहिता पाठवा' : 'Submit Your Manuscript'}
-                </p>
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#57534E] group-hover:text-[#243B8A] shrink-0" />
-            </button>
-          </div>
-        </motion.footer>
       </article>
     </div>
   );
@@ -1945,6 +1859,9 @@ export const ContactView: React.FC<ContactViewProps> = ({
 
   const [name, setName] = useState('');
   const [role, setRole] = useState<CorrespondentRole>('Reader');
+  const [discussionTopic, setDiscussionTopic] = useState<
+    'Manuscript Submission' | 'Book Enquiry' | 'Collaboration' | 'General Enquiry'
+  >('Book Enquiry');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [subject, setSubject] = useState('');
@@ -1959,29 +1876,34 @@ export const ContactView: React.FC<ContactViewProps> = ({
   const phoneRef = useRef<HTMLInputElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
 
-  const roleOptions: EditorialDropdownOption[] = [
+  const topicToRoleMap: Record<
+    'Manuscript Submission' | 'Book Enquiry' | 'Collaboration' | 'General Enquiry',
+    CorrespondentRole
+  > = {
+    'Manuscript Submission': 'Author',
+    'Book Enquiry': 'Reader',
+    Collaboration: 'Bookstore_Institution',
+    'General Enquiry': 'Contributor',
+  };
+
+  const discussionOptions: EditorialDropdownOption[] = [
     {
-      value: 'Reader',
-      label: lang === 'mr' ? 'वाचक' : 'Reader',
+      value: 'Manuscript Submission',
+      label: lang === 'mr' ? 'हस्तलिखित सादरीकरण' : 'Manuscript Submission',
     },
     {
-      value: 'Author',
-      label: lang === 'mr' ? 'लेखक' : 'Author',
+      value: 'Book Enquiry',
+      label: lang === 'mr' ? 'पुस्तकाविषयी चौकशी' : 'Book Enquiry',
     },
     {
-      value: 'Bookstore_Institution',
-      label:
-        lang === 'mr'
-          ? 'ग्रंथालय / पुस्तक विक्रेता'
-          : 'Bookstore / Library',
+      value: 'Collaboration',
+      label: lang === 'mr' ? 'पुस्तक विक्री व सहकार्य' : 'Collaboration',
     },
     {
-      value: 'Contributor',
-      label: lang === 'mr' ? 'समीक्षक / पत्रकार' : 'Reviewer / Media',
+      value: 'General Enquiry',
+      label: lang === 'mr' ? 'सर्वसाधारण संवाद' : 'General Enquiry',
     },
   ];
-
-  const editorialEmail = 'akathpublication@gmail.com';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -2024,6 +1946,7 @@ export const ContactView: React.FC<ContactViewProps> = ({
     setErrors({});
     setSubmitting(true);
     try {
+      const resolvedSubject = subject.trim() || discussionTopic;
       const res = await onSubmitContact({
         lang,
         name: name.trim(),
@@ -2032,7 +1955,7 @@ export const ContactView: React.FC<ContactViewProps> = ({
         phone: phone.trim()
           ? validateIndianPhone(phone, lang).normalizedValue
           : undefined,
-        subject: subject.trim(),
+        subject: resolvedSubject,
         message: message.trim(),
       });
 
@@ -2056,316 +1979,289 @@ export const ContactView: React.FC<ContactViewProps> = ({
   return (
     <div
       data-testid="contact-editorial-view"
-      className="bg-[#FFFDF7] text-[#252832] min-h-screen py-12 lg:py-16"
+      className="bg-[#F5EBDD] text-[#252832] min-h-screen py-10 sm:py-14 lg:py-16"
     >
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="max-w-[1060px] mx-auto px-4 sm:px-6 lg:px-8"
-      >
-        {/* Minimal Page Header */}
-        <div className="mb-10 space-y-2 max-w-[64ch]">
-          <h1 className="type-page-heading text-[#252832]">{t.contact.title}</h1>
-          <p className="prose-marathi text-[#5A5F72]">{t.contact.subtitle}</p>
-        </div>
+      <div className="max-w-[760px] mx-auto px-4 sm:px-6 space-y-8">
+        {/* Editorial Room Headline (Static — Zero Animation) */}
+        <header className="space-y-3">
+          <p className="font-mono text-[11.5px] tracking-[0.16em] uppercase font-bold text-[#243B8A]">
+            {lang === 'mr'
+              ? 'अकथ प्रकाशन · संपादकीय कक्ष'
+              : 'AKATH PRAKASHAN · THE EDITORIAL ROOM'}
+          </p>
+          <h1 className="font-serif text-[30px] sm:text-[38px] font-bold leading-[1.15] tracking-[-0.02em] text-[#252832]">
+            {lang === 'mr'
+              ? 'प्रत्येक पुस्तकाची सुरुवात एका संवादातून होते.'
+              : 'Every book begins with a conversation.'}
+          </h1>
+          <p className="text-[15.5px] sm:text-[16.5px] leading-[1.65] text-[#4E4A42] max-w-[60ch]">
+            {lang === 'mr'
+              ? 'तुमच्याकडे हस्तलिखित आहे, एखादा प्रश्न आहे, कल्पना आहे किंवा एखाद्या पुस्तकाबद्दल बोलायचे आहे? आमचा संपादकीय कक्ष खुला आहे.'
+              : 'Have a manuscript, a question, an idea or simply a book you would like to talk about? Our editorial room is open.'}
+          </p>
+        </header>
 
-        {/* Standard 2-Column Layout: Left = Address & Channels | Right = Form */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-          {/* LEFT COLUMN: Address & Channels */}
-          <aside
-            data-testid="contact-info-sidebar"
-            className="lg:col-span-4 space-y-6 min-w-0"
-          >
-            {/* 1. Address Card */}
-            <div
-              data-testid="contact-address-block"
-              className="bg-white rounded-2xl border border-[#E6DFCE] p-6 space-y-3"
-            >
-              <div className="flex items-center gap-2 text-[13px] font-semibold text-[#243B8A]">
-                <MapPin className="w-4 h-4 shrink-0" />
-                <span>{lang === 'mr' ? 'पत्ता' : 'Address'}</span>
-              </div>
-
-              <div className="space-y-1 text-[15px] text-[#252832]">
-                <p className="font-semibold">
-                  {lang === 'mr'
-                    ? PUBLISHER_IDENTITY.nameMarathi
-                    : PUBLISHER_IDENTITY.nameEnglish}
-                </p>
-                <p className="text-[#5A5F72] leading-relaxed">
-                  {lang === 'mr'
-                    ? 'नांदेड, महाराष्ट्र'
-                    : 'Nanded, Maharashtra'}
-                </p>
-              </div>
-
-              <div className="pt-3 border-t border-[#E6DFCE] flex items-center gap-2 text-[13px] text-[#5A5F72]">
-                <Clock className="w-3.5 h-3.5 text-[#243B8A] shrink-0" />
-                <span>
-                  {lang === 'mr'
-                    ? 'सोम–शनि · सकाळी १०:३० ते ६:३०'
-                    : 'Mon–Sat · 10:30 AM – 6:30 PM'}
-                </span>
-              </div>
-            </div>
-
-            {/* 2. Channels Card */}
-            <div
-              data-testid="contact-channels-block"
-              className="bg-white rounded-2xl border border-[#E6DFCE] p-6 space-y-4"
-            >
-              <p className="text-[13px] font-semibold text-[#243B8A]">
-                {lang === 'mr' ? 'संपर्क माध्यम' : 'Channels'}
+        {/* Editorial Room Correspondence Form (Static — Zero Animation) */}
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          data-testid="contact-form-folio"
+          className="bg-[#FFFDF7] rounded-2xl border-2 border-[#302C25] p-6 sm:p-9 space-y-6 shadow-[6px_6px_0px_#302C25]"
+        >
+          <div className="pb-4 border-b-2 border-dashed border-[#D8CEB8] flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#243B8A] font-semibold">
+                {lang === 'mr'
+                  ? 'संपादकीय पत्रव्यवहार'
+                  : 'EDITORIAL CORRESPONDENCE'}
               </p>
-
-              <div className="space-y-3.5 text-[14.5px]">
-                <a
-                  href={`mailto:${editorialEmail}`}
-                  className="flex items-start gap-3 text-[#252832] hover:text-[#243B8A] transition-colors min-w-0"
-                >
-                  <Mail className="w-4 h-4 text-[#243B8A] mt-1 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[12px] text-[#5A5F72]">
-                      {lang === 'mr' ? 'ईमेल' : 'Email'}
-                    </p>
-                    <p className="font-medium break-all">{editorialEmail}</p>
-                  </div>
-                </a>
-
-                <a
-                  href={`tel:${PUBLISHER_IDENTITY.phoneDisplay.replace(/\s+/g, '')}`}
-                  className="flex items-start gap-3 text-[#252832] hover:text-[#243B8A] transition-colors min-w-0"
-                >
-                  <Phone className="w-4 h-4 text-[#243B8A] mt-1 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[12px] text-[#5A5F72]">
-                      {lang === 'mr' ? 'दूरध्वनी' : 'Phone'}
-                    </p>
-                    <p className="font-medium">{PUBLISHER_IDENTITY.phoneDisplay}</p>
-                  </div>
-                </a>
-
-                <a
-                  href={PUBLISHER_IDENTITY.whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-start gap-3 text-[#252832] hover:text-[#15803D] transition-colors min-w-0"
-                >
-                  <MessageSquare className="w-4 h-4 text-[#15803D] mt-1 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[12px] text-[#5A5F72]">
-                      {lang === 'mr' ? 'व्हॉट्सॲप' : 'WhatsApp'}
-                    </p>
-                    <p className="font-medium text-[#15803D]">
-                      {lang === 'mr' ? 'थेट संदेश पाठवा ↗' : 'Send a message ↗'}
-                    </p>
-                  </div>
-                </a>
-              </div>
+              <h2 className="mt-0.5 font-serif text-[22px] sm:text-[25px] font-bold text-[#252832]">
+                {lang === 'mr'
+                  ? 'संपादकांना पत्र लिहा'
+                  : 'Write a Letter to Our Editors'}
+              </h2>
             </div>
-          </aside>
-
-          {/* RIGHT COLUMN: Standard Minimal Contact Form */}
-          <div className="lg:col-span-8 min-w-0">
-            <form
-              onSubmit={handleSubmit}
-              noValidate
-              data-testid="contact-form-folio"
-              className="bg-white rounded-2xl border border-[#E6DFCE] p-6 sm:p-8 space-y-5"
-            >
-              {successMsg && (
-                <div
-                  role="status"
-                  data-testid="contact-receipt-card"
-                  className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[14px] flex items-center gap-2.5"
-                >
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>{successMsg}</span>
-                </div>
-              )}
-
-              {errors.form && (
-                <div
-                  role="alert"
-                  className="p-4 rounded-xl bg-red-50 border border-red-200 text-[#B42318] text-[14px] flex items-center gap-2"
-                >
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{errors.form}</span>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="min-w-0">
-                  <label htmlFor="contact-name" className="block ui-label mb-1.5">
-                    {t.contact.nameLabel} <span className="text-[#B42318]">*</span>
-                  </label>
-                  <input
-                    ref={nameRef}
-                    id="contact-name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                      if (errors.name) setErrors((p) => ({ ...p, name: '' }));
-                    }}
-                    aria-invalid={Boolean(errors.name)}
-                    className={`w-full px-3.5 py-2.5 rounded-xl border text-[15px] bg-white transition-colors focus:outline-none focus:border-[#243B8A] ${
-                      errors.name ? 'border-[#B42318]' : 'border-[#E6DFCE]'
-                    }`}
-                  />
-                  {errors.name && (
-                    <p
-                      role="alert"
-                      className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
-                    >
-                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                      <span>{errors.name}</span>
-                    </p>
-                  )}
-                </div>
-
-                <div className="min-w-0">
-                  <label htmlFor="contact-role" className="block ui-label mb-1.5">
-                    {t.contact.roleLabel}
-                  </label>
-                  <EditorialSelectDropdown
-                    id="contact-role"
-                    testId="contact-role-select"
-                    ariaLabel={t.contact.roleLabel}
-                    value={role}
-                    onChange={(nextVal) => setRole(nextVal as CorrespondentRole)}
-                    options={roleOptions}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="min-w-0">
-                  <label htmlFor="contact-email" className="block ui-label mb-1.5">
-                    {t.checkout.emailLabel} <span className="text-[#B42318]">*</span>
-                  </label>
-                  <input
-                    ref={emailRef}
-                    id="contact-email"
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (errors.email) setErrors((p) => ({ ...p, email: '' }));
-                    }}
-                    aria-invalid={Boolean(errors.email)}
-                    className={`w-full px-3.5 py-2.5 rounded-xl border text-[15px] bg-white transition-colors focus:outline-none focus:border-[#243B8A] ${
-                      errors.email ? 'border-[#B42318]' : 'border-[#E6DFCE]'
-                    }`}
-                  />
-                  {errors.email && (
-                    <p
-                      role="alert"
-                      className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
-                    >
-                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                      <span>{errors.email}</span>
-                    </p>
-                  )}
-                </div>
-
-                <div className="min-w-0">
-                  <label htmlFor="contact-phone" className="block ui-label mb-1.5">
-                    {t.checkout.phoneLabel}{' '}
-                    <span className="text-[12px] font-normal text-[#5A5F72]">
-                      ({t.checkout.optionalMarker})
-                    </span>
-                  </label>
-                  <input
-                    ref={phoneRef}
-                    id="contact-phone"
-                    type="tel"
-                    inputMode="numeric"
-                    autoComplete="tel"
-                    value={phone}
-                    onChange={(e) => {
-                      setPhone(e.target.value);
-                      if (errors.phone) setErrors((p) => ({ ...p, phone: '' }));
-                    }}
-                    placeholder={t.checkout.phoneHint}
-                    aria-invalid={Boolean(errors.phone)}
-                    className={`w-full px-3.5 py-2.5 rounded-xl border text-[15px] bg-white transition-colors focus:outline-none focus:border-[#243B8A] ${
-                      errors.phone ? 'border-[#B42318]' : 'border-[#E6DFCE]'
-                    }`}
-                  />
-                  {errors.phone && (
-                    <p
-                      role="alert"
-                      className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
-                    >
-                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                      <span>{errors.phone}</span>
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="min-w-0">
-                <label htmlFor="contact-subject" className="block ui-label mb-1.5">
-                  {t.contact.subjectLabel}{' '}
-                  <span className="text-[12px] font-normal text-[#5A5F72]">
-                    ({t.checkout.optionalMarker})
-                  </span>
-                </label>
-                <input
-                  id="contact-subject"
-                  type="text"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFCE] text-[15px] bg-white transition-colors focus:outline-none focus:border-[#243B8A]"
-                />
-              </div>
-
-              <div className="min-w-0">
-                <label htmlFor="contact-message" className="block ui-label mb-1.5">
-                  {t.contact.messageLabel} <span className="text-[#B42318]">*</span>
-                </label>
-                <textarea
-                  ref={messageRef}
-                  id="contact-message"
-                  rows={5}
-                  value={message}
-                  onChange={(e) => {
-                    setMessage(e.target.value);
-                    if (errors.message) setErrors((p) => ({ ...p, message: '' }));
-                  }}
-                  aria-invalid={Boolean(errors.message)}
-                  className={`w-full px-3.5 py-2.5 rounded-xl border text-[15px] bg-white transition-colors focus:outline-none focus:border-[#243B8A] ${
-                    errors.message ? 'border-[#B42318]' : 'border-[#E6DFCE]'
-                  }`}
-                />
-                {errors.message && (
-                  <p
-                    role="alert"
-                    className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
-                  >
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>{errors.message}</span>
-                  </p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                data-testid="contact-submit-btn"
-                className="px-6 py-3 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] disabled:opacity-60 text-[#FFFDF7] text-[15px] font-semibold transition-colors"
-              >
-                {t.contact.submitBtn}
-              </button>
-            </form>
+            <span className="font-mono text-[11px] uppercase tracking-wider text-[#78845A]">
+              {lang === 'mr' ? 'नांदेड कार्यालय' : 'NANDED STUDIO'}
+            </span>
           </div>
-        </div>
-      </motion.div>
+
+          {successMsg && (
+            <div
+              role="status"
+              data-testid="contact-receipt-card"
+              className="p-4 rounded-xl bg-[#F5EBDD] border-2 border-[#354B37] text-[#252832] text-[14px] flex items-center gap-2.5"
+            >
+              <CheckCircle2 className="w-4 h-4 text-[#354B37] shrink-0" />
+              <span>{successMsg}</span>
+            </div>
+          )}
+
+          {errors.form && (
+            <div
+              role="alert"
+              className="p-4 rounded-xl bg-red-50 border border-red-200 text-[#B42318] text-[14px] flex items-center gap-2"
+            >
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errors.form}</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="min-w-0">
+              <label htmlFor="contact-name" className="block ui-label mb-1.5">
+                {lang === 'mr' ? 'तुमचे नाव' : 'Your Name'}{' '}
+                <span className="text-[#B42318]">*</span>
+              </label>
+              <input
+                ref={nameRef}
+                id="contact-name"
+                type="text"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (errors.name) setErrors((p) => ({ ...p, name: '' }));
+                }}
+                placeholder={
+                  lang === 'mr' ? 'पूर्ण नाव लिहा' : 'Enter your full name'
+                }
+                aria-invalid={Boolean(errors.name)}
+                className={`w-full px-3.5 py-2.5 rounded-xl border-2 text-[15px] bg-[#FAF5E8] focus:bg-[#FFFDF7] focus:outline-none focus:border-[#243B8A] ${
+                  errors.name ? 'border-[#B42318]' : 'border-[#D8CEB8]'
+                }`}
+              />
+              {errors.name && (
+                <p
+                  role="alert"
+                  className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errors.name}</span>
+                </p>
+              )}
+            </div>
+
+            <div className="min-w-0">
+              <label htmlFor="contact-email" className="block ui-label mb-1.5">
+                {lang === 'mr' ? 'तुमचा ईमेल' : 'Your Email'}{' '}
+                <span className="text-[#B42318]">*</span>
+              </label>
+              <input
+                ref={emailRef}
+                id="contact-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors((p) => ({ ...p, email: '' }));
+                }}
+                placeholder="you@example.com"
+                aria-invalid={Boolean(errors.email)}
+                className={`w-full px-3.5 py-2.5 rounded-xl border-2 text-[15px] bg-[#FAF5E8] focus:bg-[#FFFDF7] focus:outline-none focus:border-[#243B8A] ${
+                  errors.email ? 'border-[#B42318]' : 'border-[#D8CEB8]'
+                }`}
+              />
+              {errors.email && (
+                <p
+                  role="alert"
+                  className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errors.email}</span>
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="min-w-0">
+              <label htmlFor="contact-role" className="block ui-label mb-1.5">
+                {lang === 'mr'
+                  ? 'तुम्हाला कोणत्या विषयावर चर्चा करायची आहे?'
+                  : 'What would you like to discuss?'}
+              </label>
+              <EditorialSelectDropdown
+                id="contact-role"
+                testId="contact-role-select"
+                ariaLabel={
+                  lang === 'mr'
+                    ? 'तुम्हाला कोणत्या विषयावर चर्चा करायची आहे?'
+                    : 'What would you like to discuss?'
+                }
+                value={discussionTopic}
+                onChange={(nextVal) => {
+                  const topic = nextVal as
+                    | 'Manuscript Submission'
+                    | 'Book Enquiry'
+                    | 'Collaboration'
+                    | 'General Enquiry';
+                  setDiscussionTopic(topic);
+                  setRole(topicToRoleMap[topic] || 'Reader');
+                }}
+                options={discussionOptions}
+              />
+            </div>
+
+            <div className="min-w-0">
+              <label htmlFor="contact-phone" className="block ui-label mb-1.5">
+                {lang === 'mr' ? 'मोबाईल क्रमांक' : 'Mobile Number'}{' '}
+                <span className="text-[12px] font-normal text-[#5A5F72]">
+                  ({lang === 'mr' ? 'ऐच्छिक' : 'Optional'})
+                </span>
+              </label>
+              <input
+                ref={phoneRef}
+                id="contact-phone"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (errors.phone) setErrors((p) => ({ ...p, phone: '' }));
+                }}
+                placeholder={
+                  lang === 'mr' ? '१० अंकी मोबाईल नंबर' : '10-digit mobile number'
+                }
+                aria-invalid={Boolean(errors.phone)}
+                className={`w-full px-3.5 py-2.5 rounded-xl border-2 text-[15px] bg-[#FAF5E8] focus:bg-[#FFFDF7] focus:outline-none focus:border-[#243B8A] ${
+                  errors.phone ? 'border-[#B42318]' : 'border-[#D8CEB8]'
+                }`}
+              />
+              {errors.phone && (
+                <p
+                  role="alert"
+                  className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errors.phone}</span>
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="min-w-0">
+            <label htmlFor="contact-subject" className="block ui-label mb-1.5">
+              {lang === 'mr' ? 'विषय' : 'Subject'}{' '}
+              <span className="text-[12px] font-normal text-[#5A5F72]">
+                ({lang === 'mr' ? 'ऐच्छिक' : 'Optional'})
+              </span>
+            </label>
+            <input
+              id="contact-subject"
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder={
+                lang === 'mr'
+                  ? 'उदा. हस्तलिखिताबाबत किंवा पुस्तकाच्या मागणीबाबत'
+                  : 'e.g. Regarding a manuscript submission or book enquiry'
+              }
+              className="w-full px-3.5 py-2.5 rounded-xl border-2 border-[#D8CEB8] text-[15px] bg-[#FAF5E8] focus:bg-[#FFFDF7] focus:outline-none focus:border-[#243B8A]"
+            />
+          </div>
+
+          <div className="min-w-0">
+            <label htmlFor="contact-message" className="block ui-label mb-1.5">
+              {lang === 'mr' ? 'तुमचा संदेश' : 'Your Message'}{' '}
+              <span className="text-[#B42318]">*</span>
+            </label>
+            <textarea
+              ref={messageRef}
+              id="contact-message"
+              rows={5}
+              value={message}
+              onChange={(e) => {
+                setMessage(e.target.value);
+                if (errors.message) setErrors((p) => ({ ...p, message: '' }));
+              }}
+              placeholder={
+                lang === 'mr'
+                  ? 'तुमचा संदेश येथे लिहा...'
+                  : 'Write your message to our editorial room...'
+              }
+              aria-invalid={Boolean(errors.message)}
+              className={`w-full px-3.5 py-2.5 rounded-xl border-2 text-[15px] bg-[#FAF5E8] focus:bg-[#FFFDF7] focus:outline-none focus:border-[#243B8A] ${
+                errors.message ? 'border-[#B42318]' : 'border-[#D8CEB8]'
+              }`}
+            />
+            {errors.message && (
+              <p
+                role="alert"
+                className="mt-1.5 text-[13px] font-medium text-[#B42318] flex items-center gap-1.5"
+              >
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{errors.message}</span>
+              </p>
+            )}
+          </div>
+
+          <div className="pt-2 flex flex-wrap items-center justify-between gap-4">
+            <button
+              type="submit"
+              disabled={submitting}
+              data-testid="contact-submit-btn"
+              className="px-7 py-3.5 rounded-xl bg-[#EF6855] hover:bg-[#DE5542] disabled:opacity-60 text-[#FFFDF7] text-[15px] font-semibold cursor-pointer shadow-[3px_3px_0px_#302C25]"
+            >
+              {submitting
+                ? lang === 'mr'
+                  ? 'पाठवत आहे...'
+                  : 'Sending...'
+                : lang === 'mr'
+                  ? 'तुमचे पत्र पाठवा →'
+                  : 'Send Your Letter →'}
+            </button>
+
+            <span className="font-mono text-[11.5px] text-[#5A5F72]">
+              akathpublication@gmail.com · {PUBLISHER_IDENTITY.phoneDisplay}
+            </span>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
+
 

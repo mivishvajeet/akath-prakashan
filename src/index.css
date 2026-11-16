@@ -1483,6 +1483,778 @@
   animation-play-state: paused;
 }
 
+/* =========================================================================
+   StorybookFooterLandscape — "The Tortoise's Literary Journey" (वाचन हाच प्रवास)
+   - Seamless 1440px SVG coordinate parallax loops moving right-to-left
+   - Pure integer-pixel stepped keyframes (zero diagonal rotation aliasing)
+   - Responsive across Mobile (<640px), Tablet (640px-1023px), and Desktop (1024px+)
+   ========================================================================= */
+@keyframes storybook-scroll-tile {
+  0% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  100% {
+    transform: translate3d(-1440px, 0px, 0px);
+  }
+}
+
+@keyframes storybook-sun-glow-breathe {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+    opacity: 0.24;
+  }
+  50% {
+    transform: translate3d(0px, -2px, 0px);
+    opacity: 0.42;
+  }
+}
+
+@keyframes storybook-canopy-breeze {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  50% {
+    transform: translate3d(-2px, 0px, 0px);
+  }
+}
+
+@keyframes storybook-roots-sway {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  50% {
+    transform: translate3d(-2px, 0px, 0px);
+  }
+}
+
+@keyframes storybook-grass-wind-a {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  50% {
+    transform: translate3d(-2px, 0px, 0px);
+  }
+}
+
+@keyframes storybook-grass-wind-b {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  50% {
+    transform: translate3d(-2px, 0px, 0px);
+  }
+}
+
+@keyframes storybook-floating-leaf-drift-a {
+  0% {
+    transform: translate3d(960px, 140px, 0px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate3d(700px, 198px, 0px);
+    opacity: 0.95;
+  }
+  90% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(460px, 252px, 0px);
+    opacity: 0;
+  }
+}
+
+@keyframes storybook-floating-leaf-drift-b {
+  0% {
+    transform: translate3d(1080px, 124px, 0px);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  55% {
+    transform: translate3d(760px, 186px, 0px);
+    opacity: 0.9;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(480px, 244px, 0px);
+    opacity: 0;
+  }
+}
+
+@keyframes storybook-butterfly-wing-flutter {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.35);
+  }
+}
+
+@keyframes storybook-butterfly-ambient-curve {
+  0%,
+  100% {
+    transform: translate3d(560px, 210px, 0px);
+  }
+  25% {
+    transform: translate3d(584px, 196px, 0px);
+  }
+  50% {
+    transform: translate3d(604px, 206px, 0px);
+  }
+  75% {
+    transform: translate3d(576px, 218px, 0px);
+  }
+}
+
+/* Choreographed 16-Bit Sprite Butterfly: Swoops past the tortoise in integer steps */
+@keyframes storybook-butterfly-encounter {
+  0%,
+  36% {
+    transform: translate3d(260px, -64px, 0px);
+    opacity: 0;
+  }
+  42% {
+    transform: translate3d(216px, -32px, 0px);
+    opacity: 1;
+  }
+  50% {
+    transform: translate3d(176px, 12px, 0px);
+    opacity: 1;
+  }
+  56% {
+    transform: translate3d(162px, 20px, 0px);
+    opacity: 1;
+  }
+  62% {
+    transform: translate3d(144px, 8px, 0px);
+    opacity: 1;
+  }
+  70% {
+    transform: translate3d(96px, -28px, 0px);
+    opacity: 0.9;
+  }
+  78%,
+  100% {
+    transform: translate3d(24px, -68px, 0px);
+    opacity: 0;
+  }
+}
+
+/* Choreographed Tortoise Journey: Stepped 16-bit progress along the path */
+@keyframes storybook-tortoise-choreography {
+  0%,
+  100% {
+    transform: translate3d(-12px, 0px, 0px);
+  }
+  52%,
+  62% {
+    transform: translate3d(12px, 0px, 0px);
+  }
+}
+
+/* Pure integer-pixel 4-beat quadruped walk cycle (ZERO diagonal rotation artifacts) */
+@keyframes storybook-leg-stride-near-front {
+  0%,
+  100% {
+    transform: translate3d(-4px, 0px, 0px);
+  }
+  25% {
+    transform: translate3d(0px, -4px, 0px);
+  }
+  50% {
+    transform: translate3d(4px, 0px, 0px);
+  }
+  75% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+}
+
+@keyframes storybook-leg-stride-near-back {
+  0%,
+  100% {
+    transform: translate3d(4px, 0px, 0px);
+  }
+  25% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  50% {
+    transform: translate3d(-4px, 0px, 0px);
+  }
+  75% {
+    transform: translate3d(0px, -4px, 0px);
+  }
+}
+
+@keyframes storybook-leg-stride-far-front {
+  0%,
+  100% {
+    transform: translate3d(4px, 0px, 0px);
+  }
+  25% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  50% {
+    transform: translate3d(-4px, 0px, 0px);
+  }
+  75% {
+    transform: translate3d(0px, -4px, 0px);
+  }
+}
+
+@keyframes storybook-leg-stride-far-back {
+  0%,
+  100% {
+    transform: translate3d(-4px, 0px, 0px);
+  }
+  25% {
+    transform: translate3d(0px, -4px, 0px);
+  }
+  50% {
+    transform: translate3d(4px, 0px, 0px);
+  }
+  75% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+}
+
+@keyframes storybook-tortoise-body-walk {
+  0%,
+  50%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  25%,
+  75% {
+    transform: translate3d(0px, -2px, 0px);
+  }
+}
+
+@keyframes storybook-tortoise-books-bounce {
+  0%,
+  50%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  25%,
+  75% {
+    transform: translate3d(0px, -2px, 0px);
+  }
+}
+
+@keyframes storybook-pixel-book-wing-flutter {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  50% {
+    transform: translate3d(0px, -2px, 0px);
+  }
+}
+
+/* Stepped integer-pixel head & neck movement synchronized with butterfly encounter */
+@keyframes storybook-tortoise-head-choreography {
+  0%,
+  24%,
+  48%,
+  68%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  12%,
+  36%,
+  84% {
+    transform: translate3d(2px, -2px, 0px);
+  }
+  53%,
+  60% {
+    transform: translate3d(2px, -4px, 0px);
+  }
+}
+
+/* Natural Eyelid Blinking (Occasional blink while walking + double blink during butterfly pause) */
+@keyframes storybook-tortoise-blink-choreography {
+  0%,
+  17%,
+  19%,
+  53%,
+  55%,
+  57.5%,
+  59.5%,
+  84%,
+  86%,
+  100% {
+    transform: scaleY(0.01);
+    opacity: 0;
+  }
+  18%,
+  54%,
+  58.5%,
+  85% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes storybook-tortoise-tail-wag {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  50% {
+    transform: translate3d(0px, -2px, 0px);
+  }
+}
+
+.akath-pixel-svg {
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+
+@keyframes storybook-pixel-stars-twinkle {
+  0%,
+  100% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes storybook-celestial-twinkle-a {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translate3d(0px, 0px, 0px);
+  }
+  50% {
+    opacity: 0.42;
+    transform: translate3d(0px, -1px, 0px);
+  }
+}
+
+@keyframes storybook-celestial-twinkle-b {
+  0%,
+  100% {
+    opacity: 0.48;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes storybook-celestial-twinkle-c {
+  0%,
+  100% {
+    opacity: 0.92;
+  }
+  35% {
+    opacity: 0.3;
+  }
+  70% {
+    opacity: 0.98;
+  }
+}
+
+@keyframes storybook-shooting-star-streak {
+  0%,
+  72% {
+    transform: translate3d(0px, 0px, 0px);
+    opacity: 0;
+  }
+  76% {
+    transform: translate3d(-24px, 6px, 0px);
+    opacity: 0.95;
+  }
+  84% {
+    transform: translate3d(-168px, 42px, 0px);
+    opacity: 0.9;
+  }
+  90%,
+  100% {
+    transform: translate3d(-260px, 64px, 0px);
+    opacity: 0;
+  }
+}
+
+.storybook-pixel-stars {
+  animation: storybook-pixel-stars-twinkle 2.4s steps(2, end) infinite;
+}
+
+.storybook-star-twinkle-a {
+  animation: storybook-celestial-twinkle-a 3.2s steps(3, end) infinite;
+}
+
+.storybook-star-twinkle-b {
+  animation: storybook-celestial-twinkle-b 4.1s steps(3, end) 0.9s infinite;
+}
+
+.storybook-star-twinkle-c {
+  animation: storybook-celestial-twinkle-c 5.2s steps(3, end) 1.8s infinite;
+}
+
+.storybook-shooting-star {
+  animation: storybook-shooting-star-streak 14s steps(18, end) infinite;
+  will-change: transform, opacity;
+}
+
+.storybook-layer-far-peaks {
+  animation: storybook-scroll-tile 120s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.storybook-layer-clouds {
+  animation: storybook-scroll-tile 88s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.storybook-layer-hills {
+  animation: storybook-scroll-tile 56s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.storybook-layer-midground {
+  animation: storybook-scroll-tile 28s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.storybook-layer-foreground {
+  animation: storybook-scroll-tile 14s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.storybook-sun-halo {
+  animation: storybook-sun-glow-breathe 4.2s steps(2, end) infinite;
+}
+
+.storybook-tree-canopy-sway {
+  animation: storybook-canopy-breeze 3.4s steps(2, end) infinite;
+}
+
+.storybook-banyan-roots {
+  animation: storybook-roots-sway 3.2s steps(2, end) infinite;
+}
+
+.storybook-grass-sway-a {
+  animation: storybook-grass-wind-a 2.2s steps(2, end) infinite;
+}
+
+.storybook-grass-sway-b {
+  animation: storybook-grass-wind-b 2.6s steps(2, end) 0.6s infinite;
+}
+
+.storybook-floating-leaf-a {
+  animation: storybook-floating-leaf-drift-a 14s steps(28, end) infinite;
+  will-change: transform, opacity;
+}
+
+.storybook-floating-leaf-b {
+  animation: storybook-floating-leaf-drift-b 18s steps(32, end) 5s infinite;
+  will-change: transform, opacity;
+}
+
+.storybook-butterfly-wings {
+  animation: storybook-butterfly-wing-flutter 0.28s steps(2, end) infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+.storybook-butterfly-ambient {
+  animation: storybook-butterfly-ambient-curve 10s steps(16, end) infinite;
+  will-change: transform;
+}
+
+.storybook-butterfly-choreographed {
+  animation: storybook-butterfly-encounter 16s steps(32, end) infinite;
+  will-change: transform, opacity;
+}
+
+.storybook-tortoise-journey {
+  animation: storybook-tortoise-choreography 16s steps(12, end) infinite;
+  will-change: transform;
+}
+
+.storybook-tortoise-leg-fr {
+  animation: storybook-leg-stride-near-front 0.84s steps(4, end) infinite;
+}
+
+.storybook-tortoise-leg-br {
+  animation: storybook-leg-stride-near-back 0.84s steps(4, end) infinite;
+}
+
+.storybook-tortoise-leg-fl {
+  animation: storybook-leg-stride-far-front 0.84s steps(4, end) infinite;
+}
+
+.storybook-tortoise-leg-bl {
+  animation: storybook-leg-stride-far-back 0.84s steps(4, end) infinite;
+}
+
+.storybook-tortoise-body {
+  animation: storybook-tortoise-body-walk 0.84s steps(4, end) infinite;
+}
+
+.storybook-tortoise-books {
+  animation: storybook-tortoise-books-bounce 0.84s steps(4, end) 0.06s infinite;
+}
+
+.storybook-top-book-wing-l {
+  animation: storybook-pixel-book-wing-flutter 1.6s steps(2, end) infinite;
+}
+
+.storybook-top-book-wing-r {
+  animation: storybook-pixel-book-wing-flutter 1.6s steps(2, end) 0.2s infinite;
+}
+
+.storybook-tortoise-head {
+  animation: storybook-tortoise-head-choreography 16s steps(8, end) infinite;
+}
+
+.storybook-tortoise-eyelid {
+  animation: storybook-tortoise-blink-choreography 16s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center top;
+}
+
+.storybook-tortoise-stage.is-manual-blink .storybook-tortoise-eyelid {
+  transform: scaleY(1) !important;
+  opacity: 1 !important;
+}
+
+.storybook-tortoise-tail {
+  animation: storybook-tortoise-tail-wag 1.2s steps(2, end) infinite;
+}
+
+@keyframes storybook-fort-flag-flutter {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  50% {
+    transform: translate3d(2px, -1px, 0px);
+  }
+}
+
+@keyframes storybook-chimney-smoke-rise {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+    opacity: 0.72;
+  }
+  50% {
+    transform: translate3d(-2px, -3px, 0px);
+    opacity: 0.4;
+  }
+}
+
+@keyframes storybook-lantern-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
+@keyframes storybook-hanging-lantern-sway {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  50% {
+    transform: translate3d(-1px, 0px, 0px);
+  }
+}
+
+@keyframes storybook-firefly-float {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+    opacity: 0.95;
+  }
+  50% {
+    transform: translate3d(4px, -4px, 0px);
+    opacity: 0.35;
+  }
+}
+
+.storybook-fort-flag {
+  animation: storybook-fort-flag-flutter 0.9s steps(2, end) infinite;
+}
+
+.storybook-chimney-smoke {
+  animation: storybook-chimney-smoke-rise 2.8s steps(3, end) infinite;
+}
+
+.storybook-lantern-glow {
+  animation: storybook-lantern-flicker 1.8s steps(2, end) infinite;
+}
+
+.storybook-hanging-lantern {
+  animation: storybook-hanging-lantern-sway 3.2s steps(2, end) infinite;
+}
+
+.storybook-firefly-pulse {
+  animation: storybook-firefly-float 3.4s steps(3, end) infinite;
+}
+
+/* Pause all animations when scrolled outside viewport or manually paused */
+.akath-storybook-landscape.is-paused *,
+.akath-storybook-landscape.is-paused *::before,
+.akath-storybook-landscape.is-paused *::after {
+  animation-play-state: paused !important;
+}
+
+/* ==========================================================================
+   THE EDITORIAL ROOM — 16-BIT PIXEL-ART CONTACT ENVIRONMENT ANIMATIONS
+   Uses stepped keyframes (steps()) for authentic retro 16-bit sprite motion
+   ========================================================================== */
+@keyframes editorial-clouds-drift-far {
+  0% {
+    transform: translate3d(-12px, 0, 0);
+  }
+  50% {
+    transform: translate3d(10px, 0, 0);
+  }
+  100% {
+    transform: translate3d(-12px, 0, 0);
+  }
+}
+
+@keyframes editorial-clouds-drift-near {
+  0% {
+    transform: translate3d(14px, 0, 0);
+  }
+  50% {
+    transform: translate3d(-14px, 0, 0);
+  }
+  100% {
+    transform: translate3d(14px, 0, 0);
+  }
+}
+
+@keyframes editorial-typewriter-tap {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, 1px, 0);
+  }
+}
+
+@keyframes editorial-paper-breeze {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(1px, -1px, 0);
+  }
+}
+
+@keyframes editorial-tortoise-patrol {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  38%,
+  62% {
+    transform: translate3d(38px, 0, 0);
+  }
+}
+
+@keyframes editorial-tortoise-step-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(1px, -1px, 0);
+  }
+}
+
+@keyframes editorial-tortoise-step-b {
+  0%,
+  100% {
+    transform: translate3d(1px, -1px, 0);
+  }
+  50% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes editorial-tortoise-look {
+  0%,
+  36%,
+  64%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  42%,
+  58% {
+    transform: translate3d(0, -1px, 0);
+  }
+}
+
+.editorial-room-clouds-far {
+  animation: editorial-clouds-drift-far 28s steps(14, end) infinite;
+}
+
+.editorial-room-clouds-near {
+  animation: editorial-clouds-drift-near 20s steps(12, end) infinite;
+}
+
+.editorial-room-typewriter-keys {
+  animation: editorial-typewriter-tap 1.8s steps(2, end) infinite;
+}
+
+.editorial-room-paper-breeze {
+  animation: editorial-paper-breeze 4.5s steps(2, end) infinite;
+}
+
+.editorial-room-tortoise-walker {
+  animation: editorial-tortoise-patrol 22s steps(24, end) infinite;
+}
+
+.editorial-room-tortoise-walker.is-looking,
+.editorial-room-tortoise-walker:hover {
+  animation-play-state: paused;
+}
+
+.editorial-room-tortoise-legs-a {
+  animation: editorial-tortoise-step-a 1.1s steps(2, end) infinite;
+}
+
+.editorial-room-tortoise-legs-b {
+  animation: editorial-tortoise-step-b 1.1s steps(2, end) infinite;
+}
+
+.editorial-room-tortoise-head {
+  animation: editorial-tortoise-look 22s steps(4, end) infinite;
+}
+
+.editorial-courier-tortoise {
+  animation: editorial-paper-breeze 3.2s steps(2, end) infinite;
+}
+
 /* Respect reduced motion preferences (WCAG 2.1 SC 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1584,12 +2356,68 @@
   .akath-footer-mote-c,
   .akath-footer-star,
   .archival-drawer-surface,
-  .akath-touch-bottom-sheet {
+  .akath-touch-bottom-sheet,
+  .storybook-layer-far-peaks,
+  .storybook-layer-clouds,
+  .storybook-layer-hills,
+  .storybook-layer-midground,
+  .storybook-layer-foreground,
+  .storybook-sun-halo,
+  .storybook-tree-canopy-sway,
+  .storybook-banyan-roots,
+  .storybook-grass-sway-a,
+  .storybook-grass-sway-b,
+  .storybook-floating-leaf-a,
+  .storybook-floating-leaf-b,
+  .storybook-butterfly-wings,
+  .storybook-butterfly-ambient,
+  .storybook-butterfly-choreographed,
+  .storybook-tortoise-journey,
+  .storybook-tortoise-leg-fr,
+  .storybook-tortoise-leg-br,
+  .storybook-tortoise-leg-fl,
+  .storybook-tortoise-leg-bl,
+  .storybook-tortoise-body,
+  .storybook-tortoise-books,
+  .storybook-top-book-wing-l,
+  .storybook-top-book-wing-r,
+  .storybook-tortoise-head,
+  .storybook-tortoise-eyelid,
+  .storybook-tortoise-tail,
+  .editorial-room-clouds-far,
+  .editorial-room-clouds-near,
+  .editorial-room-typewriter-keys,
+  .editorial-room-paper-breeze,
+  .editorial-room-tortoise-walker,
+  .editorial-room-tortoise-legs-a,
+  .editorial-room-tortoise-legs-b,
+  .editorial-room-tortoise-head,
+  .editorial-courier-tortoise,
+  .storybook-star-twinkle-a,
+  .storybook-star-twinkle-b,
+  .storybook-star-twinkle-c,
+  .storybook-shooting-star {
     animation: none !important;
     transition: none !important;
     transform: none !important;
     opacity: 1 !important;
     will-change: auto;
+  }
+
+  .storybook-tortoise-eyelid,
+  .storybook-floating-leaf-a,
+  .storybook-floating-leaf-b,
+  .storybook-shooting-star {
+    opacity: 0 !important;
+  }
+
+  .storybook-butterfly-ambient {
+    transform: translate3d(576px, 206px, 0px) !important;
+  }
+
+  .storybook-butterfly-choreographed {
+    transform: translate3d(168px, 16px, 0px) !important;
+    opacity: 1 !important;
   }
 
   .akath-patient-tortoise-runner {
@@ -1600,4 +2428,5 @@
     justify-content: center;
   }
 }
+
 
