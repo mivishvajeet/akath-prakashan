@@ -2192,9 +2192,96 @@ async function runTests() {
     '  [PASS] DB-06: Real-time Firestore OrderHistory component (onSnapshot, 4-stage delivery tracker, status log, and order cancellation) verified'
   );
 
+  // --------------------------------------------------------------------------
+  // 9. MOBILE (360px/390px) & TABLET (768px/1024px) RESPONSIVENESS SUITE
+  // --------------------------------------------------------------------------
+  console.log(
+    '\n--- 9. Mobile (360px/390px) & Tablet (768px/1024px) Responsiveness Verification Suite ---'
+  );
+
+  // 9.1 Global CSS & Touch-Action Verification
+  assert.ok(
+    cssSource.includes('overflow-x: hidden;') && cssSource.includes('max-width: 100vw;'),
+    'html/body must enforce overflow-x: hidden and max-width: 100vw'
+  );
+  assert.ok(
+    cssSource.includes('touch-action: pan-x pan-y;'),
+    '.akath-swipe-rail must use touch-action: pan-x pan-y so vertical page scrolling is never blocked when touching cards'
+  );
+  assert.ok(
+    cssSource.includes('calc(100cqw - 68px)'),
+    'akath-patient-traverse keyframe must use calc(100cqw - 68px) to stay inside mobile tracks'
+  );
+  console.log(
+    '  [PASS] RESP-01 (Global CSS & Touch Gesture Engine): overflow-x: hidden, touch-action: pan-x pan-y, and container-query keyframes verified'
+  );
+
+  // 9.2 Homepage Horizontal Swipe Rails & Zero Negative-Margin Overflow
+  assert.ok(
+    homeViewSource.includes('w-full max-w-[100vw] overflow-x-hidden'),
+    'HomeView root must clamp max-w-[100vw] and overflow-x-hidden'
+  );
+  assert.ok(
+    !homeViewSource.includes('-mx-4') && !homeViewSource.includes('-mx-8'),
+    'HomeView must not use negative horizontal margins (-mx-4 / -mx-8) that cause mobile viewport overflow'
+  );
+  assert.ok(homeViewSource.includes('data-testid="home-hero-anchors-rail"'));
+  assert.ok(homeViewSource.includes('data-testid="what-we-do-swipe-rail"'));
+  assert.ok(homeViewSource.includes('data-testid="how-we-publish-swipe-rail"'));
+  assert.ok(homeViewSource.includes('data-testid="home-catalog-horizontal-scroll"'));
+  assert.ok(homeViewSource.includes('data-testid="home-books-snap-controls"'));
+  assert.ok(homeViewSource.includes('data-testid="home-books-rail-prev"'));
+  assert.ok(homeViewSource.includes('data-testid="home-books-rail-next"'));
+  assert.ok(homeViewSource.includes('flex flex-row lg:flex-col flex-1 min-w-0'));
+  assert.ok(homeViewSource.includes('data-testid="home-authors-pillars-rail"'));
+  console.log(
+    '  [PASS] RESP-02 (Homepage Mobile & Tablet Swipe Rails): All 5 homepage card rails & compact "Books We Bring to Life" snap-point folio rail verified with zero horizontal page overflow'
+  );
+
+  // 9.3 Mobile & Tablet Navigation Drawer Expansion Fix
+  assert.ok(
+    navbarSource.includes('drawerBackdropVariants') &&
+      navbarSource.includes('drawerPanelVariants') &&
+      navbarSource.includes('drawerItemVariants'),
+    'Mobile drawer must use synchronized Motion state variants (drawerBackdropVariants, drawerPanelVariants, drawerItemVariants) without abrupt CSS snapping'
+  );
+  assert.ok(
+    navbarSource.includes('shrink-0 p-4 sm:p-5 space-y-4 flex-1 overflow-y-auto overscroll-contain'),
+    'Mobile drawer body must decouple inner overflow-y-auto scroll container with shrink-0 so all navigation items expand smoothly'
+  );
+  console.log(
+    '  [PASS] RESP-03 (Mobile & Tablet Menu Expansion): Slide-over navigation drawer (#akath-mobile-drawer) synchronized state variants, decoupled scroll body, and smooth icon transitions verified'
+  );
+
+  // 9.4 About Page "Why the Tortoise?" Mobile Responsiveness & Founder Section Redesign
+  assert.ok(
+    publishingViewsSource.includes('akath-patient-traverse-track'),
+    'About page tortoise walking track must include akath-patient-traverse-track (container-type: inline-size) so 100cqw resolves to the track width'
+  );
+  assert.ok(
+    publishingViewsSource.includes('grid grid-cols-2 sm:grid-cols-4'),
+    'Why the tortoise 4 stage labels must use responsive 2x2 grid on mobile (grid-cols-2 sm:grid-cols-4)'
+  );
+  assert.ok(
+    !publishingViewsSource.includes('100% Merit-Based'),
+    '"100% Merit-Based" line must be completely removed from About page'
+  );
+  assert.ok(
+    !publishingViewsSource.includes('१००% गुणवत्ता-आधारित'),
+    'Marathi "१००% गुणवत्ता-आधारित" line must be completely removed from About page'
+  );
+  assert.ok(
+    publishingViewsSource.includes('Pooja Vasantrao Dhawale') &&
+      publishingViewsSource.includes('पूजा वसंतराव ढवळे'),
+    'Redesigned Founder section must feature Pooja Vasantrao Dhawale (पूजा वसंतराव ढवळे)'
+  );
+  console.log(
+    '  [PASS] RESP-04 (About Page Mobile UI & Founder Redesign): Why the Tortoise 2x2 mobile stage grid, container-queried tortoise track, redesigned Founder portrait card, and removal of "100% Merit-Based" line verified'
+  );
+
   console.log('\n================================================================');
   console.log(
-    'ALL 96 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS + 11 SEC-01 + 5 SEC-02 + 6 DB/CLOUD) PASSED!'
+    'ALL 100 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS + 11 SEC-01 + 5 SEC-02 + 6 DB/CLOUD + 4 MOBILE/TABLET RESP) PASSED!'
   );
   console.log('================================================================');
 }

@@ -42,6 +42,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   body {
@@ -50,6 +52,8 @@
     margin: 0;
     padding: 0;
     letter-spacing: 0;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   ::selection {
@@ -127,10 +131,15 @@
 }
 
 .akath-swipe-rail {
-  touch-action: pan-x;
+  touch-action: pan-x pan-y;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
-  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.akath-swipe-rail::-webkit-scrollbar {
+  display: none;
 }
 
 
@@ -706,10 +715,10 @@
     transform: translate3d(4px, 0, 0);
   }
   44% {
-    transform: translate3d(calc(100cqw - 92px), 0, 0);
+    transform: translate3d(calc(100cqw - 68px), 0, 0);
   }
   50% {
-    transform: translate3d(calc(100cqw - 92px), 0, 0);
+    transform: translate3d(calc(100cqw - 68px), 0, 0);
   }
   94% {
     transform: translate3d(4px, 0, 0);
@@ -2355,8 +2364,6 @@
   .akath-footer-mote-b,
   .akath-footer-mote-c,
   .akath-footer-star,
-  .archival-drawer-surface,
-  .akath-touch-bottom-sheet,
   .storybook-layer-far-peaks,
   .storybook-layer-clouds,
   .storybook-layer-hills,

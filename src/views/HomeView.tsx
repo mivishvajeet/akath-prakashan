@@ -10,6 +10,8 @@ import {
   Layers,
   Library,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -228,6 +230,42 @@ export const HomeView: React.FC<HomeViewProps> = ({
     books[0]?.id || 'book-scholar-juice'
   );
   const [showFullSpread, setShowFullSpread] = useState<boolean>(false);
+  const [activeBookRailIndex, setActiveBookRailIndex] = useState<number>(0);
+  const catalogRailRef = useRef<HTMLDivElement | null>(null);
+
+  const handleCatalogRailScroll = () => {
+    const container = catalogRailRef.current;
+    if (!container || books.length === 0) return;
+    const cards = Array.from(container.children) as HTMLElement[];
+    if (cards.length === 0) return;
+    const scrollLeft = container.scrollLeft;
+    let closestIdx = 0;
+    let minDistance = Number.POSITIVE_INFINITY;
+    cards.forEach((card, idx) => {
+      const distance = Math.abs(card.offsetLeft - scrollLeft);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIdx = idx;
+      }
+    });
+    if (closestIdx !== activeBookRailIndex) {
+      setActiveBookRailIndex(closestIdx);
+    }
+  };
+
+  const scrollToBookCard = (index: number) => {
+    const clampedIdx = Math.max(0, Math.min(books.length - 1, index));
+    setActiveBookRailIndex(clampedIdx);
+    const container = catalogRailRef.current;
+    if (!container) return;
+    const targetCard = container.children[clampedIdx] as HTMLElement | undefined;
+    if (targetCard) {
+      container.scrollTo({
+        left: targetCard.offsetLeft,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   const [heroRef, isHeroVisible] = useIntersectionReveal<HTMLElement>();
   const [whatWeDoRef, isWhatWeDoVisible] = useIntersectionReveal<HTMLElement>();
@@ -253,7 +291,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const secondaryBooks = books.filter((b) => b.id !== activeHeroBook?.id);
 
   return (
-    <div className="bg-[#FFFDF7] text-[#1C1917]">
+    <div className="bg-[#FFFDF7] text-[#1C1917] w-full max-w-[100vw] overflow-x-hidden">
       {/* =====================================================================
           1. HERO — FULL-PRESENCE DESKTOP & ABOVE-THE-FOLD LITERARY PUBLISHER STAGE
           ===================================================================== */}
@@ -262,7 +300,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         data-testid="home-publishing-hero"
         className={`akath-io-section ${
           isHeroVisible ? 'is-visible' : ''
-        } relative overflow-hidden border-b border-[#DCD4C0] bg-[#FAF6EC] pt-4 sm:pt-6 lg:pt-10 xl:pt-12 pb-6 sm:pb-8 lg:pb-12 xl:pb-14 lg:min-h-[600px] xl:min-h-[650px] flex items-center`}
+        } relative w-full overflow-hidden border-b border-[#DCD4C0] bg-[#FAF6EC] pt-4 sm:pt-6 lg:pt-10 xl:pt-12 pb-6 sm:pb-8 lg:pb-12 xl:pb-14 lg:min-h-[600px] xl:min-h-[650px] flex items-center`}
       >
         {/* Subtle Warm Editorial Atmosphere */}
         <div
@@ -274,11 +312,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
           }}
         />
 
-        <div className="w-full max-w-[1380px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10">
+        <div className="w-full max-w-[1380px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10 min-w-0">
           {/* Top Literary Imprint Eyebrow (Clean Single-Line Editorial Metadata) */}
-          <div className="flex items-center justify-between gap-4 pb-3 lg:pb-4 mb-4 sm:mb-6 lg:mb-8 border-b border-[#DCD4C0]">
-            <div className="inline-flex items-center gap-2.5">
-              <span className="text-[11px] sm:text-xs font-mono not-italic font-bold uppercase tracking-[0.18em] text-[#243B8A]">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 lg:pb-4 mb-4 sm:mb-6 lg:mb-8 border-b border-[#DCD4C0]">
+            <div className="inline-flex flex-wrap items-center gap-2 min-w-0">
+              <span className="text-[11px] sm:text-xs font-mono not-italic font-bold uppercase tracking-[0.16em] text-[#243B8A]">
                 मराठी प्रकाशन संस्था
               </span>
               <span aria-hidden="true" className="text-[#C89D54]">
@@ -344,37 +382,42 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </button>
               </div>
 
-              {/* Interactive Edition Selector Strip */}
-              <div className="pt-3.5 lg:pt-4 border-t border-[#DCD4C0] flex flex-wrap items-center gap-2">
-                <span className="text-[10.5px] lg:text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E] mr-1">
+              {/* Interactive Edition Selector Strip (Horizontally Swipable on Mobile) */}
+              <div className="pt-3.5 lg:pt-4 border-t border-[#DCD4C0] space-y-1.5 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:gap-2 min-w-0">
+                <span className="block sm:inline text-[10.5px] lg:text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E] mr-1">
                   {isMr ? 'प्रकाशित पुस्तके:' : 'Catalogue Anchors:'}
                 </span>
-                {books.map((book, idx) => {
-                  const isSelected = book.id === activeHeroBook?.id;
-                  const enMeta = BOOK_ENGLISH_META[book.id];
-                  return (
-                    <button
-                      key={book.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedBookId(book.id);
-                        setShowFullSpread(false);
-                      }}
-                      className={`px-3 py-1.5 rounded-md text-xs font-serif transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-                        isSelected
-                          ? 'bg-[#243B8A] text-[#FFFDF7] font-semibold shadow-2xs'
-                          : 'bg-[#FFFDF7] text-[#1C1917] border border-[#DCD4C0] hover:border-[#243B8A]'
-                      }`}
-                    >
-                      <span className="font-mono text-[10px] opacity-75 tabular-nums">
-                        0{idx + 1}
-                      </span>
-                      <span>
-                        {isMr ? book.title : enMeta?.titleEn || book.title}
-                      </span>
-                    </button>
-                  );
-                })}
+                <div
+                  data-testid="home-hero-anchors-rail"
+                  className="akath-swipe-rail flex items-center gap-2 overflow-x-auto sm:overflow-visible snap-x snap-mandatory w-full sm:w-auto pb-1 sm:pb-0"
+                >
+                  {books.map((book, idx) => {
+                    const isSelected = book.id === activeHeroBook?.id;
+                    const enMeta = BOOK_ENGLISH_META[book.id];
+                    return (
+                      <button
+                        key={book.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedBookId(book.id);
+                          setShowFullSpread(false);
+                        }}
+                        className={`snap-start shrink-0 px-3 py-1.5 rounded-md text-xs font-serif transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                          isSelected
+                            ? 'bg-[#243B8A] text-[#FFFDF7] font-semibold shadow-2xs'
+                            : 'bg-[#FFFDF7] text-[#1C1917] border border-[#DCD4C0] hover:border-[#243B8A]'
+                        }`}
+                      >
+                        <span className="font-mono text-[10px] opacity-75 tabular-nums">
+                          0{idx + 1}
+                        </span>
+                        <span>
+                          {isMr ? book.title : enMeta?.titleEn || book.title}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
@@ -382,16 +425,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
             {activeHeroBook && (
               <div
                 data-testid="home-featured-edition-dossier"
-                className="w-full lg:w-[44%] relative flex flex-col items-center"
+                className="w-full lg:w-[44%] min-w-0 relative flex flex-col items-center overflow-hidden sm:overflow-visible"
               >
                 {/* Warm Archival Pedestal Halo */}
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 w-[250px] h-[250px] sm:w-[290px] sm:h-[290px] lg:w-[360px] lg:h-[360px] xl:w-[390px] xl:h-[390px] rounded-full border border-[#DCD4C0] bg-gradient-to-b from-[#FFFDF7] via-[#F7F3E8] to-[#EFE7D4] shadow-inner"
+                  className="pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 w-[230px] h-[230px] sm:w-[290px] sm:h-[290px] lg:w-[360px] lg:h-[360px] xl:w-[390px] xl:h-[390px] rounded-full border border-[#DCD4C0] bg-gradient-to-b from-[#FFFDF7] via-[#F7F3E8] to-[#EFE7D4] shadow-inner"
                 />
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[274px] h-[274px] sm:w-[318px] sm:h-[318px] lg:w-[392px] lg:h-[392px] xl:w-[424px] xl:h-[424px] rounded-full border border-dashed border-[#C89D54]/50"
+                  className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[250px] h-[250px] sm:w-[318px] sm:h-[318px] lg:w-[392px] lg:h-[392px] xl:w-[424px] xl:h-[424px] rounded-full border border-dashed border-[#C89D54]/50"
                 />
 
                 <AnimatePresence mode="wait">
@@ -612,16 +655,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
         data-testid="home-what-we-do"
         className={`akath-io-section ${
           isWhatWeDoVisible ? 'is-visible' : ''
-        } py-9 sm:py-12 lg:py-16 border-b border-[#E5DEC9] bg-[#FFFDF7]`}
+        } w-full overflow-hidden py-9 sm:py-12 lg:py-16 border-b border-[#E5DEC9] bg-[#FFFDF7]`}
       >
-        <div className="max-w-[1380px] mx-auto px-4 sm:px-8 lg:px-12 space-y-4 sm:space-y-6 lg:space-y-8">
+        <div className="max-w-[1380px] mx-auto px-4 sm:px-8 lg:px-12 space-y-4 sm:space-y-6 lg:space-y-8 min-w-0">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-2.5 sm:gap-4 border-b border-[#E5DEC9] pb-3.5 sm:pb-5">
             <div className="space-y-1">
               <div className="flex items-center justify-between md:justify-start gap-3">
                 <p className="text-[11px] sm:text-xs font-mono font-bold uppercase tracking-[0.18em] text-[#174D3A]">
                   {isMr ? '०१ · प्रकाशन कार्यकक्षा' : '01 · WHAT WE DO'}
                 </p>
-                <span className="lg:hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#FAF6EC] border border-[#DCD4C0] text-[10px] font-mono font-semibold text-[#243B8A]">
+                <span className="lg:hidden inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FAF6EC] border border-[#DCD4C0] text-[10px] font-mono font-semibold text-[#243B8A]">
                   {isMr ? 'स्वाइप करा →' : 'Swipe →'}
                 </span>
               </div>
@@ -639,7 +682,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           {/* Horizontally Swipable Touch-Friendly Snap Rail on Mobile & Tablet (<lg), 4-Col Grid on Desktop (lg+) */}
           <div
             data-testid="what-we-do-swipe-rail"
-            className="akath-swipe-rail flex lg:grid lg:grid-cols-4 overflow-x-auto lg:overflow-visible snap-x snap-mandatory touch-pan-x scroll-smooth no-scrollbar gap-3.5 sm:gap-4 lg:gap-6 items-stretch -mx-4 px-4 sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0 pb-2 lg:pb-0"
+            className="akath-swipe-rail flex lg:grid lg:grid-cols-4 overflow-x-auto lg:overflow-visible snap-x snap-mandatory gap-3.5 sm:gap-4 lg:gap-6 items-stretch w-full max-w-full pb-2 lg:pb-0"
           >
             {PUBLISHING_CAPABILITIES.map((item) => {
               const IconComponent = item.Icon;
@@ -647,7 +690,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <article
                   key={item.number}
                   data-testid={`capability-card-${item.number}`}
-                  className="snap-start shrink-0 w-[80vw] max-w-[290px] sm:w-[300px] sm:max-w-[310px] lg:w-auto lg:max-w-none h-full min-h-[168px] sm:min-h-[188px] lg:min-h-[225px] rounded-xl border border-[#DCD4C0] hover:border-[#243B8A] bg-[#FAF6EC] p-4 sm:p-5 lg:p-6 flex flex-col justify-between transition-colors"
+                  className="snap-start shrink-0 w-[262px] sm:w-[295px] lg:w-auto h-full min-h-[168px] sm:min-h-[188px] lg:min-h-[225px] rounded-xl border border-[#DCD4C0] hover:border-[#243B8A] bg-[#FAF6EC] p-4 sm:p-5 lg:p-6 flex flex-col justify-between transition-colors"
                 >
                   {/* Top Row: Step Number + Icon */}
                   <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-[#E5DEC9]">
@@ -693,16 +736,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
         data-testid="home-how-we-publish"
         className={`akath-io-section ${
           isHowWePublishVisible ? 'is-visible' : ''
-        } py-9 sm:py-12 lg:py-16 border-b border-[#1B2D6B] bg-[#1D2F6F] text-[#FFFDF7]`}
+        } w-full overflow-hidden py-9 sm:py-12 lg:py-16 border-b border-[#1B2D6B] bg-[#1D2F6F] text-[#FFFDF7]`}
       >
-        <div className="max-w-[1380px] mx-auto px-4 sm:px-8 lg:px-12 space-y-4 sm:space-y-6 lg:space-y-8">
+        <div className="max-w-[1380px] mx-auto px-4 sm:px-8 lg:px-12 space-y-4 sm:space-y-6 lg:space-y-8 min-w-0">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-2.5 sm:gap-4 border-b border-[#FFFDF7]/15 pb-3.5 sm:pb-5">
             <div className="space-y-1">
               <div className="flex items-center justify-between md:justify-start gap-3">
                 <p className="text-[11px] sm:text-xs font-mono font-bold uppercase tracking-[0.18em] text-[#FFD966]">
                   {isMr ? '०२ · प्रकाशन प्रवास' : '02 · HOW WE PUBLISH'}
                 </p>
-                <span className="lg:hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#243B8A] border border-[#FFD966]/40 text-[10px] font-mono font-semibold text-[#FFD966]">
+                <span className="lg:hidden inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#243B8A] border border-[#FFD966]/40 text-[10px] font-mono font-semibold text-[#FFD966]">
                   {isMr ? 'स्वाइप करा →' : 'Swipe →'}
                 </span>
               </div>
@@ -711,7 +754,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </h2>
             </div>
 
-            <p className="text-[10.5px] sm:text-xs font-mono uppercase tracking-[0.14em] text-[#FFFDF7]/75">
+            <p className="hidden sm:block text-[10.5px] sm:text-xs font-mono uppercase tracking-[0.12em] text-[#FFFDF7]/75">
               01 DISCOVER → 02 REVIEW → 03 DEVELOP → 04 PRODUCE → 05 PUBLISH
             </p>
           </div>
@@ -719,13 +762,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
           {/* Horizontally Swipable Snap Rail on Mobile & Tablet (<lg), 5-Col Equal Grid on Desktop (lg+) */}
           <ol
             data-testid="how-we-publish-swipe-rail"
-            className="akath-swipe-rail flex lg:grid lg:grid-cols-5 overflow-x-auto lg:overflow-visible snap-x snap-mandatory touch-pan-x scroll-smooth no-scrollbar gap-3 sm:gap-4 lg:gap-5 items-stretch -mx-4 px-4 sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0 pb-2 lg:pb-0"
+            className="akath-swipe-rail flex lg:grid lg:grid-cols-5 overflow-x-auto lg:overflow-visible snap-x snap-mandatory gap-3 sm:gap-4 lg:gap-5 items-stretch w-full max-w-full pb-2 lg:pb-0"
           >
             {PUBLISHING_JOURNEY_STAGES.map((stage, idx) => (
               <li
                 key={stage.step}
                 data-testid={`publishing-journey-step-${stage.step}`}
-                className="snap-start shrink-0 w-[75vw] max-w-[260px] sm:w-[250px] sm:max-w-[260px] lg:w-auto lg:max-w-none h-full flex flex-col"
+                className="snap-start shrink-0 w-[238px] sm:w-[256px] lg:w-auto h-full flex flex-col"
               >
                 <div className="h-full min-h-[152px] sm:min-h-[172px] lg:min-h-[205px] rounded-xl bg-[#243B8A] border border-[#FFFDF7]/20 hover:border-[#FFD966] p-4 sm:p-5 flex flex-col justify-between transition-colors">
                   {/* Top Row: Step Badge & Connector */}
@@ -762,24 +805,28 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </section>
 
       {/* =====================================================================
-          4. OUR BOOKS — SWIPABLE SNAP RAIL ON MOBILE/TABLET, 3 EQUAL CARDS ON DESKTOP
+          4. OUR BOOKS — COMPACT TOUCH-FRIENDLY HORIZONTAL SNAP-POINT RAIL ON MOBILE/TABLET,
+             3 EQUAL PEDESTAL CARDS ON DESKTOP
           ===================================================================== */}
       <section
         ref={ourBooksRef}
         data-testid="home-published-books"
         className={`akath-io-section ${
           isOurBooksVisible ? 'is-visible' : ''
-        } py-10 sm:py-14 lg:py-20 border-b border-[#E5DEC9] bg-[#FFFDF7]`}
+        } w-full overflow-hidden py-7 sm:py-10 lg:py-20 border-b border-[#E5DEC9] bg-[#FFFDF7]`}
       >
-        <div className="max-w-[1380px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6 sm:space-y-8 lg:space-y-10">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3.5 sm:gap-4 border-b border-[#E5DEC9] pb-4 sm:pb-6">
-            <div className="space-y-1.5">
+        <div className="max-w-[1380px] mx-auto px-4 sm:px-8 lg:px-12 space-y-4 sm:space-y-6 lg:space-y-10 min-w-0">
+          {/* Section Header + Mobile/Tablet Snap Controls */}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 border-b border-[#E5DEC9] pb-3.5 sm:pb-5">
+            <div className="space-y-1">
               <div className="flex items-center justify-between sm:justify-start gap-3">
-                <p className="text-xs font-mono font-bold uppercase tracking-[0.18em] text-[#174D3A]">
+                <p className="text-[11px] sm:text-xs font-mono font-bold uppercase tracking-[0.18em] text-[#174D3A]">
                   {isMr ? '०३ · प्रकाशित ग्रंथसूची' : '03 · OUR BOOKS'}
                 </p>
-                <span className="lg:hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#FAF6EC] border border-[#DCD4C0] text-[10px] font-mono font-semibold text-[#243B8A]">
-                  {isMr ? 'स्वाइप करा →' : 'Swipe →'}
+                <span className="lg:hidden inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FAF6EC] border border-[#DCD4C0] text-[10px] font-mono font-semibold text-[#243B8A] tabular-nums">
+                  {isMr
+                    ? `०${activeBookRailIndex + 1} / ०${books.length} · स्वाइप करा →`
+                    : `0${activeBookRailIndex + 1} / 0${books.length} · Swipe →`}
                 </span>
               </div>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif not-italic font-bold text-[#1C1917] tracking-tight">
@@ -787,19 +834,72 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </h2>
             </div>
 
-            <button
-              type="button"
-              onClick={() => onNavigate('/books')}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-xs sm:text-sm font-semibold transition-colors cursor-pointer self-start sm:self-auto whitespace-nowrap"
-            >
-              <span>Explore the Catalogue →</span>
-            </button>
+            <div className="flex items-center justify-between sm:justify-end gap-2.5">
+              {/* Mobile & Tablet Snap-Point Stepper Controls */}
+              <div
+                data-testid="home-books-snap-controls"
+                className="lg:hidden inline-flex items-center gap-1.5"
+              >
+                <button
+                  type="button"
+                  data-testid="home-books-rail-prev"
+                  onClick={() => scrollToBookCard(activeBookRailIndex - 1)}
+                  disabled={activeBookRailIndex <= 0}
+                  aria-label={isMr ? 'मागील पुस्तक' : 'Previous book'}
+                  className="w-8 h-8 rounded-lg bg-[#FAF6EC] border border-[#DCD4C0] hover:border-[#243B8A] disabled:opacity-40 text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <div className="inline-flex items-center gap-1 px-1.5 py-1 rounded-lg bg-[#FAF6EC] border border-[#DCD4C0]">
+                  {books.map((b, idx) => {
+                    const isActiveSnap = idx === activeBookRailIndex;
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        data-testid={`home-books-snap-dot-${idx}`}
+                        onClick={() => scrollToBookCard(idx)}
+                        aria-label={`${isMr ? 'पुस्तक' : 'Edition'} 0${idx + 1}`}
+                        aria-current={isActiveSnap ? 'true' : undefined}
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold tabular-nums transition-colors cursor-pointer ${
+                          isActiveSnap
+                            ? 'bg-[#243B8A] text-[#FFFDF7]'
+                            : 'text-[#57534E] hover:text-[#1C1917]'
+                        }`}
+                      >
+                        0{idx + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  type="button"
+                  data-testid="home-books-rail-next"
+                  onClick={() => scrollToBookCard(activeBookRailIndex + 1)}
+                  disabled={activeBookRailIndex >= books.length - 1}
+                  aria-label={isMr ? 'पुढील पुस्तक' : 'Next book'}
+                  className="w-8 h-8 rounded-lg bg-[#FAF6EC] border border-[#DCD4C0] hover:border-[#243B8A] disabled:opacity-40 text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => onNavigate('/books')}
+                className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-xs sm:text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap"
+              >
+                <span>Explore the Catalogue →</span>
+              </button>
+            </div>
           </div>
 
           {/* Horizontally Swipable Snap Rail on Mobile & Tablet (<lg), 3 Equal Columns on Desktop (lg+) */}
           <div
+            ref={catalogRailRef}
+            onScroll={handleCatalogRailScroll}
             data-testid="home-catalog-horizontal-scroll"
-            className="akath-swipe-rail flex lg:grid lg:grid-cols-3 overflow-x-auto lg:overflow-visible snap-x snap-mandatory touch-pan-x scroll-smooth no-scrollbar gap-4 sm:gap-5 lg:gap-8 items-stretch -mx-4 px-4 sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0 pb-2 lg:pb-0"
+            className="akath-swipe-rail flex lg:grid lg:grid-cols-3 overflow-x-auto lg:overflow-visible snap-x snap-mandatory gap-3.5 sm:gap-5 lg:gap-8 items-stretch w-full max-w-full pb-2 lg:pb-0"
           >
             {books.map((book, idx) => {
               const bookAuthor = authors.find((a) => a.id === book.authorId);
@@ -826,10 +926,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <article
                   key={book.id}
                   data-testid={`home-book-showcase-${book.id}`}
-                  className="snap-start shrink-0 w-[82vw] max-w-[310px] sm:w-[320px] sm:max-w-[330px] lg:w-auto lg:max-w-none h-full rounded-xl overflow-hidden border border-[#DCD4C0] hover:border-[#243B8A] bg-[#FFFDF7] flex flex-col justify-between transition-colors"
+                  className="snap-start shrink-0 w-[302px] sm:w-[368px] md:w-[388px] lg:w-auto h-full rounded-xl overflow-hidden border border-[#DCD4C0] hover:border-[#243B8A] bg-[#FFFDF7] flex flex-col justify-between transition-colors"
                 >
                   {/* Top Edition Header */}
-                  <div className="px-5 py-3 bg-[#F7F3E8] border-b border-[#E5DEC9] flex items-center justify-between text-[11px] font-mono text-[#57534E]">
+                  <div className="px-4 sm:px-5 py-2 sm:py-3 bg-[#F7F3E8] border-b border-[#E5DEC9] flex items-center justify-between text-[10.5px] sm:text-[11px] font-mono text-[#57534E]">
                     <span className="font-bold text-[#243B8A] tabular-nums">
                       EDITION 0{idx + 1}
                     </span>
@@ -838,87 +938,90 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     </span>
                   </div>
 
-                  {/* Fixed-Height Book Cover Pedestal */}
-                  <div
-                    onClick={() => onNavigate(`/books/${book.slug}`)}
-                    className="h-[235px] sm:h-[255px] bg-[#F7F3E8]/55 px-6 flex items-center justify-center border-b border-[#E5DEC9] cursor-pointer"
-                  >
-                    <div className="w-full max-w-[148px] sm:max-w-[155px]">
-                      <BookCoverArt
-                        book={book}
-                        author={bookAuthor}
-                        size="md"
-                        onClick={() => onNavigate(`/books/${book.slug}`)}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Equalized Card Body */}
-                  <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-4">
-                    <div className="space-y-1.5">
-                      <p className="text-[11px] font-mono uppercase tracking-[0.14em] text-[#174D3A] font-semibold">
-                        {displayCategory}
-                      </p>
-
-                      <h3
-                        onClick={() => onNavigate(`/books/${book.slug}`)}
-                        className="text-lg sm:text-xl font-serif not-italic font-bold text-[#1C1917] hover:text-[#243B8A] transition-colors cursor-pointer leading-snug"
-                      >
-                        {displayTitle}
-                      </h3>
-
-                      {bookAuthor && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            onNavigate(`/authors/${bookAuthor.slug}`)
-                          }
-                          className="text-sm font-serif not-italic font-medium text-[#243B8A] hover:underline cursor-pointer text-left"
-                        >
-                          {displayAuthor}
-                        </button>
-                      )}
-
-                      <p className="text-xs text-[#525665] leading-relaxed line-clamp-3 pt-1">
-                        {displayDescription}
-                      </p>
-                    </div>
-
-                    {/* Pinned Bottom Price & Action Bar */}
-                    <div className="pt-4 border-t border-[#E5DEC9] flex items-center justify-between gap-3">
-                      <span className="font-mono text-lg font-bold text-[#1C1917] tabular-nums">
-                        ₹{book.price}
-                      </span>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
+                  {/* Responsive Body: Side-by-Side Folio on Mobile/Tablet (<lg) to Minimize Vertical Scroll Depth; Stacked Pedestal on Desktop (lg+) */}
+                  <div className="flex flex-row lg:flex-col flex-1 min-w-0">
+                    {/* Book Cover Column (Compact Left Folio on <lg, Top Pedestal on lg+) */}
+                    <div
+                      onClick={() => onNavigate(`/books/${book.slug}`)}
+                      className="w-[106px] sm:w-[126px] lg:w-full lg:h-[255px] shrink-0 bg-[#F7F3E8]/55 p-3 sm:p-4 lg:px-6 flex items-center justify-center border-r lg:border-r-0 lg:border-b border-[#E5DEC9] cursor-pointer"
+                    >
+                      <div className="w-full max-w-[86px] sm:max-w-[102px] lg:max-w-[155px]">
+                        <BookCoverArt
+                          book={book}
+                          author={bookAuthor}
+                          size="md"
                           onClick={() => onNavigate(`/books/${book.slug}`)}
-                          className="px-3.5 py-2 rounded-lg text-xs font-semibold text-[#1C1917] hover:text-[#243B8A] border border-[#DCD4C0] hover:border-[#243B8A] transition-colors cursor-pointer whitespace-nowrap"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Equalized Card Content & Action Bar */}
+                    <div className="p-3.5 sm:p-5 lg:p-6 flex-1 min-w-0 flex flex-col justify-between space-y-3 lg:space-y-4">
+                      <div className="space-y-1 sm:space-y-1.5 min-w-0">
+                        <p className="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.14em] text-[#174D3A] font-semibold truncate">
+                          {displayCategory}
+                        </p>
+
+                        <h3
+                          onClick={() => onNavigate(`/books/${book.slug}`)}
+                          className="text-base sm:text-lg lg:text-xl font-serif not-italic font-bold text-[#1C1917] hover:text-[#243B8A] transition-colors cursor-pointer leading-snug line-clamp-2"
                         >
-                          {isMr ? 'पुस्तक पहा' : 'View Book'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onAddToCart(book.id)}
-                          className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                            isAdded
-                              ? 'bg-[#174D3A] text-[#FFFDF7]'
-                              : 'bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7]'
-                          }`}
-                        >
-                          {isAdded ? (
-                            <>
-                              <Check className="w-3.5 h-3.5" />
-                              <span>{isMr ? 'जोडले' : 'Added'}</span>
-                            </>
-                          ) : (
-                            <>
-                              <ShoppingBag className="w-3.5 h-3.5" />
-                              <span>{isMr ? 'खरेदी करा' : 'Buy Book'}</span>
-                            </>
-                          )}
-                        </button>
+                          {displayTitle}
+                        </h3>
+
+                        {bookAuthor && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onNavigate(`/authors/${bookAuthor.slug}`)
+                            }
+                            className="text-xs sm:text-sm font-serif not-italic font-medium text-[#243B8A] hover:underline cursor-pointer text-left truncate block max-w-full"
+                          >
+                            {displayAuthor}
+                          </button>
+                        )}
+
+                        <p className="text-[11.5px] sm:text-xs text-[#525665] leading-relaxed line-clamp-2 lg:line-clamp-3 pt-0.5">
+                          {displayDescription}
+                        </p>
+                      </div>
+
+                      {/* Pinned Bottom Price & Action Bar */}
+                      <div className="pt-2.5 sm:pt-3.5 lg:pt-4 border-t border-[#E5DEC9] flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-mono text-base sm:text-lg font-bold text-[#1C1917] tabular-nums">
+                          ₹{book.price}
+                        </span>
+
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <button
+                            type="button"
+                            onClick={() => onNavigate(`/books/${book.slug}`)}
+                            className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-semibold text-[#1C1917] hover:text-[#243B8A] border border-[#DCD4C0] hover:border-[#243B8A] transition-colors cursor-pointer whitespace-nowrap"
+                          >
+                            {isMr ? 'पहा' : 'View'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onAddToCart(book.id)}
+                            className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition-colors inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer whitespace-nowrap ${
+                              isAdded
+                                ? 'bg-[#174D3A] text-[#FFFDF7]'
+                                : 'bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7]'
+                            }`}
+                          >
+                            {isAdded ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 shrink-0" />
+                                <span>{isMr ? 'जोडले' : 'Added'}</span>
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
+                                <span>{isMr ? 'खरेदी करा' : 'Buy Book'}</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -930,49 +1033,57 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </section>
 
       {/* =====================================================================
-          5. FOR AUTHORS — INVITE WRITERS TO PUBLISH
+          5. FOR AUTHORS — INVITE WRITERS TO PUBLISH (SWIPABLE RAIL ON MOBILE/TABLET)
           ===================================================================== */}
       <section
         ref={forAuthorsRef}
         data-testid="home-manuscript-desk"
         className={`akath-io-section ${
           isForAuthorsVisible ? 'is-visible' : ''
-        } py-14 sm:py-20 border-b border-[#E5DEC9] bg-[#F7F3E8]/65`}
+        } w-full overflow-hidden py-10 sm:py-16 lg:py-20 border-b border-[#E5DEC9] bg-[#F7F3E8]/65`}
       >
-        <div className="max-w-[1380px] mx-auto px-4 sm:px-8 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        <div className="max-w-[1380px] mx-auto px-4 sm:px-8 lg:px-12 min-w-0">
+          <div
+            data-testid="home-authors-pillars-rail"
+            className="akath-swipe-rail flex lg:grid lg:grid-cols-12 overflow-x-auto lg:overflow-visible snap-x snap-mandatory gap-4 sm:gap-6 lg:gap-8 items-stretch w-full max-w-full pb-2 lg:pb-0"
+          >
             {/* Left 7 Columns: Author Invitation Box */}
-            <div className="lg:col-span-7 rounded-xl border border-[#DCD4C0] bg-[#FFFDF7] p-7 sm:p-10 flex flex-col justify-between space-y-6">
-              <div className="space-y-4">
-                <p className="text-xs font-mono font-bold uppercase tracking-[0.18em] text-[#243B8A]">
-                  {isMr ? '०४ · लेखकांसाठी' : '04 · FOR AUTHORS'}
-                </p>
+            <div className="snap-start shrink-0 w-[284px] sm:w-[420px] lg:w-auto lg:col-span-7 rounded-xl border border-[#DCD4C0] bg-[#FFFDF7] p-5 sm:p-8 lg:p-10 flex flex-col justify-between space-y-5 sm:space-y-6">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-mono font-bold uppercase tracking-[0.18em] text-[#243B8A]">
+                    {isMr ? '०४ · लेखकांसाठी' : '04 · FOR AUTHORS'}
+                  </p>
+                  <span className="lg:hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#FAF6EC] border border-[#DCD4C0] text-[10px] font-mono font-semibold text-[#243B8A]">
+                    {isMr ? 'स्वाइप करा →' : 'Swipe →'}
+                  </span>
+                </div>
 
-                <h2 className="text-3xl sm:text-4xl font-serif not-italic font-bold text-[#1C1917] tracking-tight">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif not-italic font-bold text-[#1C1917] tracking-tight">
                   Have a Manuscript? Let&apos;s Talk.
                 </h2>
 
-                <p className="text-base sm:text-lg text-[#525665] leading-relaxed max-w-[54ch]">
+                <p className="text-sm sm:text-base lg:text-lg text-[#525665] leading-relaxed max-w-[54ch]">
                   {isMr
                     ? 'प्रत्येक पुस्तकाची सुरुवात एका कल्पनेतून होते. आपल्या संहितेला प्रकाशनाच्या दिशेने नेऊ इच्छिणाऱ्या लेखकांचे आम्ही स्वागत करतो.'
                     : 'Every book begins with an idea. We welcome writers who want to take their manuscripts towards publication.'}
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-[#E5DEC9] flex flex-wrap items-center justify-between gap-4">
+              <div className="pt-4 border-t border-[#E5DEC9] flex flex-wrap items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={() => onNavigate('/submit-manuscript')}
-                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-lg bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] font-semibold text-sm sm:text-base transition-colors cursor-pointer whitespace-nowrap"
+                  className="inline-flex items-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 rounded-lg bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] font-semibold text-xs sm:text-sm lg:text-base transition-colors cursor-pointer whitespace-nowrap"
                 >
-                  <Feather className="w-4 h-4" />
+                  <Feather className="w-4 h-4 shrink-0" />
                   <span>
                     {isMr ? 'संहिता पाठवा' : 'Submit Your Manuscript'}
                   </span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 shrink-0" />
                 </button>
 
-                <span className="text-xs font-mono uppercase tracking-[0.14em] text-[#57534E]">
+                <span className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.12em] text-[#57534E]">
                   {isMr
                     ? 'कथा · कादंबरी · कविता · प्रवासवर्णन · ललित'
                     : 'Fiction · Poetry · Travelogue · Non-Fiction'}
@@ -981,14 +1092,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
 
             {/* Right 5 Columns: Equal-Height Manuscript-to-Book Diagram Box */}
-            <div className="lg:col-span-5 rounded-xl border border-[#1B2D6B] bg-[#243B8A] text-[#FFFDF7] p-7 sm:p-8 flex flex-col justify-between">
-              <div className="flex items-center justify-between border-b border-[#FFFDF7]/15 pb-3 text-[11px] font-mono uppercase tracking-[0.16em] text-[#FFD966]">
-                <span>
+            <div className="snap-start shrink-0 w-[274px] sm:w-[360px] lg:w-auto lg:col-span-5 rounded-xl border border-[#1B2D6B] bg-[#243B8A] text-[#FFFDF7] p-5 sm:p-8 flex flex-col justify-between">
+              <div className="flex items-center justify-between gap-2 border-b border-[#FFFDF7]/15 pb-3 text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.12em] text-[#FFD966]">
+                <span className="truncate">
                   {isMr
                     ? 'हस्तलिखित ते प्रकाशित पुस्तक'
                     : 'MANUSCRIPT TO PUBLISHED BOOK'}
                 </span>
-                <span>AKATH DESK</span>
+                <span className="shrink-0">AKATH DESK</span>
               </div>
 
               <div className="py-4 flex items-center justify-center">
@@ -1119,7 +1230,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </svg>
               </div>
 
-              <div className="pt-3 border-t border-[#FFFDF7]/15 text-[11px] font-mono uppercase tracking-[0.14em] text-[#FFFDF7]/80">
+              <div className="pt-3 border-t border-[#FFFDF7]/15 text-[10.5px] sm:text-[11px] font-mono uppercase tracking-[0.12em] text-[#FFFDF7]/80">
                 {isMr
                   ? 'संहिता मूल्यमापन · संपादन · मुद्रण'
                   : 'Editorial Evaluation · Production · Print'}
@@ -1137,11 +1248,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
         data-testid="home-about-akath"
         className={`akath-io-section ${
           isAboutAkathVisible ? 'is-visible' : ''
-        } py-14 sm:py-20 bg-[#FFFDF7]`}
+        } w-full overflow-hidden py-10 sm:py-16 lg:py-20 bg-[#FFFDF7]`}
       >
-        <div className="max-w-[1380px] mx-auto px-4 sm:px-8 lg:px-12">
+        <div className="max-w-[1380px] mx-auto px-4 sm:px-8 lg:px-12 min-w-0">
           {/* Centered Editorial Brand Introduction */}
-          <div className="max-w-3xl mx-auto rounded-xl border border-[#DCD4C0] bg-[#FAF6EC] px-6 py-10 sm:px-12 sm:py-12 text-center space-y-4">
+          <div className="max-w-3xl mx-auto rounded-xl border border-[#DCD4C0] bg-[#FAF6EC] px-5 py-8 sm:px-12 sm:py-12 text-center space-y-4">
             <p className="text-xs font-mono not-italic font-bold uppercase tracking-[0.2em] text-[#243B8A]">
               {isMr ? '०५ · आमची ओळख' : '05 · ABOUT AKATH PRAKASHAN'}
             </p>
@@ -1150,7 +1261,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               Rooted in Language. Driven by Stories.
             </h2>
 
-            <p className="text-base sm:text-[17.5px] font-sans not-italic font-medium text-[#292524] leading-relaxed max-w-[60ch] mx-auto">
+            <p className="text-sm sm:text-[17.5px] font-sans not-italic font-medium text-[#292524] leading-relaxed max-w-[60ch] mx-auto">
               {isMr
                 ? 'अकथ प्रकाशन ही विचारशील लेखन, अर्थपूर्ण कथा आणि नवे आवाज मुद्रित स्वरूपात वाचकांपर्यंत आणण्यासाठी बांधिलकी जपणारी मराठी प्रकाशन संस्था आहे.'
                 : 'Akath Prakashan is a Marathi publishing initiative committed to bringing thoughtful writing, meaningful stories and new voices into print.'}

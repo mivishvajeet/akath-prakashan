@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   motion,
   AnimatePresence,
-  useMotionValue,
-  useTransform,
   type PanInfo,
 } from 'motion/react';
 import {
@@ -53,9 +51,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isCartPopping, setIsCartPopping] = useState(false);
   const quickNavRef = useRef<HTMLElement | null>(null);
 
-  // Touch-gesture motion values for drawer dragging & backdrop interpolation
-  const drawerDragX = useMotionValue(0);
-  const backdropOpacity = useTransform(drawerDragX, [0, 320], [1, 0.12]);
   const drawerTouchRef = useRef<{
     startX: number;
     startY: number;
@@ -67,6 +62,63 @@ export const Navbar: React.FC<NavbarProps> = ({
     startY: number;
     startTime: number;
   } | null>(null);
+
+  // Synchronized state transition variants for smooth mobile menu open/close
+  const drawerBackdropVariants = {
+    closed: {
+      opacity: 0,
+      transition: {
+        duration: 0.24,
+        ease: [0.32, 0.72, 0, 1] as [number, number, number, number],
+      },
+    },
+    open: {
+      opacity: 1,
+      transition: {
+        duration: 0.28,
+        ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+      },
+    },
+  };
+
+  const drawerPanelVariants = {
+    closed: {
+      x: 380,
+      opacity: 0,
+      transition: {
+        duration: 0.26,
+        ease: [0.32, 0.72, 0, 1] as [number, number, number, number],
+      },
+    },
+    open: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        type: 'spring' as const,
+        stiffness: 340,
+        damping: 34,
+        mass: 0.85,
+        staggerChildren: 0.03,
+        delayChildren: 0.04,
+      },
+    },
+  };
+
+  const drawerItemVariants = {
+    closed: {
+      opacity: 0,
+      x: 16,
+      transition: { duration: 0.16 },
+    },
+    open: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.24,
+        ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+      },
+    },
+  };
 
   // Trigger a subtle 'pop' animation on the cart counter whenever a book is added
   useEffect(() => {
@@ -88,10 +140,11 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   }, [immersiveHidden, mobileMenuOpen]);
 
-  // Reset drag offset whenever drawer opens/closes and lock body scroll cleanly
+  // Lock body scroll cleanly when mobile drawer is open
   useEffect(() => {
-    drawerDragX.set(0);
-    if (!mobileMenuOpen) return;
+    if (!mobileMenuOpen) {
+      return;
+    }
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setMobileMenuOpen(false);
@@ -107,7 +160,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       document.body.style.overscrollBehavior = originalOverscroll;
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [mobileMenuOpen, drawerDragX]);
+  }, [mobileMenuOpen]);
 
   // Center the active tab in the mobile/tablet quick-navigation rail on route transitions
   useEffect(() => {
@@ -131,8 +184,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   ) => {
     if (info.offset.x > 68 || info.velocity.x > 360) {
       setMobileMenuOpen(false);
-    } else {
-      drawerDragX.set(0);
     }
   };
 
@@ -158,10 +209,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       if (Math.abs(deltaX) < 8 && Math.abs(deltaY) < 8) return;
       state.trackingHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * 1.2;
     }
-
-    if (state.trackingHorizontal && deltaX > 0) {
-      drawerDragX.set(Math.min(340, deltaX));
-    }
   };
 
   const handleDrawerTouchEnd = (e: React.TouchEvent<HTMLElement>) => {
@@ -180,8 +227,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       (deltaX > 68 || velocityX > 380)
     ) {
       setMobileMenuOpen(false);
-    } else {
-      drawerDragX.set(0);
     }
   };
 
@@ -511,12 +556,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </motion.span>
               </button>
 
-              {/* Mobile & Tablet Menu Toggle (<lg) */}
+              {/* Mobile & Tablet Menu Toggle (<lg) with Smooth Icon State Transition */}
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen((prev) => !prev)}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="akath-mobile-drawer"
+                data-menu-state={mobileMenuOpen ? 'open' : 'closed'}
                 aria-label={
                   mobileMenuOpen
                     ? lang === 'mr'
@@ -527,17 +573,37 @@ export const Navbar: React.FC<NavbarProps> = ({
                     : 'Open navigation menu'
                 }
                 data-testid="navbar-mobile-menu-btn"
-                className={`lg:hidden inline-flex items-center gap-1.5 min-h-[36px] px-2.5 py-1.5 rounded-lg border transition-colors shrink-0 cursor-pointer ${
+                className={`lg:hidden inline-flex items-center gap-1.5 min-h-[36px] px-2.5 py-1.5 rounded-lg border transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] shrink-0 cursor-pointer ${
                   mobileMenuOpen
                     ? 'bg-[#1C1917] text-[#FFFDF7] border-[#1C1917]'
                     : 'bg-[#FAF6EC] border-[#DCD4C0] text-[#1C1917] hover:border-[#243B8A]'
                 }`}
               >
-                {mobileMenuOpen ? (
-                  <X className="w-4 h-4 text-[#FFD966]" />
-                ) : (
-                  <Menu className="w-4 h-4 text-[#243B8A]" />
-                )}
+                <AnimatePresence mode="wait" initial={false}>
+                  {mobileMenuOpen ? (
+                    <motion.span
+                      key="menu-close-icon"
+                      initial={{ rotate: -65, opacity: 0, scale: 0.8 }}
+                      animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                      exit={{ rotate: 65, opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                      className="inline-flex items-center justify-center"
+                    >
+                      <X className="w-4 h-4 text-[#FFD966]" />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="menu-open-icon"
+                      initial={{ rotate: 65, opacity: 0, scale: 0.8 }}
+                      animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                      exit={{ rotate: -65, opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                      className="inline-flex items-center justify-center"
+                    >
+                      <Menu className="w-4 h-4 text-[#243B8A]" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
                 <span className="hidden sm:inline text-[11.5px] font-semibold">
                   {lang === 'mr' ? 'मेनू' : 'Menu'}
                 </span>
@@ -589,7 +655,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 lang === 'mr' ? 'द्रुत दुवे' : 'Quick Navigation'
               }
               data-testid="mobile-tablet-quick-nav"
-              className="akath-swipe-rail touch-pan-x scroll-smooth snap-x snap-mandatory flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 min-w-0 flex-1 justify-start md:justify-end"
+              className="akath-swipe-rail snap-x snap-mandatory flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 min-w-0 flex-1 justify-start md:justify-end"
             >
               {navItems.map((item) => {
                 const active = isActive(item.path);
@@ -627,69 +693,66 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* =====================================================================
           MOBILE & TABLET SLIDE-IN ARCHIVAL DRAWER (RENDERED OUTSIDE <header>)
+          Uses synchronized Motion variants (drawerBackdropVariants & drawerPanelVariants)
+          and a decoupled inner scroll container so open/close transitions are smooth.
           ===================================================================== */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {mobileMenuOpen && (
           <div
+            key="akath-mobile-drawer-layer"
             data-testid="navbar-mobile-drawer-overlay"
+            data-state={mobileMenuOpen ? 'open' : 'closed'}
             className="fixed inset-0 z-[100] lg:hidden"
             role="dialog"
             aria-modal="true"
             aria-label={lang === 'mr' ? 'मोबाईल नेव्हिगेशन मेनू' : 'Navigation Menu'}
           >
-            {/* Archival Paper Frosted-Glass Backdrop Overlay */}
+            {/* Archival Paper Frosted-Glass Backdrop Overlay (Smooth Fade In/Out) */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              style={{ opacity: backdropOpacity }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              variants={drawerBackdropVariants}
+              initial="closed"
+              animate="open"
+              exit="closed"
               onClick={() => setMobileMenuOpen(false)}
               className="fixed inset-0 archival-frosted-overlay"
               aria-hidden="true"
             />
 
-            {/* Right-to-Left Slide-In Archival Paper Drawer (Smooth Left Corners) */}
+            {/* Right-to-Left Slide-In Archival Paper Drawer */}
             <motion.nav
               id="akath-mobile-drawer"
               data-testid="navbar-mobile-drawer"
               data-touch-gesture="swipe-right-to-close"
-              style={{ x: drawerDragX }}
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
+              variants={drawerPanelVariants}
+              initial="closed"
+              animate="open"
+              exit="closed"
               drag="x"
-              dragConstraints={{ left: 0, right: 360 }}
+              dragConstraints={{ left: 0, right: 380 }}
               dragDirectionLock={true}
-              dragElastic={{ left: 0.04, right: 0.5 }}
+              dragElastic={{ left: 0.02, right: 0.45 }}
               onDragEnd={handleDrawerDragEnd}
-              onTouchStart={handleDrawerTouchStart}
-              onTouchMove={handleDrawerTouchMove}
-              onTouchEnd={handleDrawerTouchEnd}
-              transition={{
-                type: 'spring',
-                stiffness: 340,
-                damping: 34,
-                mass: 0.9,
-              }}
-              className="fixed top-0 right-0 bottom-0 h-[100dvh] max-h-[100dvh] w-[88vw] max-w-[360px] rounded-l-xl archival-drawer-surface bg-[#FAF6EC] text-[#1C1917] border-l border-[#DCD4C0] flex flex-col justify-between overflow-y-auto overscroll-contain z-10 shadow-2xl"
+              className="fixed top-0 right-0 bottom-0 h-[100dvh] max-h-[100dvh] w-[90vw] max-w-[360px] rounded-l-xl archival-drawer-surface bg-[#FAF6EC] text-[#1C1917] border-l border-[#DCD4C0] flex flex-col overflow-hidden z-10 shadow-2xl"
             >
               {/* Left-Edge Tactile Grab Handle */}
               <div
                 data-testid="mobile-drawer-drag-handle"
                 aria-hidden="true"
+                onTouchStart={handleDrawerTouchStart}
+                onTouchMove={handleDrawerTouchMove}
+                onTouchEnd={handleDrawerTouchEnd}
                 title={
                   lang === 'mr'
                     ? 'मेनू बंद करण्यासाठी उजवीकडे स्वाइप करा'
                     : 'Swipe right to close drawer'
                 }
-                className="fixed left-1.5 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-2.5 h-16 pointer-events-none"
+                className="absolute left-1.5 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-3 h-16 pointer-events-auto"
               >
                 <span className="w-1 h-12 rounded-full bg-[#243B8A]/25" />
               </div>
 
-              {/* Drawer Header */}
-              <div className="p-4 sm:p-5 border-b border-[#DCD4C0] flex items-center justify-between bg-[#FFFDF7] text-[#1C1917] sticky top-0 z-20">
+              {/* Pinned Drawer Header */}
+              <div className="shrink-0 p-4 sm:p-5 border-b border-[#DCD4C0] flex items-center justify-between bg-[#FFFDF7] text-[#1C1917] z-20">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-9 h-9 rounded-full bg-[#FAF6EC] border border-[#DCD4C0] flex items-center justify-center p-0.5 shrink-0">
                     <AnimatedTortoiseEmblem
@@ -720,10 +783,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               </div>
 
-              {/* Drawer Body */}
-              <div className="p-4 sm:p-5 space-y-4 flex-1">
+              {/* Scrollable Drawer Body (Decoupled from outer drag container for smooth touch scrolling) */}
+              <div className="shrink-0 p-4 sm:p-5 space-y-4 flex-1 overflow-y-auto overscroll-contain">
                 {/* Language Switcher inside Drawer */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-[#FFFDF7] border border-[#DCD4C0]">
+                <motion.div
+                  variants={drawerItemVariants}
+                  className="flex items-center justify-between p-3 rounded-lg bg-[#FFFDF7] border border-[#DCD4C0]"
+                >
                   <span className="text-[12px] font-semibold text-[#1C1917] inline-flex items-center gap-1.5">
                     <Globe className="w-4 h-4 text-[#243B8A]" />
                     <span>{lang === 'mr' ? 'भाषा निवडा' : 'Language'}</span>
@@ -752,20 +818,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                       );
                     })}
                   </div>
-                </div>
+                </motion.div>
 
-                {/* Primary Navigation Links (Smooth rounded-lg cards) */}
-                <div className="space-y-1.5">
-                  {navItems.map((item, idx) => {
+                {/* Primary Navigation Links (Smooth Staggered Items) */}
+                <motion.div variants={drawerItemVariants} className="space-y-2">
+                  {navItems.map((item) => {
                     const active = isActive(item.path);
                     return (
-                      <motion.button
+                      <button
                         key={item.path}
                         type="button"
                         data-testid={`mobile-drawer-link-${item.path}`}
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.02 * idx, duration: 0.16 }}
                         onClick={() => handleNav(item.path)}
                         aria-current={active ? 'page' : undefined}
                         className={`w-full px-4 py-3 rounded-lg text-left text-[14.5px] flex items-center justify-between border transition-colors cursor-pointer ${
@@ -775,14 +838,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                         }`}
                       >
                         <span>{item.label}</span>
-                        <ArrowUpRight className="w-4 h-4 opacity-70" />
-                      </motion.button>
+                        <ArrowUpRight className="w-4 h-4 opacity-70 shrink-0" />
+                      </button>
                     );
                   })}
-                </div>
+                </motion.div>
 
                 {/* Secondary Actions: Track Order + Account / Auth */}
-                <div className="pt-3 border-t border-[#DCD4C0] grid grid-cols-1 gap-2">
+                <motion.div
+                  variants={drawerItemVariants}
+                  className="pt-3 border-t border-[#DCD4C0] grid grid-cols-1 gap-2"
+                >
                   <button
                     type="button"
                     onClick={() => handleNav('/track-order')}
@@ -862,11 +928,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <ArrowUpRight className="w-4 h-4" />
                     </button>
                   )}
-                </div>
+                </motion.div>
               </div>
 
-              {/* Drawer Footer Colophon */}
-              <div className="p-4 border-t border-[#DCD4C0] bg-[#FFFDF7] text-[11.5px] font-mono text-[#57534E] flex items-center justify-between">
+              {/* Pinned Drawer Footer Colophon */}
+              <div className="shrink-0 p-4 border-t border-[#DCD4C0] bg-[#FFFDF7] text-[11.5px] font-mono text-[#57534E] flex items-center justify-between z-20">
                 <span>© अकथ प्रकाशन</span>
                 <span className="text-[#243B8A] font-semibold">
                   {lang === 'mr' ? 'मराठी साहित्य विश्व' : 'Marathi Publishing House'}
