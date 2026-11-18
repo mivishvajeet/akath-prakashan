@@ -6,65 +6,89 @@ interface CapabilitySpecimenPlateProps {
   isMr: boolean;
   title: string;
   deliverable: string;
+  description?: string;
+  onSelectIndex?: (idx: number) => void;
 }
 
 /**
- * Interactive Broadsheet Specimen Plate for "01 · WHAT WE DO"
- * Renders bespoke architectural/editorial SVG craft drawings for each of the
- * 4 publishing stages without boxy card chrome.
+ * Interactive Frosted Atelier Specimen Showcase for "01 · WHAT WE DO"
+ * Renders crisp architectural/editorial SVG scenes alongside the active editorial
+ * narrative inside a cohesive frosted-glass landscape showcase.
  */
 export const CapabilitySpecimenPlate: React.FC<CapabilitySpecimenPlateProps> = ({
   activeIndex,
   isMr,
   title,
   deliverable,
+  description,
+  onSelectIndex,
 }) => {
   const plateNumbers = ['FIG. 01.1', 'FIG. 01.2', 'FIG. 01.3', 'FIG. 01.4'];
   const plateNumber = plateNumbers[activeIndex] || 'FIG. 01.1';
+  const progressPercent = ((activeIndex + 1) / 4) * 100;
 
   return (
-    <div className="relative w-full h-full flex flex-col justify-between bg-[#FAF6EC]/70 border-y lg:border border-[#DCD4C0] px-4 py-4 sm:px-7 sm:py-7">
-      {/* Archival Corner Registration Marks */}
-      <span
+    <div className="relative w-full flex flex-col justify-between rounded-3xl bg-white/88 backdrop-blur-xl border border-[#DCD4C0]/85 shadow-[0_24px_64px_-26px_rgba(36,59,138,0.2)] px-4 py-4 sm:px-7 sm:py-6 overflow-hidden">
+      {/* Subtle Concentric Blueprint Halo */}
+      <div
         aria-hidden="true"
-        className="hidden lg:block absolute top-2 left-2 w-2.5 h-2.5 border-t border-l border-[#243B8A]/50"
+        className="pointer-events-none absolute -right-24 -top-24 w-72 h-72 rounded-full border border-[#243B8A]/12"
       />
-      <span
+      <div
         aria-hidden="true"
-        className="hidden lg:block absolute top-2 right-2 w-2.5 h-2.5 border-t border-r border-[#243B8A]/50"
-      />
-      <span
-        aria-hidden="true"
-        className="hidden lg:block absolute bottom-2 left-2 w-2.5 h-2.5 border-b border-l border-[#243B8A]/50"
-      />
-      <span
-        aria-hidden="true"
-        className="hidden lg:block absolute bottom-2 right-2 w-2.5 h-2.5 border-b border-r border-[#243B8A]/50"
+        className="pointer-events-none absolute -right-14 -top-14 w-52 h-52 rounded-full border border-dashed border-[#C89D54]/28"
       />
 
-      {/* Plate Caption Top Hairline */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 pb-2.5 sm:pb-3 border-b border-[#DCD4C0] text-[10px] sm:text-[10.5px] font-mono uppercase tracking-[0.14em] sm:tracking-[0.16em] text-[#57534E]">
-        <span className="font-bold text-[#243B8A] tabular-nums shrink-0">
+      {/* Smooth Stage Progress Track */}
+      <div className="w-full h-[2px] rounded-full bg-[#E5DEC9]/70 overflow-hidden mb-3.5">
+        <div
+          className="h-full bg-gradient-to-r from-[#243B8A] via-[#EF6855] to-[#C89D54] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
+
+      {/* Plate Caption Header */}
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 pb-3 border-b border-[#E5DEC9]/80 text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.14em] text-[#57534E]">
+        <span className="font-semibold text-[#243B8A] tabular-nums shrink-0">
           {plateNumber} · {isMr ? 'संहिता व निर्मिती' : 'CRAFT SPECIMEN'}
         </span>
-        <span className="text-[#174D3A] font-semibold truncate">
+        <span className="text-[#174D3A] font-medium truncate">
           {deliverable}
         </span>
       </div>
 
-      {/* Center Animated SVG Craft Plate */}
-      <div className="relative flex-1 min-h-[205px] sm:min-h-[265px] lg:min-h-[340px] flex items-center justify-center py-3 sm:py-5">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`specimen-plate-${activeIndex}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-[420px] flex items-center justify-center"
-          >
-            {activeIndex === 0 && (
-              /* 01: MANUSCRIPT DEVELOPMENT — Fountain Nib, Layered Sheets & Chapter Arc */
+      {/* Unified Landscape Showcase: Editorial Narrative (Left on lg+) + Animated Craft Plate (Right on lg+) */}
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 items-center gap-5 lg:gap-8 py-4 sm:py-5">
+        {description && (
+          <div className="lg:col-span-5 text-center lg:text-left space-y-2.5 lg:pr-2">
+            <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#243B8A] font-semibold">
+              0{activeIndex + 1} · {deliverable}
+            </p>
+            <h3 className="text-xl sm:text-2xl lg:text-[26px] font-serif not-italic font-medium text-[#1C1917] leading-snug">
+              {title}
+            </h3>
+            <p className="text-sm sm:text-[15px] text-[#525665] leading-relaxed max-w-[42ch] mx-auto lg:mx-0">
+              {description}
+            </p>
+          </div>
+        )}
+
+        <div
+          className={`${
+            description ? 'lg:col-span-7' : 'lg:col-span-12'
+          } min-h-[195px] sm:min-h-[240px] lg:min-h-[260px] flex items-center justify-center`}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`specimen-plate-${activeIndex}`}
+              initial={{ opacity: 0, y: 8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-[360px] flex items-center justify-center"
+            >
+              {activeIndex === 0 && (
+                /* 01: MANUSCRIPT DEVELOPMENT — Fountain Nib, Layered Sheets & Chapter Arc */
               <svg
                 viewBox="0 0 420 280"
                 fill="none"
@@ -441,16 +465,38 @@ export const CapabilitySpecimenPlate: React.FC<CapabilitySpecimenPlateProps> = (
             )}
           </motion.div>
         </AnimatePresence>
+        </div>
       </div>
 
-      {/* Plate Bottom Caption Hairline */}
-      <div className="pt-3 border-t border-[#DCD4C0] flex items-center justify-between gap-3">
-        <span className="font-serif text-sm sm:text-base font-bold text-[#1C1917] truncate">
+      {/* Plate Bottom Caption & Quick Stage Bar */}
+      <div className="relative z-10 pt-3.5 border-t border-[#E5DEC9]/80 flex items-center justify-between gap-3">
+        <span className="font-serif text-sm sm:text-base font-medium text-[#1C1917] truncate">
           {title}
         </span>
-        <span className="text-[11px] font-mono uppercase tracking-[0.14em] text-[#57534E] shrink-0 tabular-nums">
-          0{activeIndex + 1} / 04
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {onSelectIndex && (
+            <div className="hidden sm:inline-flex items-center gap-1 mr-1">
+              {[0, 1, 2, 3].map((stageIdx) => (
+                <button
+                  key={stageIdx}
+                  type="button"
+                  onClick={() => onSelectIndex(stageIdx)}
+                  aria-label={`Stage 0${stageIdx + 1}`}
+                  className={`w-6 h-6 rounded-full text-[10px] font-mono font-semibold tabular-nums transition-colors cursor-pointer ${
+                    activeIndex === stageIdx
+                      ? 'bg-[#243B8A] text-[#FFFDF7]'
+                      : 'bg-[#FAF6EC] text-[#57534E] hover:text-[#1C1917]'
+                  }`}
+                >
+                  0{stageIdx + 1}
+                </button>
+              ))}
+            </div>
+          )}
+          <span className="text-[11px] font-mono uppercase tracking-[0.14em] text-[#57534E] tabular-nums">
+            0{activeIndex + 1} / 04
+          </span>
+        </div>
       </div>
     </div>
   );

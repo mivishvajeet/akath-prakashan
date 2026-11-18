@@ -1104,6 +1104,10 @@ async function runTests() {
     path.resolve(process.cwd(), 'src/views/HomeView.tsx'),
     'utf-8'
   );
+  const backdropSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/components/AtmosphericOrbitBackdrop.tsx'),
+    'utf-8'
+  );
   const booksAndStoreSource = fs.readFileSync(
     path.resolve(process.cwd(), 'src/views/BooksAndStoreView.tsx'),
     'utf-8'
@@ -1150,7 +1154,9 @@ async function runTests() {
   assert.ok(!homeViewSource.includes('INDEPENDENT LITERARY PRESS'));
   assert.ok(!homeViewSource.includes('CURATED EDITIONS'));
   assert.ok(homeViewSource.includes('शब्दांना पुस्तकाचं रूप देणारी'));
-  assert.ok(homeViewSource.includes('Discovering stories. Developing manuscripts. Publishing books.'));
+  assert.ok(homeViewSource.includes('Every story deserves'));
+  assert.ok(homeViewSource.includes('a place on the shelf.'));
+  assert.ok(homeViewSource.includes('Discovering voices. Shaping stories. Publishing books.'));
   assert.ok(homeViewSource.includes('Explore Our Books'));
   assert.ok(homeViewSource.includes('Publish With Us'));
   assert.ok(homeViewSource.includes('data-testid="home-what-we-do"'));
@@ -2231,10 +2237,13 @@ async function runTests() {
   );
   assert.ok(homeViewSource.includes('data-testid="home-hero-identity-column"'));
   assert.ok(
-    homeViewSource.includes(
-      'items-center text-center lg:items-start lg:text-left'
-    ),
-    'Hero identity column must be center-aligned on mobile and tablet and left-aligned on desktop'
+    homeViewSource.includes('items-center text-center'),
+    'Hero identity column must use smooth center-aligned typography across mobile, tablet, and desktop'
+  );
+  assert.ok(
+    backdropSource.includes('data-testid="home-rotating-books-stage"') &&
+      homeViewSource.includes('<RotatingBookOrbitStage'),
+    'HomeView must include the 3D rotating book carousel stage (home-rotating-books-stage) in section 03'
   );
   assert.ok(homeViewSource.includes('data-testid="home-hero-anchors-rail"'));
   assert.ok(homeViewSource.includes('data-testid="what-we-do-swipe-rail"'));
@@ -2246,7 +2255,7 @@ async function runTests() {
   assert.ok(homeViewSource.includes('flex flex-row lg:flex-col flex-1 min-w-0'));
   assert.ok(homeViewSource.includes('data-testid="home-authors-pillars-rail"'));
   console.log(
-    '  [PASS] RESP-02 (Homepage Mobile & Tablet Centered Hero & Swipe Rails): Center-aligned mobile/tablet Hero poster stage, all 5 homepage card rails & compact folio rail verified'
+    '  [PASS] RESP-02 (Homepage Mobile & Tablet Centered Hero & Swipe Rails): Center-aligned mobile/tablet/desktop Hero stage, 3D rotating books, all homepage rails & compact folio rail verified'
   );
 
   // 9.3 Mobile & Tablet Navigation Drawer Expansion Fix
@@ -2264,10 +2273,11 @@ async function runTests() {
     '  [PASS] RESP-03 (Mobile & Tablet Menu Expansion): Slide-over navigation drawer (#akath-mobile-drawer) synchronized state variants, decoupled scroll body, and smooth icon transitions verified'
   );
 
-  // 9.4 About Page "Why the Tortoise?" Mobile Responsiveness & Founder Section Redesign
+  // 9.4 About Page "Why the Tortoise?" Static Calm Seal & Founder Section Verification
   assert.ok(
-    publishingViewsSource.includes('akath-patient-traverse-track'),
-    'About page tortoise walking track must include akath-patient-traverse-track (container-type: inline-size) so 100cqw resolves to the track width'
+    !publishingViewsSource.includes('akath-patient-traverse-track') &&
+      !publishingViewsSource.includes('akath-patient-tortoise-runner'),
+    'About page Why the Tortoise walking tortoise animation must be removed per user request'
   );
   assert.ok(
     publishingViewsSource.includes('grid grid-cols-2 sm:grid-cols-4'),
@@ -2287,7 +2297,7 @@ async function runTests() {
     'Redesigned Founder section must feature Pooja Vasantrao Dhawale (पूजा वसंतराव ढवळे)'
   );
   console.log(
-    '  [PASS] RESP-04 (About Page Mobile UI & Founder Redesign): Why the Tortoise 2x2 mobile stage grid, container-queried tortoise track, redesigned Founder portrait card, and removal of "100% Merit-Based" line verified'
+    '  [PASS] RESP-04 (About Page Mobile UI & Static Seal): Tortoise animation removed cleanly from Why the Tortoise, 2x2 stage grid, Founder portrait card, and removal of "100% Merit-Based" verified'
   );
 
   // --------------------------------------------------------------------------

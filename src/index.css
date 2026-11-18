@@ -2264,6 +2264,100 @@
   animation: editorial-paper-breeze 3.2s steps(2, end) infinite;
 }
 
+/* =========================================================================
+   Smooth Concentric Circle Lines, Orbital Glow & Author Studio Animations
+   ========================================================================= */
+@keyframes akath-orbit-cw {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes akath-orbit-ccw {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes akath-ring-breathe {
+  0%,
+  100% {
+    transform: scale(0.985);
+    opacity: 0.72;
+  }
+  50% {
+    transform: scale(1.015);
+    opacity: 1;
+  }
+}
+
+@keyframes akath-studio-beam {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.85;
+  }
+  75% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateX(300%);
+    opacity: 0;
+  }
+}
+
+.akath-orbit-ring-cw {
+  animation: akath-orbit-cw 52s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.akath-orbit-ring-ccw {
+  animation: akath-orbit-ccw 68s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.akath-orbit-ring-slow {
+  animation: akath-orbit-cw 96s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.akath-ring-breathe {
+  animation: akath-ring-breathe 8s ease-in-out infinite;
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+.akath-studio-beam-line {
+  animation: akath-studio-beam 4.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.akath-orbit-paused .akath-orbit-ring-cw,
+.akath-orbit-paused .akath-orbit-ring-ccw,
+.akath-orbit-paused .akath-orbit-ring-slow,
+.akath-orbit-paused .akath-ring-breathe,
+.akath-orbit-paused .akath-studio-beam-line {
+  animation-play-state: paused !important;
+}
+
+.akath-3d-perspective {
+  perspective: 1400px;
+}
+
 /* Respect reduced motion preferences (WCAG 2.1 SC 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -2275,6 +2369,11 @@
     scroll-behavior: auto !important;
   }
 
+  .akath-orbit-ring-cw,
+  .akath-orbit-ring-ccw,
+  .akath-orbit-ring-slow,
+  .akath-ring-breathe,
+  .akath-studio-beam-line,
   .akath-io-section,
   .akath-io-section.is-visible,
   .akath-io-section .akath-io-stagger-1,

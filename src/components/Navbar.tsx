@@ -16,6 +16,9 @@ import {
   User,
   Shield,
   LogOut,
+  ChevronDown,
+  FileText,
+  Sparkles,
 } from 'lucide-react';
 import { useLanguage } from '../i18n/translations';
 import { AppLanguage } from '../utils/validation';
@@ -47,9 +50,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { lang, setLang, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [openDesktopDropdown, setOpenDesktopDropdown] = useState<
+    null | '/books' | '/vachankatta'
+  >(null);
   const prevCartCountRef = useRef<number>(cartCount);
   const [isCartPopping, setIsCartPopping] = useState(false);
   const quickNavRef = useRef<HTMLElement | null>(null);
+  const dropdownTimerRef = useRef<number | null>(null);
 
   const drawerTouchRef = useRef<{
     startX: number;
@@ -162,8 +170,20 @@ export const Navbar: React.FC<NavbarProps> = ({
     };
   }, [mobileMenuOpen]);
 
+  // Track subtle page scroll for lightweight glassmorphic elevation
+  useEffect(() => {
+    const onScroll = () => {
+      const next = window.scrollY > 18;
+      setScrolled((prev) => (prev !== next ? next : prev));
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   // Center the active tab in the mobile/tablet quick-navigation rail on route transitions
   useEffect(() => {
+    setOpenDesktopDropdown(null);
     const container = quickNavRef.current;
     if (!container) return;
     const activeChip = container.querySelector<HTMLElement>(
@@ -177,6 +197,23 @@ export const Navbar: React.FC<NavbarProps> = ({
       });
     }
   }, [currentPath]);
+
+  const handleOpenDropdown = (path: '/books' | '/vachankatta') => {
+    if (dropdownTimerRef.current !== null) {
+      window.clearTimeout(dropdownTimerRef.current);
+      dropdownTimerRef.current = null;
+    }
+    setOpenDesktopDropdown(path);
+  };
+
+  const handleScheduleCloseDropdown = () => {
+    if (dropdownTimerRef.current !== null) {
+      window.clearTimeout(dropdownTimerRef.current);
+    }
+    dropdownTimerRef.current = window.setTimeout(() => {
+      setOpenDesktopDropdown(null);
+    }, 140);
+  };
 
   const handleDrawerDragEnd = (
     _event: MouseEvent | TouchEvent | PointerEvent,
@@ -302,28 +339,23 @@ export const Navbar: React.FC<NavbarProps> = ({
         data-testid="primary-navbar"
         data-immersive-hidden={immersiveHidden ? 'true' : 'false'}
         aria-hidden={immersiveHidden ? true : undefined}
-        className={`sticky top-0 z-50 bg-[#FFFDF7]/95 backdrop-blur-md text-[#1C1917] border-b border-[#DCD4C0] shadow-[0_1px_0_rgba(220,212,192,0.6)] w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`sticky top-0 z-50 text-[#1C1917] w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          scrolled
+            ? 'bg-[#FFFDF7]/95 backdrop-blur-2xl border-b border-[#DCD4C0]/90 shadow-[0_10px_34px_-14px_rgba(36,59,138,0.14)]'
+            : 'bg-[#FAF9FF]/80 backdrop-blur-xl border-b border-[#E5DEC9]/65'
+        } ${
           immersiveHidden
             ? '-translate-y-full opacity-0 pointer-events-none'
             : 'opacity-100'
         }`}
       >
-        {/* Signature Publishing House Top Accent Rule */}
-        <div
-          className="h-[2.5px] w-full"
-          style={{
-            background:
-              'linear-gradient(90deg, #243B8A 0%, #C89D54 45%, #EF6855 75%, #243B8A 100%)',
-          }}
-        />
-
         <div className="max-w-[1380px] mx-auto px-3 sm:px-6 lg:px-8">
           {/* =================================================================
-              MAIN EDITORIAL HEADER ROW (SINGLE-ROW ON DESKTOP lg+)
-              Zone 1: Brand Identity | Zone 2: Nav Links | Zone 3: Utilities
+              MAIN LIGHTWEIGHT GLASSMORPHIC HEADER ROW (DESKTOP lg+)
+              Zone 1: Brand Identity | Zone 2: Nav Links + Mega-Popovers | Zone 3: Utilities
               ================================================================= */}
           <div className="min-h-[58px] sm:min-h-[64px] py-1.5 flex items-center justify-between gap-2 sm:gap-3 lg:gap-5">
-            {/* ZONE 1: Brand Identity (Logo kept rounded-full as requested) */}
+            {/* ZONE 1: Brand Identity */}
             <button
               type="button"
               onClick={() => handleNav('/')}
@@ -334,7 +366,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   : 'Akath Prakashan — Home'
               }
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#FAF6EC] border border-[#DCD4C0] group-hover:border-[#243B8A] flex items-center justify-center p-0.5 transition-colors shrink-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 border border-[#DCD4C0] group-hover:border-[#243B8A] group-hover:scale-105 flex items-center justify-center p-0.5 transition-all duration-200 shrink-0 shadow-xs">
                 <AnimatedTortoiseEmblem
                   className="w-8 h-8 sm:w-9 sm:h-9 shrink-0"
                   variant="indigo"
@@ -342,7 +374,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 />
               </div>
               <div className="flex flex-col">
-                <span className="font-serif not-italic text-[17.5px] sm:text-[20px] font-extrabold text-[#1C1917] group-hover:text-[#243B8A] transition-colors leading-none tracking-tight whitespace-nowrap">
+                <span className="font-serif not-italic text-[17.5px] sm:text-[19.5px] font-semibold text-[#1C1917] group-hover:text-[#243B8A] transition-colors leading-none tracking-tight whitespace-nowrap">
                   अकथ प्रकाशन
                 </span>
                 <span className="mt-1 text-[9px] sm:text-[9.5px] font-mono uppercase tracking-[0.16em] text-[#57534E] whitespace-nowrap">
@@ -353,32 +385,226 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </button>
 
-            {/* ZONE 2 (DESKTOP lg+): Clean Editorial Navigation Links with Smooth Rounded States */}
+            {/* ZONE 2 (DESKTOP lg+): Clean Lightweight Navigation + Interactive Mega-Dropdowns */}
             <nav
               aria-label={
                 lang === 'mr' ? 'मुख्य नेव्हिगेशन' : 'Primary Navigation'
               }
-              className="hidden lg:flex items-center gap-1 xl:gap-1.5"
+              className="hidden lg:flex items-center gap-0.5 xl:gap-1 relative"
             >
               {navItems.map((item) => {
                 const active = isActive(item.path);
+                const hasDropdown =
+                  item.path === '/books' || item.path === '/vachankatta';
+                const isDropdownOpen = openDesktopDropdown === item.path;
+
+                if (hasDropdown) {
+                  return (
+                    <div
+                      key={item.path}
+                      className="relative"
+                      onMouseEnter={() =>
+                        handleOpenDropdown(
+                          item.path as '/books' | '/vachankatta'
+                        )
+                      }
+                      onMouseLeave={handleScheduleCloseDropdown}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleNav(item.path)}
+                        aria-current={active ? 'page' : undefined}
+                        aria-expanded={isDropdownOpen}
+                        className={`relative px-2.5 xl:px-3 py-1.5 rounded-full text-[13px] xl:text-[13.5px] transition-colors whitespace-nowrap shrink-0 cursor-pointer inline-flex items-center gap-1 ${
+                          active || isDropdownOpen
+                            ? 'text-[#243B8A] font-semibold bg-[#243B8A]/[0.06]'
+                            : 'text-[#292524] font-medium hover:text-[#243B8A] hover:bg-[#243B8A]/[0.04]'
+                        }`}
+                      >
+                        <span>{item.label}</span>
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 opacity-65 transition-transform duration-200 ${
+                            isDropdownOpen ? 'rotate-180 text-[#243B8A]' : ''
+                          }`}
+                        />
+                        {active && (
+                          <motion.span
+                            layoutId="akath-active-nav-pill"
+                            className="absolute left-3 right-3 bottom-0.5 h-[2px] rounded-full bg-[#243B8A]"
+                            transition={{
+                              type: 'spring',
+                              stiffness: 400,
+                              damping: 34,
+                            }}
+                          />
+                        )}
+                      </button>
+
+                      {/* Smooth Frosted Glass Mega-Popover */}
+                      <AnimatePresence>
+                        {isDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                            transition={{
+                              duration: 0.18,
+                              ease: [0.16, 1, 0.3, 1],
+                            }}
+                            onMouseEnter={() =>
+                              handleOpenDropdown(
+                                item.path as '/books' | '/vachankatta'
+                              )
+                            }
+                            onMouseLeave={handleScheduleCloseDropdown}
+                            className="absolute left-0 top-full mt-2 w-[310px] rounded-2xl bg-[#FFFDF7]/98 backdrop-blur-2xl border border-[#DCD4C0] shadow-[0_24px_48px_-14px_rgba(36,59,138,0.18)] p-3 z-50 space-y-1.5"
+                          >
+                            {item.path === '/books' ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => handleNav('/books')}
+                                  className="w-full px-3 py-2.5 rounded-xl hover:bg-[#FAF6EC] text-left flex items-center justify-between transition-colors cursor-pointer group"
+                                >
+                                  <div>
+                                    <p className="text-xs font-semibold text-[#243B8A]">
+                                      {lang === 'mr'
+                                        ? 'संपूर्ण ग्रंथसूची पहा'
+                                        : 'Explore Full Catalogue'}
+                                    </p>
+                                    <p className="text-[11px] text-[#57534E]">
+                                      {lang === 'mr'
+                                        ? 'सर्व प्रकाशित आवृत्त्या व तपशील'
+                                        : 'All published editions & details'}
+                                    </p>
+                                  </div>
+                                  <ArrowUpRight className="w-4 h-4 text-[#243B8A] opacity-60 group-hover:opacity-100" />
+                                </button>
+                                <div className="h-px bg-[#E5DEC9]" />
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleNav('/books/scholar-juice')
+                                  }
+                                  className="w-full px-3 py-2 rounded-xl hover:bg-[#FAF6EC] text-left flex items-center gap-2.5 transition-colors cursor-pointer"
+                                >
+                                  <BookOpen className="w-3.5 h-3.5 text-[#EF6855] shrink-0" />
+                                  <span className="text-xs font-medium text-[#1C1917] truncate">
+                                    {lang === 'mr'
+                                      ? 'स्कॉलर ज्यूस · जी. के. ऐनापुरे'
+                                      : 'Scholar Juice · G. K. Ainapure'}
+                                  </span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleNav('/books/dhukyachi-dulai')
+                                  }
+                                  className="w-full px-3 py-2 rounded-xl hover:bg-[#FAF6EC] text-left flex items-center gap-2.5 transition-colors cursor-pointer"
+                                >
+                                  <BookOpen className="w-3.5 h-3.5 text-[#174D3A] shrink-0" />
+                                  <span className="text-xs font-medium text-[#1C1917] truncate">
+                                    {lang === 'mr'
+                                      ? 'धुक्याची दुलई · अनुरत्न वाघमारे'
+                                      : 'Dhukyachi Dulai · Anuratna Waghmare'}
+                                  </span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleNav(
+                                      '/books/lokshahimadhye-samajmadhyamancha-vapar'
+                                    )
+                                  }
+                                  className="w-full px-3 py-2 rounded-xl hover:bg-[#FAF6EC] text-left flex items-center gap-2.5 transition-colors cursor-pointer"
+                                >
+                                  <BookOpen className="w-3.5 h-3.5 text-[#243B8A] shrink-0" />
+                                  <span className="text-xs font-medium text-[#1C1917] truncate">
+                                    {lang === 'mr'
+                                      ? 'लोकशाहीमध्ये समाजमाध्यमांचा वापर'
+                                      : 'Social Media in Democracy'}
+                                  </span>
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleNav('/vachankatta/first-page')
+                                  }
+                                  className="w-full px-3 py-2 rounded-xl hover:bg-[#FAF6EC] text-left flex items-center justify-between transition-colors cursor-pointer"
+                                >
+                                  <div className="flex items-center gap-2.5">
+                                    <Sparkles className="w-3.5 h-3.5 text-[#EF6855]" />
+                                    <span className="text-xs font-medium text-[#1C1917]">
+                                      {lang === 'mr'
+                                        ? 'पहिलं पान · उतारे व PDF'
+                                        : 'First Page Excerpts & PDFs'}
+                                    </span>
+                                  </div>
+                                  <ArrowUpRight className="w-3.5 h-3.5 text-[#57534E]" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleNav('/vachankatta/articles')
+                                  }
+                                  className="w-full px-3 py-2 rounded-xl hover:bg-[#FAF6EC] text-left flex items-center justify-between transition-colors cursor-pointer"
+                                >
+                                  <div className="flex items-center gap-2.5">
+                                    <FileText className="w-3.5 h-3.5 text-[#243B8A]" />
+                                    <span className="text-xs font-medium text-[#1C1917]">
+                                      {lang === 'mr'
+                                        ? 'संपादकीय लेख'
+                                        : 'Editorial Essays'}
+                                    </span>
+                                  </div>
+                                  <ArrowUpRight className="w-3.5 h-3.5 text-[#57534E]" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleNav('/vachankatta/reading-lists')
+                                  }
+                                  className="w-full px-3 py-2 rounded-xl hover:bg-[#FAF6EC] text-left flex items-center justify-between transition-colors cursor-pointer"
+                                >
+                                  <div className="flex items-center gap-2.5">
+                                    <BookOpen className="w-3.5 h-3.5 text-[#174D3A]" />
+                                    <span className="text-xs font-medium text-[#1C1917]">
+                                      {lang === 'mr'
+                                        ? 'वाचन याद्या'
+                                        : 'Curated Reading Lists'}
+                                    </span>
+                                  </div>
+                                  <ArrowUpRight className="w-3.5 h-3.5 text-[#57534E]" />
+                                </button>
+                              </>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                }
+
                 return (
                   <button
                     key={item.path}
                     type="button"
                     onClick={() => handleNav(item.path)}
                     aria-current={active ? 'page' : undefined}
-                    className={`relative px-2.5 xl:px-3 py-1.5 rounded-lg text-[13px] xl:text-[13.5px] transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                    className={`relative px-2.5 xl:px-3 py-1.5 rounded-full text-[13px] xl:text-[13.5px] transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                       active
-                        ? 'text-[#243B8A] font-bold bg-[#FAF6EC]'
-                        : 'text-[#292524] font-medium hover:text-[#243B8A] hover:bg-[#FAF6EC]/80'
+                        ? 'text-[#243B8A] font-semibold bg-[#243B8A]/[0.06]'
+                        : 'text-[#292524] font-medium hover:text-[#243B8A] hover:bg-[#243B8A]/[0.04]'
                     }`}
                   >
                     <span>{item.label}</span>
                     {active && (
                       <motion.span
                         layoutId="akath-active-nav-pill"
-                        className="absolute left-2.5 right-2.5 bottom-0.5 h-[2px] rounded-full bg-[#243B8A]"
+                        className="absolute left-3 right-3 bottom-0.5 h-[2px] rounded-full bg-[#243B8A]"
                         transition={{
                           type: 'spring',
                           stiffness: 400,
@@ -391,7 +617,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               })}
             </nav>
 
-            {/* ZONE 3: Right Utility & Action Cluster (Smooth rounded-lg controls) */}
+            {/* ZONE 3: Right Utility & Action Cluster (Lightweight Pill Controls) */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {/* Search Trigger */}
               <button
@@ -399,13 +625,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={onOpenSearch}
                 aria-label={t.nav.searchAria}
                 data-testid="navbar-search-btn"
-                className="inline-flex items-center justify-center gap-1.5 min-h-[36px] px-2.5 py-1.5 rounded-lg bg-[#FAF6EC] hover:bg-[#F2ECE1] border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] text-[12px] font-medium transition-colors shrink-0 cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 min-h-[36px] px-2.5 py-1.5 rounded-full bg-white/80 hover:bg-[#FAF6EC] border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] text-[12px] font-medium transition-colors shrink-0 cursor-pointer"
               >
                 <Search className="w-3.5 h-3.5 text-[#243B8A] shrink-0" />
                 <span className="hidden xl:inline max-w-[96px] truncate text-[#57534E]">
                   {t.nav.search}
                 </span>
-                <kbd className="hidden 2xl:inline-block px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#FFFDF7] border border-[#DCD4C0] text-[#57534E]">
+                <kbd className="hidden 2xl:inline-block px-1.5 py-0.5 rounded-full text-[9.5px] font-mono bg-[#FAF6EC] border border-[#DCD4C0] text-[#57534E]">
                   ⌘K
                 </kbd>
               </button>
@@ -443,7 +669,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 })}
               </div>
 
-              {/* Authenticated Role Controls or Sign-In Button */}
+              {/* Sign In / Auth Pill Button */}
               {user ? (
                 <div className="hidden md:flex items-center gap-1.5 shrink-0">
                   {user.role === 'admin' && (
@@ -451,10 +677,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                       type="button"
                       data-testid="navbar-admin-link"
                       onClick={() => handleNav('/admin')}
-                      className={`px-2.5 py-1.5 rounded-lg text-[11.5px] font-semibold inline-flex items-center gap-1.5 border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                      className={`px-2.5 py-1.5 rounded-full text-[11.5px] font-semibold inline-flex items-center gap-1.5 border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                         currentPath.startsWith('/admin')
                           ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A]'
-                          : 'bg-[#FAF6EC] hover:border-[#243B8A] text-[#243B8A] border-[#DCD4C0]'
+                          : 'bg-white/80 hover:border-[#243B8A] text-[#243B8A] border-[#DCD4C0]'
                       }`}
                     >
                       <Shield className="w-3.5 h-3.5 shrink-0" />
@@ -469,10 +695,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                       type="button"
                       data-testid="navbar-author-link"
                       onClick={() => handleNav('/author/dashboard')}
-                      className={`px-2.5 py-1.5 rounded-lg text-[11.5px] font-semibold inline-flex items-center gap-1.5 border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                      className={`px-2.5 py-1.5 rounded-full text-[11.5px] font-semibold inline-flex items-center gap-1.5 border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                         currentPath.startsWith('/author')
                           ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A]'
-                          : 'bg-[#FAF6EC] hover:border-[#243B8A] text-[#1C1917] border-[#DCD4C0]'
+                          : 'bg-white/80 hover:border-[#243B8A] text-[#1C1917] border-[#DCD4C0]'
                       }`}
                     >
                       <Feather className="w-3.5 h-3.5 text-[#EF6855] shrink-0" />
@@ -486,10 +712,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     type="button"
                     data-testid="navbar-account-btn"
                     onClick={() => handleNav('/account')}
-                    className={`px-2.5 py-1.5 rounded-lg text-[11.5px] font-semibold inline-flex items-center gap-1.5 border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                    className={`px-2.5 py-1.5 rounded-full text-[11.5px] font-semibold inline-flex items-center gap-1.5 border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                       currentPath.startsWith('/account')
                         ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A]'
-                        : 'bg-[#FAF6EC] hover:border-[#243B8A] text-[#1C1917] border-[#DCD4C0]'
+                        : 'bg-white/80 hover:border-[#243B8A] text-[#1C1917] border-[#DCD4C0]'
                     }`}
                   >
                     <User className="w-3.5 h-3.5 text-[#243B8A] shrink-0" />
@@ -505,7 +731,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onClick={() => onLogout()}
                       title={lang === 'mr' ? 'लॉगआउट' : 'Sign Out'}
                       aria-label={lang === 'mr' ? 'लॉगआउट' : 'Sign Out'}
-                      className="p-1.5 rounded-lg bg-[#FAF6EC] hover:bg-[#EF6855] text-[#1C1917] hover:text-[#FFFDF7] border border-[#DCD4C0] transition-colors shrink-0 cursor-pointer"
+                      className="p-1.5 rounded-full bg-white/80 hover:bg-[#EF6855] text-[#1C1917] hover:text-[#FFFDF7] border border-[#DCD4C0] transition-colors shrink-0 cursor-pointer"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                     </button>
@@ -516,10 +742,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   type="button"
                   data-testid="navbar-signin-btn"
                   onClick={() => handleNav('/login')}
-                  className={`hidden md:inline-flex min-h-[36px] px-2.5 py-1.5 rounded-lg text-[12px] font-semibold items-center gap-1.5 border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                  className={`hidden md:inline-flex min-h-[36px] px-3 py-1.5 rounded-full text-[12px] font-medium items-center gap-1.5 border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                     currentPath === '/login' || currentPath === '/register'
                       ? 'bg-[#1C1917] text-[#FFFDF7] border-[#1C1917]'
-                      : 'bg-[#FAF6EC] hover:border-[#243B8A] text-[#1C1917] hover:text-[#243B8A] border-[#DCD4C0]'
+                      : 'bg-white/80 hover:border-[#243B8A] text-[#1C1917] hover:text-[#243B8A] border-[#DCD4C0]'
                   }`}
                 >
                   <User className="w-3.5 h-3.5 text-[#243B8A] shrink-0" />
@@ -527,13 +753,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               )}
 
-              {/* Cart Button — Matching Smooth Editorial Primary Button */}
+              {/* Cart Button — Lightweight Rounded Pill Primary Button */}
               <button
                 type="button"
                 onClick={() => handleNav('/cart')}
                 aria-label={`${t.nav.cart} (${cartCount})`}
                 data-testid="navbar-cart-btn"
-                className="relative inline-flex items-center gap-1.5 min-h-[36px] px-3 py-1.5 rounded-lg bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[12px] font-semibold transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                className="relative inline-flex items-center gap-1.5 min-h-[36px] px-3.5 py-1.5 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[12px] font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer shadow-xs"
               >
                 <ShoppingBag className="w-3.5 h-3.5 text-[#FFD966] shrink-0" />
                 <span className="hidden sm:inline">{t.nav.cart}</span>
@@ -546,7 +772,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       : { scale: 1, y: 0 }
                   }
                   transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
-                  className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-md text-[10px] font-mono font-bold tabular-nums transition-colors ${
+                  className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-mono font-bold tabular-nums transition-colors ${
                     isCartPopping
                       ? 'bg-[#EF6855] text-[#FFFDF7]'
                       : 'bg-[#FFD966] text-[#1C1917]'

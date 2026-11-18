@@ -662,25 +662,25 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
             </h2>
           </div>
 
-          {/* Central Animated Tortoise Literary Stage (Single Logo Medallion + Responsive Walking Track) */}
-          <div className="rounded-xl bg-[#FFFDF7] border border-[#DCD4C0] p-4 sm:p-7 space-y-5 min-w-0">
+          {/* Calm Imprint Seal & 4-Stage Literary Craft Progression (Static — No Tortoise Animation) */}
+          <div className="rounded-2xl bg-[#FFFDF7] border border-[#DCD4C0] p-5 sm:p-8 space-y-6 min-w-0">
             <div className="flex flex-col items-center justify-center text-center space-y-3">
-              {/* Single Orbital Tortoise Medallion Seal */}
-              <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-[#FAF6EC] border border-[#C89D54] flex items-center justify-center shrink-0 shadow-2xs">
+              {/* Calm Static Tortoise Seal */}
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#FAF6EC] border border-[#C89D54]/75 flex items-center justify-center shrink-0">
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-2 rounded-full border border-dashed border-[#243B8A]/30"
+                  className="pointer-events-none absolute inset-2 rounded-full border border-dashed border-[#243B8A]/25"
                 />
                 <AnimatedTortoiseEmblem
-                  className="w-18 h-18 sm:w-24 sm:h-24"
+                  className="w-16 h-16 sm:w-20 sm:h-20"
                   variant="indigo"
-                  animate={true}
-                  hideAndSeekOnHover={true}
+                  animate={false}
+                  hideAndSeekOnHover={false}
                 />
               </div>
 
               <div className="space-y-1 px-2">
-                <p className="font-editorial-display not-italic text-[17px] sm:text-[20px] font-bold text-[#243B8A]">
+                <p className="font-editorial-display not-italic text-[17px] sm:text-[20px] font-semibold text-[#243B8A]">
                   The Patient Tortoise · संथ आणि ठाम पावले
                 </p>
                 <p className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.12em] sm:tracking-[0.16em] text-[#57534E]">
@@ -689,95 +689,21 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
               </div>
             </div>
 
-            {/* Live Animated Walking Tortoise Horizon Track (Responsive 2x2 Grid on Mobile, 4 Cols on sm+) */}
-            <div className="rounded-lg bg-[#FAF6EC] border border-[#E5DEC9] p-3 sm:px-5 sm:py-4 space-y-3 min-w-0">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 text-[9.5px] sm:text-[10.5px] font-mono font-bold uppercase tracking-[0.08em] sm:tracking-[0.14em] text-[#243B8A]">
-                <span className="px-2 py-1 rounded bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate">
+            {/* Clean Static 4-Stage Editorial Craft Strip (2x2 on Mobile, 4 Cols on sm+) */}
+            <div className="rounded-xl bg-[#FAF6EC]/85 border border-[#E5DEC9] p-3.5 sm:px-5 sm:py-4 min-w-0">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.08em] sm:tracking-[0.14em] text-[#243B8A]">
+                <span className="px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate">
                   01 · MANUSCRIPT
                 </span>
-                <span className="px-2 py-1 rounded bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate">
+                <span className="px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate">
                   02 · EDITING
                 </span>
-                <span className="px-2 py-1 rounded bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate">
+                <span className="px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate">
                   03 · PRESSWORK
                 </span>
-                <span className="px-2 py-1 rounded bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate">
+                <span className="px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate">
                   04 · READER
                 </span>
-              </div>
-              <div className="akath-patient-traverse-track relative h-10 w-full overflow-hidden flex items-center">
-                <div className="absolute inset-x-0 bottom-1.5 border-b border-dashed border-[#C89D54]" />
-                <div className="akath-patient-tortoise-runner relative z-10 inline-flex items-center">
-                  <svg
-                    viewBox="0 0 68 38"
-                    className="w-14 h-8 overflow-visible"
-                    aria-label="Animated tortoise carrying a manuscript"
-                  >
-                    <g className="akath-walking-tortoise-body">
-                      {/* Open Book Carried on Shell */}
-                      <path
-                        d="M19 11 L30 14 L41 11 L41 16 L30 19 L19 16 Z"
-                        fill="#FFFDF7"
-                        stroke="#243B8A"
-                        strokeWidth="1.3"
-                      />
-                      {/* Tortoise Dome Shell */}
-                      <path
-                        d="M14 27 C14 14, 45 14, 45 27 Z"
-                        fill="#243B8A"
-                        stroke="#1C1917"
-                        strokeWidth="1.4"
-                      />
-                      <path
-                        d="M21 26 C22 18, 37 18, 38 26"
-                        fill="none"
-                        stroke="#FFD966"
-                        strokeWidth="1.4"
-                      />
-                      <line
-                        x1="30"
-                        y1="16"
-                        x2="30"
-                        y2="26"
-                        stroke="#FFD966"
-                        strokeWidth="1.4"
-                      />
-                      {/* Head */}
-                      <g className="akath-walking-tortoise-head">
-                        <path
-                          d="M44 24 C49 24, 54 20, 56 22 C58 24, 55 27, 45 27 Z"
-                          fill="#C89D54"
-                          stroke="#1C1917"
-                          strokeWidth="1.3"
-                        />
-                        <circle cx="53" cy="22.5" r="1.2" fill="#1C1917" />
-                      </g>
-                      {/* Legs */}
-                      <rect
-                        x="18"
-                        y="27"
-                        width="4.5"
-                        height="5.5"
-                        rx="1.5"
-                        fill="#C89D54"
-                        stroke="#1C1917"
-                        strokeWidth="1.2"
-                        className="akath-walking-tortoise-leg-a"
-                      />
-                      <rect
-                        x="36"
-                        y="27"
-                        width="4.5"
-                        height="5.5"
-                        rx="1.5"
-                        fill="#C89D54"
-                        stroke="#1C1917"
-                        strokeWidth="1.2"
-                        className="akath-walking-tortoise-leg-b"
-                      />
-                    </g>
-                  </svg>
-                </div>
               </div>
             </div>
           </div>
