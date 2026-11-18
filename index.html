@@ -27,7 +27,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500&family=Mukta:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Noto+Serif+Devanagari:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Tiro+Devanagari+Marathi:ital@0;1&display=swap"
+      rel="preload"
+      as="image"
+      href="./assets/aistudio/scholar-juice-cover-640w.avif"
+      type="image/avif"
+      fetchpriority="high"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500&family=Mukta:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Noto+Serif+Devanagari:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Tiro+Devanagari+Marathi:ital@0;1&display=swap"
       rel="stylesheet"
     />
     <script type="application/ld+json">
@@ -57,28 +64,44 @@
   </head>
   <body class="bg-[#FBF9F5] text-[#141413] antialiased selection:bg-[#312E81]/15 selection:text-[#141413]">
     <div id="root"></div>
-    <script type="module" src="./src/main.tsx"></script>
+    <script
+      type="module"
+      src="./src/main.tsx"
+      onerror="window.__loadAkathStaticBundle && window.__loadAkathStaticBundle()"
+    ></script>
     <script>
-      // Fallback for static branch-root deployments where raw index.html is served directly
       (function () {
-        var host = window.location.hostname;
-        var isStaticHost =
-          host.endsWith('.github.io') ||
-          host.endsWith('.vercel.app') ||
-          host.endsWith('.netlify.app') ||
-          host.endsWith('.pages.dev');
-        if (
-          isStaticHost &&
+        var bundleLoaded = false;
+        window.__loadAkathStaticBundle = function () {
+          if (bundleLoaded) return;
+          bundleLoaded = true;
+          window.__AKATH_STATIC_BUNDLE_ACTIVE__ = true;
+          var mainScript = document.querySelector('script[src*="src/main.tsx"]');
+          if (mainScript && mainScript.parentNode) {
+            mainScript.parentNode.removeChild(mainScript);
+          }
+          if (!document.querySelector('link[href*="assets/index.css"]')) {
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = './assets/index.css';
+            document.head.appendChild(link);
+          }
+          if (!document.querySelector('script[src*="assets/app-bundle.js"]')) {
+            var script = document.createElement('script');
+            script.type = 'module';
+            script.src = './assets/app-bundle.js';
+            document.body.appendChild(script);
+          }
+        };
+
+        var hasRawMainTsx = Boolean(
           document.querySelector('script[src*="src/main.tsx"]')
-        ) {
-          var link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = './assets/index.css';
-          document.head.appendChild(link);
-          var script = document.createElement('script');
-          script.type = 'module';
-          script.src = './assets/app-bundle.js';
-          document.body.appendChild(script);
+        );
+        var hasViteClient = Boolean(
+          document.querySelector('script[src*="@vite/client"]')
+        );
+        if (hasRawMainTsx && !hasViteClient) {
+          window.__loadAkathStaticBundle();
         }
       })();
     </script>

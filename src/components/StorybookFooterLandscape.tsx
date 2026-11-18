@@ -34,7 +34,7 @@ import { useLanguage } from '../i18n/translations';
 export const StorybookFooterLandscape: React.FC = () => {
   const { lang } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isInViewport, setIsInViewport] = useState(true);
+  const [isInViewport, setIsInViewport] = useState(false);
   const [isUserPaused, setIsUserPaused] = useState(false);
   const [isBlinkingNow, setIsBlinkingNow] = useState(false);
 

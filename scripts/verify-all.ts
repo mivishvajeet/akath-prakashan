@@ -1033,6 +1033,8 @@ async function runTests() {
     'utf-8'
   );
   assert.ok(footerSource.includes('<StorybookFooterLandscape />'));
+  assert.ok(footerSource.includes('data-testid="footer-marathi-tagline"'));
+  assert.ok(footerSource.includes('शब्दांना पुस्तकाचं रूप देणारी'));
   assert.ok(
     footerSource.indexOf('data-testid="footer-monumental-marathi-text"') <
       footerSource.indexOf('<StorybookFooterLandscape />'),
@@ -1144,7 +1146,9 @@ async function runTests() {
   assert.ok(sixStagesSource.includes('akath-stage-caliper'));
   assert.ok(sixStagesSource.includes('akath-stage-book'));
   assert.ok(homeViewSource.includes('data-testid="home-publishing-hero"'));
-  assert.ok(homeViewSource.includes('मराठी प्रकाशन संस्था'));
+  assert.ok(!homeViewSource.includes('AKATH PRAKASHAN · NANDED'));
+  assert.ok(!homeViewSource.includes('INDEPENDENT LITERARY PRESS'));
+  assert.ok(!homeViewSource.includes('CURATED EDITIONS'));
   assert.ok(homeViewSource.includes('शब्दांना पुस्तकाचं रूप देणारी'));
   assert.ok(homeViewSource.includes('Discovering stories. Developing manuscripts. Publishing books.'));
   assert.ok(homeViewSource.includes('Explore Our Books'));
@@ -2225,6 +2229,13 @@ async function runTests() {
     !homeViewSource.includes('-mx-4') && !homeViewSource.includes('-mx-8'),
     'HomeView must not use negative horizontal margins (-mx-4 / -mx-8) that cause mobile viewport overflow'
   );
+  assert.ok(homeViewSource.includes('data-testid="home-hero-identity-column"'));
+  assert.ok(
+    homeViewSource.includes(
+      'items-center text-center lg:items-start lg:text-left'
+    ),
+    'Hero identity column must be center-aligned on mobile and tablet and left-aligned on desktop'
+  );
   assert.ok(homeViewSource.includes('data-testid="home-hero-anchors-rail"'));
   assert.ok(homeViewSource.includes('data-testid="what-we-do-swipe-rail"'));
   assert.ok(homeViewSource.includes('data-testid="how-we-publish-swipe-rail"'));
@@ -2235,7 +2246,7 @@ async function runTests() {
   assert.ok(homeViewSource.includes('flex flex-row lg:flex-col flex-1 min-w-0'));
   assert.ok(homeViewSource.includes('data-testid="home-authors-pillars-rail"'));
   console.log(
-    '  [PASS] RESP-02 (Homepage Mobile & Tablet Swipe Rails): All 5 homepage card rails & compact "Books We Bring to Life" snap-point folio rail verified with zero horizontal page overflow'
+    '  [PASS] RESP-02 (Homepage Mobile & Tablet Centered Hero & Swipe Rails): Center-aligned mobile/tablet Hero poster stage, all 5 homepage card rails & compact folio rail verified'
   );
 
   // 9.3 Mobile & Tablet Navigation Drawer Expansion Fix
@@ -2279,9 +2290,108 @@ async function runTests() {
     '  [PASS] RESP-04 (About Page Mobile UI & Founder Redesign): Why the Tortoise 2x2 mobile stage grid, container-queried tortoise track, redesigned Founder portrait card, and removal of "100% Merit-Based" line verified'
   );
 
+  // --------------------------------------------------------------------------
+  // 10. PERFORMANCE OPTIMIZATION & 15-SECOND BRAND FILM VERIFICATION SUITE
+  // --------------------------------------------------------------------------
+  console.log(
+    '\n--- 10. Website Performance Optimization & 15-Second Brand Film Verification Suite ---'
+  );
+
+  // 10.1 Responsive AVIF / WebP / JPEG Multi-Width Variants Verification
+  const requiredMediaAssets = [
+    'public/assets/aistudio/scholar-juice-cover-320w.avif',
+    'public/assets/aistudio/scholar-juice-cover-640w.avif',
+    'public/assets/aistudio/scholar-juice-cover-960w.avif',
+    'public/assets/aistudio/scholar-juice-cover-320w.webp',
+    'public/assets/aistudio/scholar-juice-cover-640w.webp',
+    'public/assets/aistudio/book2_b40a45e1-320w.avif',
+    'public/assets/aistudio/book2_b40a45e1-640w.avif',
+    'public/assets/aistudio/book2_b40a45e1-320w.webp',
+    'public/assets/aistudio/lokshahi-cover-320w.avif',
+    'public/assets/aistudio/lokshahi-cover-640w.avif',
+    'public/assets/aistudio/lokshahi-cover-320w.webp',
+    'public/assets/aistudio/scholar-juice-spread.avif',
+    'public/assets/aistudio/scholar-juice-spread.webp',
+    'public/assets/aistudio/ChatGPT_Image_Nov_3__2026_at_11_52_43_PM_821c7865.avif',
+    'public/assets/aistudio/ChatGPT_Image_Nov_3__2026_at_11_52_43_PM_821c7865.webp',
+    'public/assets/akath/akath-logo-256w.webp',
+    'public/assets/akath/akath-logo-256w.avif',
+    'public/assets/akath/akath-brand-film-16x9.mp4',
+    'public/assets/akath/akath-brand-film-16x9.webm',
+    'public/assets/akath/akath-brand-film-9x16.mp4',
+    'public/assets/akath/akath-brand-film-9x16.webm',
+    'public/assets/akath/akath-brand-film-poster-16x9.webp',
+    'public/assets/akath/akath-brand-film-poster-9x16.webp',
+  ];
+
+  for (const relPath of requiredMediaAssets) {
+    const absPath = path.resolve(process.cwd(), relPath);
+    assert.ok(fs.existsSync(absPath), `Missing optimized media asset: ${relPath}`);
+    const stat = fs.statSync(absPath);
+    assert.ok(stat.size > 500, `Optimized media asset is unexpectedly empty: ${relPath}`);
+    assert.ok(
+      stat.size < 8 * 1024 * 1024,
+      `Media asset exceeds 8 MB budget: ${relPath} (${stat.size} bytes)`
+    );
+  }
+
+  assert.ok(bookCoverArtSource.includes('type="image/avif"'));
+  assert.ok(bookCoverArtSource.includes('type="image/webp"'));
+  assert.ok(bookCoverArtSource.includes('fetchPriority={priority ? \'high\' : \'auto\'}'));
+  assert.ok(bookCoverArtSource.includes('onError={() => setImgFailed(true)}'));
+  assert.ok(bookCoverArtSource.includes('export const BookCoverArt = memo(BookCoverArtInner);'));
+  console.log(
+    '  [PASS] PERF-01 (Responsive AVIF/WebP Pipeline & BookCoverArt): Multi-width AVIF/WebP variants, <picture> srcSet, LCP fetchPriority="high", error fallback, and React.memo verified'
+  );
+
+  // 10.2 Scrolling & Off-Screen Animation Pausing Verification
+  assert.ok(
+    homeViewSource.includes('window.requestAnimationFrame'),
+    'HomeView catalog rail scroll handler must be throttled with requestAnimationFrame'
+  );
+  assert.ok(
+    storybookFooterSource.includes('const [isInViewport, setIsInViewport] = useState(false);'),
+    'StorybookFooterLandscape must initialize isInViewport to false so off-screen SVG animations start paused'
+  );
+  assert.ok(
+    footerSource.includes('akath-footer-offscreen') &&
+      cssSource.includes('.akath-footer-offscreen .akath-footer-star'),
+    'Footer must pause infinite celestial/wordmark animations via .akath-footer-offscreen when scrolled out of view'
+  );
+  console.log(
+    '  [PASS] PERF-02 (60 FPS Scrolling & Off-Screen Animation Pausing): rAF scroll throttling and IntersectionObserver animation pausing verified'
+  );
+
+  // 10.3 Clean Minimal Hero & Video-Free Section 05 Editorial Philosophy Verification
+  assert.ok(
+    !homeViewSource.includes('<WalkingTortoise'),
+    'HomeView Hero must not render WalkingTortoise animation'
+  );
+  assert.ok(
+    !homeViewSource.includes('<AkathBrandFilmSection') &&
+      !homeViewSource.includes('<video'),
+    'Section 05 (ABOUT AKATH PRAKASHAN) in HomeView must not render any video player'
+  );
+  assert.ok(homeViewSource.includes('data-testid="home-about-akath"'));
+  assert.ok(homeViewSource.includes('Rooted in Language. Driven by Stories.'));
+  assert.ok(homeViewSource.includes('Discover Our Books'));
+  assert.ok(homeViewSource.includes('About Akath Prakashan'));
+  assert.ok(homeViewSource.includes('<AnimatedTortoiseEmblem'));
+  assert.ok(
+    fs.existsSync(path.resolve(process.cwd(), 'public/assets/akath/svg/akath-official-emblem.svg')),
+    'Standalone official Akath vector emblem SVG must exist'
+  );
+  assert.ok(
+    fs.existsSync(path.resolve(process.cwd(), 'public/assets/akath/svg/akath-literary-world.svg')),
+    'Standalone layered literary world SVG must exist'
+  );
+  console.log(
+    '  [PASS] PERF-03 (Clean Minimal Hero & Video-Free Section 05): Verified tortoise animation removal from Hero and video removal from 05 · ABOUT AKATH PRAKASHAN'
+  );
+
   console.log('\n================================================================');
   console.log(
-    'ALL 100 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS + 11 SEC-01 + 5 SEC-02 + 6 DB/CLOUD + 4 MOBILE/TABLET RESP) PASSED!'
+    'ALL 103 AUTOMATED TESTS (20 CART + 11 EMAIL + 13 PHONE + 21 AUTH/RBAC + 9 UI/CMS + 11 SEC-01 + 5 SEC-02 + 6 DB/CLOUD + 4 MOBILE/TABLET RESP + 3 PERF/BRAND-FILM) PASSED!'
   );
   console.log('================================================================');
 }

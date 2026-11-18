@@ -75,6 +75,15 @@ function isServedFromRepoRootDist(): boolean {
     cachedDistSubdirPrefix = '/dist';
     return true;
   }
+  const hostname = window.location.hostname;
+  if (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.endsWith('.run.app')
+  ) {
+    cachedDistSubdirPrefix = '';
+    return false;
+  }
   if (typeof document !== 'undefined') {
     for (const s of Array.from(document.getElementsByTagName('script'))) {
       if (s.src && s.src.includes('/dist/assets/')) {
@@ -94,6 +103,16 @@ function isServedFromRepoRootDist(): boolean {
 export function getGitHubPagesBasePath(): string {
   if (typeof window === 'undefined') return '';
   if (cachedBasePath !== null) return cachedBasePath;
+
+  const hostname = window.location.hostname;
+  if (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.endsWith('.run.app')
+  ) {
+    cachedBasePath = '';
+    return cachedBasePath;
+  }
 
   // 1. Check Vite's configured BASE_URL if it is an explicit subpath
   const envBase = (import.meta as any).env?.BASE_URL;
@@ -119,6 +138,7 @@ export function getGitHubPagesBasePath(): string {
     for (const rawUrl of assetUrls) {
       try {
         const parsed = new URL(rawUrl, window.location.origin);
+        if (parsed.origin !== window.location.origin) continue;
         const distAssetsIdx = parsed.pathname.indexOf('/dist/assets/');
         if (distAssetsIdx >= 0) {
           cachedDistSubdirPrefix = '/dist';
@@ -773,7 +793,9 @@ export function installGitHubPagesStaticAdapter(): void {
     hostname.endsWith('.run.app');
 
   const isExplicitStaticHost =
+    Boolean((window as any).__AKATH_STATIC_BUNDLE_ACTIVE__) ||
     hostname.endsWith('.github.io') ||
+    hostname.endsWith('.arthsankalp.com') ||
     hostname.endsWith('.vercel.app') ||
     hostname.endsWith('.netlify.app') ||
     hostname.endsWith('.pages.dev') ||

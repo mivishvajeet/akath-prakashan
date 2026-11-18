@@ -154,12 +154,16 @@ app.use((req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=(), payment=()'
   );
-  res.setHeader(
-    'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseapp.com https://*.googleapis.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://*.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https: ws: wss:; frame-ancestors *; base-uri 'self'; form-action 'self'; object-src 'none'"
-  );
+  if (req.path.startsWith('/api/')) {
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: https:; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://*.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https: ws: wss:; frame-ancestors *; base-uri 'self'; form-action 'self'; object-src 'none'"
+    );
+  }
 
-  if (
+  if (req.path.startsWith('/assets/')) {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  } else if (
     req.path.startsWith('/api/auth') ||
     req.path.startsWith('/api/account') ||
     req.path.startsWith('/api/author') ||
@@ -5856,6 +5860,32 @@ app.post('/api/analytics/event', (req, res) => {
 });
 
 async function startServer() {
+  const publicAssetsPath = path.join(process.cwd(), 'public', 'assets');
+  app.use('/assets', express.static(publicAssetsPath));
+
+  // Normalize nested-route requests for Vite modules and static assets (e.g. /books/src/main.tsx -> /src/main.tsx)
+  app.use((req, _res, next) => {
+    for (const prefix of [
+      '/src/',
+      '/assets/',
+      '/node_modules/',
+      '/@vite/',
+      '/@react-refresh',
+      '/@fs/',
+      '/@id/',
+    ]) {
+      const idx = req.path.indexOf(prefix);
+      if (idx > 0) {
+        req.url = req.url.slice(idx);
+        break;
+      }
+    }
+    if (req.path.endsWith('/manifest.json') && req.path !== '/manifest.json') {
+      req.url = '/manifest.json';
+    }
+    next();
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },

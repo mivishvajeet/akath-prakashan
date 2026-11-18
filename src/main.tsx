@@ -76,14 +76,6 @@ if (rootElement) {
     </RootErrorBoundary>
   );
 
-  // 3. Run post-render browser console diagnostic check for manifest & static assets
-  window.addEventListener(
-    'load',
-    () => {
-      setTimeout(() => {
-        void runGitHubPagesAssetDiagnostics();
-      }, 300);
-    },
-    {once: true}
-  );
+  // Expose manual diagnostic helper in DevTools without blocking initial page load
+  (window as any).runAkathAssetDiagnostics = runGitHubPagesAssetDiagnostics;
 }

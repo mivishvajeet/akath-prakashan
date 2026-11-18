@@ -3,14 +3,14 @@ import { useLanguage } from '../i18n/translations';
 
 interface WalkingTortoiseProps {
   className?: string;
+  variant?: 'default' | 'hero';
 }
 
 /**
- * Akath Patient Tortoise Traverse — Subtle Bottom-of-Page CSS Horizon Animation
+ * Akath Patient Tortoise Traverse — Subtle Margin Horizon Animation
  *
  * A refined, slow-moving CSS-based horizontal 'traverse' animation
- * that subtly cycles along an archival margin rule at the bottom of the About page
- * without distracting from the reading experience:
+ * that subtly cycles along an archival margin rule:
  * - GPU-composited CSS keyframes (`akath-patient-traverse` + `akath-patient-turn`)
  *   using container query units (`100cqw`) move the Heritage Forest (#174D3A) tortoise
  *   smoothly across mobile (320px–430px), tablet (768px), and desktop viewports.
@@ -21,9 +21,11 @@ interface WalkingTortoiseProps {
  */
 export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
   className = '',
+  variant = 'default',
 }) => {
   const { lang } = useLanguage();
   const [isPaused, setIsPaused] = useState(false);
+  const isHero = variant === 'hero';
 
   const stations =
     lang === 'mr'
@@ -32,7 +34,7 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
 
   return (
     <div
-      data-testid="about-walking-tortoise"
+      data-testid={isHero ? 'hero-walking-tortoise' : 'about-walking-tortoise'}
       aria-label={
         lang === 'mr'
           ? 'अकथ प्रकाशन संपादकीय कासव भ्रमण — संथ पावले, सखोल अक्षरे, चिरंतन ग्रंथ'
@@ -40,23 +42,29 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
       }
       className={`akath-patient-traverse-stage ${
         isPaused ? 'is-paused' : ''
-      } relative w-full max-w-[960px] mx-auto pt-3 pb-1 select-none overflow-hidden ${className}`}
+      } relative w-full ${
+        isHero ? 'pt-1 pb-0' : 'max-w-[960px] mx-auto pt-3 pb-1'
+      } select-none overflow-hidden ${className}`}
     >
       {/* Top Margin Header with Mobile-Friendly Pause/Walk Control */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-1 text-[10px] font-mono uppercase tracking-[0.16em] sm:tracking-[0.2em] text-[#5A5F72]">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5 px-0.5 text-[10px] font-mono uppercase tracking-[0.16em] sm:tracking-[0.2em] text-[#5A5F72]">
         <span className="text-[#174D3A] font-semibold truncate">
           {lang === 'mr'
             ? 'संथ पावले · सखोल अक्षरे · चिरंतन ग्रंथ'
-            : 'PATIENT TORTOISE TRAVERSE · ONE BOOK AT A TIME'}
+            : 'SLOW STEPS · DEEP LETTERS · ENDURING BOOKS'}
         </span>
 
         <div className="flex items-center gap-3 ml-auto">
-          <span className="text-[#5A5F72] hidden min-[380px]:inline">
-            {lang === 'mr' ? 'नांदेड, महाराष्ट्र' : 'NANDED, MAHARASHTRA'}
-          </span>
+          {!isHero && (
+            <span className="text-[#5A5F72] hidden min-[380px]:inline">
+              {lang === 'mr' ? 'नांदेड, महाराष्ट्र' : 'NANDED, MAHARASHTRA'}
+            </span>
+          )}
           <button
             type="button"
-            data-testid="about-tortoise-play-toggle"
+            data-testid={
+              isHero ? 'hero-tortoise-play-toggle' : 'about-tortoise-play-toggle'
+            }
             aria-pressed={isPaused}
             onClick={() => setIsPaused((prev) => !prev)}
             className="px-2 py-0.5 border-b border-[#243B8A]/40 hover:border-[#243B8A] text-[9.5px] font-mono font-semibold text-[#243B8A] transition-colors cursor-pointer whitespace-nowrap"
@@ -74,8 +82,16 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
 
       {/* Horizontal Marginalia Traverse Track (Container Query Enabled for Mobile/Tablet/Desktop) */}
       <div
-        data-testid="about-tortoise-colophon-seal"
-        className="akath-patient-traverse-track relative w-full h-[72px] sm:h-[74px] border-y border-[#E6DFCE] bg-[#F7F3E8]/30 px-3 sm:px-4 overflow-hidden flex flex-col justify-end"
+        data-testid={
+          isHero
+            ? 'hero-tortoise-colophon-seal'
+            : 'about-tortoise-colophon-seal'
+        }
+        className={`akath-patient-traverse-track relative w-full px-3 sm:px-4 overflow-hidden flex flex-col justify-end ${
+          isHero
+            ? 'h-[66px] sm:h-[70px] rounded-xl border border-[#DCD4C0] bg-[#FFFDF7]/80 shadow-xs'
+            : 'h-[72px] sm:h-[74px] border-y border-[#E6DFCE] bg-[#F7F3E8]/30'
+        }`}
       >
         {/* Editorial Waypoints along the Margin — Visible on Mobile, Tablet & Desktop */}
         <div

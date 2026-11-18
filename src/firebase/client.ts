@@ -115,7 +115,15 @@ async function testConnection(): Promise<void> {
 }
 
 if (typeof window !== 'undefined') {
-  void testConnection();
+  window.addEventListener(
+    'load',
+    () => {
+      setTimeout(() => {
+        void testConnection();
+      }, 3000);
+    },
+    { once: true }
+  );
 }
 
 // ============================================================================

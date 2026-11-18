@@ -39,15 +39,23 @@ export const Footer: React.FC<FooterProps> = ({
   const emailInputRef = useRef<HTMLInputElement>(null);
   const footerRef = useRef<HTMLElement>(null);
   const wordmarkBannerRef = useRef<HTMLDivElement>(null);
+  const [isFooterInViewport, setIsFooterInViewport] = useState(false);
+  const pointerRafRef = useRef<number | null>(null);
 
   const handleWordmarkPointerMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const el = wordmarkBannerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    el.style.setProperty('--wordmark-spot-x', `${x}px`);
-    el.style.setProperty('--wordmark-spot-y', `${y}px`);
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+    if (pointerRafRef.current !== null) return;
+    pointerRafRef.current = window.requestAnimationFrame(() => {
+      pointerRafRef.current = null;
+      const el = wordmarkBannerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      el.style.setProperty('--wordmark-spot-x', `${x}px`);
+      el.style.setProperty('--wordmark-spot-y', `${y}px`);
+    });
   };
 
   useEffect(() => {
@@ -69,14 +77,13 @@ export const Footer: React.FC<FooterProps> = ({
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
+          setIsFooterInViewport(entry.isIntersecting);
           if (entry.isIntersecting) {
             setHasEnteredView(true);
-            observer.disconnect();
-            break;
           }
         }
       },
-      { threshold: 0.08, rootMargin: '0px 0px -16px 0px' }
+      { threshold: 0.02, rootMargin: '120px 0px 120px 0px' }
     );
 
     observer.observe(node);
@@ -168,7 +175,9 @@ export const Footer: React.FC<FooterProps> = ({
           : 'The Last Page — Akath Prakashan Editorial Footer & Colophon'
       }
       data-testid="the-last-page-footer"
-      className="last-page-footer relative text-[#F5EBDD] overflow-hidden mt-20 border-t border-[#E8BC69]/30"
+      className={`last-page-footer relative text-[#F5EBDD] overflow-hidden mt-20 border-t border-[#E8BC69]/30 ${
+        !isFooterInViewport ? 'akath-footer-offscreen' : ''
+      }`}
       style={{
         background:
           'linear-gradient(180deg, #0C152C 0%, #132247 42%, #1D3162 76%, #2D4238 93%, #302C25 100%)',
@@ -685,8 +694,8 @@ export const Footer: React.FC<FooterProps> = ({
       </div>
 
       {/* =======================================================================
-          MONUMENTAL MARATHI WORDMARK ("अकथ प्रकाशन") + 16-BIT PIXEL-ART PARALLAX
-          COUNTRYSIDE & SPRITE TORTOISE STAGE (CLEAN HORIZON ALIGNMENT)
+          MONUMENTAL MARATHI WORDMARK ("अकथ प्रकाशन") + RESPONSIVE CENTERED TAGLINE
+          ("शब्दांना पुस्तकाचं रूप देणारी प्रकाशन संस्था.") + 16-BIT PIXEL-ART STAGE
           ======================================================================= */}
       <div
         ref={wordmarkBannerRef}
@@ -694,8 +703,45 @@ export const Footer: React.FC<FooterProps> = ({
         data-testid="footer-monumental-wordmark"
         className={`akath-sarvam-wordmark-stage ${
           hasEnteredView ? 'is-visible' : ''
-        } group relative w-full overflow-hidden pt-2 sm:pt-3 pb-0 select-none`}
+        } group relative w-full overflow-hidden pt-4 sm:pt-6 lg:pt-8 pb-0 select-none`}
       >
+        {/* Centered Dynamic Footer Tagline Stage (Mobile, Tablet & Desktop) */}
+        <div
+          data-testid="footer-tagline-stage"
+          className="relative z-20 max-w-[1160px] mx-auto px-4 sm:px-8 lg:px-12 pb-3 sm:pb-4 lg:pb-5 flex flex-col items-center text-center"
+        >
+          {/* Celestial Gold Ornamental Crown Rule */}
+          <div
+            aria-hidden="true"
+            className="flex items-center justify-center gap-2.5 sm:gap-3.5 mb-2 sm:mb-2.5"
+          >
+            <span className="w-10 sm:w-16 lg:w-24 h-px bg-gradient-to-r from-transparent via-[#E8BC69]/70 to-[#FFD966]" />
+            <span className="w-1.5 h-1.5 rotate-45 bg-[#FFD966]" />
+            <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.22em] text-[#E8BC69]">
+              {lang === 'mr' ? 'मराठी प्रकाशन संस्था' : 'MARATHI PUBLISHING HOUSE'}
+            </span>
+            <span className="w-1.5 h-1.5 rotate-45 bg-[#FFD966]" />
+            <span className="w-10 sm:w-16 lg:w-24 h-px bg-gradient-to-l from-transparent via-[#E8BC69]/70 to-[#FFD966]" />
+          </div>
+
+          {/* Dynamic Responsive Centered Marathi Tagline ("शब्दांना पुस्तकाचं रूप देणारी प्रकाशन संस्था.") */}
+          <p
+            data-testid="footer-marathi-tagline"
+            className="w-full max-w-[20ch] sm:max-w-none mx-auto text-center font-serif not-italic font-extrabold tracking-[-0.02em] leading-[1.24] sm:leading-[1.18] lg:leading-[1.14] text-[clamp(1.35rem,5.2vw,2.1rem)] sm:text-[clamp(1.75rem,3.6vw,2.45rem)] lg:text-[clamp(2.15rem,2.8vw,3rem)] [text-wrap:balance]"
+          >
+            <span className="text-[#F5EBDD] drop-shadow-[0_2px_10px_rgba(6,11,26,0.55)]">
+              शब्दांना पुस्तकाचं रूप देणारी{' '}
+            </span>
+            <span className="relative inline-block whitespace-nowrap text-[#FFD966] drop-shadow-[0_2px_14px_rgba(232,188,105,0.28)]">
+              प्रकाशन संस्था.
+              <span
+                aria-hidden="true"
+                className="block w-full h-[2px] mt-1 rounded-full bg-gradient-to-r from-transparent via-[#FFD966] to-transparent opacity-85"
+              />
+            </span>
+          </p>
+        </div>
+
         {/* Monumental Marathi Wordmark ("अकथ प्रकाशन") Framed Cleanly Above the Horizon */}
         <a
           href="/"
