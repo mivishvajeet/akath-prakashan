@@ -13,16 +13,21 @@ import {
   ChevronRight,
   Sparkles,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import {
   BookRecord,
   AuthorRecord,
   EditorialArticle,
   FirstPageExcerpt,
 } from '../types/publishing';
-import { resolvePublicAssetUrl } from '../utils/githubPagesAdapter';
 import { BookCoverArt } from '../components/BookCoverArt';
 import { AnimatedTortoiseEmblem } from '../components/SarvamIllustrations';
+import {
+  HeroPublicationWatermark,
+  AuthorsLandscapeBackdrop,
+  AboutLandscapeBackdrop,
+  HeroInteractiveBookPlinth,
+} from '../components/HeroInteractiveShowcase';
 import {
   CapabilitySpecimenPlate,
   JourneyStageGlyph,
@@ -231,6 +236,43 @@ export const HomeView: React.FC<HomeViewProps> = ({
 }) => {
   const { lang } = useLanguage();
   const isMr = lang === 'mr';
+  const prefersReducedMotion = useReducedMotion();
+
+  const heroRevealContainer = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: prefersReducedMotion ? 0 : 0.11,
+        delayChildren: prefersReducedMotion ? 0 : 0.04,
+      },
+    },
+  };
+
+  const heroRevealItem = {
+    hidden: prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: prefersReducedMotion ? 0 : 0.65,
+        ease: [0.22, 1, 0.36, 1] as const,
+      },
+    },
+  };
+
+  const heroHairlineItem = {
+    hidden: prefersReducedMotion
+      ? { opacity: 1, scaleX: 1 }
+      : { opacity: 0, scaleX: 0.35 },
+    visible: {
+      opacity: 1,
+      scaleX: 1,
+      transition: {
+        duration: prefersReducedMotion ? 0 : 0.55,
+        ease: [0.22, 1, 0.36, 1] as const,
+      },
+    },
+  };
 
   const [selectedBookId, setSelectedBookId] = useState<string>(
     books[0]?.id || 'book-scholar-juice'
@@ -385,10 +427,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
       }}
       className="relative text-[#1C1917] w-full max-w-[100vw] overflow-x-hidden transition-colors duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
     >
-      {/* Continuous Ambient Whole-Page Concentric Orbit Backdrop */}
+      {/* Continuous Ambient Concentric Orbit Backdrop (quietly muted in Hero, active in lower orbital sections) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-0 overflow-hidden flex items-center justify-center opacity-50"
+        className={`pointer-events-none fixed inset-0 z-0 overflow-hidden flex items-center justify-center transition-opacity duration-700 ${
+          activeThemeSection === 'hero' ? 'opacity-0' : 'opacity-45'
+        }`}
       >
         <div className="w-[720px] h-[720px] sm:w-[980px] sm:h-[980px] lg:w-[1240px] lg:h-[1240px]">
           <ConcentricOrbitRings
@@ -401,85 +445,82 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </div>
 
       {/* =====================================================================
-          1. HERO — CENTER-ALIGNED LIGHTWEIGHT EXHIBITION STAGE & ORBITAL HALO
+          1. HERO — QUIET LITERARY STILLNESS, POISE & FEATURED GALLERY PLINTH
           ===================================================================== */}
       <section
         ref={heroRef}
         data-testid="home-publishing-hero"
         className={`akath-io-section ${
           isHeroVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden border-b border-[#E5DEC9]/75 pt-5 sm:pt-8 lg:pt-10 pb-8 sm:pb-10 lg:pb-12`}
+        } relative z-10 w-full overflow-hidden border-b border-[#E5DEC9]/75 pt-8 sm:pt-10 lg:pt-12 pb-9 sm:pb-11 lg:pb-12`}
       >
-        {/* Soft Sunlit Center Aura */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(ellipse 68% 58% at 50% 34%, rgba(255, 217, 102, 0.24) 0%, rgba(250, 249, 255, 0) 72%)',
-          }}
-        />
+        {/* Serene, Low-Opacity Akath Tortoise & Open-Book Literary Crest Watermark */}
+        <HeroPublicationWatermark />
 
-        {/* Hero Center-Focused Concentric Orbital Circle Stage */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-[28%] sm:top-[30%] -translate-x-1/2 -translate-y-1/2 w-[560px] h-[560px] sm:w-[820px] sm:h-[820px] lg:w-[980px] lg:h-[980px] opacity-95"
-        >
-          <ConcentricOrbitRings
-            primaryStroke="rgba(36, 59, 138, 0.28)"
-            secondaryStroke="rgba(184, 128, 42, 0.36)"
-            glowColor="rgba(99, 102, 241, 0.14)"
-            className="w-full h-full"
-          />
-        </div>
-
-        <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10 min-w-0 space-y-6 sm:space-y-7 lg:space-y-8">
-          {/* Center-Aligned Lightweight Typography Stack (Mobile, Tablet & Desktop) */}
-          <div
+        <div className="w-full max-w-[1120px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10 min-w-0 space-y-7 sm:space-y-9">
+          {/* Center-Aligned Poised Literary Statement with Staggered Editorial Reveal */}
+          <motion.div
             data-testid="home-hero-identity-column"
-            className="w-full max-w-4xl mx-auto flex flex-col items-center text-center space-y-4 sm:space-y-5"
+            variants={heroRevealContainer}
+            initial="hidden"
+            animate="visible"
+            className="w-full max-w-3xl mx-auto flex flex-col items-center text-center space-y-4 sm:space-y-4.5"
           >
             <h1
               data-testid="home-hero-main-headline"
-              className="w-full font-serif not-italic font-medium text-[#1C1917] tracking-[-0.02em] text-center [text-wrap:balance]"
+              className="w-full font-serif not-italic text-[#1C1917] tracking-[-0.025em] text-center [text-wrap:balance]"
             >
-              <span className="block text-[clamp(1.75rem,6.4vw,2.65rem)] sm:text-[clamp(2.35rem,4.4vw,3.15rem)] lg:text-[clamp(2.65rem,3.4vw,3.4rem)] leading-[1.24] text-[#1C1917]/90">
+              <motion.span
+                variants={heroRevealItem}
+                className="block font-normal text-[clamp(1.85rem,6.4vw,2.75rem)] sm:text-[clamp(2.5rem,4.6vw,3.35rem)] lg:text-[clamp(2.85rem,3.6vw,3.65rem)] leading-[1.2] text-[#2B2927]"
+              >
                 {isMr ? 'शब्दांना पुस्तकाचं रूप देणारी' : 'Every story deserves'}{' '}
-              </span>
-              <span className="block mt-1 text-[clamp(2.15rem,8vw,3.25rem)] sm:text-[clamp(2.9rem,5.6vw,3.9rem)] lg:text-[clamp(3.25rem,4.2vw,4.35rem)] leading-[1.15] font-semibold text-[#243B8A]">
+              </motion.span>
+              <motion.span
+                variants={heroRevealItem}
+                className="block mt-1 font-semibold text-[clamp(2.15rem,7.8vw,3.25rem)] sm:text-[clamp(2.95rem,5.5vw,3.95rem)] lg:text-[clamp(3.35rem,4.2vw,4.35rem)] leading-[1.12] text-[#243B8A]"
+              >
                 {isMr ? 'प्रकाशन संस्था.' : 'a place on the shelf.'}
-              </span>
+              </motion.span>
             </h1>
 
-            {/* Minimal Center Horizon Divider */}
-            <div
+            {/* Quiet Minimal Gold Hairline */}
+            <motion.div
+              variants={heroHairlineItem}
               aria-hidden="true"
-              className="flex items-center justify-center pt-0.5"
+              className="pt-0.5 origin-center"
             >
-              <span className="w-24 sm:w-32 h-px bg-gradient-to-r from-transparent via-[#243B8A]/60 to-transparent" />
-            </div>
+              <span className="block w-12 h-px bg-[#C89D54]/70 mx-auto" />
+            </motion.div>
 
-            <p
+            <motion.p
+              variants={heroRevealItem}
               data-testid="home-hero-supporting-line"
-              className="max-w-[44ch] mx-auto text-center text-[17px] sm:text-[20px] lg:text-[22px] font-serif not-italic font-medium text-[#243B8A] leading-[1.45]"
+              className="max-w-[44ch] mx-auto text-center text-[17.5px] sm:text-[20px] lg:text-[22px] font-serif not-italic font-medium text-[#243B8A] leading-[1.45]"
             >
               {isMr
                 ? 'नवे स्वर शोधतो. कथांना आकार देतो. पुस्तके प्रकाशित करतो.'
                 : 'Discovering voices. Shaping stories. Publishing books.'}
-            </p>
+            </motion.p>
 
-            <p className="text-[14.5px] sm:text-[16px] lg:text-[17px] font-sans not-italic font-normal text-[#44403C] leading-relaxed max-w-[58ch] mx-auto text-center">
+            <motion.p
+              variants={heroRevealItem}
+              className="text-[15px] sm:text-[16.5px] lg:text-[17.5px] font-sans not-italic font-normal text-[#44403C] leading-[1.7] max-w-[54ch] mx-auto text-center"
+            >
               {isMr
                 ? 'अकथ प्रकाशनमध्ये आम्ही अर्थपूर्ण मराठी लेखनाला जिवंत रूप देतो — मूळ कथा, वैयक्तिक अनुभव आणि विचार वाचनीय, जपण्याजोग्या व इतरांपर्यंत पोहोचणाऱ्या पुस्तकांत घडवण्यासाठी लेखकांसोबत काम करतो.'
                 : 'At Akath Prakashan, we bring meaningful Marathi writing to life — working with authors to turn original stories, personal narratives and ideas into books worth reading, sharing and keeping.'}
-            </p>
+            </motion.p>
 
-            {/* Rounded-Full Airy Editorial CTAs */}
-            <div className="w-full flex flex-wrap items-center justify-center gap-3 pt-1">
+            {/* Focused Dual Actions */}
+            <motion.div
+              variants={heroRevealItem}
+              className="w-full flex flex-wrap items-center justify-center gap-3.5 pt-2"
+            >
               <button
                 type="button"
                 onClick={() => onNavigate('/books')}
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] font-medium text-sm shadow-[0_12px_28px_-10px_rgba(36,59,138,0.45)] transition-all cursor-pointer whitespace-nowrap shrink-0"
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] font-medium text-sm shadow-[0_10px_24px_-10px_rgba(36,59,138,0.45)] transition-all cursor-pointer whitespace-nowrap shrink-0"
               >
                 <BookOpen className="w-4 h-4 text-[#FFD966]" />
                 <span>{isMr ? 'आमची पुस्तके पहा' : 'Explore Our Books'}</span>
@@ -489,23 +530,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigate('/submit-manuscript')}
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-white/85 backdrop-blur-md hover:bg-[#1C1917] text-[#1C1917] hover:text-[#FFFDF7] border border-[#1C1917]/15 font-medium text-sm shadow-xs transition-all cursor-pointer whitespace-nowrap shrink-0"
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-transparent hover:bg-[#1C1917] text-[#1C1917] hover:text-[#FFFDF7] border border-[#1C1917]/20 font-medium text-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
               >
                 <Feather className="w-4 h-4 text-[#EF6855]" />
                 <span>
                   {isMr ? 'आमच्यासोबत प्रकाशित करा' : 'Publish With Us'}
                 </span>
               </button>
-            </div>
+            </motion.div>
 
-            {/* Centered Edition Anchor Switcher Rail */}
-            <div className="w-full pt-2 space-y-2 min-w-0">
-              <p className="text-[11px] font-mono font-medium uppercase tracking-[0.18em] text-[#57534E]">
-                {isMr ? 'ग्रंथ दालन निवड' : 'Select Edition'}
-              </p>
+            {/* Clean Understated Edition Selector Tabs */}
+            <motion.div
+              variants={heroRevealItem}
+              className="w-full pt-3 min-w-0"
+            >
               <div
                 data-testid="home-hero-anchors-rail"
-                className="akath-swipe-rail flex flex-wrap sm:flex-nowrap items-center justify-center gap-2.5 overflow-x-auto sm:overflow-visible snap-x snap-mandatory w-full pb-1 sm:pb-0"
+                className="akath-swipe-rail flex flex-wrap sm:flex-nowrap items-center justify-center gap-x-5 gap-y-2 overflow-x-auto sm:overflow-visible snap-x snap-mandatory w-full pb-1 sm:pb-0 border-b border-[#E5DEC9]/70 max-w-2xl mx-auto"
               >
                 {books.map((book, idx) => {
                   const isSelected = book.id === activeHeroBook?.id;
@@ -518,19 +559,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         setSelectedBookId(book.id);
                         setShowFullSpread(false);
                       }}
-                      className={`snap-start shrink-0 max-w-full px-3.5 sm:px-4 py-2 rounded-full text-xs font-serif transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 border backdrop-blur-md ${
+                      className={`snap-start shrink-0 pb-2.5 text-xs sm:text-[13px] font-serif transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 border-b-2 -mb-px ${
                         isSelected
-                          ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A] shadow-sm font-semibold'
-                          : 'bg-white/80 text-[#1C1917] border-[#DCD4C0] hover:border-[#243B8A]/50 hover:bg-white'
+                          ? 'border-[#243B8A] text-[#243B8A] font-semibold'
+                          : 'border-transparent text-[#57534E] hover:text-[#1C1917]'
                       }`}
                     >
-                      <span
-                        className={`font-mono text-[10px] px-1.5 py-0.5 rounded-full tabular-nums shrink-0 ${
-                          isSelected
-                            ? 'bg-[#FFD966] text-[#1C1917] font-bold'
-                            : 'bg-[#FAF6EC] text-[#57534E]'
-                        }`}
-                      >
+                      <span className="font-mono text-[10.5px] opacity-70 tabular-nums">
                         0{idx + 1}
                       </span>
                       <span className="max-w-[215px] sm:max-w-none truncate">
@@ -540,312 +575,28 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   );
                 })}
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          {/* Centered Floating Frosted-Glass Featured Edition Dossier */}
+          {/* Interactive 3D Tilt & Open-Page Folio Edition Showcase */}
           {activeHeroBook && (
-            <div
-              data-testid="home-featured-edition-dossier"
-              className="w-full max-w-3xl mx-auto min-w-0"
-            >
-              <div className="relative rounded-3xl bg-white/80 backdrop-blur-xl border border-[#DCD4C0]/80 p-5 sm:p-7 shadow-[0_28px_70px_-28px_rgba(36,59,138,0.22)] overflow-hidden">
-                {/* Top Card Header with Prev/Next Edition Controls */}
-                <div className="flex items-center justify-between gap-2 pb-3.5 border-b border-[#E5DEC9]/80 text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E]">
-                  <span className="font-semibold text-[#174D3A] truncate">
-                    {isMr
-                      ? activeHeroBook.category
-                      : activeHeroEnMeta?.categoryEn ||
-                        activeHeroBook.category}
-                  </span>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const prevIdx =
-                          (activeHeroIndex - 1 + books.length) % books.length;
-                        if (books[prevIdx]) {
-                          setSelectedBookId(books[prevIdx].id);
-                          setShowFullSpread(false);
-                        }
-                      }}
-                      aria-label={isMr ? 'मागील पुस्तक' : 'Previous edition'}
-                      className="w-7 h-7 rounded-full border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                    </button>
-                    <span className="tabular-nums font-semibold text-[#243B8A]">
-                      0{activeHeroIndex + 1} / 0{books.length}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const nextIdx = (activeHeroIndex + 1) % books.length;
-                        if (books[nextIdx]) {
-                          setSelectedBookId(books[nextIdx].id);
-                          setShowFullSpread(false);
-                        }
-                      }}
-                      aria-label={isMr ? 'पुढील पुस्तक' : 'Next edition'}
-                      className="w-7 h-7 rounded-full border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer"
-                    >
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Orbital Spotlight Stage */}
-                <div className="relative py-6 sm:py-8 flex items-center justify-center min-h-[235px] sm:min-h-[290px]">
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute w-[220px] h-[220px] sm:w-[285px] sm:h-[285px] rounded-full"
-                    style={{
-                      background:
-                        'radial-gradient(circle, rgba(255,217,102,0.22) 0%, rgba(36,59,138,0.06) 55%, transparent 72%)',
-                    }}
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute w-[220px] h-[220px] sm:w-[275px] sm:h-[275px] rounded-full border border-[#C89D54]/35"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute w-[290px] h-[290px] sm:w-[360px] sm:h-[360px] rounded-full border border-dashed border-[#243B8A]/18"
-                  />
-
-                  <AnimatePresence mode="wait">
-                    {showFullSpread && activeHeroBook.coverSpreadUrl ? (
-                      <motion.div
-                        key="spread-showcase"
-                        initial={{ opacity: 0, scale: 0.97 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.97 }}
-                        transition={{ duration: 0.24 }}
-                        className="relative z-30 w-full rounded-2xl bg-[#FAF6EC]/90 border border-[#DCD4C0] p-3.5 space-y-2.5"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[10.5px] font-mono font-semibold uppercase tracking-[0.14em] text-[#243B8A] truncate">
-                            {isMr
-                              ? `${activeHeroBook.title} — पूर्ण वेष्टन`
-                              : `${
-                                  activeHeroEnMeta?.titleEn ||
-                                  activeHeroBook.title
-                                } — Full Print Jacket`}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setShowFullSpread(false)}
-                            className="px-3 py-1 rounded-full text-[11px] font-medium bg-[#243B8A] text-[#FFFDF7] cursor-pointer whitespace-nowrap shrink-0"
-                          >
-                            {isMr ? 'मुखपृष्ठ पहा' : 'Back to Cover'}
-                          </button>
-                        </div>
-
-                        <img
-                          src={resolvePublicAssetUrl(
-                            activeHeroBook.coverSpreadUrl
-                          )}
-                          alt={activeHeroBook.title}
-                          width={800}
-                          height={600}
-                          loading="lazy"
-                          decoding="async"
-                          referrerPolicy="no-referrer"
-                          className="w-full h-auto max-h-[220px] object-contain mx-auto"
-                        />
-
-                        <div className="flex items-center justify-between text-[11px] text-[#57534E] tabular-nums">
-                          <span>
-                            {activeHeroBook.isbn
-                              ? `ISBN ${activeHeroBook.isbn}`
-                              : ''}
-                          </span>
-                          {activeHeroBook.coverPdfUrl && (
-                            <a
-                              href={resolvePublicAssetUrl(
-                                activeHeroBook.coverPdfUrl
-                              )}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-semibold text-[#243B8A] hover:underline"
-                            >
-                              {isMr
-                                ? 'मूळ कव्हर PDF ↗'
-                                : 'Open Press PDF ↗'}
-                            </a>
-                          )}
-                        </div>
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key={`hero-book-stage-${activeHeroBook.id}`}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.24 }}
-                        className="relative z-20 w-full flex items-center justify-center"
-                      >
-                        {secondaryBooks[0] && (
-                          <div
-                            onClick={() => {
-                              setSelectedBookId(secondaryBooks[0].id);
-                              setShowFullSpread(false);
-                            }}
-                            title={
-                              isMr
-                                ? secondaryBooks[0].title
-                                : BOOK_ENGLISH_META[secondaryBooks[0].id]
-                                    ?.titleEn || secondaryBooks[0].title
-                            }
-                            className="absolute left-2 sm:left-12 bottom-2 w-[90px] sm:w-[122px] -rotate-6 opacity-80 hover:opacity-100 hover:-translate-y-2 transition-all duration-300 cursor-pointer z-10 drop-shadow-md"
-                          >
-                            <BookCoverArt
-                              book={secondaryBooks[0]}
-                              author={authors.find(
-                                (a) => a.id === secondaryBooks[0].authorId
-                              )}
-                              size="md"
-                            />
-                          </div>
-                        )}
-
-                        <div className="relative z-30 w-[148px] sm:w-[188px] transition-transform duration-300 hover:-translate-y-2 drop-shadow-[0_22px_32px_rgba(28,25,23,0.22)]">
-                          <BookCoverArt
-                            book={activeHeroBook}
-                            author={activeHeroAuthor}
-                            size="lg"
-                            priority={true}
-                            onClick={() =>
-                              onNavigate(`/books/${activeHeroBook.slug}`)
-                            }
-                          />
-                        </div>
-
-                        {secondaryBooks[1] && (
-                          <div
-                            onClick={() => {
-                              setSelectedBookId(secondaryBooks[1].id);
-                              setShowFullSpread(false);
-                            }}
-                            title={
-                              isMr
-                                ? secondaryBooks[1].title
-                                : BOOK_ENGLISH_META[secondaryBooks[1].id]
-                                    ?.titleEn || secondaryBooks[1].title
-                            }
-                            className="absolute right-2 sm:right-12 bottom-2 w-[90px] sm:w-[122px] rotate-6 opacity-80 hover:opacity-100 hover:-translate-y-2 transition-all duration-300 cursor-pointer z-20 drop-shadow-md"
-                          >
-                            <BookCoverArt
-                              book={secondaryBooks[1]}
-                              author={authors.find(
-                                (a) => a.id === secondaryBooks[1].authorId
-                              )}
-                              size="md"
-                            />
-                          </div>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Edition Details & Action Strip */}
-                <div className="pt-4 border-t border-[#E5DEC9]/80 space-y-3.5">
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <div className="min-w-0 text-center sm:text-left">
-                      <h2
-                        onClick={() =>
-                          onNavigate(`/books/${activeHeroBook.slug}`)
-                        }
-                        className="text-lg sm:text-xl font-serif not-italic font-semibold text-[#1C1917] hover:text-[#243B8A] transition-colors cursor-pointer truncate"
-                      >
-                        {isMr
-                          ? activeHeroBook.title
-                          : activeHeroEnMeta?.titleEn || activeHeroBook.title}
-                      </h2>
-                      {activeHeroAuthor && (
-                        <p className="text-xs font-serif not-italic text-[#57534E]">
-                          {isMr
-                            ? activeHeroAuthor.name
-                            : activeHeroEnMeta?.authorEn ||
-                              activeHeroAuthor.transliteratedName}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-center gap-2 shrink-0">
-                      {activeHeroBook.coverSpreadUrl && (
-                        <button
-                          type="button"
-                          data-testid="toggle-featured-jacket-spread"
-                          onClick={() => setShowFullSpread((prev) => !prev)}
-                          className="px-3.5 py-1.5 rounded-full text-[11px] font-mono font-medium uppercase tracking-wider bg-[#FAF6EC] hover:bg-[#FFD966]/40 text-[#243B8A] border border-[#DCD4C0] transition-colors cursor-pointer whitespace-nowrap shrink-0"
-                        >
-                          {showFullSpread
-                            ? isMr
-                              ? 'मुखपृष्ठ'
-                              : 'Cover'
-                            : isMr
-                            ? 'पूर्ण वेष्टन'
-                            : 'Full Jacket'}
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onNavigate(`/books/${activeHeroBook.slug}`)
-                        }
-                        className="px-4 py-1.5 rounded-full text-xs font-medium bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] transition-colors cursor-pointer whitespace-nowrap shrink-0"
-                      >
-                        {isMr ? 'पुस्तक पहा →' : 'View Edition →'}
-                      </button>
-                    </div>
-                  </div>
-
-                  <p
-                    data-testid="featured-edition-blurb"
-                    className="text-[13px] text-[#525665] font-serif not-italic leading-relaxed line-clamp-2 text-center sm:text-left"
-                  >
-                    {isMr
-                      ? activeHeroBook.description
-                      : activeHeroEnMeta?.descriptionEn ||
-                        activeHeroBook.description}
-                  </p>
-
-                  {/* 3-Column Edition Specs */}
-                  <div className="grid grid-cols-3 divide-x divide-[#E5DEC9]/80 rounded-2xl bg-[#FAF6EC]/80 border border-[#E5DEC9]/80 py-2.5 text-center">
-                    <div className="px-2">
-                      <p className="text-[10px] font-mono uppercase tracking-wider text-[#57534E]">
-                        {isMr ? 'स्वरूप' : 'Format'}
-                      </p>
-                      <p className="text-xs font-serif font-medium text-[#1C1917]">
-                        {isMr
-                          ? 'पेपरबॅक'
-                          : activeHeroEnMeta?.formatEn || 'Paperback'}
-                      </p>
-                    </div>
-                    <div className="px-2">
-                      <p className="text-[10px] font-mono uppercase tracking-wider text-[#57534E]">
-                        {isMr ? 'पृष्ठे' : 'Pages'}
-                      </p>
-                      <p className="text-xs font-mono font-medium text-[#1C1917] tabular-nums">
-                        {activeHeroBook.pageCount
-                          ? `${activeHeroBook.pageCount}`
-                          : '—'}
-                      </p>
-                    </div>
-                    <div className="px-2">
-                      <p className="text-[10px] font-mono uppercase tracking-wider text-[#57534E]">
-                        {isMr ? 'मूल्य' : 'Price'}
-                      </p>
-                      <p className="text-xs font-mono font-semibold text-[#243B8A] tabular-nums">
-                        ₹{activeHeroBook.price}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <HeroInteractiveBookPlinth
+              books={books}
+              authors={authors}
+              activeHeroBook={activeHeroBook}
+              activeHeroAuthor={activeHeroAuthor}
+              activeHeroIndex={activeHeroIndex}
+              activeHeroEnMeta={activeHeroEnMeta}
+              secondaryBooks={secondaryBooks}
+              bookEnglishMeta={BOOK_ENGLISH_META}
+              isMr={isMr}
+              showFullSpread={showFullSpread}
+              setShowFullSpread={setShowFullSpread}
+              setSelectedBookId={setSelectedBookId}
+              onNavigate={onNavigate}
+              onAddToCart={onAddToCart}
+              recentlyAddedBookId={recentlyAddedBookId}
+            />
           )}
         </div>
       </section>
@@ -1454,57 +1205,38 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </section>
 
       {/* =====================================================================
-          5. FOR AUTHORS — OBSIDIAN WRITER STUDIO WITH CLEAR RADAR CIRCLES
+          5. FOR AUTHORS — ILLUSTRATED ARCHIVAL LITERARY ATELIER & WRITER DESK
           ===================================================================== */}
       <section
         ref={forAuthorsRef}
         data-testid="home-manuscript-desk"
         className={`akath-io-section ${
           isForAuthorsVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden py-10 sm:py-14 lg:py-16 border-b border-white/10 bg-[#0B1229]/95 text-[#FFFDF7] transition-colors duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]`}
+        } relative z-10 w-full overflow-hidden py-12 sm:py-16 lg:py-20 border-b border-[#DCD4C0]/80 bg-[#F4EDE0] text-[#1C1917] transition-colors duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]`}
       >
-        {/* Crisp Architectural Grid & Visible Concentric Radar Circles Behind Studio UI */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-[0.16]"
-          style={{
-            backgroundImage:
-              'linear-gradient(to right, rgba(148, 163, 184, 0.28) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.28) 1px, transparent 1px)',
-            backgroundSize: '44px 44px',
-          }}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[580px] h-[580px] sm:w-[880px] sm:h-[880px] opacity-95"
-        >
-          <ConcentricOrbitRings
-            primaryStroke="rgba(147, 197, 253, 0.36)"
-            secondaryStroke="rgba(255, 217, 102, 0.36)"
-            glowColor="rgba(59, 130, 246, 0.24)"
-            className="w-full h-full"
-          />
-        </div>
+        {/* Layered Sahyadri Mountains & Nanded Godavari Dusk Landscape (20–25% Opacity SVG) */}
+        <AuthorsLandscapeBackdrop />
 
-        <div className="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6 sm:space-y-7 min-w-0">
-          {/* Center-Aligned Lightweight Writer Studio Header */}
-          <div className="max-w-3xl mx-auto text-center space-y-2.5">
-            <div className="inline-flex items-center justify-center gap-2 text-[11px] sm:text-xs font-mono font-semibold uppercase tracking-[0.18em] text-[#FFD966]">
-              <Sparkles className="w-3.5 h-3.5" />
+        <div className="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-8 lg:px-12 space-y-7 sm:space-y-8 min-w-0">
+          {/* Center-Aligned High-Impact Editorial Header */}
+          <div className="max-w-3xl mx-auto text-center space-y-3">
+            <div className="inline-flex items-center justify-center gap-2 text-[11px] sm:text-xs font-mono font-semibold uppercase tracking-[0.18em] text-[#174D3A]">
+              <Sparkles className="w-3.5 h-3.5 text-[#C89D54]" />
               <span>{isMr ? '०४ · लेखकांसाठी' : '04 · FOR AUTHORS'}</span>
             </div>
 
-            <h2 className="text-2xl sm:text-4xl lg:text-[40px] font-serif not-italic font-medium text-[#FFFDF7] tracking-tight leading-tight">
+            <h2 className="text-2xl sm:text-4xl lg:text-[42px] font-serif not-italic font-semibold text-[#1C1917] tracking-tight leading-tight">
               Have a Manuscript? Let&apos;s Talk.
             </h2>
 
-            <p className="text-sm sm:text-base font-normal text-white/80 leading-relaxed max-w-[54ch] mx-auto">
+            <p className="text-sm sm:text-base font-normal text-[#44403C] leading-relaxed max-w-[54ch] mx-auto">
               {isMr
                 ? 'प्रत्येक पुस्तकाची सुरुवात एका कल्पनेतून होते. आपल्या संहितेला प्रकाशनाच्या दिशेने नेऊ इच्छिणाऱ्या लेखकांचे आम्ही स्वागत करतो.'
                 : 'Every book begins with an idea. Explore our editorial studio guide and share your manuscript with Akath Prakashan.'}
             </p>
           </div>
 
-          {/* Interactive Frosted Obsidian Writer Studio UI */}
+          {/* Interactive Warm Archival Writer Studio UI */}
           <div data-testid="home-authors-pillars-rail" className="min-w-0">
             <AuthorStudioExperience isMr={isMr} onNavigate={onNavigate} />
           </div>
@@ -1513,7 +1245,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('/submit-manuscript')}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-[#EF6855] border border-white/25 hover:border-[#EF6855] text-[#FFFDF7] text-xs sm:text-sm font-medium backdrop-blur-md transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-6.5 py-3 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-xs sm:text-sm font-medium shadow-[0_12px_28px_-10px_rgba(36,59,138,0.45)] transition-colors cursor-pointer"
             >
               <Feather className="w-4 h-4 text-[#FFD966]" />
               <span>
@@ -1533,10 +1265,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
         data-testid="home-about-akath"
         className={`akath-io-section ${
           isAboutAkathVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 bg-transparent`}
+        } relative z-10 w-full overflow-hidden py-10 sm:py-14 lg:py-16 bg-[#FAF6EC]`}
       >
-        <div className="max-w-[1100px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6 min-w-0">
-          <div className="rounded-3xl border border-[#DCD4C0]/85 bg-white/85 backdrop-blur-xl p-6 sm:p-9 lg:p-10 shadow-[0_24px_64px_-28px_rgba(36,59,138,0.16)] flex flex-col items-center text-center space-y-5">
+        {/* Layered Sahyadri Mountains & Nanded Godavari Dusk Landscape (20–25% Opacity SVG) */}
+        <AboutLandscapeBackdrop />
+
+        <div className="relative z-10 max-w-[960px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6 min-w-0">
+          <div className="py-4 sm:py-6 flex flex-col items-center text-center space-y-5">
             <AnimatedTortoiseEmblem
               variant="forest"
               animate={false}

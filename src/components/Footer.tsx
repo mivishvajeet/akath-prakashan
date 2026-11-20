@@ -8,6 +8,7 @@ import {
   MapPin,
   Mail,
   Phone,
+  ChevronDown,
 } from 'lucide-react';
 import { StorybookFooterLandscape } from './StorybookFooterLandscape';
 import { PUBLISHER_IDENTITY } from '../data/seedData';
@@ -35,6 +36,8 @@ export const Footer: React.FC<FooterProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [hasEnteredView, setHasEnteredView] = useState(false);
+  const [openReaderServices, setOpenReaderServices] = useState(false);
+  const [openContact, setOpenContact] = useState(false);
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const footerRef = useRef<HTMLElement>(null);
@@ -175,7 +178,7 @@ export const Footer: React.FC<FooterProps> = ({
           : 'The Last Page — Akath Prakashan Editorial Footer & Colophon'
       }
       data-testid="the-last-page-footer"
-      className={`last-page-footer relative text-[#F5EBDD] overflow-hidden mt-20 border-t border-[#E8BC69]/30 ${
+      className={`last-page-footer relative text-[#F5EBDD] overflow-hidden mt-14 sm:mt-20 border-t border-[#E8BC69]/30 ${
         !isFooterInViewport ? 'akath-footer-offscreen' : ''
       }`}
       style={{
@@ -270,9 +273,9 @@ export const Footer: React.FC<FooterProps> = ({
       {/* =====================================================================
           UPPER & MIDDLE FOOTER CONTENT (MINIMAL REFINED MIDNIGHT-VELLUM PANEL)
           ===================================================================== */}
-      <div className="relative z-20 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12 pb-4">
+      <div className="relative z-20 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-7 sm:pt-12 pb-2 sm:pb-4">
         {/* ROW 1: UNIFIED AKATH LITERARY NEWSLETTER & 4-COLUMN DIRECTORY */}
-        <div className="rounded-xl bg-[#0F1B3A]/85 backdrop-blur-md border border-[#E8BC69]/25 p-6 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 shadow-[0_18px_42px_-20px_rgba(6,11,26,0.65)]">
+        <div className="rounded-xl bg-[#0F1B3A]/85 backdrop-blur-md border border-[#E8BC69]/25 p-5 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 shadow-[0_18px_42px_-20px_rgba(6,11,26,0.65)]">
           {/* Left 5 Columns: Akath Literary Newsletter */}
           <div className="lg:col-span-5 lg:border-r lg:border-[#E8BC69]/20 lg:pr-8 flex flex-col justify-between space-y-4">
             <div className="space-y-3">
@@ -367,8 +370,8 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
           </div>
 
-          {/* Right 7 Columns: Clean 4-Column Architectural Index inside the Harmonized Panel */}
-          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-7 pt-1">
+          {/* Right 7 Columns: Clean 4-Column Architectural Index (Reader Services & Contact Foldables on Mobile) */}
+          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-x-5 gap-y-4 sm:gap-7 pt-1">
             {/* Column I: Bookstore & Catalogue */}
             <nav
               aria-label={t.footer.booksAndCatalogue}
@@ -471,15 +474,40 @@ export const Footer: React.FC<FooterProps> = ({
               </ul>
             </nav>
 
-            {/* Column III: Reader Services */}
+            {/* Column III: Reader Services (Collapsible Foldable on Mobile, Always Open on sm+) */}
             <nav
               aria-label={t.footer.readerServices}
-              className="space-y-3"
+              className="col-span-2 sm:col-span-1 border-t border-[#E8BC69]/18 pt-3 sm:border-t-0 sm:pt-0 sm:space-y-3"
             >
-              <h4 className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]">
+              <button
+                type="button"
+                onClick={() => setOpenReaderServices((prev) => !prev)}
+                aria-expanded={openReaderServices}
+                aria-controls="footer-reader-services-panel"
+                data-testid="footer-accordion-reader-services"
+                className="sm:hidden w-full flex items-center justify-between gap-2 py-1.5 text-left cursor-pointer"
+              >
+                <span className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]">
+                  {t.footer.readerServices}
+                </span>
+                <ChevronDown
+                  aria-hidden="true"
+                  className={`w-4 h-4 text-[#FFD966] transition-transform duration-200 ${
+                    openReaderServices ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              <h4 className="hidden sm:block text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]">
                 {t.footer.readerServices}
               </h4>
-              <ul className="space-y-2 text-[13.5px] text-[#F5EBDD]/90">
+
+              <ul
+                id="footer-reader-services-panel"
+                className={`${
+                  openReaderServices ? 'block pt-2.5 pb-1' : 'hidden'
+                } sm:block sm:pt-0 sm:pb-0 space-y-2 text-[13.5px] text-[#F5EBDD]/90`}
+              >
                 <li>
                   <a
                     href="/track-order"
@@ -519,12 +547,37 @@ export const Footer: React.FC<FooterProps> = ({
               </ul>
             </nav>
 
-            {/* Column IV: Contact & Editorial Correspondence */}
-            <div className="space-y-3">
-              <h4 className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]">
+            {/* Column IV: Contact & Editorial Correspondence (Collapsible Foldable on Mobile, Always Open on sm+) */}
+            <div className="col-span-2 sm:col-span-1 border-t border-[#E8BC69]/18 pt-3 sm:border-t-0 sm:pt-0 sm:space-y-3">
+              <button
+                type="button"
+                onClick={() => setOpenContact((prev) => !prev)}
+                aria-expanded={openContact}
+                aria-controls="footer-contact-panel"
+                data-testid="footer-accordion-contact"
+                className="sm:hidden w-full flex items-center justify-between gap-2 py-1.5 text-left cursor-pointer"
+              >
+                <span className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]">
+                  {t.nav.contact}
+                </span>
+                <ChevronDown
+                  aria-hidden="true"
+                  className={`w-4 h-4 text-[#FFD966] transition-transform duration-200 ${
+                    openContact ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              <h4 className="hidden sm:block text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]">
                 {t.nav.contact}
               </h4>
-              <address className="not-italic space-y-2 text-[13px] text-[#F5EBDD]/90 leading-relaxed">
+
+              <address
+                id="footer-contact-panel"
+                className={`${
+                  openContact ? 'block pt-2.5 pb-1' : 'hidden'
+                } sm:block sm:pt-0 sm:pb-0 not-italic space-y-2 text-[13px] text-[#F5EBDD]/90 leading-relaxed`}
+              >
                 <div className="flex items-start gap-2">
                   <MapPin
                     className="w-3.5 h-3.5 text-[#FFD966] shrink-0 mt-1"
@@ -583,12 +636,13 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
         </div>
 
-        {/* ROW 2: EDITORIAL SIGNATURE COLOPHON FLOATING IN THE TWILIGHT SKY */}
+        {/* ROW 2: UNBOXED FLOATING EDITORIAL COLOPHON LINE (PURE TYPOGRAPHY IN THE TWILIGHT SKY) */}
         <div
           data-testid="footer-signature-colophon"
-          className="pt-5 pb-2 flex flex-col sm:flex-row sm:items-end justify-between gap-4"
+          className="pt-6 pb-2 flex flex-col md:flex-row items-center justify-between gap-3.5 md:gap-6 text-center md:text-left"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3.5">
+          {/* Left: Floating Book Constellation Crest & Closing Maxim (No Box) */}
+          <div className="flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3.5">
             <div
               data-testid="footer-animated-book-constellation"
               aria-hidden="true"
@@ -596,7 +650,7 @@ export const Footer: React.FC<FooterProps> = ({
             >
               <svg
                 viewBox="0 0 240 84"
-                className="w-20 sm:w-24 h-auto overflow-visible"
+                className="w-14 sm:w-16 h-auto overflow-visible"
               >
                 <path
                   d="M28 66 Q120 46 212 66"
@@ -659,43 +713,48 @@ export const Footer: React.FC<FooterProps> = ({
 
             <div
               data-testid="footer-closing-line"
-              className={`last-page-closing-quote space-y-0.5 ${
+              className={`last-page-closing-quote ${
                 hasEnteredView ? 'is-entering' : ''
               }`}
             >
-              <p className="font-serif not-italic text-[18px] sm:text-[20px] font-bold text-[#F5EBDD] leading-[1.3] tracking-[-0.01em]">
+              <p className="font-serif not-italic text-[17px] sm:text-[19px] font-semibold text-[#F5EBDD] leading-snug tracking-[-0.01em]">
                 Every story leaves a mark.
-              </p>
-              <p className="text-[12.5px] text-[#F5EBDD]/85 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                <span>Thoughtfully crafted by</span>
-                <a
-                  href="https://github.com/mivishvajeet"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-testid="footer-creator-credit"
-                  className="last-page-creator-credit font-serif font-semibold text-[#FFD966] hover:text-[#FFFDF7]"
-                >
-                  <span>mivishvajeet</span>
-                  <span aria-hidden="true" className="last-page-creator-mark sr-only">
-                    ↗
-                  </span>
-                </a>
               </p>
             </div>
           </div>
 
-          <p
-            data-testid="footer-copyright"
-            className="font-mono text-[12px] tracking-[0.08em] text-[#E8BC69]/90 tabular-nums"
-          >
-            Akath Prakashan · 2026
-          </p>
+          {/* Right: Clean Unboxed Attribution & Imprint Year */}
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1 text-[12.5px]">
+            <p className="text-[#F5EBDD]/80 inline-flex items-center gap-1.5 whitespace-nowrap">
+              <span>Thoughtfully crafted by</span>
+              <a
+                href="https://github.com/mivishvajeet"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="footer-creator-credit"
+                className="last-page-creator-credit inline-flex items-center gap-1 font-serif font-semibold text-[#FFD966] hover:text-[#FFFDF7] whitespace-nowrap"
+              >
+                <span>mivishvajeet</span>
+                <span aria-hidden="true" className="last-page-creator-mark text-[11px] leading-none">
+                  ↗
+                </span>
+              </a>
+            </p>
+            <span aria-hidden="true" className="text-[#E8BC69]/45">
+              ·
+            </span>
+            <p
+              data-testid="footer-copyright"
+              className="font-mono text-[11.5px] sm:text-[12px] tracking-[0.1em] text-[#E8BC69]/90 tabular-nums whitespace-nowrap"
+            >
+              Akath Prakashan · 2026
+            </p>
+          </div>
         </div>
       </div>
 
       {/* =======================================================================
-          MONUMENTAL MARATHI WORDMARK ("अकथ प्रकाशन") + RESPONSIVE CENTERED TAGLINE
-          ("शब्दांना पुस्तकाचं रूप देणारी प्रकाशन संस्था.") + 16-BIT PIXEL-ART STAGE
+          MONUMENTAL MARATHI WORDMARK ("अकथ प्रकाशन") + 16-BIT PIXEL-ART STAGE
           ======================================================================= */}
       <div
         ref={wordmarkBannerRef}
@@ -705,43 +764,6 @@ export const Footer: React.FC<FooterProps> = ({
           hasEnteredView ? 'is-visible' : ''
         } group relative w-full overflow-hidden pt-4 sm:pt-6 lg:pt-8 pb-0 select-none`}
       >
-        {/* Centered Dynamic Footer Tagline Stage (Mobile, Tablet & Desktop) */}
-        <div
-          data-testid="footer-tagline-stage"
-          className="relative z-20 max-w-[1160px] mx-auto px-4 sm:px-8 lg:px-12 pb-3 sm:pb-4 lg:pb-5 flex flex-col items-center text-center"
-        >
-          {/* Celestial Gold Ornamental Crown Rule */}
-          <div
-            aria-hidden="true"
-            className="flex items-center justify-center gap-2.5 sm:gap-3.5 mb-2 sm:mb-2.5"
-          >
-            <span className="w-10 sm:w-16 lg:w-24 h-px bg-gradient-to-r from-transparent via-[#E8BC69]/70 to-[#FFD966]" />
-            <span className="w-1.5 h-1.5 rotate-45 bg-[#FFD966]" />
-            <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.22em] text-[#E8BC69]">
-              {lang === 'mr' ? 'मराठी प्रकाशन संस्था' : 'MARATHI PUBLISHING HOUSE'}
-            </span>
-            <span className="w-1.5 h-1.5 rotate-45 bg-[#FFD966]" />
-            <span className="w-10 sm:w-16 lg:w-24 h-px bg-gradient-to-l from-transparent via-[#E8BC69]/70 to-[#FFD966]" />
-          </div>
-
-          {/* Dynamic Responsive Centered Marathi Tagline ("शब्दांना पुस्तकाचं रूप देणारी प्रकाशन संस्था.") */}
-          <p
-            data-testid="footer-marathi-tagline"
-            className="w-full max-w-[20ch] sm:max-w-none mx-auto text-center font-serif not-italic font-extrabold tracking-[-0.02em] leading-[1.24] sm:leading-[1.18] lg:leading-[1.14] text-[clamp(1.35rem,5.2vw,2.1rem)] sm:text-[clamp(1.75rem,3.6vw,2.45rem)] lg:text-[clamp(2.15rem,2.8vw,3rem)] [text-wrap:balance]"
-          >
-            <span className="text-[#F5EBDD] drop-shadow-[0_2px_10px_rgba(6,11,26,0.55)]">
-              शब्दांना पुस्तकाचं रूप देणारी{' '}
-            </span>
-            <span className="relative inline-block whitespace-nowrap text-[#FFD966] drop-shadow-[0_2px_14px_rgba(232,188,105,0.28)]">
-              प्रकाशन संस्था.
-              <span
-                aria-hidden="true"
-                className="block w-full h-[2px] mt-1 rounded-full bg-gradient-to-r from-transparent via-[#FFD966] to-transparent opacity-85"
-              />
-            </span>
-          </p>
-        </div>
-
         {/* Monumental Marathi Wordmark ("अकथ प्रकाशन") Framed Cleanly Above the Horizon */}
         <a
           href="/"

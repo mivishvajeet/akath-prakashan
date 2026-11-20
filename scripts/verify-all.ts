@@ -1033,8 +1033,10 @@ async function runTests() {
     'utf-8'
   );
   assert.ok(footerSource.includes('<StorybookFooterLandscape />'));
-  assert.ok(footerSource.includes('data-testid="footer-marathi-tagline"'));
-  assert.ok(footerSource.includes('शब्दांना पुस्तकाचं रूप देणारी'));
+  assert.ok(!footerSource.includes('MARATHI PUBLISHING HOUSE'));
+  assert.ok(!footerSource.includes('मराठी प्रकाशन संस्था'));
+  assert.ok(!footerSource.includes('data-testid="footer-tagline-stage"'));
+  assert.ok(!footerSource.includes('शब्दांना पुस्तकाचं रूप देणारी'));
   assert.ok(
     footerSource.indexOf('data-testid="footer-monumental-marathi-text"') <
       footerSource.indexOf('<StorybookFooterLandscape />'),
@@ -1229,7 +1231,7 @@ async function runTests() {
   assert.ok(cssSource.includes('@keyframes akath-headline-harmonic-breathe'));
   assert.ok(cssSource.includes('@keyframes akath-prose-harmonic-breathe'));
   assert.ok(
-    publishingViewsSource.includes('काही पुस्तकं वाचून संपतात. काही आपल्यासोबत राहतात.')
+    publishingViewsSource.includes('काही पुस्तकं वाचून संपतात. काही मनात घर करतात.')
   );
   assert.ok(
     publishingViewsSource.includes('Some books end at the last page. Others stay with us.')
@@ -1240,15 +1242,14 @@ async function runTests() {
   assert.ok(!publishingViewsSource.includes('Books take more than words'));
   assert.ok(!publishingViewsSource.includes('A book is only the beginning'));
   assert.ok(!publishingViewsSource.includes('data-testid="about-monograph-bento-grid"'));
-  assert.ok(publishingViewsSource.includes('Why the tortoise?'));
+  assert.ok(publishingViewsSource.includes('Why the Tortoise?'));
   assert.ok(publishingViewsSource.includes('data-testid="about-why-tortoise-feature"'));
   assert.ok(!publishingViewsSource.includes('Materiality &amp; Editorial Process · पुस्तकाची घडण'));
   assert.ok(!publishingViewsSource.includes('Curatorial Archive · संपादकीय निवड आणि प्रकाशित पुस्तके'));
   assert.ok(!publishingViewsSource.includes('Our Approach to Publishing'));
   assert.ok(
-    publishingViewsSource.includes(
-      'Akath Prakashan is our attempt to do just that — one manuscript, one book, one reader at a time.'
-    )
+    publishingViewsSource.includes('One manuscript. One book. One reader at a time.') &&
+      publishingViewsSource.includes('Perhaps Your Manuscript Belongs Here.')
   );
   assert.ok(
     publishingViewsSource.includes('data-testid="about-editorial-colophon-desk"')
@@ -1307,9 +1308,14 @@ async function runTests() {
   assert.ok(vachankattaSource.includes('data-testid="first-page-pdf-folio-viewer"'));
   assert.ok(vachankattaSource.includes('data-testid="first-page-pdf-download-link"'));
 
-  assert.ok(homeViewSource.includes('data-testid="home-featured-edition-dossier"'));
-  assert.ok(homeViewSource.includes('data-testid="featured-edition-blurb"'));
-  assert.ok(homeViewSource.includes('data-testid="toggle-featured-jacket-spread"'));
+  const heroShowcaseSource = fs.readFileSync(
+    path.resolve(process.cwd(), 'src/components/HeroInteractiveShowcase.tsx'),
+    'utf-8'
+  );
+  assert.ok(heroShowcaseSource.includes('data-testid="home-featured-edition-dossier"'));
+  assert.ok(heroShowcaseSource.includes('data-testid="featured-edition-blurb"'));
+  assert.ok(heroShowcaseSource.includes('data-testid="toggle-featured-jacket-spread"'));
+  assert.ok(homeViewSource.includes('<HeroInteractiveBookPlinth'));
   assert.ok(bookCoverArtSource.includes('const customCoverSrc = book.coverImageUrl || book.coverUploadMeta?.dataUrl;'));
 
   const bootstrapFeaturedCheck = await getJson('/api/bootstrap');

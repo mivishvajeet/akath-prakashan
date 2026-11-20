@@ -8,6 +8,7 @@ import {
 } from '../types/publishing';
 import { BookCard } from '../components/BookCard';
 import { AnimatedTortoiseEmblem } from '../components/SarvamIllustrations';
+import { AboutLandscapeBackdrop } from '../components/HeroInteractiveShowcase';
 import { PUBLISHER_IDENTITY } from '../data/seedData';
 import { useLanguage } from '../i18n/translations';
 import { validateEmail, validateIndianPhone } from '../utils/validation';
@@ -480,13 +481,22 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
   ];
 
   return (
-    <div className="bg-[#FFFDF7] text-[#1C1917] min-h-screen w-full max-w-[100vw] overflow-x-hidden selection:bg-[#243B8A]/15 selection:text-[#1C1917]">
+    <div className="relative isolate bg-[#FAF6EC] text-[#1C1917] min-h-screen w-full max-w-[100vw] overflow-x-hidden selection:bg-[#243B8A]/15 selection:text-[#1C1917]">
+      {/* Whole-Page Layered Sahyadri Mountains & Nanded Godavari Dusk Landscape (20–25% Opacity SVG) */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <AboutLandscapeBackdrop
+          surfaceHex="#FAF6EC"
+          topFadeRgba="rgba(250, 246, 236, 0.32)"
+          bottomFadeRgba="rgba(250, 246, 236, 0.62)"
+        />
+      </div>
+
       {/* ===================================================================
           0. ARCHIVAL DATELINE & STICKY CHAPTER NAVIGATION RIBBON
           =================================================================== */}
       <div
         data-testid="about-archival-dateline"
-        className="border-b border-[#DCD4C0] bg-[#FAF6EC]/95 backdrop-blur-sm sticky top-0 z-20 w-full"
+        className="border-b border-[#DCD4C0] bg-[#FAF6EC]/90 backdrop-blur-md sticky top-0 z-20 w-full"
       >
         <div className="max-w-[1360px] mx-auto px-3 sm:px-6 lg:px-10 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4 min-w-0">
           {/* Interactive Exhibition Chapter Rail */}
@@ -542,7 +552,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
         ref={aboutArticleRef}
         data-testid="about-editorial-essay"
         aria-label="About Akath Prakashan"
-        className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-14 lg:py-20 space-y-12 sm:space-y-20 min-w-0"
+        className="relative z-10 max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-14 lg:py-20 space-y-12 sm:space-y-20 min-w-0"
       >
         {/* =================================================================
             SECTION 1: CENTERED UPRIGHT EDITORIAL MANIFESTO
@@ -551,8 +561,8 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
           id="about-manifesto-top"
           className="scroll-mt-28 space-y-6 sm:space-y-10 min-w-0"
         >
-          {/* Centered Upright Editorial Header */}
-          <div className="border-b border-[#DCD4C0] pb-6 sm:pb-8 lg:pb-10 space-y-3 sm:space-y-4 max-w-4xl mx-auto text-center">
+          {/* Open, Unboxed Centered Editorial Header Floating Directly Over Full-Page Dusk Landscape */}
+          <div className="border-b border-[#DCD4C0]/80 pb-6 sm:pb-8 lg:pb-10 space-y-3 sm:space-y-4 max-w-4xl mx-auto text-center">
             <p
               data-about-io-para="lead-eyebrow"
               style={{ '--io-stagger-index': 0 } as React.CSSProperties}
@@ -565,10 +575,10 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
               data-testid="about-headline-breathe"
               className="akath-about-headline-breathe font-editorial-display not-italic text-[26px] sm:text-[40px] lg:text-[50px] font-extrabold text-[#1C1917] leading-[1.18] tracking-tight"
             >
-              काही पुस्तकं वाचून संपतात. काही आपल्यासोबत राहतात.
+              काही पुस्तकं वाचून संपतात. काही मनात घर करतात.
             </h1>
 
-            <p className="akath-about-lead-breathe font-editorial-display not-italic font-bold text-[18px] sm:text-[24px] lg:text-[26px] text-[#243B8A] leading-[1.35]">
+            <p className="akath-about-lead-breathe font-editorial-display italic font-bold text-[18px] sm:text-[24px] lg:text-[26px] text-[#243B8A] leading-[1.35]">
               Some books end at the last page. Others stay with us.
             </p>
           </div>
@@ -598,7 +608,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
                     style={{ '--io-stagger-index': 1 } as React.CSSProperties}
                     className="akath-about-io-para font-semibold text-[#1C1917] text-[16.5px] sm:text-[19.5px] leading-[1.7]"
                   >
-                    Akath Prakashan grew out of a simple feeling: there are books worth bringing into the world, and there should be people willing to take the time to do it properly.
+                    A book often begins with something small — an idea that refuses to go away, a memory waiting to be written, a question without an easy answer, or a story someone has carried for years.
                   </p>
 
                   <p
@@ -606,31 +616,55 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
                     style={{ '--io-stagger-index': 2 } as React.CSSProperties}
                     className="akath-about-io-para text-[#292524]"
                   >
-                    A manuscript is a strange, wonderful thing. Sometimes it arrives as a finished story. Sometimes it is a collection of scattered thoughts, a voice still finding its shape, or an experience that has waited years to be put into words. Before it becomes a book, it needs someone willing to read it carefully, ask the right questions, and understand what the writer is trying to say.
-                  </p>
-
-                  <p
-                    data-about-io-para="lead-callout"
-                    style={{ '--io-stagger-index': 3 } as React.CSSProperties}
-                    className="akath-about-io-para font-editorial-display not-italic font-bold text-[18px] sm:text-[22px] text-[#243B8A] leading-[1.45] py-1"
-                  >
-                    That is the kind of work we want to do. We don&apos;t think literature always needs to be loud to matter.
+                    At Akath Prakashan, we believe such stories deserve the chance to become books.
                   </p>
 
                   <p
                     data-about-io-para="lead-p3"
-                    style={{ '--io-stagger-index': 4 } as React.CSSProperties}
+                    style={{ '--io-stagger-index': 3 } as React.CSSProperties}
                     className="akath-about-io-para text-[#292524]"
                   >
-                    Based in Nanded, Akath Prakashan is an independent publishing house devoted to Marathi literature and writing across languages. We work with fiction, poetry, essays, criticism, and translations — not because every category needs to be represented, but because good writing can come from anywhere and speak to anyone.
+                    Based in Nanded, Maharashtra, Akath Prakashan is an independent publishing house devoted to Marathi literature and thoughtful writing across languages. We work with fiction, poetry, essays, travel writing, criticism and translations.
                   </p>
 
                   <p
                     data-about-io-para="lead-p4"
+                    style={{ '--io-stagger-index': 4 } as React.CSSProperties}
+                    className="akath-about-io-para text-[#292524]"
+                  >
+                    For us, publishing is not simply about taking a manuscript to print. It is about understanding the writer&apos;s voice, recognising what a story wants to become, and giving it the editorial attention and craftsmanship it deserves.
+                  </p>
+
+                  <p
+                    data-about-io-para="lead-p5"
                     style={{ '--io-stagger-index': 5 } as React.CSSProperties}
                     className="akath-about-io-para text-[#292524]"
                   >
-                    We are interested in writing that notices what others overlook. Stories that make familiar places feel different. Poems that find words for things we have felt but never quite known how to express. Essays that leave us with better questions than the ones we started with.
+                    We are drawn to writing that notices the ordinary in extraordinary ways. To stories rooted in familiar places, poems that give shape to unspoken feelings, and ideas that stay with us long after the reading is done.
+                  </p>
+
+                  <p
+                    data-about-io-para="lead-p6"
+                    style={{ '--io-stagger-index': 6 } as React.CSSProperties}
+                    className="akath-about-io-para text-[#292524]"
+                  >
+                    We don&apos;t publish simply to add another title to a shelf. We publish because we believe a manuscript has something worth saying.
+                  </p>
+
+                  <p
+                    data-about-io-para="lead-callout"
+                    style={{ '--io-stagger-index': 7 } as React.CSSProperties}
+                    className="akath-about-io-para font-editorial-display not-italic font-bold text-[18px] sm:text-[22px] text-[#243B8A] leading-[1.45] py-1"
+                  >
+                    Good books don&apos;t always demand attention. Sometimes, they earn a place in our lives quietly.
+                  </p>
+
+                  <p
+                    data-about-io-para="lead-p7"
+                    style={{ '--io-stagger-index': 8 } as React.CSSProperties}
+                    className="akath-about-io-para text-[#292524]"
+                  >
+                    That is the kind of publishing we hope to practise at Akath.
                   </p>
                 </div>
               </motion.div>
@@ -650,7 +684,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.04 }}
-          className="akath-seq-step akath-about-io-block scroll-mt-28 max-w-5xl mx-auto w-full min-w-0 rounded-xl bg-[#FAF6EC] text-[#1C1917] border border-[#DCD4C0] p-4 sm:p-8 lg:p-12 space-y-6 sm:space-y-8 overflow-hidden"
+          className="akath-seq-step akath-about-io-block scroll-mt-28 max-w-5xl mx-auto w-full min-w-0 rounded-xl bg-[#FAF6EC]/72 backdrop-blur-sm text-[#1C1917] border border-[#DCD4C0]/80 p-4 sm:p-8 lg:p-12 space-y-6 sm:space-y-8 overflow-hidden"
         >
           {/* Centered Header */}
           <div className="max-w-2xl mx-auto text-center space-y-2">
@@ -658,12 +692,12 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
               Chapter II · Imprint Symbol &amp; Philosophy
             </p>
             <h2 className="akath-about-headline-breathe font-editorial-display not-italic text-[26px] sm:text-[38px] lg:text-[44px] font-extrabold text-[#1C1917] leading-[1.15] tracking-tight">
-              Why the tortoise?
+              Why the Tortoise?
             </h2>
           </div>
 
           {/* Calm Imprint Seal & 4-Stage Literary Craft Progression (Static — No Tortoise Animation) */}
-          <div className="rounded-2xl bg-[#FFFDF7] border border-[#DCD4C0] p-5 sm:p-8 space-y-6 min-w-0">
+          <div className="rounded-2xl bg-[#FFFDF7]/78 backdrop-blur-xs border border-[#DCD4C0]/80 p-5 sm:p-8 space-y-6 min-w-0">
             <div className="flex flex-col items-center justify-center text-center space-y-3">
               {/* Calm Static Tortoise Seal */}
               <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#FAF6EC] border border-[#C89D54]/75 flex items-center justify-center shrink-0">
@@ -708,7 +742,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
             </div>
           </div>
 
-          {/* Centered 4-Paragraph Tortoise Philosophy */}
+          {/* Centered Tortoise Philosophy Prose */}
           <div
             data-testid="about-prose-breathe-block"
             className="akath-about-prose-breathe space-y-3.5 sm:space-y-4 font-editorial-prose not-italic text-[15.5px] sm:text-[17.5px] text-[#292524] leading-[1.78] max-w-[65ch] mx-auto text-center px-1 sm:px-0"
@@ -718,7 +752,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
               style={{ '--io-stagger-index': 0 } as React.CSSProperties}
               className="akath-about-io-para font-semibold text-[#1C1917]"
             >
-              We chose a tortoise for a reason. It isn&apos;t in a hurry. It carries its home with it. And it reminds us that getting somewhere slowly is still getting somewhere.
+              A tortoise has never been in a hurry to get somewhere.
             </p>
 
             <p
@@ -726,7 +760,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
               style={{ '--io-stagger-index': 1 } as React.CSSProperties}
               className="akath-about-io-para"
             >
-              Publishing has its own pressures to move faster, publish more, and follow what is already selling. We understand those realities. But we also believe there is value in pausing over a sentence, taking another look at a manuscript, and making a book we can stand behind years later.
+              It carries its home wherever it goes, moves at its own pace, and takes each step as it comes. There is something reassuring about that.
             </p>
 
             <p
@@ -734,16 +768,118 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
               style={{ '--io-stagger-index': 2 } as React.CSSProperties}
               className="akath-about-io-para"
             >
-              We would rather build a small list of books we believe in than fill a catalogue simply to make it bigger.
+              We chose the tortoise as the symbol of Akath because it reflects something we believe in — that good work takes time, that every journey has its own pace, and that what lasts is often worth waiting for.
             </p>
 
             <p
               data-about-io-para="folio-04-p4"
               style={{ '--io-stagger-index': 3 } as React.CSSProperties}
-              className="akath-about-io-para font-bold text-[#243B8A] pt-1"
+              className="akath-about-io-para"
             >
-              Akath Prakashan is our attempt to do just that — one manuscript, one book, one reader at a time.
+              Publishing has its own pressures. There is always another deadline, another trend, another reason to move faster. But a manuscript cannot always be hurried into becoming a book.
             </p>
+
+            <p
+              data-about-io-para="folio-04-p5"
+              style={{ '--io-stagger-index': 4 } as React.CSSProperties}
+              className="akath-about-io-para"
+            >
+              Some need another reading. Some need an honest conversation between the editor and the writer. Some need time to find the words they were always trying to say.
+            </p>
+
+            <p
+              data-about-io-para="folio-04-p6"
+              style={{ '--io-stagger-index': 5 } as React.CSSProperties}
+              className="akath-about-io-para"
+            >
+              We would rather publish fewer books with care than more books without conviction.
+            </p>
+
+            <p
+              data-about-io-para="folio-04-p7"
+              style={{ '--io-stagger-index': 6 } as React.CSSProperties}
+              className="akath-about-io-para"
+            >
+              The tortoise reminds us of that responsibility — towards the writer, the words and the reader.
+            </p>
+
+            <p
+              data-about-io-para="folio-04-p8"
+              style={{ '--io-stagger-index': 7 } as React.CSSProperties}
+              className="akath-about-io-para font-bold text-[#243B8A] text-[17px] sm:text-[20px] pt-1"
+            >
+              One manuscript. One book. One reader at a time.
+            </p>
+
+            <p
+              data-about-io-para="folio-04-p9"
+              style={{ '--io-stagger-index': 8 } as React.CSSProperties}
+              className="akath-about-io-para text-[#57534E] font-medium"
+            >
+              Not a race to publish, but a commitment to publish well.
+            </p>
+          </div>
+        </motion.section>
+
+        {/* =================================================================
+            SECTION 2B: PERHAPS YOUR MANUSCRIPT BELONGS HERE.
+            ================================================================= */}
+        <motion.section
+          data-testid="about-manuscript-invitation"
+          data-about-io-block="manuscript-invite"
+          variants={aboutSectionSequentialVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.04 }}
+          className="akath-seq-step akath-about-io-block max-w-4xl mx-auto w-full min-w-0 rounded-2xl bg-[#FFFDF7]/78 backdrop-blur-sm border border-[#DCD4C0]/80 p-6 sm:p-10 lg:p-12 text-center space-y-5 shadow-[0_12px_34px_-22px_rgba(36,59,138,0.16)]"
+        >
+          <div className="space-y-2 max-w-2xl mx-auto">
+            <p className="font-mono text-[10.5px] sm:text-[11px] uppercase tracking-[0.18em] text-[#174D3A] font-bold">
+              For Writers &amp; Contributors
+            </p>
+            <h2 className="font-editorial-display not-italic text-[24px] sm:text-[34px] lg:text-[38px] font-extrabold text-[#1C1917] leading-[1.2] tracking-tight">
+              Perhaps Your Manuscript Belongs Here.
+            </h2>
+          </div>
+
+          <div className="max-w-[62ch] mx-auto space-y-4 font-editorial-prose not-italic text-[15.5px] sm:text-[17.5px] text-[#292524] leading-[1.78]">
+            <p>
+              Every book begins somewhere. Sometimes with a single sentence, sometimes with years of thought, and sometimes with a story that has been waiting to be told.
+            </p>
+            <p>
+              We know that not every manuscript arrives finished. Some are still finding their voice. Others simply need the right editorial conversation.
+            </p>
+            <p>
+              If you have written something you believe in, we would be glad to hear from you.
+            </p>
+            <p>
+              We welcome thoughtful manuscripts, new voices and stories that deserve to find their readers.
+            </p>
+            <p className="font-editorial-display not-italic font-bold text-[18px] sm:text-[21px] text-[#243B8A] pt-1">
+              Write to us. Tell us about your work. Let&apos;s begin with a conversation.
+            </p>
+          </div>
+
+          <div className="pt-4 border-t border-[#E6DFCE] max-w-xl mx-auto space-y-3">
+            <p className="text-xs font-mono uppercase tracking-[0.14em] text-[#57534E]">
+              Editorial correspondence and manuscript submissions:
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                href="mailto:akathpublication@gmail.com"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FAF6EC] hover:bg-[#FFD966]/35 border border-[#DCD4C0] text-sm font-mono font-semibold text-[#243B8A] transition-colors"
+              >
+                akathpublication@gmail.com
+              </a>
+              <button
+                type="button"
+                onClick={() => onNavigate('/submit-manuscript')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-sm font-medium transition-colors cursor-pointer"
+              >
+                <span>Submit Manuscript Online</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </motion.section>
 
@@ -759,7 +895,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
           whileInView="visible"
           viewport={{ once: true, amount: 0.04 }}
           style={{ '--io-block-delay': '60ms' } as React.CSSProperties}
-          className="akath-seq-step akath-about-io-block scroll-mt-28 max-w-5xl mx-auto w-full min-w-0 rounded-xl bg-white border border-[#DCD4C0] overflow-hidden shadow-[0_14px_36px_-22px_rgba(28,25,23,0.12)]"
+          className="akath-seq-step akath-about-io-block scroll-mt-28 max-w-5xl mx-auto w-full min-w-0 rounded-xl bg-[#FFFDF7]/82 backdrop-blur-sm border border-[#DCD4C0]/85 overflow-hidden shadow-[0_14px_36px_-22px_rgba(28,25,23,0.12)]"
         >
           {/* Top Editorial Accent Bar */}
           <div className="bg-[#243B8A] text-[#FFFDF7] px-5 sm:px-8 lg:px-10 py-3.5 flex flex-wrap items-center justify-between gap-2 text-[10.5px] sm:text-[11px] font-mono">

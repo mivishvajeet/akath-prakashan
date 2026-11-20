@@ -25063,6 +25063,44 @@ function useMapTransform(inputValue, inputRange, outputMap, options) {
 	for (const key of keys) output[key] = useTransform(inputValue, inputRange, outputMap[key], options);
 	return output;
 }
+// node_modules/framer-motion/dist/es/utils/reduced-motion/use-reduced-motion.mjs
+/**
+* A hook that returns `true` if we should be using reduced motion based on the current device's Reduced Motion setting.
+*
+* This can be used to implement changes to your UI based on Reduced Motion. For instance, replacing motion-sickness inducing
+* `x`/`y` animations with `opacity`, disabling the autoplay of background videos, or turning off parallax motion.
+*
+* It will actively respond to changes and re-render your components with the latest setting.
+*
+* ```jsx
+* export function Sidebar({ isOpen }) {
+*   const shouldReduceMotion = useReducedMotion()
+*   const closedX = shouldReduceMotion ? 0 : "-100%"
+*
+*   return (
+*     <motion.div animate={{
+*       opacity: isOpen ? 1 : 0,
+*       x: isOpen ? 0 : closedX
+*     }} />
+*   )
+* }
+* ```
+*
+* @return boolean
+*
+* @public
+*/
+function useReducedMotion() {
+	/**
+	* Lazy initialisation of prefersReducedMotion
+	*/
+	!hasReducedMotionListener.current && initPrefersReducedMotion();
+	const [shouldReduceMotion] = (0, import_react.useState)(prefersReducedMotion.current);
+	/**
+	* TODO See if people miss automatically updating shouldReduceMotion setting
+	*/
+	return shouldReduceMotion;
+}
 // node_modules/motion/dist/es/react.mjs
 var motion = motion$1;
 // node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs
@@ -30732,6 +30770,8 @@ var Footer = ({ onNavigate, onSubscribeNewsletter }) => {
 	const [successMessage, setSuccessMessage] = (0, import_react.useState)(null);
 	const [submitting, setSubmitting] = (0, import_react.useState)(false);
 	const [hasEnteredView, setHasEnteredView] = (0, import_react.useState)(false);
+	const [openReaderServices, setOpenReaderServices] = (0, import_react.useState)(false);
+	const [openContact, setOpenContact] = (0, import_react.useState)(false);
 	const emailInputRef = (0, import_react.useRef)(null);
 	const footerRef = (0, import_react.useRef)(null);
 	const wordmarkBannerRef = (0, import_react.useRef)(null);
@@ -30823,7 +30863,7 @@ var Footer = ({ onNavigate, onSubscribeNewsletter }) => {
 		ref: footerRef,
 		"aria-label": lang === "mr" ? "शेवटचे पान — अकथ प्रकाशन तळटीप आणि संपादकीय मुद्रा" : "The Last Page — Akath Prakashan Editorial Footer & Colophon",
 		"data-testid": "the-last-page-footer",
-		className: `last-page-footer relative text-[#F5EBDD] overflow-hidden mt-20 border-t border-[#E8BC69]/30 ${!isFooterInViewport ? "akath-footer-offscreen" : ""}`,
+		className: `last-page-footer relative text-[#F5EBDD] overflow-hidden mt-14 sm:mt-20 border-t border-[#E8BC69]/30 ${!isFooterInViewport ? "akath-footer-offscreen" : ""}`,
 		style: { background: "linear-gradient(180deg, #0C152C 0%, #132247 42%, #1D3162 76%, #2D4238 93%, #302C25 100%)" },
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
@@ -31065,9 +31105,9 @@ var Footer = ({ onNavigate, onSubscribeNewsletter }) => {
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "relative z-20 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12 pb-4",
+				className: "relative z-20 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-7 sm:pt-12 pb-2 sm:pb-4",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					className: "rounded-xl bg-[#0F1B3A]/85 backdrop-blur-md border border-[#E8BC69]/25 p-6 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 shadow-[0_18px_42px_-20px_rgba(6,11,26,0.65)]",
+					className: "rounded-xl bg-[#0F1B3A]/85 backdrop-blur-md border border-[#E8BC69]/25 p-5 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 shadow-[0_18px_42px_-20px_rgba(6,11,26,0.65)]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 						className: "lg:col-span-5 lg:border-r lg:border-[#E8BC69]/20 lg:pr-8 flex flex-col justify-between space-y-4",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -31154,7 +31194,7 @@ var Footer = ({ onNavigate, onSubscribeNewsletter }) => {
 							]
 						})
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-7 pt-1",
+						className: "lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-x-5 gap-y-4 sm:gap-7 pt-1",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", {
 								"aria-label": t.footer.booksAndCatalogue,
@@ -31233,112 +31273,150 @@ var Footer = ({ onNavigate, onSubscribeNewsletter }) => {
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", {
 								"aria-label": t.footer.readerServices,
-								className: "space-y-3",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
-									className: "text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]",
-									children: t.footer.readerServices
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", {
-									className: "space-y-2 text-[13.5px] text-[#F5EBDD]/90",
-									children: [
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
-											href: "/track-order",
-											onClick: (e) => handleNavClick(e, "/track-order"),
-											className: "hover:text-[#FFD966] transition-colors inline-flex items-center gap-1 rounded",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t.nav.trackOrder })
-										}) }),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
-											href: "/shipping-returns",
-											onClick: (e) => handleNavClick(e, "/shipping-returns"),
-											className: "hover:text-[#FFD966] transition-colors inline-flex items-center gap-1 rounded",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t.footer.shippingPolicy })
-										}) }),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
-											href: "/privacy",
-											onClick: (e) => handleNavClick(e, "/privacy"),
-											className: "hover:text-[#FFD966] transition-colors inline-flex items-center gap-1 rounded",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t.footer.privacyPolicy })
-										}) }),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
-											href: "/terms",
-											onClick: (e) => handleNavClick(e, "/terms"),
-											className: "hover:text-[#FFD966] transition-colors inline-flex items-center gap-1 rounded",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t.footer.termsOfUse })
-										}) })
-									]
-								})]
+								className: "col-span-2 sm:col-span-1 border-t border-[#E8BC69]/18 pt-3 sm:border-t-0 sm:pt-0 sm:space-y-3",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+										type: "button",
+										onClick: () => setOpenReaderServices((prev) => !prev),
+										"aria-expanded": openReaderServices,
+										"aria-controls": "footer-reader-services-panel",
+										"data-testid": "footer-accordion-reader-services",
+										className: "sm:hidden w-full flex items-center justify-between gap-2 py-1.5 text-left cursor-pointer",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											className: "text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]",
+											children: t.footer.readerServices
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronDown, {
+											"aria-hidden": "true",
+											className: `w-4 h-4 text-[#FFD966] transition-transform duration-200 ${openReaderServices ? "rotate-180" : ""}`
+										})]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
+										className: "hidden sm:block text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]",
+										children: t.footer.readerServices
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", {
+										id: "footer-reader-services-panel",
+										className: `${openReaderServices ? "block pt-2.5 pb-1" : "hidden"} sm:block sm:pt-0 sm:pb-0 space-y-2 text-[13.5px] text-[#F5EBDD]/90`,
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+												href: "/track-order",
+												onClick: (e) => handleNavClick(e, "/track-order"),
+												className: "hover:text-[#FFD966] transition-colors inline-flex items-center gap-1 rounded",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t.nav.trackOrder })
+											}) }),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+												href: "/shipping-returns",
+												onClick: (e) => handleNavClick(e, "/shipping-returns"),
+												className: "hover:text-[#FFD966] transition-colors inline-flex items-center gap-1 rounded",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t.footer.shippingPolicy })
+											}) }),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+												href: "/privacy",
+												onClick: (e) => handleNavClick(e, "/privacy"),
+												className: "hover:text-[#FFD966] transition-colors inline-flex items-center gap-1 rounded",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t.footer.privacyPolicy })
+											}) }),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+												href: "/terms",
+												onClick: (e) => handleNavClick(e, "/terms"),
+												className: "hover:text-[#FFD966] transition-colors inline-flex items-center gap-1 rounded",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t.footer.termsOfUse })
+											}) })
+										]
+									})
+								]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "space-y-3",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
-									className: "text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]",
-									children: t.nav.contact
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("address", {
-									className: "not-italic space-y-2 text-[13px] text-[#F5EBDD]/90 leading-relaxed",
-									children: [
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "flex items-start gap-2",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapPin, {
-												className: "w-3.5 h-3.5 text-[#FFD966] shrink-0 mt-1",
-												"aria-hidden": "true"
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: lang === "mr" ? "नांदेड, महाराष्ट्र" : "Nanded, Maharashtra" })]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "flex items-center gap-2",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mail, {
-												className: "w-3.5 h-3.5 text-[#FFD966] shrink-0",
-												"aria-hidden": "true"
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
-												href: "mailto:akathpublication@gmail.com",
-												className: "hover:text-[#FFD966] transition-colors break-all rounded",
-												children: "akathpublication@gmail.com"
-											})]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "flex items-center gap-2",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Phone, {
-												className: "w-3.5 h-3.5 text-[#FFD966] shrink-0",
-												"aria-hidden": "true"
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
-												href: "tel:+919270282932",
-												className: "tabular-nums hover:text-[#FFD966] transition-colors rounded",
-												children: "+91 92702 82932"
-											})]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "pt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-[#FFD966]",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
-												href: "/contact",
-												onClick: (e) => handleNavClick(e, "/contact"),
-												className: "hover:text-[#FFFDF7] underline underline-offset-4 transition-colors rounded",
-												children: lang === "mr" ? "संपर्क दालन" : "Editorial Desk"
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
-												href: PUBLISHER_IDENTITY.whatsappUrl,
-												target: "_blank",
-												rel: "noopener noreferrer",
-												className: "hover:text-[#FFFDF7] inline-flex items-center gap-0.5 underline underline-offset-4 transition-colors rounded",
-												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "WhatsApp" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowUpRight, {
-													className: "w-3 h-3",
+								className: "col-span-2 sm:col-span-1 border-t border-[#E8BC69]/18 pt-3 sm:border-t-0 sm:pt-0 sm:space-y-3",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+										type: "button",
+										onClick: () => setOpenContact((prev) => !prev),
+										"aria-expanded": openContact,
+										"aria-controls": "footer-contact-panel",
+										"data-testid": "footer-accordion-contact",
+										className: "sm:hidden w-full flex items-center justify-between gap-2 py-1.5 text-left cursor-pointer",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											className: "text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]",
+											children: t.nav.contact
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronDown, {
+											"aria-hidden": "true",
+											className: `w-4 h-4 text-[#FFD966] transition-transform duration-200 ${openContact ? "rotate-180" : ""}`
+										})]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
+										className: "hidden sm:block text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]",
+										children: t.nav.contact
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("address", {
+										id: "footer-contact-panel",
+										className: `${openContact ? "block pt-2.5 pb-1" : "hidden"} sm:block sm:pt-0 sm:pb-0 not-italic space-y-2 text-[13px] text-[#F5EBDD]/90 leading-relaxed`,
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												className: "flex items-start gap-2",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapPin, {
+													className: "w-3.5 h-3.5 text-[#FFD966] shrink-0 mt-1",
 													"aria-hidden": "true"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: lang === "mr" ? "नांदेड, महाराष्ट्र" : "Nanded, Maharashtra" })]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												className: "flex items-center gap-2",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mail, {
+													className: "w-3.5 h-3.5 text-[#FFD966] shrink-0",
+													"aria-hidden": "true"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+													href: "mailto:akathpublication@gmail.com",
+													className: "hover:text-[#FFD966] transition-colors break-all rounded",
+													children: "akathpublication@gmail.com"
 												})]
-											})]
-										})
-									]
-								})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												className: "flex items-center gap-2",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Phone, {
+													className: "w-3.5 h-3.5 text-[#FFD966] shrink-0",
+													"aria-hidden": "true"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+													href: "tel:+919270282932",
+													className: "tabular-nums hover:text-[#FFD966] transition-colors rounded",
+													children: "+91 92702 82932"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												className: "pt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-[#FFD966]",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+													href: "/contact",
+													onClick: (e) => handleNavClick(e, "/contact"),
+													className: "hover:text-[#FFFDF7] underline underline-offset-4 transition-colors rounded",
+													children: lang === "mr" ? "संपर्क दालन" : "Editorial Desk"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
+													href: PUBLISHER_IDENTITY.whatsappUrl,
+													target: "_blank",
+													rel: "noopener noreferrer",
+													className: "hover:text-[#FFFDF7] inline-flex items-center gap-0.5 underline underline-offset-4 transition-colors rounded",
+													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "WhatsApp" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowUpRight, {
+														className: "w-3 h-3",
+														"aria-hidden": "true"
+													})]
+												})]
+											})
+										]
+									})
+								]
 							})
 						]
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 					"data-testid": "footer-signature-colophon",
-					className: "pt-5 pb-2 flex flex-col sm:flex-row sm:items-end justify-between gap-4",
+					className: "pt-6 pb-2 flex flex-col md:flex-row items-center justify-between gap-3.5 md:gap-6 text-center md:text-left",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "flex flex-col sm:flex-row sm:items-center gap-3.5",
+						className: "flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3.5",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 							"data-testid": "footer-animated-book-constellation",
 							"aria-hidden": "true",
 							className: "shrink-0 flex items-center",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
 								viewBox: "0 0 240 84",
-								className: "w-20 sm:w-24 h-auto overflow-visible",
+								className: "w-14 sm:w-16 h-auto overflow-visible",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
 										d: "M28 66 Q120 46 212 66",
@@ -31404,32 +31482,43 @@ var Footer = ({ onNavigate, onSubscribeNewsletter }) => {
 									})
 								]
 							})
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 							"data-testid": "footer-closing-line",
-							className: `last-page-closing-quote space-y-0.5 ${hasEnteredView ? "is-entering" : ""}`,
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								className: "font-serif not-italic text-[18px] sm:text-[20px] font-bold text-[#F5EBDD] leading-[1.3] tracking-[-0.01em]",
+							className: `last-page-closing-quote ${hasEnteredView ? "is-entering" : ""}`,
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								className: "font-serif not-italic text-[17px] sm:text-[19px] font-semibold text-[#F5EBDD] leading-snug tracking-[-0.01em]",
 								children: "Every story leaves a mark."
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-								className: "text-[12.5px] text-[#F5EBDD]/85 flex flex-wrap items-center gap-x-1.5 gap-y-0.5",
+							})
+						})]
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1 text-[12.5px]",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+								className: "text-[#F5EBDD]/80 inline-flex items-center gap-1.5 whitespace-nowrap",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Thoughtfully crafted by" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
 									href: "https://github.com/mivishvajeet",
 									target: "_blank",
 									rel: "noopener noreferrer",
 									"data-testid": "footer-creator-credit",
-									className: "last-page-creator-credit font-serif font-semibold text-[#FFD966] hover:text-[#FFFDF7]",
+									className: "last-page-creator-credit inline-flex items-center gap-1 font-serif font-semibold text-[#FFD966] hover:text-[#FFFDF7] whitespace-nowrap",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "mivishvajeet" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 										"aria-hidden": "true",
-										className: "last-page-creator-mark sr-only",
+										className: "last-page-creator-mark text-[11px] leading-none",
 										children: "↗"
 									})]
 								})]
-							})]
-						})]
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						"data-testid": "footer-copyright",
-						className: "font-mono text-[12px] tracking-[0.08em] text-[#E8BC69]/90 tabular-nums",
-						children: "Akath Prakashan · 2026"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								"aria-hidden": "true",
+								className: "text-[#E8BC69]/45",
+								children: "·"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								"data-testid": "footer-copyright",
+								className: "font-mono text-[11.5px] sm:text-[12px] tracking-[0.1em] text-[#E8BC69]/90 tabular-nums whitespace-nowrap",
+								children: "Akath Prakashan · 2026"
+							})
+						]
 					})]
 				})]
 			}),
@@ -31438,60 +31527,26 @@ var Footer = ({ onNavigate, onSubscribeNewsletter }) => {
 				onMouseMove: handleWordmarkPointerMove,
 				"data-testid": "footer-monumental-wordmark",
 				className: `akath-sarvam-wordmark-stage ${hasEnteredView ? "is-visible" : ""} group relative w-full overflow-hidden pt-4 sm:pt-6 lg:pt-8 pb-0 select-none`,
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-testid": "footer-tagline-stage",
-						className: "relative z-20 max-w-[1160px] mx-auto px-4 sm:px-8 lg:px-12 pb-3 sm:pb-4 lg:pb-5 flex flex-col items-center text-center",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"aria-hidden": "true",
-							className: "flex items-center justify-center gap-2.5 sm:gap-3.5 mb-2 sm:mb-2.5",
-							children: [
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "w-10 sm:w-16 lg:w-24 h-px bg-gradient-to-r from-transparent via-[#E8BC69]/70 to-[#FFD966]" }),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "w-1.5 h-1.5 rotate-45 bg-[#FFD966]" }),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									className: "text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.22em] text-[#E8BC69]",
-									children: lang === "mr" ? "मराठी प्रकाशन संस्था" : "MARATHI PUBLISHING HOUSE"
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "w-1.5 h-1.5 rotate-45 bg-[#FFD966]" }),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "w-10 sm:w-16 lg:w-24 h-px bg-gradient-to-l from-transparent via-[#E8BC69]/70 to-[#FFD966]" })
-							]
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-							"data-testid": "footer-marathi-tagline",
-							className: "w-full max-w-[20ch] sm:max-w-none mx-auto text-center font-serif not-italic font-extrabold tracking-[-0.02em] leading-[1.24] sm:leading-[1.18] lg:leading-[1.14] text-[clamp(1.35rem,5.2vw,2.1rem)] sm:text-[clamp(1.75rem,3.6vw,2.45rem)] lg:text-[clamp(2.15rem,2.8vw,3rem)] [text-wrap:balance]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-								className: "text-[#F5EBDD] drop-shadow-[0_2px_10px_rgba(6,11,26,0.55)]",
-								children: ["शब्दांना पुस्तकाचं रूप देणारी", " "]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-								className: "relative inline-block whitespace-nowrap text-[#FFD966] drop-shadow-[0_2px_14px_rgba(232,188,105,0.28)]",
-								children: ["प्रकाशन संस्था.", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"aria-hidden": "true",
-									className: "block w-full h-[2px] mt-1 rounded-full bg-gradient-to-r from-transparent via-[#FFD966] to-transparent opacity-85"
-								})]
-							})]
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+					href: "/",
+					onClick: (e) => handleNavClick(e, "/"),
+					"aria-label": "अकथ प्रकाशन — मुख्यपृष्ठ",
+					className: "relative z-10 block w-full text-center focus:outline-none px-4 sm:px-6 -mb-8 sm:-mb-12 lg:-mb-16",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+						"data-testid": "footer-monumental-marathi-text",
+						className: "akath-sarvam-wordmark-text inline-flex items-baseline justify-center gap-[0.18em] sm:gap-[0.22em] font-serif font-bold whitespace-nowrap tracking-[-0.02em] leading-[0.9] text-[clamp(2.6rem,11vw,8.5rem)] opacity-85",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							className: "akath-wordmark-part akath-wordmark-part-1 inline-block",
+							children: "अकथ"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							className: "akath-wordmark-part akath-wordmark-part-2 inline-block",
+							children: "प्रकाशन"
 						})]
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
-						href: "/",
-						onClick: (e) => handleNavClick(e, "/"),
-						"aria-label": "अकथ प्रकाशन — मुख्यपृष्ठ",
-						className: "relative z-10 block w-full text-center focus:outline-none px-4 sm:px-6 -mb-8 sm:-mb-12 lg:-mb-16",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-							"data-testid": "footer-monumental-marathi-text",
-							className: "akath-sarvam-wordmark-text inline-flex items-baseline justify-center gap-[0.18em] sm:gap-[0.22em] font-serif font-bold whitespace-nowrap tracking-[-0.02em] leading-[0.9] text-[clamp(2.6rem,11vw,8.5rem)] opacity-85",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-								className: "akath-wordmark-part akath-wordmark-part-1 inline-block",
-								children: "अकथ"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-								className: "akath-wordmark-part akath-wordmark-part-2 inline-block",
-								children: "प्रकाशन"
-							})]
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						className: "relative z-20",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StorybookFooterLandscape, {})
 					})
-				]
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					className: "relative z-20",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StorybookFooterLandscape, {})
+				})]
 			})
 		]
 	});
@@ -31914,6 +31969,3014 @@ var BookCoverArtInner = ({ book, author, className = "", size = "md", onClick, s
 	});
 };
 var BookCoverArt = (0, import_react.memo)(BookCoverArtInner);
+// src/components/AkathLandscapeIllustrations.tsx
+/**
+* Synchronously determines viewport tier on the client so dedicated mobile,
+* tablet, and desktop SVG framing renders immediately without layout flash.
+*/
+function useLandscapeViewportTier() {
+	const getTier = () => {
+		if (typeof window === "undefined" || typeof window.matchMedia !== "function") return "desktop";
+		if (window.matchMedia("(max-width: 639px)").matches) return "mobile";
+		if (window.matchMedia("(max-width: 1023px)").matches) return "tablet";
+		return "desktop";
+	};
+	const [tier, setTier] = (0, import_react.useState)(getTier);
+	(0, import_react.useEffect)(() => {
+		if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+		const mobileQuery = window.matchMedia("(max-width: 639px)");
+		const tabletQuery = window.matchMedia("(max-width: 1023px)");
+		const updateTier = () => {
+			if (mobileQuery.matches) setTier("mobile");
+			else if (tabletQuery.matches) setTier("tablet");
+			else setTier("desktop");
+		};
+		updateTier();
+		mobileQuery.addEventListener?.("change", updateTier);
+		tabletQuery.addEventListener?.("change", updateTier);
+		return () => {
+			mobileQuery.removeEventListener?.("change", updateTier);
+			tabletQuery.removeEventListener?.("change", updateTier);
+		};
+	}, []);
+	return tier;
+}
+/**
+* Lightweight, rAF-throttled scroll parallax & off-screen animation pausing.
+* Writes subtle pixel offsets to CSS custom properties directly on the host
+* element (zero React re-renders during scroll) and fully disables under
+* prefers-reduced-motion.
+*/
+function useSubtleLandscapeMotion(containerRef, mode = "section") {
+	const [isOffscreen, setIsOffscreen] = (0, import_react.useState)(false);
+	(0, import_react.useEffect)(() => {
+		const node = containerRef.current;
+		if (!node || typeof window === "undefined") return;
+		if ((window.matchMedia?.("(prefers-reduced-motion: reduce)"))?.matches) {
+			node.style.setProperty("--akath-px-far", "0px");
+			node.style.setProperty("--akath-px-mid", "0px");
+			node.style.setProperty("--akath-px-near", "0px");
+			return;
+		}
+		let inView = true;
+		let rafId = null;
+		const updateParallax = () => {
+			rafId = null;
+			if (!inView || !containerRef.current) return;
+			let progress = 0;
+			if (mode === "fixed") {
+				const docHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+				progress = Math.min(1, Math.max(0, window.scrollY / docHeight)) * 2 - 1;
+			} else {
+				const rect = containerRef.current.getBoundingClientRect();
+				const vh = window.innerHeight || 800;
+				const centerOffset = rect.top + rect.height * .5 - vh * .5;
+				progress = Math.max(-1, Math.min(1, centerOffset / (vh * .85)));
+			}
+			const farY = (progress * 5).toFixed(2);
+			const midY = (progress * 9).toFixed(2);
+			const nearY = (progress * 13).toFixed(2);
+			containerRef.current.style.setProperty("--akath-px-far", `${farY}px`);
+			containerRef.current.style.setProperty("--akath-px-mid", `${midY}px`);
+			containerRef.current.style.setProperty("--akath-px-near", `${nearY}px`);
+		};
+		const scheduleUpdate = () => {
+			if (!inView || rafId !== null) return;
+			rafId = window.requestAnimationFrame(updateParallax);
+		};
+		let observer = null;
+		if (typeof IntersectionObserver !== "undefined" && mode === "section") {
+			observer = new IntersectionObserver((entries) => {
+				const visible = entries.some((e) => e.isIntersecting);
+				inView = visible;
+				setIsOffscreen(!visible);
+				if (visible) scheduleUpdate();
+			}, {
+				rootMargin: "120px 0px 120px 0px",
+				threshold: .01
+			});
+			observer.observe(node);
+		}
+		updateParallax();
+		window.addEventListener("scroll", scheduleUpdate, { passive: true });
+		window.addEventListener("resize", scheduleUpdate, { passive: true });
+		return () => {
+			if (rafId !== null) window.cancelAnimationFrame(rafId);
+			observer?.disconnect();
+			window.removeEventListener("scroll", scheduleUpdate);
+			window.removeEventListener("resize", scheduleUpdate);
+		};
+	}, [containerRef, mode]);
+	return isOffscreen;
+}
+var EngravingDefs = ({ uid, surfaceHex, sunCy = "58%" }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("defs", { children: [
+	/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("radialGradient", {
+		id: `duskSun-${uid}`,
+		cx: "50%",
+		cy: sunCy,
+		r: "48%",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "0%",
+				stopColor: "#EF6855",
+				stopOpacity: "0.62"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "44%",
+				stopColor: "#C89D54",
+				stopOpacity: "0.34"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "100%",
+				stopColor: "#243B8A",
+				stopOpacity: "0"
+			})
+		]
+	}),
+	/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("linearGradient", {
+		id: `farRidge-${uid}`,
+		x1: "0%",
+		y1: "0%",
+		x2: "0%",
+		y2: "100%",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "0%",
+				stopColor: "#243B8A",
+				stopOpacity: "0.56"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "68%",
+				stopColor: "#243B8A",
+				stopOpacity: "0.26"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "100%",
+				stopColor: "#243B8A",
+				stopOpacity: "0.1"
+			})
+		]
+	}),
+	/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("linearGradient", {
+		id: `midRidge-${uid}`,
+		x1: "0%",
+		y1: "0%",
+		x2: "0%",
+		y2: "100%",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "0%",
+				stopColor: "#1B2D6B",
+				stopOpacity: "0.76"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "72%",
+				stopColor: "#1B2D6B",
+				stopOpacity: "0.38"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "100%",
+				stopColor: "#1B2D6B",
+				stopOpacity: "0.16"
+			})
+		]
+	}),
+	/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("linearGradient", {
+		id: `nearBank-${uid}`,
+		x1: "0%",
+		y1: "0%",
+		x2: "0%",
+		y2: "100%",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "0%",
+				stopColor: "#174D3A",
+				stopOpacity: "0.82"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "65%",
+				stopColor: "#1B2D6B",
+				stopOpacity: "0.52"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "100%",
+				stopColor: "#1B2D6B",
+				stopOpacity: "0.28"
+			})
+		]
+	}),
+	/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("linearGradient", {
+		id: `riverBand-${uid}`,
+		x1: "0%",
+		y1: "0%",
+		x2: "100%",
+		y2: "0%",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "0%",
+				stopColor: "#243B8A",
+				stopOpacity: "0.22"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "28%",
+				stopColor: "#C89D54",
+				stopOpacity: "0.68"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "52%",
+				stopColor: "#EF6855",
+				stopOpacity: "0.48"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "76%",
+				stopColor: "#C89D54",
+				stopOpacity: "0.64"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "100%",
+				stopColor: "#243B8A",
+				stopOpacity: "0.22"
+			})
+		]
+	}),
+	/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("linearGradient", {
+		id: `valleyMist-${uid}`,
+		x1: "0%",
+		y1: "0%",
+		x2: "0%",
+		y2: "100%",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "0%",
+				stopColor: surfaceHex,
+				stopOpacity: "0"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "48%",
+				stopColor: surfaceHex,
+				stopOpacity: "0.78"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "100%",
+				stopColor: surfaceHex,
+				stopOpacity: "0"
+			})
+		]
+	}),
+	/* @__PURE__ */ (0, import_jsx_runtime.jsx)("pattern", {
+		id: `hatchDiag-${uid}`,
+		width: "7",
+		height: "7",
+		patternUnits: "userSpaceOnUse",
+		patternTransform: "rotate(-34)",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+			x1: "0",
+			y1: "0",
+			x2: "0",
+			y2: "7",
+			stroke: "#1B2D6B",
+			strokeWidth: "0.7",
+			strokeOpacity: "0.42"
+		})
+	}),
+	/* @__PURE__ */ (0, import_jsx_runtime.jsx)("pattern", {
+		id: `strataHoriz-${uid}`,
+		width: "42",
+		height: "9",
+		patternUnits: "userSpaceOnUse",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 0 3.5 L 18 3.5 M 23 3.5 L 40 3.5 M 6 7.5 L 32 7.5",
+			stroke: "#FAF8F0",
+			strokeWidth: "0.65",
+			strokeOpacity: "0.34",
+			fill: "none"
+		})
+	}),
+	/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("pattern", {
+		id: `stipple-${uid}`,
+		width: "28",
+		height: "28",
+		patternUnits: "userSpaceOnUse",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: "4",
+				cy: "6",
+				r: "0.55",
+				fill: "#243B8A",
+				opacity: "0.2"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: "15",
+				cy: "3",
+				r: "0.45",
+				fill: "#C89D54",
+				opacity: "0.24"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: "24",
+				cy: "12",
+				r: "0.5",
+				fill: "#1B2D6B",
+				opacity: "0.18"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: "9",
+				cy: "19",
+				r: "0.45",
+				fill: "#C89D54",
+				opacity: "0.22"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: "21",
+				cy: "24",
+				r: "0.55",
+				fill: "#243B8A",
+				opacity: "0.16"
+			})
+		]
+	})
+] });
+/**
+* Engraved Nanded Riverfront Heritage Complex (Dome, Lotus Finial, Chhatris,
+* Arched Stone Colonnade, Corner Minars & Subtle Inverted Godavari Reflection).
+*/
+var NandedRiverfrontComplex = ({ transform, surfaceHex }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+	transform,
+	children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		fill: "#1B2D6B",
+		stroke: "#1B2D6B",
+		strokeLinejoin: "round",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				x: "20",
+				y: "90",
+				width: "184",
+				height: "7",
+				rx: "0.8",
+				opacity: "0.86",
+				stroke: "none"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+				x1: "14",
+				y1: "90",
+				x2: "210",
+				y2: "90",
+				stroke: surfaceHex,
+				strokeWidth: "0.9",
+				opacity: "0.55"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				x: "34",
+				y: "54",
+				width: "156",
+				height: "36",
+				rx: "1",
+				opacity: "0.82",
+				stroke: "none"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+				d: "M 28 54 L 196 54 L 192 58 L 32 58 Z",
+				opacity: "0.9",
+				stroke: "none"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+				d: "M 78 54 C 76 34, 92 20, 112 18 C 132 20, 148 34, 146 54 Z",
+				opacity: "0.88",
+				stroke: "none"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+				d: "M 96 54 C 96 36, 103 24, 112 19 M 112 54 L 112 19 M 128 54 C 128 36, 121 24, 112 19",
+				fill: "none",
+				stroke: surfaceHex,
+				strokeWidth: "0.75",
+				opacity: "0.45"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+				d: "M 105 19 Q 112 15 119 19",
+				fill: "none",
+				stroke: "#C89D54",
+				strokeWidth: "1.2",
+				opacity: "0.85"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+				x1: "112",
+				y1: "18",
+				x2: "112",
+				y2: "5",
+				stroke: "#C89D54",
+				strokeWidth: "1.5",
+				opacity: "0.92"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: "112",
+				cy: "8.5",
+				r: "2.1",
+				fill: "#C89D54",
+				stroke: "none",
+				opacity: "0.92"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: "112",
+				cy: "4.2",
+				r: "1.2",
+				fill: "#C89D54",
+				stroke: "none",
+				opacity: "0.92"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+				opacity: "0.85",
+				stroke: "none",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 46 54 C 46 43, 53 38, 61 38 C 69 38, 76 43, 76 54 Z" }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+						x1: "61",
+						y1: "38",
+						x2: "61",
+						y2: "31",
+						stroke: "#C89D54",
+						strokeWidth: "1.1"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+						cx: "61",
+						cy: "31",
+						r: "1.3",
+						fill: "#C89D54"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 148 54 C 148 43, 155 38, 163 38 C 171 38, 178 43, 178 54 Z" }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+						x1: "163",
+						y1: "38",
+						x2: "163",
+						y2: "31",
+						stroke: "#C89D54",
+						strokeWidth: "1.1"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+						cx: "163",
+						cy: "31",
+						r: "1.3",
+						fill: "#C89D54"
+					})
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+				opacity: "0.84",
+				stroke: "none",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+						x: "20",
+						y: "28",
+						width: "9",
+						height: "62",
+						rx: "0.8"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+						x: "17.5",
+						y: "48",
+						width: "14",
+						height: "2.4"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+						x: "17.5",
+						y: "68",
+						width: "14",
+						height: "2.2"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 18 29 C 18 21, 31 21, 31 29 Z" }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+						x1: "24.5",
+						y1: "22",
+						x2: "24.5",
+						y2: "16",
+						stroke: "#C89D54",
+						strokeWidth: "1"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+						x: "195",
+						y: "28",
+						width: "9",
+						height: "62",
+						rx: "0.8"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+						x: "192.5",
+						y: "48",
+						width: "14",
+						height: "2.4"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+						x: "192.5",
+						y: "68",
+						width: "14",
+						height: "2.2"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 193 29 C 193 21, 206 21, 206 29 Z" }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+						x1: "199.5",
+						y1: "22",
+						x2: "199.5",
+						y2: "16",
+						stroke: "#C89D54",
+						strokeWidth: "1"
+					})
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+				d: "M 46 90 L 46 72 Q 53 63 60 72 L 60 90 Z\n           M 72 90 L 72 70 Q 80 61 88 70 L 88 90 Z\n           M 101 90 L 101 66 Q 112 56 123 66 L 123 90 Z\n           M 136 90 L 136 70 Q 144 61 152 70 L 152 90 Z\n           M 164 90 L 164 72 Q 171 63 178 72 L 178 90 Z",
+				fill: surfaceHex,
+				stroke: "none",
+				opacity: "0.68"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+				className: "akath-diya-glint",
+				stroke: "none",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+						cx: "112",
+						cy: "83",
+						r: "2.1",
+						fill: "#EF6855",
+						opacity: "0.72"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+						cx: "80",
+						cy: "84",
+						r: "1.4",
+						fill: "#C89D54",
+						opacity: "0.68"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+						cx: "144",
+						cy: "84",
+						r: "1.4",
+						fill: "#C89D54",
+						opacity: "0.68"
+					})
+				]
+			})
+		]
+	})
+});
+/**
+* Engraved Sahyadri Maratha Hill-Fort Bastion (Buruj, Crenellated Curtain Wall & Masonry Lines).
+*/
+var SahyadriFortBastion = ({ transform, surfaceHex }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+	transform,
+	children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 0 28 L 0 12 L 8 12 L 8 8 L 15 8 L 15 12 L 24 12 L 24 8 L 32 8 L 32 12 L 42 12 L 42 5 L 50 5 L 50 9 L 58 9 L 58 5 L 66 5 L 66 9 L 74 9 L 74 5 L 82 5 L 82 14 L 94 14 L 94 10 L 102 10 L 102 14 L 112 14 L 112 28 Z",
+			fill: "#1B2D6B",
+			opacity: "0.84"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+			stroke: surfaceHex,
+			strokeWidth: "0.7",
+			opacity: "0.46",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "3",
+					y1: "18",
+					x2: "108",
+					y2: "18"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "6",
+					y1: "23",
+					x2: "106",
+					y2: "23"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "48",
+					y1: "11",
+					x2: "48",
+					y2: "16"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "62",
+					y1: "11",
+					x2: "62",
+					y2: "16"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "76",
+					y1: "11",
+					x2: "76",
+					y2: "16"
+				})
+			]
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 19 28 L 19 20 Q 24 16 29 20 L 29 28 Z",
+			fill: surfaceHex,
+			opacity: "0.58"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+			x1: "62",
+			y1: "5",
+			x2: "62",
+			y2: "-11",
+			stroke: "#1B2D6B",
+			strokeWidth: "1.15",
+			opacity: "0.78"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 62 -11 L 73 -8 L 62 -5 Z",
+			fill: "#EF6855",
+			opacity: "0.68"
+		})
+	]
+});
+/**
+* Hand-Engraved Mature Banyan Tree (Gnarled Trunk, Multi-Cluster Canopy & Hanging Aerial Roots).
+*/
+var EngravedBanyanTree = ({ transform, surfaceHex }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+	transform,
+	children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 18 68 C 6 58, 12 38, 30 35 C 34 18, 56 10, 76 16 C 88 4, 118 4, 132 18 C 154 14, 174 28, 172 48 C 186 52, 184 72, 164 76 C 148 82, 126 78, 114 74 C 94 82, 66 80, 50 74 C 34 78, 22 74, 18 68 Z",
+			fill: "#174D3A",
+			opacity: "0.82"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 38 40 Q 60 28 84 34 M 92 24 Q 118 18 142 30 M 118 52 Q 144 44 164 54 M 28 58 Q 52 52 72 60",
+			fill: "none",
+			stroke: surfaceHex,
+			strokeWidth: "0.95",
+			strokeLinecap: "round",
+			opacity: "0.4"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 86 72 C 88 92, 82 112, 72 124 L 84 124 C 90 114, 96 108, 100 112 C 104 116, 108 122, 114 124 L 126 124 C 114 110, 108 92, 110 72 Z",
+			fill: "#174D3A",
+			opacity: "0.9"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 94 74 Q 72 62 52 62 M 102 74 Q 124 60 148 64",
+			fill: "none",
+			stroke: "#174D3A",
+			strokeWidth: "4.2",
+			strokeLinecap: "round",
+			opacity: "0.85"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+			stroke: "#174D3A",
+			strokeLinecap: "round",
+			fill: "none",
+			opacity: "0.62",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M 46 72 C 45 88, 47 104, 45 120",
+					strokeWidth: "1.25"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M 54 74 C 55 86, 53 98, 54 114",
+					strokeWidth: "0.9"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M 68 74 C 67 90, 69 104, 67 118",
+					strokeWidth: "1.05"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M 134 73 C 135 89, 133 105, 135 121",
+					strokeWidth: "1.25"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M 144 74 C 143 86, 145 96, 144 108",
+					strokeWidth: "0.85"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M 156 72 C 157 86, 155 100, 156 116",
+					strokeWidth: "1.0"
+				})
+			]
+		})
+	]
+});
+/**
+* Feathery Marathwada Neem Tree Silhouette (Delicate Branching & Fine Foliate Sprays).
+*/
+var EngravedNeemTree = ({ transform, surfaceHex }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+	transform,
+	children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 14 54 C 8 40, 22 24, 38 24 C 46 10, 72 6, 86 18 C 102 12, 122 22, 124 38 C 136 44, 132 60, 114 62 C 98 68, 76 62, 64 60 C 48 66, 22 64, 14 54 Z",
+			fill: "#174D3A",
+			opacity: "0.76"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+			stroke: surfaceHex,
+			strokeWidth: "0.85",
+			strokeLinecap: "round",
+			opacity: "0.42",
+			fill: "none",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 32 34 Q 44 26 56 32" }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 62 22 Q 76 18 90 26" }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 86 40 Q 100 34 114 42" }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 42 48 Q 56 44 70 50" })
+			]
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 66 56 C 68 74, 64 94, 58 106 L 68 106 C 72 94, 76 76, 75 56 Z",
+			fill: "#174D3A",
+			opacity: "0.86"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 68 62 Q 52 50 40 50 M 73 60 Q 90 48 104 52",
+			fill: "none",
+			stroke: "#174D3A",
+			strokeWidth: "2.6",
+			strokeLinecap: "round",
+			opacity: "0.8"
+		})
+	]
+});
+/**
+* Delicate Godavari Riverfront Reeds & Sedges Cluster.
+*/
+var GodavariReeds = ({ transform }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+	transform,
+	fill: "none",
+	stroke: "#174D3A",
+	strokeLinecap: "round",
+	opacity: "0.72",
+	children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 6 48 Q 2 28 -4 10",
+			strokeWidth: "1.2"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 14 48 Q 14 26 11 4",
+			strokeWidth: "1.35"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ellipse", {
+			cx: "10.5",
+			cy: "9",
+			rx: "1.7",
+			ry: "4.5",
+			fill: "#174D3A",
+			stroke: "none"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 22 48 Q 26 28 31 12",
+			strokeWidth: "1.1"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 30 48 Q 36 32 42 18",
+			strokeWidth: "1.0"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 38 48 Q 40 30 39 8",
+			strokeWidth: "1.25"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ellipse", {
+			cx: "39",
+			cy: "13",
+			rx: "1.6",
+			ry: "4.2",
+			fill: "#174D3A",
+			stroke: "none"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 46 48 Q 52 34 58 22",
+			strokeWidth: "0.95"
+		})
+	]
+});
+/**
+* Traditional Maharashtra Stone Deepstambh (Riverside Lamp Pillar) Silhouette.
+*/
+var StoneDeepstambh = ({ transform, surfaceHex }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+	transform,
+	children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 10 74 L 15 16 L 23 16 L 28 74 Z",
+			fill: "#1B2D6B",
+			opacity: "0.82"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+			x: "6",
+			y: "72",
+			width: "26",
+			height: "6",
+			rx: "0.8",
+			fill: "#1B2D6B",
+			opacity: "0.88"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M 13 16 L 19 6 L 25 16 Z",
+			fill: "#1B2D6B",
+			opacity: "0.88"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+			stroke: "#1B2D6B",
+			strokeWidth: "1.4",
+			strokeLinecap: "round",
+			opacity: "0.82",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "9",
+					y1: "28",
+					x2: "29",
+					y2: "28"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "8",
+					y1: "40",
+					x2: "30",
+					y2: "40"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "7",
+					y1: "52",
+					x2: "31",
+					y2: "52"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "6",
+					y1: "64",
+					x2: "32",
+					y2: "64"
+				})
+			]
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+			x1: "19",
+			y1: "18",
+			x2: "19",
+			y2: "70",
+			stroke: surfaceHex,
+			strokeWidth: "0.65",
+			opacity: "0.38"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+			cx: "19",
+			cy: "4",
+			r: "1.8",
+			fill: "#EF6855",
+			className: "akath-diya-glint",
+			opacity: "0.72"
+		})
+	]
+});
+/**
+* Intimate Engraved Godavari Stone Ghat Pavilion, Weathered Steps & Quiet Moored Wooden Skiff
+* (Commissioned specifically for the "04 · For Authors" contemplative riverfront study).
+*/
+var EngravedGhatMandapa = ({ transform, surfaceHex }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+	transform,
+	children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+			fill: "#1B2D6B",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M 52 52 C 52 28, 72 16, 94 16 C 116 16, 136 28, 136 52 Z",
+					opacity: "0.86"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M 74 52 C 74 34, 83 22, 94 17 M 94 52 L 94 17 M 114 52 C 114 34, 105 22, 94 17",
+					fill: "none",
+					stroke: surfaceHex,
+					strokeWidth: "0.8",
+					opacity: "0.44"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "94",
+					y1: "16",
+					x2: "94",
+					y2: "3",
+					stroke: "#C89D54",
+					strokeWidth: "1.6",
+					opacity: "0.9"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+					cx: "94",
+					cy: "6",
+					r: "2.2",
+					fill: "#C89D54",
+					opacity: "0.9"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M 28 52 L 160 52 L 154 59 L 34 59 Z",
+					opacity: "0.9"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+					x: "38",
+					y: "58",
+					width: "9",
+					height: "66",
+					opacity: "0.86"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+					x: "74",
+					y: "58",
+					width: "8",
+					height: "66",
+					opacity: "0.84"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+					x: "106",
+					y: "58",
+					width: "8",
+					height: "66",
+					opacity: "0.84"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+					x: "141",
+					y: "58",
+					width: "9",
+					height: "66",
+					opacity: "0.86"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M 47 58 L 74 58 L 74 75 Q 60.5 64 47 75 Z\n           M 82 58 L 106 58 L 106 74 Q 94 63 82 74 Z\n           M 114 58 L 141 58 L 141 75 Q 127.5 64 114 75 Z",
+					opacity: "0.82"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "94",
+					y1: "65",
+					x2: "94",
+					y2: "80",
+					stroke: "#C89D54",
+					strokeWidth: "0.9",
+					opacity: "0.76"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+					cx: "94",
+					cy: "82",
+					r: "2.5",
+					fill: "#EF6855",
+					className: "akath-diya-glint",
+					opacity: "0.78"
+				})
+			]
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+			fill: "#1B2D6B",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+					x: "16",
+					y: "124",
+					width: "164",
+					height: "8",
+					rx: "0.8",
+					opacity: "0.86"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+					x: "6",
+					y: "133",
+					width: "192",
+					height: "8",
+					rx: "0.8",
+					opacity: "0.78"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+					x: "-4",
+					y: "142",
+					width: "218",
+					height: "8",
+					rx: "0.8",
+					opacity: "0.7"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+					x: "-14",
+					y: "151",
+					width: "242",
+					height: "9",
+					rx: "0.8",
+					opacity: "0.62"
+				})
+			]
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+			stroke: surfaceHex,
+			strokeWidth: "0.95",
+			opacity: "0.52",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "18",
+					y1: "124.5",
+					x2: "178",
+					y2: "124.5"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "8",
+					y1: "133.5",
+					x2: "196",
+					y2: "133.5"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "-2",
+					y1: "142.5",
+					x2: "212",
+					y2: "142.5"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "-12",
+					y1: "151.5",
+					x2: "226",
+					y2: "151.5"
+				})
+			]
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+			transform: "translate(212, 147)",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "-8",
+					y1: "1",
+					x2: "-8",
+					y2: "16",
+					stroke: "#1B2D6B",
+					strokeWidth: "2.4",
+					strokeLinecap: "round",
+					opacity: "0.84"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M -7 5 Q 4 12 16 11",
+					fill: "none",
+					stroke: "#1B2D6B",
+					strokeWidth: "0.95",
+					opacity: "0.68"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M 8 10 C 16 18, 62 19, 82 9 C 72 13, 24 13, 8 10 Z",
+					fill: "#1B2D6B",
+					opacity: "0.84"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: "28",
+					y1: "11",
+					x2: "62",
+					y2: "6",
+					stroke: "#1B2D6B",
+					strokeWidth: "1.2",
+					strokeLinecap: "round",
+					opacity: "0.74"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+					d: "M 14 19 Q 46 22 76 19",
+					fill: "none",
+					stroke: "#C89D54",
+					strokeWidth: "1",
+					opacity: "0.62"
+				})
+			]
+		})
+	]
+});
+var HeroPublicationWatermark = () => {
+	const uid = (0, import_react.useId)().replace(/:/g, "");
+	const containerRef = (0, import_react.useRef)(null);
+	const tier = useLandscapeViewportTier();
+	const isOffscreen = useSubtleLandscapeMotion(containerRef, "section");
+	const isMobile = tier === "mobile";
+	const isTablet = tier === "tablet";
+	const viewBox = isMobile ? "0 0 640 680" : isTablet ? "0 0 1120 620" : "0 0 1600 620";
+	const surfaceHex = "#FAF8F0";
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		ref: containerRef,
+		"aria-hidden": "true",
+		"data-testid": "hero-dusk-landscape-svg",
+		className: `pointer-events-none absolute inset-0 overflow-hidden select-none bg-[#FAF8F0] ${isOffscreen ? "akath-landscape-offscreen" : ""}`,
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "absolute inset-0",
+				style: { background: "radial-gradient(ellipse 84% 52% at 50% 16%, rgba(200, 157, 84, 0.12) 0%, rgba(239, 104, 85, 0.055) 44%, rgba(250, 248, 240, 0) 78%)" }
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "relative w-full h-[500px] sm:h-[560px] lg:h-[630px] max-w-[1680px] mx-auto overflow-hidden",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+						viewBox,
+						preserveAspectRatio: "xMidYMax slice",
+						xmlns: "http://www.w3.org/2000/svg",
+						className: "w-full h-full opacity-[0.21] sm:opacity-[0.23] lg:opacity-[0.25]",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravingDefs, {
+								uid,
+								surfaceHex,
+								sunCy: "62%"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+								width: "100%",
+								height: "100%",
+								fill: `url(#stipple-${uid})`,
+								opacity: "0.55"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ellipse", {
+								cx: isMobile ? 320 : isTablet ? 560 : 800,
+								cy: isMobile ? 430 : 368,
+								rx: isMobile ? 320 : isTablet ? 470 : 620,
+								ry: isMobile ? 210 : 245,
+								fill: `url(#duskSun-${uid})`
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+								className: "akath-parallax-far",
+								children: [
+									isMobile ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M 24 410 Q 320 220 616 410",
+										fill: "none",
+										stroke: "#243B8A",
+										strokeWidth: "1",
+										strokeDasharray: "3.5 7.5",
+										opacity: "0.46"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										transform: "translate(534, 154) scale(0.86)",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+												d: "M 22 4 A 24 24 0 1 0 42 36 A 18 18 0 1 1 22 4 Z",
+												fill: "#243B8A",
+												opacity: "0.82"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+												cx: "-14",
+												cy: "18",
+												r: "2.2",
+												fill: "#C89D54",
+												opacity: "0.9"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+												cx: "48",
+												cy: "10",
+												r: "1.6",
+												fill: "#243B8A",
+												opacity: "0.72"
+											})
+										]
+									})] }) : isTablet ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M 60 356 Q 560 128 1060 356",
+											fill: "none",
+											stroke: "#243B8A",
+											strokeWidth: "1.05",
+											strokeDasharray: "4 8",
+											opacity: "0.48"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M 180 384 Q 560 212 940 384",
+											fill: "none",
+											stroke: "#C89D54",
+											strokeWidth: "0.85",
+											strokeDasharray: "2 7",
+											opacity: "0.44"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+											transform: "translate(920, 108)",
+											children: [
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+													d: "M 22 4 A 24 24 0 1 0 42 36 A 18 18 0 1 1 22 4 Z",
+													fill: "#243B8A",
+													opacity: "0.82"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+													cx: "-18",
+													cy: "18",
+													r: "2.3",
+													fill: "#C89D54",
+													opacity: "0.92"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+													cx: "52",
+													cy: "8",
+													r: "1.8",
+													fill: "#243B8A",
+													opacity: "0.74"
+												})
+											]
+										})
+									] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M 96 344 Q 800 108 1504 344",
+											fill: "none",
+											stroke: "#243B8A",
+											strokeWidth: "1.1",
+											strokeDasharray: "4 8",
+											opacity: "0.48"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M 240 374 Q 800 194 1360 374",
+											fill: "none",
+											stroke: "#C89D54",
+											strokeWidth: "0.9",
+											strokeDasharray: "2 7",
+											opacity: "0.46"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+											transform: "translate(1324, 106)",
+											children: [
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+													d: "M 22 4 A 24 24 0 1 0 42 36 A 18 18 0 1 1 22 4 Z",
+													fill: "#243B8A",
+													opacity: "0.82"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+													cx: "-18",
+													cy: "18",
+													r: "2.4",
+													fill: "#C89D54",
+													opacity: "0.92"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+													cx: "52",
+													cy: "8",
+													r: "1.8",
+													fill: "#243B8A",
+													opacity: "0.74"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+													cx: "38",
+													cy: "-14",
+													r: "1.5",
+													fill: "#C89D54",
+													opacity: "0.78"
+												})
+											]
+										})
+									] }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										fill: "none",
+										stroke: "#1B2D6B",
+										strokeWidth: "1.5",
+										strokeLinecap: "round",
+										opacity: "0.68",
+										transform: isMobile ? "translate(-156, 130) scale(0.84)" : isTablet ? "translate(-76, 12) scale(0.92)" : void 0,
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 252 178 Q 260 170 268 178 Q 276 170 284 178" }),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 302 162 Q 308 157 314 162 Q 320 157 326 162" }),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 284 198 Q 289 194 294 198 Q 299 194 304 198" }),
+											!isMobile && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 1188 194 Q 1194 189 1200 194 Q 1206 189 1212 194" })
+										]
+									}),
+									isMobile ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -16 488 C 12 454, 34 422, 66 418 L 138 416 C 154 416, 166 436, 192 444 C 228 452, 258 432, 294 432 L 344 434 C 368 436, 392 454, 424 446 C 452 438, 474 402, 504 398 L 574 398 C 598 400, 622 426, 656 436 L 656 680 L -16 680 Z",
+											fill: `url(#farRidge-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -16 488 C 12 454, 34 422, 66 418 L 138 416 C 154 416, 166 436, 192 444 C 228 452, 258 432, 294 432 L 344 434 C 368 436, 392 454, 424 446 C 452 438, 474 402, 504 398 L 574 398 C 598 400, 622 426, 656 436 L 656 680 L -16 680 Z",
+											fill: `url(#strataHoriz-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -16 488 C 12 454, 34 422, 66 418 L 138 416 C 154 416, 166 436, 192 444 C 228 452, 258 432, 294 432 L 344 434 C 368 436, 392 454, 424 446 C 452 438, 474 402, 504 398 L 574 398 C 598 400, 622 426, 656 436",
+											fill: "none",
+											stroke: "#243B8A",
+											strokeWidth: "1.35",
+											opacity: "0.62"
+										})
+									] }) : isTablet ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -16 432 C 28 386, 62 346, 108 342 L 210 340 C 234 340, 252 366, 286 372 C 330 378, 368 326, 412 320 L 494 318 C 534 322, 566 364, 622 368 C 674 370, 710 330, 756 324 L 832 322 C 864 324, 886 352, 922 342 C 958 332, 984 298, 1022 296 L 1094 298 L 1136 330 L 1136 620 L -16 620 Z",
+											fill: `url(#farRidge-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -16 432 C 28 386, 62 346, 108 342 L 210 340 C 234 340, 252 366, 286 372 C 330 378, 368 326, 412 320 L 494 318 C 534 322, 566 364, 622 368 C 674 370, 710 330, 756 324 L 832 322 C 864 324, 886 352, 922 342 C 958 332, 984 298, 1022 296 L 1094 298 L 1136 330 L 1136 620 L -16 620 Z",
+											fill: `url(#strataHoriz-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -16 432 C 28 386, 62 346, 108 342 L 210 340 C 234 340, 252 366, 286 372 C 330 378, 368 326, 412 320 L 494 318 C 534 322, 566 364, 622 368 C 674 370, 710 330, 756 324 L 832 322 C 864 324, 886 352, 922 342 C 958 332, 984 298, 1022 296 L 1094 298 L 1136 330",
+											fill: "none",
+											stroke: "#243B8A",
+											strokeWidth: "1.35",
+											opacity: "0.62"
+										})
+									] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -20 426 C 28 378, 66 338, 118 332 L 236 330 C 266 332, 288 362, 330 368 C 378 374, 414 302, 464 294 L 568 292 C 612 296, 646 348, 706 354 C 768 360, 816 332, 868 330 L 948 328 C 986 332, 1022 356, 1068 348 C 1118 340, 1152 282, 1204 276 L 1318 274 C 1356 278, 1390 318, 1438 312 C 1484 306, 1528 294, 1620 332 L 1620 620 L -20 620 Z",
+											fill: `url(#farRidge-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -20 426 C 28 378, 66 338, 118 332 L 236 330 C 266 332, 288 362, 330 368 C 378 374, 414 302, 464 294 L 568 292 C 612 296, 646 348, 706 354 C 768 360, 816 332, 868 330 L 948 328 C 986 332, 1022 356, 1068 348 C 1118 340, 1152 282, 1204 276 L 1318 274 C 1356 278, 1390 318, 1438 312 C 1484 306, 1528 294, 1620 332 L 1620 620 L -20 620 Z",
+											fill: `url(#strataHoriz-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -20 426 C 28 378, 66 338, 118 332 L 236 330 C 266 332, 288 362, 330 368 C 378 374, 414 302, 464 294 L 568 292 C 612 296, 646 348, 706 354 C 768 360, 816 332, 868 330 L 948 328 C 986 332, 1022 356, 1068 348 C 1118 340, 1152 282, 1204 276 L 1318 274 C 1356 278, 1390 318, 1438 312 C 1484 306, 1528 294, 1620 332",
+											fill: "none",
+											stroke: "#243B8A",
+											strokeWidth: "1.4",
+											opacity: "0.62"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+											stroke: "#243B8A",
+											strokeWidth: "0.9",
+											fill: "none",
+											opacity: "0.42",
+											children: [
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 118 332 Q 146 364 188 386" }),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 464 294 Q 492 332 544 360" }),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 1204 276 Q 1236 318 1286 346" })
+											]
+										})
+									] })
+								]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+								x: "-60",
+								y: isMobile ? 430 : 344,
+								width: isMobile ? 760 : isTablet ? 1240 : 1720,
+								height: isMobile ? 76 : 84,
+								fill: `url(#valleyMist-${uid})`,
+								className: "akath-landscape-mist-slow",
+								opacity: "0.72"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+								className: "akath-parallax-mid",
+								children: isMobile ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 532 C 26 492, 58 470, 98 468 L 166 468 C 194 470, 218 502, 266 508 C 318 514, 354 494, 404 490 C 444 486, 476 460, 524 460 L 604 462 L 656 488 L 656 680 L -16 680 Z",
+										fill: `url(#midRidge-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 532 C 26 492, 58 470, 98 468 L 166 468 C 194 470, 218 502, 266 508 C 318 514, 354 494, 404 490 C 444 486, 476 460, 524 460 L 604 462 L 656 488 L 656 680 L -16 680 Z",
+										fill: `url(#hatchDiag-${uid})`,
+										opacity: "0.55"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 532 C 26 492, 58 470, 98 468 L 166 468 C 194 470, 218 502, 266 508 C 318 514, 354 494, 404 490 C 444 486, 476 460, 524 460 L 604 462 L 656 488",
+										fill: "none",
+										stroke: "#C89D54",
+										strokeWidth: "1.05",
+										opacity: "0.52"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SahyadriFortBastion, {
+										transform: "translate(96, 449) scale(0.68)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NandedRiverfrontComplex, {
+										transform: "translate(422, 396) scale(0.84)",
+										surfaceHex
+									})
+								] }) : isTablet ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 474 C 46 422, 92 396, 148 394 L 244 394 C 282 398, 316 426, 368 424 C 424 422, 464 388, 524 396 C 588 406, 646 432, 712 418 C 772 404, 818 370, 882 368 L 972 368 C 1024 372, 1072 396, 1136 408 L 1136 620 L -16 620 Z",
+										fill: `url(#midRidge-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 474 C 46 422, 92 396, 148 394 L 244 394 C 282 398, 316 426, 368 424 C 424 422, 464 388, 524 396 C 588 406, 646 432, 712 418 C 772 404, 818 370, 882 368 L 972 368 C 1024 372, 1072 396, 1136 408 L 1136 620 L -16 620 Z",
+										fill: `url(#hatchDiag-${uid})`,
+										opacity: "0.52"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 474 C 46 422, 92 396, 148 394 L 244 394 C 282 398, 316 426, 368 424 C 424 422, 464 388, 524 396 C 588 406, 646 432, 712 418 C 772 404, 818 370, 882 368 L 972 368 C 1024 372, 1072 396, 1136 408",
+										fill: "none",
+										stroke: "#C89D54",
+										strokeWidth: "1.1",
+										opacity: "0.5"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SahyadriFortBastion, {
+										transform: "translate(152, 370) scale(0.84)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NandedRiverfrontComplex, {
+										transform: "translate(808, 318) scale(0.95)",
+										surfaceHex
+									})
+								] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 472 C 46 418, 96 386, 164 382 L 266 380 C 308 384, 344 408, 392 374 C 424 352, 454 348, 502 348 L 574 348 C 618 354, 658 408, 738 416 C 824 424, 884 390, 956 378 C 1018 368, 1068 388, 1126 364 C 1176 344, 1218 342, 1296 344 L 1384 348 C 1442 354, 1510 384, 1620 402 L 1620 620 L -20 620 Z",
+										fill: `url(#midRidge-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 472 C 46 418, 96 386, 164 382 L 266 380 C 308 384, 344 408, 392 374 C 424 352, 454 348, 502 348 L 574 348 C 618 354, 658 408, 738 416 C 824 424, 884 390, 956 378 C 1018 368, 1068 388, 1126 364 C 1176 344, 1218 342, 1296 344 L 1384 348 C 1442 354, 1510 384, 1620 402 L 1620 620 L -20 620 Z",
+										fill: `url(#hatchDiag-${uid})`,
+										opacity: "0.54"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 472 C 46 418, 96 386, 164 382 L 266 380 C 308 384, 344 408, 392 374 C 424 352, 454 348, 502 348 L 574 348 C 618 354, 658 408, 738 416 C 824 424, 884 390, 956 378 C 1018 368, 1068 388, 1126 364 C 1176 344, 1218 342, 1296 344 L 1384 348 C 1442 354, 1510 384, 1620 402",
+										fill: "none",
+										stroke: "#C89D54",
+										strokeWidth: "1.15",
+										opacity: "0.5"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SahyadriFortBastion, {
+										transform: "translate(464, 324) scale(0.92)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NandedRiverfrontComplex, {
+										transform: "translate(1168, 304) scale(1.06)",
+										surfaceHex
+									})
+								] })
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+								x: "-60",
+								y: isMobile ? 512 : 422,
+								width: isMobile ? 760 : isTablet ? 1240 : 1720,
+								height: isMobile ? 52 : 58,
+								fill: `url(#valleyMist-${uid})`,
+								className: "akath-landscape-mist-deep",
+								opacity: "0.56"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+								className: "akath-parallax-near",
+								children: [isMobile ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedBanyanTree, {
+										transform: "translate(18, 460) scale(0.68)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GodavariReeds, { transform: "translate(152, 536) scale(0.75)" }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GodavariReeds, { transform: "translate(566, 538) scale(0.7)" })
+								] }) : isTablet ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedBanyanTree, {
+										transform: "translate(56, 386) scale(0.86)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedNeemTree, {
+										transform: "translate(216, 404) scale(0.74)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GodavariReeds, { transform: "translate(298, 466) scale(0.84)" })
+								] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedBanyanTree, {
+										transform: "translate(88, 376) scale(1.02)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedNeemTree, {
+										transform: "translate(268, 398) scale(0.84)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GodavariReeds, { transform: "translate(366, 462) scale(0.95)" }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GodavariReeds, { transform: "translate(1486, 464) scale(0.9)" })
+								] }), isMobile ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 560 Q 112 534 234 552 T 456 544 Q 554 532 656 548 L 656 680 L -16 680 Z",
+										fill: `url(#nearBank-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: surfaceHex,
+										strokeWidth: "1.15",
+										opacity: "0.58",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "378",
+												y1: "550",
+												x2: "624",
+												y2: "550"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "364",
+												y1: "558",
+												x2: "634",
+												y2: "558"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "350",
+												y1: "566",
+												x2: "642",
+												y2: "566"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 588 Q 160 572 332 586 T 656 584 L 656 648 Q 450 634 260 642 T -16 646 Z",
+										fill: `url(#riverBand-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: "#1B2D6B",
+										strokeWidth: "1.2",
+										strokeLinecap: "round",
+										opacity: "0.28",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "454",
+												y1: "598",
+												x2: "574",
+												y2: "598"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "472",
+												y1: "608",
+												x2: "556",
+												y2: "608"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "490",
+												y1: "618",
+												x2: "538",
+												y2: "618"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: "#C89D54",
+										strokeWidth: "1.2",
+										strokeLinecap: "round",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "94",
+												y1: "602",
+												x2: "188",
+												y2: "602",
+												className: "akath-river-shimmer-a"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "256",
+												y1: "612",
+												x2: "392",
+												y2: "612",
+												className: "akath-river-shimmer-b"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "436",
+												y1: "604",
+												x2: "544",
+												y2: "604",
+												className: "akath-river-shimmer-a"
+											})
+										]
+									})
+								] }) : isTablet ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 492 Q 180 460 370 480 T 740 474 Q 930 456 1136 476 L 1136 620 L -16 620 Z",
+										fill: `url(#nearBank-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: surfaceHex,
+										strokeWidth: "1.25",
+										opacity: "0.56",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "744",
+												y1: "478",
+												x2: "1072",
+												y2: "478"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "726",
+												y1: "487",
+												x2: "1090",
+												y2: "487"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "708",
+												y1: "496",
+												x2: "1108",
+												y2: "496"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 524 Q 260 500 540 520 T 1136 522 L 1136 584 Q 820 564 520 576 T -16 582 Z",
+										fill: `url(#riverBand-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: "#1B2D6B",
+										strokeWidth: "1.25",
+										strokeLinecap: "round",
+										opacity: "0.28",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "846",
+												y1: "534",
+												x2: "984",
+												y2: "534"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "868",
+												y1: "544",
+												x2: "962",
+												y2: "544"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "888",
+												y1: "554",
+												x2: "942",
+												y2: "554"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: "#C89D54",
+										strokeWidth: "1.3",
+										strokeLinecap: "round",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "220",
+												y1: "538",
+												x2: "345",
+												y2: "538",
+												className: "akath-river-shimmer-a"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "470",
+												y1: "548",
+												x2: "645",
+												y2: "548",
+												className: "akath-river-shimmer-b"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "750",
+												y1: "540",
+												x2: "885",
+												y2: "540",
+												className: "akath-river-shimmer-a"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "518",
+												y1: "559",
+												x2: "615",
+												y2: "559",
+												className: "akath-river-shimmer-b"
+											})
+										]
+									})
+								] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 492 Q 160 456 346 478 T 700 486 Q 832 492 954 474 T 1316 460 Q 1474 452 1620 476 L 1620 620 L -20 620 Z",
+										fill: `url(#nearBank-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: surfaceHex,
+										strokeWidth: "1.3",
+										opacity: "0.56",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1084",
+												y1: "476",
+												x2: "1456",
+												y2: "476"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1062",
+												y1: "485",
+												x2: "1478",
+												y2: "485"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1040",
+												y1: "494",
+												x2: "1500",
+												y2: "494"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1024",
+												y1: "503",
+												x2: "1518",
+												y2: "503",
+												opacity: "0.7"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 524 Q 320 498 660 522 T 1320 516 Q 1470 510 1620 526 L 1620 586 Q 1340 562 980 578 T 320 572 Q 140 568 -20 582 Z",
+										fill: `url(#riverBand-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: "#1B2D6B",
+										strokeWidth: "1.35",
+										strokeLinecap: "round",
+										opacity: "0.28",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1206",
+												y1: "532",
+												x2: "1366",
+												y2: "532"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1228",
+												y1: "542",
+												x2: "1344",
+												y2: "542"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1250",
+												y1: "552",
+												x2: "1322",
+												y2: "552"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1272",
+												y1: "561",
+												x2: "1302",
+												y2: "561"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: "#C89D54",
+										strokeWidth: "1.3",
+										strokeLinecap: "round",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "210",
+												y1: "549",
+												x2: "318",
+												y2: "549",
+												className: "akath-river-shimmer-b"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "420",
+												y1: "536",
+												x2: "552",
+												y2: "536",
+												className: "akath-river-shimmer-a"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "686",
+												y1: "545",
+												x2: "880",
+												y2: "545",
+												className: "akath-river-shimmer-b"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "742",
+												y1: "556",
+												x2: "844",
+												y2: "556",
+												className: "akath-river-shimmer-a"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "994",
+												y1: "538",
+												x2: "1136",
+												y2: "538",
+												className: "akath-river-shimmer-b"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1212",
+												y1: "548",
+												x2: "1348",
+												y2: "548",
+												className: "akath-river-shimmer-a"
+											})
+										]
+									})
+								] })]
+							})
+						]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "absolute inset-0",
+						style: { background: "radial-gradient(ellipse 60% 56% at 50% 39%, rgba(250, 248, 240, 0.68) 0%, rgba(250, 248, 240, 0.28) 62%, rgba(250, 248, 240, 0) 100%)" }
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "hidden 2xl:block absolute inset-y-0 left-0 w-24",
+						style: { background: "linear-gradient(90deg, #FAF8F0 0%, rgba(250, 248, 240, 0) 100%)" }
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "hidden 2xl:block absolute inset-y-0 right-0 w-24",
+						style: { background: "linear-gradient(270deg, #FAF8F0 0%, rgba(250, 248, 240, 0) 100%)" }
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "absolute inset-x-0 bottom-0 h-24 sm:h-32",
+						style: { background: "linear-gradient(180deg, rgba(250, 248, 240, 0) 0%, rgba(250, 248, 240, 0.84) 70%, #FAF8F0 100%)" }
+					})
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "absolute inset-x-0 bottom-0 h-24",
+				style: { background: "linear-gradient(180deg, rgba(250, 248, 240, 0) 0%, rgba(243, 246, 252, 0.85) 100%)" }
+			})
+		]
+	});
+};
+var AuthorsLandscapeBackdrop = () => {
+	const uid = (0, import_react.useId)().replace(/:/g, "");
+	const containerRef = (0, import_react.useRef)(null);
+	const tier = useLandscapeViewportTier();
+	const isOffscreen = useSubtleLandscapeMotion(containerRef, "section");
+	const isMobile = tier === "mobile";
+	const isTablet = tier === "tablet";
+	const viewBox = isMobile ? "0 0 640 760" : isTablet ? "0 0 1120 720" : "0 0 1600 720";
+	const surfaceHex = "#F4EDE0";
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		ref: containerRef,
+		"aria-hidden": "true",
+		"data-testid": "authors-dusk-landscape-svg",
+		className: `pointer-events-none absolute inset-0 overflow-hidden select-none bg-[#F4EDE0] ${isOffscreen ? "akath-landscape-offscreen" : ""}`,
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "absolute inset-0",
+				style: { background: "radial-gradient(ellipse 84% 56% at 50% 18%, rgba(200, 157, 84, 0.13) 0%, rgba(239, 104, 85, 0.05) 46%, rgba(244, 237, 224, 0) 78%)" }
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "relative w-full h-full max-w-[1680px] mx-auto overflow-hidden flex items-end",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+						viewBox,
+						preserveAspectRatio: "xMidYMax slice",
+						xmlns: "http://www.w3.org/2000/svg",
+						className: "w-full h-full opacity-[0.21] sm:opacity-[0.23] lg:opacity-[0.25]",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravingDefs, {
+								uid,
+								surfaceHex,
+								sunCy: "58%"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+								width: "100%",
+								height: "100%",
+								fill: `url(#stipple-${uid})`,
+								opacity: "0.5"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ellipse", {
+								cx: isMobile ? 320 : isTablet ? 560 : 800,
+								cy: isMobile ? 510 : 460,
+								rx: isMobile ? 310 : isTablet ? 470 : 620,
+								ry: isMobile ? 190 : 230,
+								fill: `url(#duskSun-${uid})`
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+								className: "akath-parallax-far",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										transform: isMobile ? "translate(76, 134) scale(0.84)" : isTablet ? "translate(124, 118) scale(0.92)" : "translate(192, 116)",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+												d: "M 22 4 A 24 24 0 1 0 42 36 A 18 18 0 1 1 22 4 Z",
+												fill: "#243B8A",
+												opacity: "0.78"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+												cx: "58",
+												cy: "18",
+												r: "2.1",
+												fill: "#C89D54",
+												opacity: "0.88"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+												cx: "-12",
+												cy: "10",
+												r: "1.5",
+												fill: "#243B8A",
+												opacity: "0.68"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										fill: "none",
+										stroke: "#1B2D6B",
+										strokeWidth: "1.45",
+										strokeLinecap: "round",
+										opacity: "0.6",
+										transform: isMobile ? "translate(-790, 62)" : isTablet ? "translate(-380, 26)" : void 0,
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 1246 196 Q 1255 188 1264 196 Q 1273 188 1282 196" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 1298 180 Q 1304 175 1310 180 Q 1316 175 1322 180" })]
+									}),
+									isMobile ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 538 C 46 512, 116 498, 194 504 C 266 510, 326 496, 404 494 C 484 492, 560 508, 656 522 L 656 760 L -16 760 Z",
+										fill: `url(#farRidge-${uid})`
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 538 C 46 512, 116 498, 194 504 C 266 510, 326 496, 404 494 C 484 492, 560 508, 656 522",
+										fill: "none",
+										stroke: "#243B8A",
+										strokeWidth: "1.2",
+										opacity: "0.54"
+									})] }) : isTablet ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 500 C 84 468, 186 452, 294 460 C 402 468, 496 446, 610 448 C 724 450, 824 468, 932 454 C 1010 444, 1072 456, 1136 476 L 1136 720 L -16 720 Z",
+										fill: `url(#farRidge-${uid})`
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 500 C 84 468, 186 452, 294 460 C 402 468, 496 446, 610 448 C 724 450, 824 468, 932 454 C 1010 444, 1072 456, 1136 476",
+										fill: "none",
+										stroke: "#243B8A",
+										strokeWidth: "1.25",
+										opacity: "0.54"
+									})] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -20 496 C 110 456, 240 436, 380 448 C 510 460, 628 432, 774 436 C 918 440, 1042 464, 1192 444 C 1326 426, 1468 442, 1620 472 L 1620 720 L -20 720 Z",
+											fill: `url(#farRidge-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -20 496 C 110 456, 240 436, 380 448 C 510 460, 628 432, 774 436 C 918 440, 1042 464, 1192 444 C 1326 426, 1468 442, 1620 472 L 1620 720 L -20 720 Z",
+											fill: `url(#strataHoriz-${uid})`,
+											opacity: "0.75"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -20 496 C 110 456, 240 436, 380 448 C 510 460, 628 432, 774 436 C 918 440, 1042 464, 1192 444 C 1326 426, 1468 442, 1620 472",
+											fill: "none",
+											stroke: "#243B8A",
+											strokeWidth: "1.3",
+											opacity: "0.54"
+										})
+									] })
+								]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+								x: "-60",
+								y: isMobile ? 496 : 446,
+								width: isMobile ? 760 : isTablet ? 1240 : 1720,
+								height: isMobile ? 68 : 76,
+								fill: `url(#valleyMist-${uid})`,
+								className: "akath-landscape-mist-slow",
+								opacity: "0.76"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+								className: "akath-parallax-mid",
+								children: isMobile ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 588 Q 140 562 276 584 T 656 574 L 656 760 L -16 760 Z",
+										fill: `url(#midRidge-${uid})`,
+										opacity: "0.72"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedGhatMandapa, {
+										transform: "translate(18, 474) scale(0.84)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StoneDeepstambh, {
+										transform: "translate(468, 514) scale(0.84)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedNeemTree, {
+										transform: "translate(502, 496) scale(0.9)",
+										surfaceHex
+									})
+								] }) : isTablet ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 544 Q 210 518 420 542 T 840 536 Q 990 520 1136 534 L 1136 720 L -16 720 Z",
+										fill: `url(#midRidge-${uid})`,
+										opacity: "0.72"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedGhatMandapa, {
+										transform: "translate(54, 419) scale(0.96)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StoneDeepstambh, {
+										transform: "translate(838, 464) scale(0.92)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedNeemTree, {
+										transform: "translate(892, 434) scale(1.06)",
+										surfaceHex
+									})
+								] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 538 Q 260 508 540 534 T 1120 530 Q 1360 510 1620 528 L 1620 720 L -20 720 Z",
+										fill: `url(#midRidge-${uid})`,
+										opacity: "0.72"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 538 Q 260 508 540 534 T 1120 530 Q 1360 510 1620 528 L 1620 720 L -20 720 Z",
+										fill: `url(#hatchDiag-${uid})`,
+										opacity: "0.38"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedGhatMandapa, {
+										transform: "translate(108, 398) scale(1.08)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StoneDeepstambh, {
+										transform: "translate(1208, 456) scale(1.02)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedNeemTree, {
+										transform: "translate(1272, 418) scale(1.18)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedNeemTree, {
+										transform: "translate(1414, 444) scale(0.86)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: surfaceHex,
+										strokeWidth: "1.2",
+										opacity: "0.52",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1158",
+												y1: "538",
+												x2: "1548",
+												y2: "538"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1138",
+												y1: "548",
+												x2: "1564",
+												y2: "548"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1118",
+												y1: "558",
+												x2: "1580",
+												y2: "558"
+											})
+										]
+									})
+								] })
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+								className: "akath-parallax-near",
+								children: isMobile ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 610 Q 180 594 340 606 T 656 604 L 656 760 L -16 760 Z",
+										fill: `url(#riverBand-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: "#1B2D6B",
+										strokeWidth: "1.2",
+										opacity: "0.28",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "56",
+												y1: "624",
+												x2: "156",
+												y2: "624"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "68",
+												y1: "634",
+												x2: "142",
+												y2: "634"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "82",
+												y1: "644",
+												x2: "128",
+												y2: "644"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: "#C89D54",
+										strokeWidth: "1.2",
+										strokeLinecap: "round",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "184",
+												y1: "636",
+												x2: "320",
+												y2: "636",
+												className: "akath-river-shimmer-a"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "230",
+												y1: "652",
+												x2: "412",
+												y2: "652",
+												className: "akath-river-shimmer-b"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "364",
+												y1: "628",
+												x2: "492",
+												y2: "628",
+												className: "akath-river-shimmer-a"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GodavariReeds, { transform: "translate(556, 610) scale(0.9)" })
+								] }) : isTablet ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 574 Q 290 554 580 572 T 1136 568 L 1136 720 L -16 720 Z",
+										fill: `url(#riverBand-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: "#1B2D6B",
+										strokeWidth: "1.25",
+										opacity: "0.28",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "94",
+												y1: "590",
+												x2: "220",
+												y2: "590"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "110",
+												y1: "602",
+												x2: "202",
+												y2: "602"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "126",
+												y1: "614",
+												x2: "188",
+												y2: "614"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: "#C89D54",
+										strokeWidth: "1.3",
+										strokeLinecap: "round",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "330",
+												y1: "604",
+												x2: "498",
+												y2: "604",
+												className: "akath-river-shimmer-a"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "468",
+												y1: "620",
+												x2: "684",
+												y2: "620",
+												className: "akath-river-shimmer-b"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "696",
+												y1: "600",
+												x2: "854",
+												y2: "600",
+												className: "akath-river-shimmer-a"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "528",
+												y1: "638",
+												x2: "646",
+												y2: "638",
+												className: "akath-river-shimmer-b"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GodavariReeds, { transform: "translate(998, 566) scale(1.04)" }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GodavariReeds, { transform: "translate(20, 580) scale(0.88)" })
+								] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 576 Q 360 554 780 574 T 1620 568 L 1620 720 L -20 720 Z",
+										fill: `url(#riverBand-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: "#1B2D6B",
+										strokeWidth: "1.3",
+										strokeLinecap: "round",
+										opacity: "0.28",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "158",
+												y1: "592",
+												x2: "310",
+												y2: "592"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "176",
+												y1: "604",
+												x2: "290",
+												y2: "604"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "194",
+												y1: "616",
+												x2: "268",
+												y2: "616"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1210",
+												y1: "592",
+												x2: "1246",
+												y2: "592"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1216",
+												y1: "604",
+												x2: "1240",
+												y2: "604"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										stroke: "#C89D54",
+										strokeWidth: "1.35",
+										strokeLinecap: "round",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "426",
+												y1: "604",
+												x2: "612",
+												y2: "604",
+												className: "akath-river-shimmer-a"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "674",
+												y1: "618",
+												x2: "928",
+												y2: "618",
+												className: "akath-river-shimmer-b"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "744",
+												y1: "636",
+												x2: "878",
+												y2: "636",
+												className: "akath-river-shimmer-a"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "998",
+												y1: "602",
+												x2: "1162",
+												y2: "602",
+												className: "akath-river-shimmer-b"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+												x1: "1296",
+												y1: "616",
+												x2: "1444",
+												y2: "616",
+												className: "akath-river-shimmer-a"
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GodavariReeds, { transform: "translate(26, 582) scale(1.06)" }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GodavariReeds, { transform: "translate(1484, 566) scale(1.16)" })
+								] })
+							})
+						]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "absolute inset-0",
+						style: { background: "radial-gradient(ellipse 64% 60% at 50% 45%, rgba(244, 237, 224, 0.7) 0%, rgba(244, 237, 224, 0.3) 64%, rgba(244, 237, 224, 0) 100%)" }
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "hidden 2xl:block absolute inset-y-0 left-0 w-24",
+						style: { background: "linear-gradient(90deg, #F4EDE0 0%, rgba(244, 237, 224, 0) 100%)" }
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "hidden 2xl:block absolute inset-y-0 right-0 w-24",
+						style: { background: "linear-gradient(270deg, #F4EDE0 0%, rgba(244, 237, 224, 0) 100%)" }
+					})
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "absolute inset-x-0 top-0 h-20",
+				style: { background: "linear-gradient(180deg, rgba(255, 253, 247, 0.65) 0%, rgba(244, 237, 224, 0) 100%)" }
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "absolute inset-x-0 bottom-0 h-20",
+				style: { background: "linear-gradient(180deg, rgba(244, 237, 224, 0) 0%, rgba(250, 246, 236, 0.85) 100%)" }
+			})
+		]
+	});
+};
+var AboutLandscapeBackdrop = ({ surfaceHex = "#FAF6EC", topFadeRgba = "rgba(244, 237, 224, 0.72)", bottomFadeRgba = "rgba(250, 246, 236, 0.85)" }) => {
+	const uid = (0, import_react.useId)().replace(/:/g, "");
+	const containerRef = (0, import_react.useRef)(null);
+	const tier = useLandscapeViewportTier();
+	const isOffscreen = useSubtleLandscapeMotion(containerRef, topFadeRgba.includes("0.32") ? "fixed" : "section");
+	const isMobile = tier === "mobile";
+	const isTablet = tier === "tablet";
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		ref: containerRef,
+		"aria-hidden": "true",
+		"data-testid": "about-dusk-landscape-svg",
+		className: `pointer-events-none absolute inset-0 overflow-hidden select-none ${isOffscreen ? "akath-landscape-offscreen" : ""}`,
+		style: { backgroundColor: surfaceHex },
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "absolute inset-0",
+				style: { background: "radial-gradient(ellipse 84% 56% at 50% 16%, rgba(200, 157, 84, 0.13) 0%, rgba(239, 104, 85, 0.05) 45%, rgba(250, 246, 236, 0) 78%)" }
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "relative w-full h-full max-w-[1680px] mx-auto overflow-hidden flex items-end",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+						viewBox: isMobile ? "0 0 640 720" : isTablet ? "0 0 1120 660" : "0 0 1600 640",
+						preserveAspectRatio: "xMidYMax slice",
+						xmlns: "http://www.w3.org/2000/svg",
+						className: "w-full h-full opacity-[0.20] sm:opacity-[0.23] lg:opacity-[0.25]",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravingDefs, {
+								uid,
+								surfaceHex,
+								sunCy: "64%"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+								width: "100%",
+								height: "100%",
+								fill: `url(#stipple-${uid})`,
+								opacity: "0.52"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ellipse", {
+								cx: isMobile ? 320 : isTablet ? 560 : 800,
+								cy: isMobile ? 450 : 390,
+								rx: isMobile ? 330 : isTablet ? 490 : 650,
+								ry: isMobile ? 215 : 250,
+								fill: `url(#duskSun-${uid})`
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+								className: "akath-parallax-far",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: isMobile ? "M 36 420 Q 320 250 604 420" : isTablet ? "M 80 374 Q 560 156 1040 374" : "M 120 364 Q 800 132 1480 364",
+										fill: "none",
+										stroke: "#C89D54",
+										strokeWidth: "0.95",
+										strokeDasharray: "3 8",
+										opacity: "0.46"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+										transform: isMobile ? "translate(518, 174) scale(0.8)" : isTablet ? "translate(944, 130) scale(0.9)" : "translate(1354, 126)",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+												cx: "0",
+												cy: "0",
+												r: "2.2",
+												fill: "#C89D54",
+												opacity: "0.88"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+												cx: "24",
+												cy: "14",
+												r: "1.6",
+												fill: "#243B8A",
+												opacity: "0.72"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+												cx: "-18",
+												cy: "20",
+												r: "1.5",
+												fill: "#C89D54",
+												opacity: "0.76"
+											})
+										]
+									}),
+									isMobile ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -16 492 L 32 436 L 116 434 L 154 458 L 188 456 L 236 416 L 318 416 L 358 452 L 424 462 L 478 408 L 568 406 L 612 440 L 656 446 L 656 720 L -16 720 Z",
+											fill: `url(#farRidge-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -16 492 L 32 436 L 116 434 L 154 458 L 188 456 L 236 416 L 318 416 L 358 452 L 424 462 L 478 408 L 568 406 L 612 440 L 656 446 L 656 720 L -16 720 Z",
+											fill: `url(#strataHoriz-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -16 492 L 32 436 L 116 434 L 154 458 L 188 456 L 236 416 L 318 416 L 358 452 L 424 462 L 478 408 L 568 406 L 612 440 L 656 446",
+											fill: "none",
+											stroke: "#243B8A",
+											strokeWidth: "1.3",
+											opacity: "0.6"
+										})
+									] }) : isTablet ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -16 446 L 56 364 L 184 362 L 246 402 L 326 398 L 398 342 L 516 340 L 584 388 L 692 394 L 774 328 L 916 326 L 986 372 L 1068 358 L 1136 392 L 1136 660 L -16 660 Z",
+											fill: `url(#farRidge-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -16 446 L 56 364 L 184 362 L 246 402 L 326 398 L 398 342 L 516 340 L 584 388 L 692 394 L 774 328 L 916 326 L 986 372 L 1068 358 L 1136 392 L 1136 660 L -16 660 Z",
+											fill: `url(#strataHoriz-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -16 446 L 56 364 L 184 362 L 246 402 L 326 398 L 398 342 L 516 340 L 584 388 L 692 394 L 774 328 L 916 326 L 986 372 L 1068 358 L 1136 392",
+											fill: "none",
+											stroke: "#243B8A",
+											strokeWidth: "1.35",
+											opacity: "0.6"
+										})
+									] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -20 432 C 36 372, 74 324, 126 320 L 284 318 C 328 320, 360 368, 422 374 C 482 378, 524 332, 578 328 L 696 326 C 756 330, 804 382, 892 384 C 974 386, 1024 316, 1094 304 L 1266 302 C 1320 306, 1364 352, 1428 344 C 1488 336, 1546 318, 1620 356 L 1620 640 L -20 640 Z",
+											fill: `url(#farRidge-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -20 432 C 36 372, 74 324, 126 320 L 284 318 C 328 320, 360 368, 422 374 C 482 378, 524 332, 578 328 L 696 326 C 756 330, 804 382, 892 384 C 974 386, 1024 316, 1094 304 L 1266 302 C 1320 306, 1364 352, 1428 344 C 1488 336, 1546 318, 1620 356 L 1620 640 L -20 640 Z",
+											fill: `url(#strataHoriz-${uid})`
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+											d: "M -20 432 C 36 372, 74 324, 126 320 L 284 318 C 328 320, 360 368, 422 374 C 482 378, 524 332, 578 328 L 696 326 C 756 330, 804 382, 892 384 C 974 386, 1024 316, 1094 304 L 1266 302 C 1320 306, 1364 352, 1428 344 C 1488 336, 1546 318, 1620 356",
+											fill: "none",
+											stroke: "#243B8A",
+											strokeWidth: "1.4",
+											opacity: "0.62"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+											stroke: "#243B8A",
+											strokeWidth: "0.95",
+											fill: "none",
+											opacity: "0.4",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 152 320 L 146 362 M 188 319 L 184 354 M 248 319 L 256 364" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M 1118 304 L 1108 358 M 1172 303 L 1168 348 M 1228 303 L 1238 356" })]
+										})
+									] })
+								]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+								x: "-60",
+								y: isMobile ? 454 : 368,
+								width: isMobile ? 760 : isTablet ? 1240 : 1720,
+								height: isMobile ? 74 : 84,
+								fill: `url(#valleyMist-${uid})`,
+								className: "akath-landscape-mist-slow",
+								opacity: "0.74"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+								className: "akath-parallax-mid",
+								children: isMobile ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 544 C 38 510, 86 502, 148 518 C 216 534, 286 546, 366 534 C 424 524, 464 476, 514 472 L 598 472 L 656 506 L 656 720 L -16 720 Z",
+										fill: `url(#midRidge-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 544 C 38 510, 86 502, 148 518 C 216 534, 286 546, 366 534 C 424 524, 464 476, 514 472 L 598 472 L 656 506 L 656 720 L -16 720 Z",
+										fill: `url(#hatchDiag-${uid})`,
+										opacity: "0.52"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SahyadriFortBastion, {
+										transform: "translate(494, 448) scale(0.92)",
+										surfaceHex
+									})
+								] }) : isTablet ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 492 C 74 446, 152 440, 248 468 C 368 502, 488 510, 616 488 C 710 472, 774 406, 846 402 L 992 402 C 1044 406, 1088 436, 1136 452 L 1136 660 L -16 660 Z",
+										fill: `url(#midRidge-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 492 C 74 446, 152 440, 248 468 C 368 502, 488 510, 616 488 C 710 472, 774 406, 846 402 L 992 402 C 1044 406, 1088 436, 1136 452 L 1136 660 L -16 660 Z",
+										fill: `url(#hatchDiag-${uid})`,
+										opacity: "0.52"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 492 C 74 446, 152 440, 248 468 C 368 502, 488 510, 616 488 C 710 472, 774 406, 846 402 L 992 402 C 1044 406, 1088 436, 1136 452",
+										fill: "none",
+										stroke: "#C89D54",
+										strokeWidth: "1.1",
+										opacity: "0.48"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SahyadriFortBastion, {
+										transform: "translate(848, 374) scale(1.06)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NandedRiverfrontComplex, {
+										transform: "translate(154, 404) scale(0.56)",
+										surfaceHex
+									})
+								] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 486 C 88 434, 186 426, 304 456 C 446 492, 598 506, 756 490 C 892 476, 988 446, 1074 402 C 1116 382, 1152 378, 1216 378 L 1368 378 C 1438 384, 1518 424, 1620 442 L 1620 640 L -20 640 Z",
+										fill: `url(#midRidge-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 486 C 88 434, 186 426, 304 456 C 446 492, 598 506, 756 490 C 892 476, 988 446, 1074 402 C 1116 382, 1152 378, 1216 378 L 1368 378 C 1438 384, 1518 424, 1620 442 L 1620 640 L -20 640 Z",
+										fill: `url(#hatchDiag-${uid})`,
+										opacity: "0.54"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 486 C 88 434, 186 426, 304 456 C 446 492, 598 506, 756 490 C 892 476, 988 446, 1074 402 C 1116 382, 1152 378, 1216 378 L 1368 378 C 1438 384, 1518 424, 1620 442",
+										fill: "none",
+										stroke: "#C89D54",
+										strokeWidth: "1.15",
+										opacity: "0.5"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SahyadriFortBastion, {
+										transform: "translate(1206, 348) scale(1.22)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NandedRiverfrontComplex, {
+										transform: "translate(274, 396) scale(0.62)",
+										surfaceHex
+									})
+								] })
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+								x: "-60",
+								y: isMobile ? 548 : 478,
+								width: isMobile ? 760 : isTablet ? 1240 : 1720,
+								height: isMobile ? 54 : 60,
+								fill: `url(#valleyMist-${uid})`,
+								className: "akath-landscape-mist-deep",
+								opacity: "0.54"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+								className: "akath-parallax-near",
+								children: isMobile ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedBanyanTree, {
+										transform: "translate(14, 514) scale(0.84)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedNeemTree, {
+										transform: "translate(514, 536) scale(0.82)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 616 Q 156 588 320 606 T 656 598 L 656 720 L -16 720 Z",
+										fill: `url(#nearBank-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 644 Q 186 626 352 638 T 656 632",
+										fill: "none",
+										stroke: surfaceHex,
+										strokeWidth: "1.1",
+										strokeDasharray: "6 6",
+										opacity: "0.45"
+									})
+								] }) : isTablet ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedBanyanTree, {
+										transform: "translate(46, 444) scale(1.04)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedNeemTree, {
+										transform: "translate(932, 466) scale(0.98)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 558 Q 250 526 520 550 T 1136 538 L 1136 660 L -16 660 Z",
+										fill: `url(#nearBank-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -16 592 Q 300 572 580 586 T 1136 576",
+										fill: "none",
+										stroke: surfaceHex,
+										strokeWidth: "1.15",
+										strokeDasharray: "7 7",
+										opacity: "0.44"
+									})
+								] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedBanyanTree, {
+										transform: "translate(64, 412) scale(1.22)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedNeemTree, {
+										transform: "translate(274, 448) scale(0.92)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedNeemTree, {
+										transform: "translate(1352, 434) scale(1.12)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EngravedBanyanTree, {
+										transform: "translate(1442, 446) scale(0.84)",
+										surfaceHex
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 546 Q 220 512 468 538 T 980 542 Q 1280 524 1620 536 L 1620 640 L -20 640 Z",
+										fill: `url(#nearBank-${uid})`
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M -20 578 Q 340 556 740 574 T 1620 564",
+										fill: "none",
+										stroke: "#C89D54",
+										strokeWidth: "1.35",
+										opacity: "0.52"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+										d: "M 480 592 Q 800 578 1120 594",
+										fill: "none",
+										stroke: surfaceHex,
+										strokeWidth: "1.05",
+										strokeDasharray: "6 8",
+										opacity: "0.42"
+									})
+								] })
+							})
+						]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "absolute inset-0",
+						style: { background: `radial-gradient(ellipse 64% 62% at 50% 42%, ${surfaceHex}B8 0%, ${surfaceHex}4D 62%, ${surfaceHex}00 100%)` }
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "hidden 2xl:block absolute inset-y-0 left-0 w-24",
+						style: { background: `linear-gradient(90deg, ${surfaceHex} 0%, ${surfaceHex}00 100%)` }
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "hidden 2xl:block absolute inset-y-0 right-0 w-24",
+						style: { background: `linear-gradient(270deg, ${surfaceHex} 0%, ${surfaceHex}00 100%)` }
+					})
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "absolute inset-x-0 top-0 h-20",
+				style: { background: `linear-gradient(180deg, ${topFadeRgba} 0%, ${surfaceHex}00 100%)` }
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "absolute inset-x-0 bottom-0 h-20",
+				style: { background: `linear-gradient(180deg, ${surfaceHex}00 0%, ${bottomFadeRgba} 100%)` }
+			})
+		]
+	});
+};
+// src/components/HeroInteractiveShowcase.tsx
+var HeroInteractiveBookPlinth = ({ books, authors, activeHeroBook, activeHeroAuthor, activeHeroIndex, activeHeroEnMeta, secondaryBooks, bookEnglishMeta, isMr, showFullSpread, setShowFullSpread, setSelectedBookId, onNavigate, onAddToCart, recentlyAddedBookId }) => {
+	const [inspectMode, setInspectMode] = (0, import_react.useState)("cover3d");
+	const [tilt, setTilt] = (0, import_react.useState)({
+		rx: 0,
+		ry: 0,
+		gx: 50,
+		gy: 40
+	});
+	const stageRef = (0, import_react.useRef)(null);
+	const effectiveMode = showFullSpread ? "jacket" : inspectMode;
+	const handleStageMouseMove = (e) => {
+		const el = stageRef.current;
+		if (!el || effectiveMode !== "cover3d") return;
+		const rect = el.getBoundingClientRect();
+		const px = (e.clientX - rect.left) / rect.width;
+		const py = (e.clientY - rect.top) / rect.height;
+		const ry = (px - .5) * 18;
+		const rx = (.5 - py) * 14;
+		setTilt({
+			rx,
+			ry,
+			gx: Math.round(px * 100),
+			gy: Math.round(py * 100)
+		});
+	};
+	const handleStageMouseLeave = () => {
+		setTilt({
+			rx: 0,
+			ry: 0,
+			gx: 50,
+			gy: 40
+		});
+	};
+	const switchBook = (bookId) => {
+		setSelectedBookId(bookId);
+		setShowFullSpread(false);
+		setInspectMode("cover3d");
+	};
+	const isAdded = recentlyAddedBookId === activeHeroBook.id;
+	const activeTitle = isMr ? activeHeroBook.title : activeHeroEnMeta?.titleEn || activeHeroBook.title;
+	const activeAuthorName = activeHeroAuthor ? isMr ? activeHeroAuthor.name : activeHeroEnMeta?.authorEn || activeHeroAuthor.transliteratedName : "";
+	const activeCategory = isMr ? activeHeroBook.category : activeHeroEnMeta?.categoryEn || activeHeroBook.category;
+	const activeBlurb = isMr ? activeHeroBook.description : activeHeroEnMeta?.descriptionEn || activeHeroBook.description;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		"data-testid": "home-featured-edition-dossier",
+		className: "w-full max-w-5xl mx-auto min-w-0",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "relative rounded-3xl bg-white/95 backdrop-blur-md border border-[#E5DEC9] p-4 sm:p-7 lg:p-8 shadow-[0_28px_70px_-32px_rgba(36,59,138,0.22)] overflow-hidden",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#E5DEC9]/80",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "flex items-center gap-2.5 min-w-0",
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							className: "text-[11px] font-mono font-semibold uppercase tracking-[0.14em] text-[#174D3A] truncate",
+							children: activeCategory
+						})
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "flex items-center gap-1 p-1 rounded-full bg-[#FAF6EC] border border-[#E5DEC9]",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+								type: "button",
+								onClick: () => {
+									setShowFullSpread(false);
+									setInspectMode("cover3d");
+								},
+								className: `px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap ${effectiveMode === "cover3d" ? "bg-[#243B8A] text-[#FFFDF7] shadow-xs" : "text-[#57534E] hover:text-[#1C1917]"}`,
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Sparkles, { className: "w-3 h-3" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "३डी पुस्तक" : "3D Edition" })]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+								type: "button",
+								onClick: () => {
+									setShowFullSpread(false);
+									setInspectMode("pages");
+								},
+								className: `px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap ${effectiveMode === "pages" ? "bg-[#243B8A] text-[#FFFDF7] shadow-xs" : "text-[#57534E] hover:text-[#1C1917]"}`,
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Eye, { className: "w-3 h-3" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "आत डोकावून पहा" : "Peek Inside" })]
+							}),
+							activeHeroBook.coverSpreadUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+								type: "button",
+								"data-testid": "toggle-featured-jacket-spread",
+								onClick: () => {
+									const next = !showFullSpread;
+									setShowFullSpread(next);
+									setInspectMode(next ? "jacket" : "cover3d");
+								},
+								className: `px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap ${effectiveMode === "jacket" ? "bg-[#243B8A] text-[#FFFDF7] shadow-xs" : "text-[#57534E] hover:text-[#1C1917]"}`,
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Layers, { className: "w-3 h-3" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "पूर्ण वेष्टन" : "Full Jacket" })]
+							})
+						]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "flex items-center gap-2 shrink-0 text-[11px] font-mono",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+								type: "button",
+								onClick: () => {
+									const prevIdx = (activeHeroIndex - 1 + books.length) % books.length;
+									if (books[prevIdx]) switchBook(books[prevIdx].id);
+								},
+								"aria-label": isMr ? "मागील पुस्तक" : "Previous edition",
+								className: "w-7 h-7 rounded-full border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronLeft, { className: "w-3.5 h-3.5" })
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+								className: "tabular-nums font-semibold text-[#243B8A]",
+								children: [
+									"0",
+									activeHeroIndex + 1,
+									" / 0",
+									books.length
+								]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+								type: "button",
+								onClick: () => {
+									const nextIdx = (activeHeroIndex + 1) % books.length;
+									if (books[nextIdx]) switchBook(books[nextIdx].id);
+								},
+								"aria-label": isMr ? "पुढील पुस्तक" : "Next edition",
+								className: "w-7 h-7 rounded-full border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, { className: "w-3.5 h-3.5" })
+							})
+						]
+					})
+				]
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "grid grid-cols-1 lg:grid-cols-12 items-center gap-6 lg:gap-8 pt-6",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					ref: stageRef,
+					onMouseMove: handleStageMouseMove,
+					onMouseLeave: handleStageMouseLeave,
+					className: "lg:col-span-6 relative rounded-2xl bg-gradient-to-b from-[#FAF6EC]/85 to-[#F3EDE0]/60 border border-[#E5DEC9]/80 px-4 py-6 sm:py-8 min-h-[275px] sm:min-h-[320px] flex items-center justify-center overflow-hidden [perspective:1200px]",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							"aria-hidden": "true",
+							className: "pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 w-[58%] h-5 rounded-full bg-[#1C1917]/15 blur-lg"
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AnimatePresence, {
+							mode: "wait",
+							children: effectiveMode === "jacket" && activeHeroBook.coverSpreadUrl ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.div, {
+								initial: {
+									opacity: 0,
+									rotateX: 8,
+									scale: .96
+								},
+								animate: {
+									opacity: 1,
+									rotateX: 0,
+									scale: 1
+								},
+								exit: {
+									opacity: 0,
+									rotateX: -8,
+									scale: .96
+								},
+								transition: {
+									duration: .28,
+									ease: [
+										.16,
+										1,
+										.3,
+										1
+									]
+								},
+								className: "relative z-30 w-full space-y-2.5",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
+									src: resolvePublicAssetUrl(activeHeroBook.coverSpreadUrl),
+									alt: activeHeroBook.title,
+									width: 800,
+									height: 600,
+									loading: "lazy",
+									decoding: "async",
+									referrerPolicy: "no-referrer",
+									className: "w-full h-auto max-h-[215px] object-contain mx-auto rounded-lg shadow-md"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "flex items-center justify-between text-[11px] font-mono text-[#57534E] px-1",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: activeHeroBook.isbn ? `ISBN ${activeHeroBook.isbn}` : "Print Wraparound Spread" }), activeHeroBook.coverPdfUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+										href: resolvePublicAssetUrl(activeHeroBook.coverPdfUrl),
+										target: "_blank",
+										rel: "noopener noreferrer",
+										className: "font-semibold text-[#243B8A] hover:underline",
+										children: isMr ? "मूळ कव्हर PDF ↗" : "Open Press PDF ↗"
+									})]
+								})]
+							}, `spread-showcase-${activeHeroBook.id}`) : effectiveMode === "pages" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.div, {
+								initial: {
+									opacity: 0,
+									rotateY: -18,
+									scale: .95
+								},
+								animate: {
+									opacity: 1,
+									rotateY: 0,
+									scale: 1
+								},
+								exit: {
+									opacity: 0,
+									rotateY: 18,
+									scale: .95
+								},
+								transition: {
+									duration: .3,
+									ease: [
+										.16,
+										1,
+										.3,
+										1
+									]
+								},
+								className: "relative z-30 w-full max-w-[440px] rounded-xl bg-[#FFFDF7] border border-[#DCD4C0] shadow-[0_18px_36px_-18px_rgba(28,25,23,0.28)] grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[#E5DEC9]",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "p-4 sm:p-5 space-y-2.5 text-left",
+									children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "text-[10px] font-mono uppercase tracking-[0.16em] text-[#9A3412] font-semibold",
+											children: isMr ? "अकथ ग्रंथ परिचय" : "Inside the Edition"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "font-serif text-base font-bold text-[#1C1917] leading-snug",
+											children: activeTitle
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "text-xs font-serif text-[#57534E]",
+											children: activeAuthorName
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											className: "pt-2 border-t border-[#E5DEC9]/70 space-y-1 text-[11px] font-mono text-[#57534E] tabular-nums",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+												isMr ? "पृष्ठसंख्या" : "Extent",
+												":",
+												" ",
+												/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("strong", {
+													className: "text-[#1C1917]",
+													children: [
+														activeHeroBook.pageCount || "—",
+														" ",
+														isMr ? "पृष्ठे" : "pp."
+													]
+												})
+											] }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+												isMr ? "आवृत्ती" : "Imprint",
+												":",
+												" ",
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
+													className: "text-[#1C1917]",
+													children: "Nanded First Print"
+												})
+											] })]
+										})
+									]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "p-4 sm:p-5 flex flex-col justify-between space-y-3 bg-[#FAF6EC]/50 text-left",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										className: "space-y-2",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "text-[10px] font-mono uppercase tracking-[0.16em] text-[#243B8A] font-semibold",
+											children: isMr ? "पुस्तकाविषयी" : "Editorial Note"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "text-[12.5px] font-serif text-[#292524] leading-relaxed line-clamp-4",
+											children: activeBlurb
+										})]
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+										type: "button",
+										onClick: () => onNavigate(`/books/${activeHeroBook.slug}`),
+										className: "text-left text-[11.5px] font-semibold text-[#243B8A] hover:underline cursor-pointer",
+										children: isMr ? "प्रथम पृष्ठ व नमुना वाचा →" : "Read full details & sample →"
+									})]
+								})]
+							}, `open-pages-${activeHeroBook.id}`) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.div, {
+								initial: {
+									opacity: 0,
+									y: 10,
+									scale: .96
+								},
+								animate: {
+									opacity: 1,
+									y: 0,
+									scale: 1
+								},
+								exit: {
+									opacity: 0,
+									y: -10,
+									scale: .96
+								},
+								transition: {
+									duration: .28,
+									ease: [
+										.16,
+										1,
+										.3,
+										1
+									]
+								},
+								className: "relative z-20 w-full flex items-center justify-center",
+								children: [
+									secondaryBooks[0] && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(motion.button, {
+										type: "button",
+										whileHover: {
+											scale: 1.05,
+											rotateY: -6,
+											x: -4
+										},
+										onClick: () => switchBook(secondaryBooks[0].id),
+										"aria-label": isMr ? `${secondaryBooks[0].title} पहा` : `Switch to ${bookEnglishMeta[secondaryBooks[0].id]?.titleEn || secondaryBooks[0].title}`,
+										className: "hidden sm:block absolute left-3 lg:left-4 w-[96px] lg:w-[108px] -rotate-6 opacity-75 hover:opacity-100 transition-opacity cursor-pointer z-10 drop-shadow-lg",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BookCoverArt, {
+											book: secondaryBooks[0],
+											author: authors.find((a) => a.id === secondaryBooks[0].authorId),
+											size: "md"
+										})
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										className: "relative z-30 transition-transform duration-200 ease-out cursor-pointer",
+										style: {
+											transform: `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
+											transformStyle: "preserve-3d"
+										},
+										onClick: () => onNavigate(`/books/${activeHeroBook.slug}`),
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											className: "relative w-[150px] sm:w-[178px] rounded-r-md shadow-[0_26px_38px_-14px_rgba(28,25,23,0.34)]",
+											children: [
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+													"aria-hidden": "true",
+													className: "absolute -right-2 top-1 bottom-1 w-2.5 rounded-r-sm bg-gradient-to-r from-[#EFE9DB] via-[#FAF6EC] to-[#DCD4C0] border-y border-r border-[#C8BFA8]"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+													"aria-hidden": "true",
+													className: "absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-r from-black/20 to-transparent rounded-l-sm pointer-events-none z-20"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BookCoverArt, {
+													book: activeHeroBook,
+													author: activeHeroAuthor,
+													size: "lg",
+													priority: true
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+													"aria-hidden": "true",
+													className: "pointer-events-none absolute inset-0 rounded-sm z-20 transition-opacity duration-200",
+													style: { background: `radial-gradient(circle at ${tilt.gx}% ${tilt.gy}%, rgba(255,255,255,0.28) 0%, transparent 58%)` }
+												})
+											]
+										})
+									}),
+									secondaryBooks[1] && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(motion.button, {
+										type: "button",
+										whileHover: {
+											scale: 1.05,
+											rotateY: 6,
+											x: 4
+										},
+										onClick: () => switchBook(secondaryBooks[1].id),
+										"aria-label": isMr ? `${secondaryBooks[1].title} पहा` : `Switch to ${bookEnglishMeta[secondaryBooks[1].id]?.titleEn || secondaryBooks[1].title}`,
+										className: "hidden sm:block absolute right-3 lg:right-4 w-[96px] lg:w-[108px] rotate-6 opacity-75 hover:opacity-100 transition-opacity cursor-pointer z-20 drop-shadow-lg",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BookCoverArt, {
+											book: secondaryBooks[1],
+											author: authors.find((a) => a.id === secondaryBooks[1].authorId),
+											size: "md"
+										})
+									})
+								]
+							}, `hero-book-3d-${activeHeroBook.id}`)
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "pointer-events-none hidden sm:block absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] font-mono uppercase tracking-[0.14em] text-[#78716C]/80 whitespace-nowrap",
+							children: effectiveMode === "cover3d" ? isMr ? "पुस्तक फिरवण्यासाठी कर्सर हलवा किंवा कव्हरवर क्लिक करा" : "Move cursor to tilt · Click side books to switch" : isMr ? "अधिक तपशीलासाठी आवृत्ती निवडा" : "Switch views above or select another edition"
+						})
+					]
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "lg:col-span-6 space-y-4 text-center lg:text-left",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AnimatePresence, {
+						mode: "wait",
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.div, {
+							initial: {
+								opacity: 0,
+								y: 6
+							},
+							animate: {
+								opacity: 1,
+								y: 0
+							},
+							exit: {
+								opacity: 0,
+								y: -6
+							},
+							transition: { duration: .22 },
+							className: "space-y-3",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "space-y-1",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+										onClick: () => onNavigate(`/books/${activeHeroBook.slug}`),
+										className: "text-xl sm:text-2xl lg:text-[26px] font-serif not-italic font-semibold text-[#1C1917] hover:text-[#243B8A] transition-colors cursor-pointer leading-snug",
+										children: activeTitle
+									}), activeAuthorName && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										className: "text-sm font-serif not-italic text-[#57534E]",
+										children: activeAuthorName
+									})]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									"data-testid": "featured-edition-blurb",
+									className: "text-[14px] sm:text-[15px] text-[#525665] font-serif not-italic leading-relaxed line-clamp-3 max-w-[48ch] mx-auto lg:mx-0",
+									children: activeBlurb
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "flex flex-wrap items-center justify-center lg:justify-start gap-x-3 gap-y-1 text-xs text-[#57534E] font-mono tabular-nums pt-0.5",
+									children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "पेपरबॅक" : activeHeroEnMeta?.formatEn || "Paperback" }),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											"aria-hidden": "true",
+											children: "·"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: activeHeroBook.pageCount ? `${activeHeroBook.pageCount} ${isMr ? "पृष्ठे" : "Pages"}` : "—" }),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											"aria-hidden": "true",
+											children: "·"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+											className: "font-semibold text-[#243B8A]",
+											children: ["₹", activeHeroBook.price]
+										})
+									]
+								})
+							]
+						}, `hero-copy-${activeHeroBook.id}`)
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "flex flex-wrap items-center justify-center lg:justify-start gap-2.5 pt-1",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+							type: "button",
+							onClick: () => onNavigate(`/books/${activeHeroBook.slug}`),
+							className: "inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-xs font-medium bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] transition-colors cursor-pointer whitespace-nowrap shrink-0",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BookOpen, { className: "w-3.5 h-3.5 text-[#FFD966]" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "पुस्तक पहा →" : "View Edition →" })]
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+							type: "button",
+							onClick: () => onAddToCart(activeHeroBook.id),
+							className: `inline-flex items-center gap-1.5 px-4.5 py-2.5 rounded-full text-xs font-medium border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${isAdded ? "bg-[#174D3A] text-[#FFFDF7] border-[#174D3A]" : "bg-[#FAF6EC] hover:bg-[#E5DEC9]/65 text-[#1C1917] border-[#DCD4C0]"}`,
+							children: isAdded ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, { className: "w-3.5 h-3.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "पिशवीत जोडले" : "Added to Bag" })] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShoppingBag, { className: "w-3.5 h-3.5 text-[#243B8A]" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "पिशवीत जोडा" : "Add to Bag" })] })
+						})]
+					})]
+				})]
+			})]
+		})
+	});
+};
 // src/components/PublishingCraftVisuals.tsx
 /**
 * Interactive Frosted Atelier Specimen Showcase for "01 · WHAT WE DO"
@@ -32854,10 +35917,10 @@ var JourneyStageGlyph = ({ index, isActive }) => {
 var HOMEPAGE_SECTION_THEMES = {
 	hero: {
 		id: "hero",
-		canvasBg: "#F9F8FE",
-		orbitPrimary: "rgba(36, 59, 138, 0.28)",
-		orbitSecondary: "rgba(184, 128, 42, 0.36)",
-		glowColor: "rgba(99, 102, 241, 0.14)",
+		canvasBg: "#FAF8F0",
+		orbitPrimary: "rgba(36, 59, 138, 0.24)",
+		orbitSecondary: "rgba(184, 128, 42, 0.32)",
+		glowColor: "rgba(200, 157, 84, 0.14)",
 		isDark: false
 	},
 	"what-we-do": {
@@ -32886,11 +35949,11 @@ var HOMEPAGE_SECTION_THEMES = {
 	},
 	"for-authors": {
 		id: "for-authors",
-		canvasBg: "#0B1229",
-		orbitPrimary: "rgba(147, 197, 253, 0.34)",
-		orbitSecondary: "rgba(255, 217, 102, 0.36)",
-		glowColor: "rgba(59, 130, 246, 0.22)",
-		isDark: true
+		canvasBg: "#F4EDE0",
+		orbitPrimary: "rgba(36, 59, 138, 0.22)",
+		orbitSecondary: "rgba(184, 128, 42, 0.32)",
+		glowColor: "rgba(200, 157, 84, 0.18)",
+		isDark: false
 	},
 	"about-akath": {
 		id: "about-akath",
@@ -33369,55 +36432,55 @@ var AuthorStudioExperience = ({ isMr, onNavigate }) => {
 		"data-testid": "home-author-studio-console",
 		className: "relative w-full max-w-5xl mx-auto",
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			className: "relative rounded-3xl border border-white/15 bg-[#0F1736]/88 backdrop-blur-xl shadow-[0_30px_90px_-20px_rgba(0,0,0,0.65)] overflow-hidden",
+			className: "relative rounded-3xl border border-[#D8CEBA] bg-[#FFFDF7]/94 backdrop-blur-md shadow-[0_28px_72px_-32px_rgba(36,59,138,0.22)] overflow-hidden",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				className: "relative h-[2px] w-full bg-white/10 overflow-hidden",
+				className: "relative h-[3px] w-full bg-[#EFE7D6] overflow-hidden",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 					className: "akath-studio-beam-line h-full w-1/3",
-					style: { background: "linear-gradient(90deg, transparent, #FFD966, #EF6855, transparent)" }
+					style: { background: "linear-gradient(90deg, transparent, #243B8A, #C89D54, #EF6855, transparent)" }
 				})
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 				className: "grid grid-cols-1 lg:grid-cols-12",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					className: "lg:col-span-5 p-5 sm:p-6 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col justify-between space-y-4",
+					className: "lg:col-span-5 bg-[#FAF5EA]/90 p-5 sm:p-7 border-b lg:border-b-0 lg:border-r border-[#E4DAC6] flex flex-col justify-between space-y-5",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "space-y-2",
+							className: "space-y-2.5",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.16em] text-[#FFD966]",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Feather, { className: "w-3.5 h-3.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "लेखक प्रकाशन कार्यकक्षा" : "AUTHOR EDITORIAL DESK" })]
+								className: "inline-flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-[0.16em] text-[#174D3A]",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Feather, { className: "w-3.5 h-3.5 text-[#EF6855]" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "लेखक प्रकाशन कार्यकक्षा" : "AUTHOR EDITORIAL DESK" })]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								className: "text-xs sm:text-sm text-white/80 leading-relaxed",
+								className: "text-sm text-[#44403C] leading-relaxed",
 								children: isMr ? activeTab.summaryMr : activeTab.summaryEn
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							className: "flex lg:flex-col gap-2 overflow-x-auto no-scrollbar pb-1 lg:pb-0",
+							className: "flex lg:flex-col gap-2.5 overflow-x-auto no-scrollbar pb-1 lg:pb-0",
 							children: WRITER_DESK_WORKFLOW.map((tab, idx) => {
 								const isSelected = idx === activeTabIdx;
 								return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
 									type: "button",
 									onClick: () => setActiveTabIdx(idx),
-									className: `shrink-0 lg:w-full px-3.5 py-2.5 rounded-xl text-left transition-all cursor-pointer border flex items-center justify-between gap-2 ${isSelected ? "bg-[#243B8A]/85 border-[#FFD966]/65 text-white shadow-sm" : "bg-white/[0.04] border-white/10 text-white/75 hover:text-white hover:bg-white/[0.08]"}`,
+									className: `shrink-0 lg:w-full px-4 py-3 rounded-xl text-left transition-all cursor-pointer border flex items-center justify-between gap-2.5 ${isSelected ? "bg-[#243B8A] border-[#243B8A] text-[#FFFDF7] shadow-[0_10px_24px_-12px_rgba(36,59,138,0.5)]" : "bg-[#FFFDF7] border-[#E4DAC6] text-[#292524] hover:border-[#243B8A]/45 hover:bg-white"}`,
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
 										className: "flex items-center gap-2.5 min-w-0",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-											className: `font-mono text-[10.5px] px-1.5 py-0.5 rounded tabular-nums ${isSelected ? "bg-[#FFD966] text-[#0B1229] font-bold" : "bg-white/10 text-white/65"}`,
+											className: `font-mono text-[10.5px] px-1.5 py-0.5 rounded tabular-nums font-bold ${isSelected ? "bg-[#FFD966] text-[#1C1917]" : "bg-[#F2EAD8] text-[#243B8A]"}`,
 											children: tab.step
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-											className: "text-xs sm:text-sm font-medium truncate",
+											className: "text-xs sm:text-sm font-serif font-medium truncate",
 											children: isMr ? tab.labelMr : tab.labelEn
 										})]
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: `w-3.5 h-3.5 shrink-0 transition-transform ${isSelected ? "text-[#FFD966] translate-x-0.5" : "opacity-40"}` })]
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: `w-3.5 h-3.5 shrink-0 transition-transform ${isSelected ? "text-[#FFD966] translate-x-0.5" : "text-[#78716C]"}` })]
 								}, tab.id);
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							className: "pt-3 border-t border-white/10 flex flex-wrap items-center gap-3",
+							className: "pt-3 border-t border-[#E4DAC6] flex flex-wrap items-center gap-3",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
 								type: "button",
 								onClick: () => onNavigate("/submit-manuscript"),
-								className: "w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] font-medium text-xs sm:text-sm transition-colors cursor-pointer whitespace-nowrap",
+								className: "w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] font-medium text-xs sm:text-sm shadow-[0_10px_24px_-10px_rgba(239,104,85,0.55)] transition-colors cursor-pointer whitespace-nowrap",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Feather, { className: "w-4 h-4 shrink-0" }),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "संहिता पाठवा" : "Submit Your Manuscript" }),
@@ -33427,21 +36490,21 @@ var AuthorStudioExperience = ({ isMr, onNavigate }) => {
 						})
 					]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					className: "lg:col-span-7 bg-[#080D1F]/85 p-5 sm:p-6 flex flex-col justify-between space-y-4",
+					className: "lg:col-span-7 bg-[#FFFDF7] p-5 sm:p-7 flex flex-col justify-between space-y-4",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "flex items-center justify-between gap-3 pb-3 border-b border-white/10",
+							className: "flex items-center justify-between gap-3 pb-3.5 border-b border-[#E8E0CE]",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "flex items-center gap-2 min-w-0",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BookOpen, { className: "w-4 h-4 text-[#FFD966] shrink-0" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									className: "text-xs sm:text-sm font-serif font-medium text-white truncate",
+								className: "flex items-center gap-2.5 min-w-0",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BookOpen, { className: "w-4 h-4 text-[#243B8A] shrink-0" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+									className: "text-sm sm:text-base font-serif font-semibold text-[#1C1917] truncate",
 									children: isMr ? activeTab.panelTitleMr : activeTab.panelTitleEn
 								})]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 								type: "button",
 								onClick: handleCopyChecklist,
-								className: "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.08] hover:bg-white/15 border border-white/15 text-[11px] font-medium text-white/90 transition-colors cursor-pointer whitespace-nowrap shrink-0",
-								children: copied ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, { className: "w-3 h-3 text-emerald-400" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "कॉपी झाले" : "Copied" })] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Copy, { className: "w-3 h-3" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "मार्गदर्शक कॉपी करा" : "Copy Guide" })] })
+								className: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF5EA] hover:bg-[#F1E8D5] border border-[#DCD2BC] text-[11px] font-medium text-[#243B8A] transition-colors cursor-pointer whitespace-nowrap shrink-0",
+								children: copied ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, { className: "w-3.5 h-3.5 text-[#174D3A]" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "कॉपी झाले" : "Copied" })] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Copy, { className: "w-3.5 h-3.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "मार्गदर्शक कॉपी करा" : "Copy Guide" })] })
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AnimatePresence, {
@@ -33460,30 +36523,30 @@ var AuthorStudioExperience = ({ isMr, onNavigate }) => {
 									y: -6
 								},
 								transition: { duration: .22 },
-								className: "grid grid-cols-1 sm:grid-cols-2 gap-3",
+								className: "grid grid-cols-1 sm:grid-cols-2 gap-3.5",
 								children: activeTab.items.map((item, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "rounded-xl border border-white/10 bg-white/[0.04] p-3.5 space-y-1",
+									className: "rounded-xl border border-[#E8E0CE] bg-[#FAF6EC]/65 hover:border-[#243B8A]/35 hover:bg-[#FAF6EC] transition-colors p-4 space-y-1.5",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 										className: "flex items-center gap-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-											className: "font-mono text-[10px] font-bold text-[#FFD966] tabular-nums",
+											className: "font-mono text-[10.5px] font-bold text-[#9A3412] tabular-nums",
 											children: ["0", i + 1]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
-											className: "font-serif text-xs sm:text-sm font-medium text-white truncate",
+											className: "font-serif text-sm font-semibold text-[#1C1917] truncate",
 											children: isMr ? item.titleMr : item.titleEn
 										})]
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "text-[11.5px] sm:text-xs text-white/75 leading-relaxed",
+										className: "text-xs sm:text-[13px] text-[#525665] leading-relaxed",
 										children: isMr ? item.detailMr : item.detailEn
 									})]
 								}, i))
 							}, activeTab.id)
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-[10.5px] sm:text-[11px] font-mono uppercase tracking-[0.12em] text-white/65",
+							className: "pt-3.5 border-t border-[#E8E0CE] flex flex-wrap items-center justify-between gap-2 text-[10.5px] sm:text-[11px] font-mono uppercase tracking-[0.12em] text-[#57534E]",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "कथा · कादंबरी · कविता · प्रवासवर्णन · ललित" : "Fiction · Poetry · Travelogue · Non-Fiction" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-								className: "text-[#FFD966]",
-								children: "AKATH DESK"
+								className: "text-[#243B8A] font-semibold",
+								children: "AKATH EDITORIAL DESK · NANDED"
 							})]
 						})
 					]
@@ -33635,6 +36698,58 @@ var PUBLISHING_JOURNEY_STAGES = [
 var HomeView = ({ books, authors, onNavigate, onAddToCart, recentlyAddedBookId }) => {
 	const { lang } = useLanguage();
 	const isMr = lang === "mr";
+	const prefersReducedMotion = useReducedMotion();
+	const heroRevealContainer = {
+		hidden: {},
+		visible: { transition: {
+			staggerChildren: prefersReducedMotion ? 0 : .11,
+			delayChildren: prefersReducedMotion ? 0 : .04
+		} }
+	};
+	const heroRevealItem = {
+		hidden: prefersReducedMotion ? {
+			opacity: 1,
+			y: 0
+		} : {
+			opacity: 0,
+			y: 18
+		},
+		visible: {
+			opacity: 1,
+			y: 0,
+			transition: {
+				duration: prefersReducedMotion ? 0 : .65,
+				ease: [
+					.22,
+					1,
+					.36,
+					1
+				]
+			}
+		}
+	};
+	const heroHairlineItem = {
+		hidden: prefersReducedMotion ? {
+			opacity: 1,
+			scaleX: 1
+		} : {
+			opacity: 0,
+			scaleX: .35
+		},
+		visible: {
+			opacity: 1,
+			scaleX: 1,
+			transition: {
+				duration: prefersReducedMotion ? 0 : .55,
+				ease: [
+					.22,
+					1,
+					.36,
+					1
+				]
+			}
+		}
+	};
 	const [selectedBookId, setSelectedBookId] = (0, import_react.useState)(books[0]?.id || "book-scholar-juice");
 	const [showFullSpread, setShowFullSpread] = (0, import_react.useState)(false);
 	const [activeBookRailIndex, setActiveBookRailIndex] = (0, import_react.useState)(0);
@@ -33744,7 +36859,7 @@ var HomeView = ({ books, authors, onNavigate, onAddToCart, recentlyAddedBookId }
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				"aria-hidden": "true",
-				className: "pointer-events-none fixed inset-0 z-0 overflow-hidden flex items-center justify-center opacity-50",
+				className: `pointer-events-none fixed inset-0 z-0 overflow-hidden flex items-center justify-center transition-opacity duration-700 ${activeThemeSection === "hero" ? "opacity-0" : "opacity-45"}`,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 					className: "w-[720px] h-[720px] sm:w-[980px] sm:h-[980px] lg:w-[1240px] lg:h-[1240px]",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ConcentricOrbitRings, {
@@ -33758,356 +36873,111 @@ var HomeView = ({ books, authors, onNavigate, onAddToCart, recentlyAddedBookId }
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
 				ref: heroRef,
 				"data-testid": "home-publishing-hero",
-				className: `akath-io-section ${isHeroVisible ? "is-visible" : ""} relative z-10 w-full overflow-hidden border-b border-[#E5DEC9]/75 pt-5 sm:pt-8 lg:pt-10 pb-8 sm:pb-10 lg:pb-12`,
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"aria-hidden": "true",
-						className: "pointer-events-none absolute inset-0",
-						style: { background: "radial-gradient(ellipse 68% 58% at 50% 34%, rgba(255, 217, 102, 0.24) 0%, rgba(250, 249, 255, 0) 72%)" }
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"aria-hidden": "true",
-						className: "pointer-events-none absolute left-1/2 top-[28%] sm:top-[30%] -translate-x-1/2 -translate-y-1/2 w-[560px] h-[560px] sm:w-[820px] sm:h-[820px] lg:w-[980px] lg:h-[980px] opacity-95",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ConcentricOrbitRings, {
-							primaryStroke: "rgba(36, 59, 138, 0.28)",
-							secondaryStroke: "rgba(184, 128, 42, 0.36)",
-							glowColor: "rgba(99, 102, 241, 0.14)",
-							className: "w-full h-full"
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "w-full max-w-[1200px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10 min-w-0 space-y-6 sm:space-y-7 lg:space-y-8",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-testid": "home-hero-identity-column",
-							className: "w-full max-w-4xl mx-auto flex flex-col items-center text-center space-y-4 sm:space-y-5",
-							children: [
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h1", {
-									"data-testid": "home-hero-main-headline",
-									className: "w-full font-serif not-italic font-medium text-[#1C1917] tracking-[-0.02em] text-center [text-wrap:balance]",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-										className: "block text-[clamp(1.75rem,6.4vw,2.65rem)] sm:text-[clamp(2.35rem,4.4vw,3.15rem)] lg:text-[clamp(2.65rem,3.4vw,3.4rem)] leading-[1.24] text-[#1C1917]/90",
-										children: [isMr ? "शब्दांना पुस्तकाचं रूप देणारी" : "Every story deserves", " "]
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										className: "block mt-1 text-[clamp(2.15rem,8vw,3.25rem)] sm:text-[clamp(2.9rem,5.6vw,3.9rem)] lg:text-[clamp(3.25rem,4.2vw,4.35rem)] leading-[1.15] font-semibold text-[#243B8A]",
-										children: isMr ? "प्रकाशन संस्था." : "a place on the shelf."
-									})]
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"aria-hidden": "true",
-									className: "flex items-center justify-center pt-0.5",
-									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "w-24 sm:w-32 h-px bg-gradient-to-r from-transparent via-[#243B8A]/60 to-transparent" })
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-testid": "home-hero-supporting-line",
-									className: "max-w-[44ch] mx-auto text-center text-[17px] sm:text-[20px] lg:text-[22px] font-serif not-italic font-medium text-[#243B8A] leading-[1.45]",
-									children: isMr ? "नवे स्वर शोधतो. कथांना आकार देतो. पुस्तके प्रकाशित करतो." : "Discovering voices. Shaping stories. Publishing books."
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									className: "text-[14.5px] sm:text-[16px] lg:text-[17px] font-sans not-italic font-normal text-[#44403C] leading-relaxed max-w-[58ch] mx-auto text-center",
-									children: isMr ? "अकथ प्रकाशनमध्ये आम्ही अर्थपूर्ण मराठी लेखनाला जिवंत रूप देतो — मूळ कथा, वैयक्तिक अनुभव आणि विचार वाचनीय, जपण्याजोग्या व इतरांपर्यंत पोहोचणाऱ्या पुस्तकांत घडवण्यासाठी लेखकांसोबत काम करतो." : "At Akath Prakashan, we bring meaningful Marathi writing to life — working with authors to turn original stories, personal narratives and ideas into books worth reading, sharing and keeping."
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "w-full flex flex-wrap items-center justify-center gap-3 pt-1",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
-										type: "button",
-										onClick: () => onNavigate("/books"),
-										className: "inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] font-medium text-sm shadow-[0_12px_28px_-10px_rgba(36,59,138,0.45)] transition-all cursor-pointer whitespace-nowrap shrink-0",
-										children: [
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BookOpen, { className: "w-4 h-4 text-[#FFD966]" }),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "आमची पुस्तके पहा" : "Explore Our Books" }),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: "w-4 h-4" })
-										]
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
-										type: "button",
-										onClick: () => onNavigate("/submit-manuscript"),
-										className: "inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-white/85 backdrop-blur-md hover:bg-[#1C1917] text-[#1C1917] hover:text-[#FFFDF7] border border-[#1C1917]/15 font-medium text-sm shadow-xs transition-all cursor-pointer whitespace-nowrap shrink-0",
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Feather, { className: "w-4 h-4 text-[#EF6855]" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "आमच्यासोबत प्रकाशित करा" : "Publish With Us" })]
-									})]
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "w-full pt-2 space-y-2 min-w-0",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "text-[11px] font-mono font-medium uppercase tracking-[0.18em] text-[#57534E]",
-										children: isMr ? "ग्रंथ दालन निवड" : "Select Edition"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-testid": "home-hero-anchors-rail",
-										className: "akath-swipe-rail flex flex-wrap sm:flex-nowrap items-center justify-center gap-2.5 overflow-x-auto sm:overflow-visible snap-x snap-mandatory w-full pb-1 sm:pb-0",
-										children: books.map((book, idx) => {
-											const isSelected = book.id === activeHeroBook?.id;
-											const enMeta = BOOK_ENGLISH_META[book.id];
-											return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
-												type: "button",
-												onClick: () => {
-													setSelectedBookId(book.id);
-													setShowFullSpread(false);
-												},
-												className: `snap-start shrink-0 max-w-full px-3.5 sm:px-4 py-2 rounded-full text-xs font-serif transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 border backdrop-blur-md ${isSelected ? "bg-[#243B8A] text-[#FFFDF7] border-[#243B8A] shadow-sm font-semibold" : "bg-white/80 text-[#1C1917] border-[#DCD4C0] hover:border-[#243B8A]/50 hover:bg-white"}`,
-												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-													className: `font-mono text-[10px] px-1.5 py-0.5 rounded-full tabular-nums shrink-0 ${isSelected ? "bg-[#FFD966] text-[#1C1917] font-bold" : "bg-[#FAF6EC] text-[#57534E]"}`,
-													children: ["0", idx + 1]
-												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-													className: "max-w-[215px] sm:max-w-none truncate",
-													children: isMr ? book.title : enMeta?.titleEn || book.title
-												})]
-											}, book.id);
-										})
-									})]
-								})
-							]
-						}), activeHeroBook && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-testid": "home-featured-edition-dossier",
-							className: "w-full max-w-3xl mx-auto min-w-0",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "relative rounded-3xl bg-white/80 backdrop-blur-xl border border-[#DCD4C0]/80 p-5 sm:p-7 shadow-[0_28px_70px_-28px_rgba(36,59,138,0.22)] overflow-hidden",
-								children: [
-									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										className: "flex items-center justify-between gap-2 pb-3.5 border-b border-[#E5DEC9]/80 text-[11px] font-mono uppercase tracking-[0.16em] text-[#57534E]",
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-											className: "font-semibold text-[#174D3A] truncate",
-											children: isMr ? activeHeroBook.category : activeHeroEnMeta?.categoryEn || activeHeroBook.category
-										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "flex items-center gap-2 shrink-0",
-											children: [
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-													type: "button",
-													onClick: () => {
-														const prevIdx = (activeHeroIndex - 1 + books.length) % books.length;
-														if (books[prevIdx]) {
-															setSelectedBookId(books[prevIdx].id);
-															setShowFullSpread(false);
-														}
-													},
-													"aria-label": isMr ? "मागील पुस्तक" : "Previous edition",
-													className: "w-7 h-7 rounded-full border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer",
-													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronLeft, { className: "w-3.5 h-3.5" })
-												}),
-												/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-													className: "tabular-nums font-semibold text-[#243B8A]",
-													children: [
-														"0",
-														activeHeroIndex + 1,
-														" / 0",
-														books.length
-													]
-												}),
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-													type: "button",
-													onClick: () => {
-														const nextIdx = (activeHeroIndex + 1) % books.length;
-														if (books[nextIdx]) {
-															setSelectedBookId(books[nextIdx].id);
-															setShowFullSpread(false);
-														}
-													},
-													"aria-label": isMr ? "पुढील पुस्तक" : "Next edition",
-													className: "w-7 h-7 rounded-full border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer",
-													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, { className: "w-3.5 h-3.5" })
-												})
-											]
-										})]
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										className: "relative py-6 sm:py-8 flex items-center justify-center min-h-[235px] sm:min-h-[290px]",
-										children: [
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-												"aria-hidden": "true",
-												className: "pointer-events-none absolute w-[220px] h-[220px] sm:w-[285px] sm:h-[285px] rounded-full",
-												style: { background: "radial-gradient(circle, rgba(255,217,102,0.22) 0%, rgba(36,59,138,0.06) 55%, transparent 72%)" }
-											}),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-												"aria-hidden": "true",
-												className: "pointer-events-none absolute w-[220px] h-[220px] sm:w-[275px] sm:h-[275px] rounded-full border border-[#C89D54]/35"
-											}),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-												"aria-hidden": "true",
-												className: "pointer-events-none absolute w-[290px] h-[290px] sm:w-[360px] sm:h-[360px] rounded-full border border-dashed border-[#243B8A]/18"
-											}),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AnimatePresence, {
-												mode: "wait",
-												children: showFullSpread && activeHeroBook.coverSpreadUrl ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.div, {
-													initial: {
-														opacity: 0,
-														scale: .97
-													},
-													animate: {
-														opacity: 1,
-														scale: 1
-													},
-													exit: {
-														opacity: 0,
-														scale: .97
-													},
-													transition: { duration: .24 },
-													className: "relative z-30 w-full rounded-2xl bg-[#FAF6EC]/90 border border-[#DCD4C0] p-3.5 space-y-2.5",
-													children: [
-														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															className: "flex items-center justify-between gap-2",
-															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-																className: "text-[10.5px] font-mono font-semibold uppercase tracking-[0.14em] text-[#243B8A] truncate",
-																children: isMr ? `${activeHeroBook.title} — पूर्ण वेष्टन` : `${activeHeroEnMeta?.titleEn || activeHeroBook.title} — Full Print Jacket`
-															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-																type: "button",
-																onClick: () => setShowFullSpread(false),
-																className: "px-3 py-1 rounded-full text-[11px] font-medium bg-[#243B8A] text-[#FFFDF7] cursor-pointer whitespace-nowrap shrink-0",
-																children: isMr ? "मुखपृष्ठ पहा" : "Back to Cover"
-															})]
-														}),
-														/* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
-															src: resolvePublicAssetUrl(activeHeroBook.coverSpreadUrl),
-															alt: activeHeroBook.title,
-															width: 800,
-															height: 600,
-															loading: "lazy",
-															decoding: "async",
-															referrerPolicy: "no-referrer",
-															className: "w-full h-auto max-h-[220px] object-contain mx-auto"
-														}),
-														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															className: "flex items-center justify-between text-[11px] text-[#57534E] tabular-nums",
-															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: activeHeroBook.isbn ? `ISBN ${activeHeroBook.isbn}` : "" }), activeHeroBook.coverPdfUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
-																href: resolvePublicAssetUrl(activeHeroBook.coverPdfUrl),
-																target: "_blank",
-																rel: "noopener noreferrer",
-																className: "font-semibold text-[#243B8A] hover:underline",
-																children: isMr ? "मूळ कव्हर PDF ↗" : "Open Press PDF ↗"
-															})]
-														})
-													]
-												}, "spread-showcase") : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.div, {
-													initial: {
-														opacity: 0,
-														y: 8
-													},
-													animate: {
-														opacity: 1,
-														y: 0
-													},
-													exit: {
-														opacity: 0,
-														y: -8
-													},
-													transition: { duration: .24 },
-													className: "relative z-20 w-full flex items-center justify-center",
-													children: [
-														secondaryBooks[0] && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-															onClick: () => {
-																setSelectedBookId(secondaryBooks[0].id);
-																setShowFullSpread(false);
-															},
-															title: isMr ? secondaryBooks[0].title : BOOK_ENGLISH_META[secondaryBooks[0].id]?.titleEn || secondaryBooks[0].title,
-															className: "absolute left-2 sm:left-12 bottom-2 w-[90px] sm:w-[122px] -rotate-6 opacity-80 hover:opacity-100 hover:-translate-y-2 transition-all duration-300 cursor-pointer z-10 drop-shadow-md",
-															children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BookCoverArt, {
-																book: secondaryBooks[0],
-																author: authors.find((a) => a.id === secondaryBooks[0].authorId),
-																size: "md"
-															})
-														}),
-														/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-															className: "relative z-30 w-[148px] sm:w-[188px] transition-transform duration-300 hover:-translate-y-2 drop-shadow-[0_22px_32px_rgba(28,25,23,0.22)]",
-															children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BookCoverArt, {
-																book: activeHeroBook,
-																author: activeHeroAuthor,
-																size: "lg",
-																priority: true,
-																onClick: () => onNavigate(`/books/${activeHeroBook.slug}`)
-															})
-														}),
-														secondaryBooks[1] && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-															onClick: () => {
-																setSelectedBookId(secondaryBooks[1].id);
-																setShowFullSpread(false);
-															},
-															title: isMr ? secondaryBooks[1].title : BOOK_ENGLISH_META[secondaryBooks[1].id]?.titleEn || secondaryBooks[1].title,
-															className: "absolute right-2 sm:right-12 bottom-2 w-[90px] sm:w-[122px] rotate-6 opacity-80 hover:opacity-100 hover:-translate-y-2 transition-all duration-300 cursor-pointer z-20 drop-shadow-md",
-															children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BookCoverArt, {
-																book: secondaryBooks[1],
-																author: authors.find((a) => a.id === secondaryBooks[1].authorId),
-																size: "md"
-															})
-														})
-													]
-												}, `hero-book-stage-${activeHeroBook.id}`)
-											})
-										]
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										className: "pt-4 border-t border-[#E5DEC9]/80 space-y-3.5",
-										children: [
-											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-												className: "flex flex-col sm:flex-row items-center justify-between gap-3",
-												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-													className: "min-w-0 text-center sm:text-left",
-													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-														onClick: () => onNavigate(`/books/${activeHeroBook.slug}`),
-														className: "text-lg sm:text-xl font-serif not-italic font-semibold text-[#1C1917] hover:text-[#243B8A] transition-colors cursor-pointer truncate",
-														children: isMr ? activeHeroBook.title : activeHeroEnMeta?.titleEn || activeHeroBook.title
-													}), activeHeroAuthor && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-														className: "text-xs font-serif not-italic text-[#57534E]",
-														children: isMr ? activeHeroAuthor.name : activeHeroEnMeta?.authorEn || activeHeroAuthor.transliteratedName
-													})]
-												}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-													className: "flex items-center justify-center gap-2 shrink-0",
-													children: [activeHeroBook.coverSpreadUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-														type: "button",
-														"data-testid": "toggle-featured-jacket-spread",
-														onClick: () => setShowFullSpread((prev) => !prev),
-														className: "px-3.5 py-1.5 rounded-full text-[11px] font-mono font-medium uppercase tracking-wider bg-[#FAF6EC] hover:bg-[#FFD966]/40 text-[#243B8A] border border-[#DCD4C0] transition-colors cursor-pointer whitespace-nowrap shrink-0",
-														children: showFullSpread ? isMr ? "मुखपृष्ठ" : "Cover" : isMr ? "पूर्ण वेष्टन" : "Full Jacket"
-													}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-														type: "button",
-														onClick: () => onNavigate(`/books/${activeHeroBook.slug}`),
-														className: "px-4 py-1.5 rounded-full text-xs font-medium bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] transition-colors cursor-pointer whitespace-nowrap shrink-0",
-														children: isMr ? "पुस्तक पहा →" : "View Edition →"
-													})]
-												})]
-											}),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-												"data-testid": "featured-edition-blurb",
-												className: "text-[13px] text-[#525665] font-serif not-italic leading-relaxed line-clamp-2 text-center sm:text-left",
-												children: isMr ? activeHeroBook.description : activeHeroEnMeta?.descriptionEn || activeHeroBook.description
-											}),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-												className: "grid grid-cols-3 divide-x divide-[#E5DEC9]/80 rounded-2xl bg-[#FAF6EC]/80 border border-[#E5DEC9]/80 py-2.5 text-center",
-												children: [
-													/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-														className: "px-2",
-														children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-															className: "text-[10px] font-mono uppercase tracking-wider text-[#57534E]",
-															children: isMr ? "स्वरूप" : "Format"
-														}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-															className: "text-xs font-serif font-medium text-[#1C1917]",
-															children: isMr ? "पेपरबॅक" : activeHeroEnMeta?.formatEn || "Paperback"
-														})]
-													}),
-													/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-														className: "px-2",
-														children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-															className: "text-[10px] font-mono uppercase tracking-wider text-[#57534E]",
-															children: isMr ? "पृष्ठे" : "Pages"
-														}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-															className: "text-xs font-mono font-medium text-[#1C1917] tabular-nums",
-															children: activeHeroBook.pageCount ? `${activeHeroBook.pageCount}` : "—"
-														})]
-													}),
-													/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-														className: "px-2",
-														children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-															className: "text-[10px] font-mono uppercase tracking-wider text-[#57534E]",
-															children: isMr ? "मूल्य" : "Price"
-														}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-															className: "text-xs font-mono font-semibold text-[#243B8A] tabular-nums",
-															children: ["₹", activeHeroBook.price]
-														})]
-													})
-												]
-											})
-										]
+				className: `akath-io-section ${isHeroVisible ? "is-visible" : ""} relative z-10 w-full overflow-hidden border-b border-[#E5DEC9]/75 pt-8 sm:pt-10 lg:pt-12 pb-9 sm:pb-11 lg:pb-12`,
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(HeroPublicationWatermark, {}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "w-full max-w-[1120px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10 min-w-0 space-y-7 sm:space-y-9",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.div, {
+						"data-testid": "home-hero-identity-column",
+						variants: heroRevealContainer,
+						initial: "hidden",
+						animate: "visible",
+						className: "w-full max-w-3xl mx-auto flex flex-col items-center text-center space-y-4 sm:space-y-4.5",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h1", {
+								"data-testid": "home-hero-main-headline",
+								className: "w-full font-serif not-italic text-[#1C1917] tracking-[-0.025em] text-center [text-wrap:balance]",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.span, {
+									variants: heroRevealItem,
+									className: "block font-normal text-[clamp(1.85rem,6.4vw,2.75rem)] sm:text-[clamp(2.5rem,4.6vw,3.35rem)] lg:text-[clamp(2.85rem,3.6vw,3.65rem)] leading-[1.2] text-[#2B2927]",
+									children: [isMr ? "शब्दांना पुस्तकाचं रूप देणारी" : "Every story deserves", " "]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(motion.span, {
+									variants: heroRevealItem,
+									className: "block mt-1 font-semibold text-[clamp(2.15rem,7.8vw,3.25rem)] sm:text-[clamp(2.95rem,5.5vw,3.95rem)] lg:text-[clamp(3.35rem,4.2vw,4.35rem)] leading-[1.12] text-[#243B8A]",
+									children: isMr ? "प्रकाशन संस्था." : "a place on the shelf."
+								})]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(motion.div, {
+								variants: heroHairlineItem,
+								"aria-hidden": "true",
+								className: "pt-0.5 origin-center",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "block w-12 h-px bg-[#C89D54]/70 mx-auto" })
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(motion.p, {
+								variants: heroRevealItem,
+								"data-testid": "home-hero-supporting-line",
+								className: "max-w-[44ch] mx-auto text-center text-[17.5px] sm:text-[20px] lg:text-[22px] font-serif not-italic font-medium text-[#243B8A] leading-[1.45]",
+								children: isMr ? "नवे स्वर शोधतो. कथांना आकार देतो. पुस्तके प्रकाशित करतो." : "Discovering voices. Shaping stories. Publishing books."
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(motion.p, {
+								variants: heroRevealItem,
+								className: "text-[15px] sm:text-[16.5px] lg:text-[17.5px] font-sans not-italic font-normal text-[#44403C] leading-[1.7] max-w-[54ch] mx-auto text-center",
+								children: isMr ? "अकथ प्रकाशनमध्ये आम्ही अर्थपूर्ण मराठी लेखनाला जिवंत रूप देतो — मूळ कथा, वैयक्तिक अनुभव आणि विचार वाचनीय, जपण्याजोग्या व इतरांपर्यंत पोहोचणाऱ्या पुस्तकांत घडवण्यासाठी लेखकांसोबत काम करतो." : "At Akath Prakashan, we bring meaningful Marathi writing to life — working with authors to turn original stories, personal narratives and ideas into books worth reading, sharing and keeping."
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.div, {
+								variants: heroRevealItem,
+								className: "w-full flex flex-wrap items-center justify-center gap-3.5 pt-2",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+									type: "button",
+									onClick: () => onNavigate("/books"),
+									className: "inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] font-medium text-sm shadow-[0_10px_24px_-10px_rgba(36,59,138,0.45)] transition-all cursor-pointer whitespace-nowrap shrink-0",
+									children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BookOpen, { className: "w-4 h-4 text-[#FFD966]" }),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "आमची पुस्तके पहा" : "Explore Our Books" }),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: "w-4 h-4" })
+									]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+									type: "button",
+									onClick: () => onNavigate("/submit-manuscript"),
+									className: "inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-transparent hover:bg-[#1C1917] text-[#1C1917] hover:text-[#FFFDF7] border border-[#1C1917]/20 font-medium text-sm transition-all cursor-pointer whitespace-nowrap shrink-0",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Feather, { className: "w-4 h-4 text-[#EF6855]" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "आमच्यासोबत प्रकाशित करा" : "Publish With Us" })]
+								})]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(motion.div, {
+								variants: heroRevealItem,
+								className: "w-full pt-3 min-w-0",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									"data-testid": "home-hero-anchors-rail",
+									className: "akath-swipe-rail flex flex-wrap sm:flex-nowrap items-center justify-center gap-x-5 gap-y-2 overflow-x-auto sm:overflow-visible snap-x snap-mandatory w-full pb-1 sm:pb-0 border-b border-[#E5DEC9]/70 max-w-2xl mx-auto",
+									children: books.map((book, idx) => {
+										const isSelected = book.id === activeHeroBook?.id;
+										const enMeta = BOOK_ENGLISH_META[book.id];
+										return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+											type: "button",
+											onClick: () => {
+												setSelectedBookId(book.id);
+												setShowFullSpread(false);
+											},
+											className: `snap-start shrink-0 pb-2.5 text-xs sm:text-[13px] font-serif transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 border-b-2 -mb-px ${isSelected ? "border-[#243B8A] text-[#243B8A] font-semibold" : "border-transparent text-[#57534E] hover:text-[#1C1917]"}`,
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+												className: "font-mono text-[10.5px] opacity-70 tabular-nums",
+												children: ["0", idx + 1]
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												className: "max-w-[215px] sm:max-w-none truncate",
+												children: isMr ? book.title : enMeta?.titleEn || book.title
+											})]
+										}, book.id);
 									})
-								]
+								})
 							})
-						})]
-					})
-				]
+						]
+					}), activeHeroBook && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HeroInteractiveBookPlinth, {
+						books,
+						authors,
+						activeHeroBook,
+						activeHeroAuthor,
+						activeHeroIndex,
+						activeHeroEnMeta,
+						secondaryBooks,
+						bookEnglishMeta: BOOK_ENGLISH_META,
+						isMr,
+						showFullSpread,
+						setShowFullSpread,
+						setSelectedBookId,
+						onNavigate,
+						onAddToCart,
+						recentlyAddedBookId
+					})]
+				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", {
 				ref: whatWeDoRef,
@@ -34556,79 +37426,59 @@ var HomeView = ({ books, authors, onNavigate, onAddToCart, recentlyAddedBookId }
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
 				ref: forAuthorsRef,
 				"data-testid": "home-manuscript-desk",
-				className: `akath-io-section ${isForAuthorsVisible ? "is-visible" : ""} relative z-10 w-full overflow-hidden py-10 sm:py-14 lg:py-16 border-b border-white/10 bg-[#0B1229]/95 text-[#FFFDF7] transition-colors duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]`,
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"aria-hidden": "true",
-						className: "pointer-events-none absolute inset-0 opacity-[0.16]",
-						style: {
-							backgroundImage: "linear-gradient(to right, rgba(148, 163, 184, 0.28) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.28) 1px, transparent 1px)",
-							backgroundSize: "44px 44px"
-						}
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"aria-hidden": "true",
-						className: "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[580px] h-[580px] sm:w-[880px] sm:h-[880px] opacity-95",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ConcentricOrbitRings, {
-							primaryStroke: "rgba(147, 197, 253, 0.36)",
-							secondaryStroke: "rgba(255, 217, 102, 0.36)",
-							glowColor: "rgba(59, 130, 246, 0.24)",
-							className: "w-full h-full"
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "relative z-10 max-w-[1280px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6 sm:space-y-7 min-w-0",
-						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "max-w-3xl mx-auto text-center space-y-2.5",
-								children: [
-									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										className: "inline-flex items-center justify-center gap-2 text-[11px] sm:text-xs font-mono font-semibold uppercase tracking-[0.18em] text-[#FFD966]",
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Sparkles, { className: "w-3.5 h-3.5" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "०४ · लेखकांसाठी" : "04 · FOR AUTHORS" })]
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-										className: "text-2xl sm:text-4xl lg:text-[40px] font-serif not-italic font-medium text-[#FFFDF7] tracking-tight leading-tight",
-										children: "Have a Manuscript? Let's Talk."
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "text-sm sm:text-base font-normal text-white/80 leading-relaxed max-w-[54ch] mx-auto",
-										children: isMr ? "प्रत्येक पुस्तकाची सुरुवात एका कल्पनेतून होते. आपल्या संहितेला प्रकाशनाच्या दिशेने नेऊ इच्छिणाऱ्या लेखकांचे आम्ही स्वागत करतो." : "Every book begins with an idea. Explore our editorial studio guide and share your manuscript with Akath Prakashan."
-									})
-								]
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-testid": "home-authors-pillars-rail",
-								className: "min-w-0",
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AuthorStudioExperience, {
-									isMr,
-									onNavigate
+				className: `akath-io-section ${isForAuthorsVisible ? "is-visible" : ""} relative z-10 w-full overflow-hidden py-12 sm:py-16 lg:py-20 border-b border-[#DCD4C0]/80 bg-[#F4EDE0] text-[#1C1917] transition-colors duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]`,
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AuthorsLandscapeBackdrop, {}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "relative z-10 max-w-[1280px] mx-auto px-4 sm:px-8 lg:px-12 space-y-7 sm:space-y-8 min-w-0",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "max-w-3xl mx-auto text-center space-y-3",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "inline-flex items-center justify-center gap-2 text-[11px] sm:text-xs font-mono font-semibold uppercase tracking-[0.18em] text-[#174D3A]",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Sparkles, { className: "w-3.5 h-3.5 text-[#C89D54]" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "०४ · लेखकांसाठी" : "04 · FOR AUTHORS" })]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+									className: "text-2xl sm:text-4xl lg:text-[42px] font-serif not-italic font-semibold text-[#1C1917] tracking-tight leading-tight",
+									children: "Have a Manuscript? Let's Talk."
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									className: "text-sm sm:text-base font-normal text-[#44403C] leading-relaxed max-w-[54ch] mx-auto",
+									children: isMr ? "प्रत्येक पुस्तकाची सुरुवात एका कल्पनेतून होते. आपल्या संहितेला प्रकाशनाच्या दिशेने नेऊ इच्छिणाऱ्या लेखकांचे आम्ही स्वागत करतो." : "Every book begins with an idea. Explore our editorial studio guide and share your manuscript with Akath Prakashan."
 								})
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								className: "flex justify-center pt-1",
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
-									type: "button",
-									onClick: () => onNavigate("/submit-manuscript"),
-									className: "inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-[#EF6855] border border-white/25 hover:border-[#EF6855] text-[#FFFDF7] text-xs sm:text-sm font-medium backdrop-blur-md transition-colors cursor-pointer",
-									children: [
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Feather, { className: "w-4 h-4 text-[#FFD966]" }),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "संहिता पाठवा" : "Submit Your Manuscript" }),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: "w-4 h-4" })
-									]
-								})
+							]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							"data-testid": "home-authors-pillars-rail",
+							className: "min-w-0",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AuthorStudioExperience, {
+								isMr,
+								onNavigate
 							})
-						]
-					})
-				]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "flex justify-center pt-1",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+								type: "button",
+								onClick: () => onNavigate("/submit-manuscript"),
+								className: "inline-flex items-center gap-2 px-6.5 py-3 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-xs sm:text-sm font-medium shadow-[0_12px_28px_-10px_rgba(36,59,138,0.45)] transition-colors cursor-pointer",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Feather, { className: "w-4 h-4 text-[#FFD966]" }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isMr ? "संहिता पाठवा" : "Submit Your Manuscript" }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: "w-4 h-4" })
+								]
+							})
+						})
+					]
+				})]
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", {
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
 				ref: aboutAkathRef,
 				"data-testid": "home-about-akath",
-				className: `akath-io-section ${isAboutAkathVisible ? "is-visible" : ""} relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 bg-transparent`,
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					className: "max-w-[1100px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6 min-w-0",
+				className: `akath-io-section ${isAboutAkathVisible ? "is-visible" : ""} relative z-10 w-full overflow-hidden py-10 sm:py-14 lg:py-16 bg-[#FAF6EC]`,
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AboutLandscapeBackdrop, {}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					className: "relative z-10 max-w-[960px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6 min-w-0",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "rounded-3xl border border-[#DCD4C0]/85 bg-white/85 backdrop-blur-xl p-6 sm:p-9 lg:p-10 shadow-[0_24px_64px_-28px_rgba(36,59,138,0.16)] flex flex-col items-center text-center space-y-5",
+						className: "py-4 sm:py-6 flex flex-col items-center text-center space-y-5",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AnimatedTortoiseEmblem, {
 								variant: "forest",
@@ -34673,7 +37523,7 @@ var HomeView = ({ books, authors, onNavigate, onAddToCart, recentlyAddedBookId }
 							})
 						]
 					})
-				})
+				})]
 			})
 		]
 	});
@@ -75452,460 +78302,575 @@ var AboutAkathView = ({ onNavigate }) => {
 	})();
 	const literaryWatchLabel = istHour >= 5 && istHour < 12 ? lang === "mr" ? "प्रभात वाचन प्रहर" : "Morning Reading Watch" : istHour >= 12 && istHour < 17 ? lang === "mr" ? "दुपारचा संपादन प्रहर" : "Editorial Desk Hours" : istHour >= 17 && istHour < 21 ? lang === "mr" ? "सायं साहित्य प्रहर" : "Evening Literary Hour" : lang === "mr" ? "रात्रीचा चिंतन प्रहर" : "Quiet Night Reading Watch";
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: "bg-[#FFFDF7] text-[#1C1917] min-h-screen w-full max-w-[100vw] overflow-x-hidden selection:bg-[#243B8A]/15 selection:text-[#1C1917]",
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-			"data-testid": "about-archival-dateline",
-			className: "border-b border-[#DCD4C0] bg-[#FAF6EC]/95 backdrop-blur-sm sticky top-0 z-20 w-full",
-			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "max-w-[1360px] mx-auto px-3 sm:px-6 lg:px-10 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4 min-w-0",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", {
-					"aria-label": "About Monograph Chapters",
-					className: "akath-swipe-rail flex items-center gap-3.5 sm:gap-6 overflow-x-auto no-scrollbar min-w-0 flex-1",
-					children: [
-						{
-							id: "about-manifesto-top",
-							index: "I",
-							labelMr: "संपादकीय भूमिका",
-							labelEn: "About Akath"
-						},
-						{
-							id: "about-why-tortoise",
-							index: "II",
-							labelMr: "कासवाचे प्रतीक का?",
-							labelEn: "Why the Tortoise?"
-						},
-						{
-							id: "about-chapter-06",
-							index: "III",
-							labelMr: "संस्थापक व अधिष्ठान",
-							labelEn: "Founder & Imprint"
-						}
-					].map((item) => {
-						const isCurrent = activeChapterId === item.id;
-						return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
-							type: "button",
-							onClick: () => scrollToChapter(item.id),
-							className: `group inline-flex items-baseline gap-1 sm:gap-1.5 text-[11.5px] sm:text-[12px] whitespace-nowrap shrink-0 transition-colors cursor-pointer py-0.5 ${isCurrent ? "text-[#243B8A] font-semibold" : "text-[#57534E] hover:text-[#1C1917]"}`,
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-								className: "font-mono text-[10px] sm:text-[10.5px] text-[#78716C] group-hover:text-[#243B8A]",
-								children: [item.index, "."]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-								className: "font-editorial-prose not-italic",
-								children: lang === "mr" ? item.labelMr : item.labelEn
-							})]
-						}, item.id);
-					})
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					className: "flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] font-mono text-[#57534E] tabular-nums shrink-0",
-					children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							className: "hidden md:inline uppercase tracking-[0.16em] text-[#1C1917] font-semibold",
-							children: "Nanded, Maharashtra"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"aria-hidden": "true",
-							className: "hidden md:inline",
-							children: "·"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-testid": "about-live-date",
-							children: formattedDate
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"aria-hidden": "true",
-							className: "hidden xs:inline sm:inline",
-							children: "·"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-							"data-testid": "about-live-time",
-							className: "hidden sm:inline",
-							children: [formattedTime, " IST"]
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"aria-hidden": "true",
-							className: "hidden lg:inline",
-							children: "·"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							className: "hidden lg:inline text-[#174D3A] font-medium",
-							children: literaryWatchLabel
-						})
-					]
-				})]
-			})
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("article", {
-			ref: aboutArticleRef,
-			"data-testid": "about-editorial-essay",
-			"aria-label": "About Akath Prakashan",
-			className: "max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-14 lg:py-20 space-y-12 sm:space-y-20 min-w-0",
-			children: [
-				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					id: "about-manifesto-top",
-					className: "scroll-mt-28 space-y-6 sm:space-y-10 min-w-0",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "border-b border-[#DCD4C0] pb-6 sm:pb-8 lg:pb-10 space-y-3 sm:space-y-4 max-w-4xl mx-auto text-center",
+		className: "relative isolate bg-[#FAF6EC] text-[#1C1917] min-h-screen w-full max-w-[100vw] overflow-x-hidden selection:bg-[#243B8A]/15 selection:text-[#1C1917]",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "pointer-events-none fixed inset-0 z-0",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AboutLandscapeBackdrop, {
+					surfaceHex: "#FAF6EC",
+					topFadeRgba: "rgba(250, 246, 236, 0.32)",
+					bottomFadeRgba: "rgba(250, 246, 236, 0.62)"
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				"data-testid": "about-archival-dateline",
+				className: "border-b border-[#DCD4C0] bg-[#FAF6EC]/90 backdrop-blur-md sticky top-0 z-20 w-full",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "max-w-[1360px] mx-auto px-3 sm:px-6 lg:px-10 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4 min-w-0",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", {
+						"aria-label": "About Monograph Chapters",
+						className: "akath-swipe-rail flex items-center gap-3.5 sm:gap-6 overflow-x-auto no-scrollbar min-w-0 flex-1",
 						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-about-io-para": "lead-eyebrow",
-								style: { "--io-stagger-index": 0 },
-								className: "akath-about-io-para text-[10.5px] sm:text-[11.5px] font-mono uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#243B8A] font-bold",
-								children: "About Akath Prakashan · संपादकीय भूमिका · Nanded Imprint"
+							{
+								id: "about-manifesto-top",
+								index: "I",
+								labelMr: "संपादकीय भूमिका",
+								labelEn: "About Akath"
+							},
+							{
+								id: "about-why-tortoise",
+								index: "II",
+								labelMr: "कासवाचे प्रतीक का?",
+								labelEn: "Why the Tortoise?"
+							},
+							{
+								id: "about-chapter-06",
+								index: "III",
+								labelMr: "संस्थापक व अधिष्ठान",
+								labelEn: "Founder & Imprint"
+							}
+						].map((item) => {
+							const isCurrent = activeChapterId === item.id;
+							return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+								type: "button",
+								onClick: () => scrollToChapter(item.id),
+								className: `group inline-flex items-baseline gap-1 sm:gap-1.5 text-[11.5px] sm:text-[12px] whitespace-nowrap shrink-0 transition-colors cursor-pointer py-0.5 ${isCurrent ? "text-[#243B8A] font-semibold" : "text-[#57534E] hover:text-[#1C1917]"}`,
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+									className: "font-mono text-[10px] sm:text-[10.5px] text-[#78716C] group-hover:text-[#243B8A]",
+									children: [item.index, "."]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+									className: "font-editorial-prose not-italic",
+									children: lang === "mr" ? item.labelMr : item.labelEn
+								})]
+							}, item.id);
+						})
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] font-mono text-[#57534E] tabular-nums shrink-0",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "hidden md:inline uppercase tracking-[0.16em] text-[#1C1917] font-semibold",
+								children: "Nanded, Maharashtra"
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
-								"data-testid": "about-headline-breathe",
-								className: "akath-about-headline-breathe font-editorial-display not-italic text-[26px] sm:text-[40px] lg:text-[50px] font-extrabold text-[#1C1917] leading-[1.18] tracking-tight",
-								children: "काही पुस्तकं वाचून संपतात. काही आपल्यासोबत राहतात."
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								"aria-hidden": "true",
+								className: "hidden md:inline",
+								children: "·"
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								className: "akath-about-lead-breathe font-editorial-display not-italic font-bold text-[18px] sm:text-[24px] lg:text-[26px] text-[#243B8A] leading-[1.35]",
-								children: "Some books end at the last page. Others stay with us."
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								"data-testid": "about-live-date",
+								children: formattedDate
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								"aria-hidden": "true",
+								className: "hidden xs:inline sm:inline",
+								children: "·"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+								"data-testid": "about-live-time",
+								className: "hidden sm:inline",
+								children: [formattedTime, " IST"]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								"aria-hidden": "true",
+								className: "hidden lg:inline",
+								children: "·"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "hidden lg:inline text-[#174D3A] font-medium",
+								children: literaryWatchLabel
 							})
 						]
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						className: "max-w-[65ch] mx-auto text-center px-1 sm:px-0",
-						"data-testid": "about-prose-measure",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(motion.section, {
-							"data-testid": "about-hero-manifesto",
-							"data-about-io-block": "lead-manifesto",
-							variants: aboutSectionSequentialVariants,
-							initial: "hidden",
-							whileInView: "visible",
-							viewport: {
-								once: true,
-								amount: .04
-							},
-							className: "akath-about-io-block",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(motion.div, {
-								variants: aboutItemSequentialVariants,
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-testid": "about-prose-breathe-block",
-									style: { "--breathe-phase": "0.4s" },
-									className: "akath-about-prose-breathe space-y-4 sm:space-y-5 font-editorial-prose not-italic text-[15.5px] sm:text-[18px] text-[#1C1917] leading-[1.82]",
-									children: [
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											"data-about-io-para": "lead-p1",
-											style: { "--io-stagger-index": 1 },
-											className: "akath-about-io-para font-semibold text-[#1C1917] text-[16.5px] sm:text-[19.5px] leading-[1.7]",
-											children: "Akath Prakashan grew out of a simple feeling: there are books worth bringing into the world, and there should be people willing to take the time to do it properly."
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											"data-about-io-para": "lead-p2",
-											style: { "--io-stagger-index": 2 },
-											className: "akath-about-io-para text-[#292524]",
-											children: "A manuscript is a strange, wonderful thing. Sometimes it arrives as a finished story. Sometimes it is a collection of scattered thoughts, a voice still finding its shape, or an experience that has waited years to be put into words. Before it becomes a book, it needs someone willing to read it carefully, ask the right questions, and understand what the writer is trying to say."
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											"data-about-io-para": "lead-callout",
-											style: { "--io-stagger-index": 3 },
-											className: "akath-about-io-para font-editorial-display not-italic font-bold text-[18px] sm:text-[22px] text-[#243B8A] leading-[1.45] py-1",
-											children: "That is the kind of work we want to do. We don't think literature always needs to be loud to matter."
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											"data-about-io-para": "lead-p3",
-											style: { "--io-stagger-index": 4 },
-											className: "akath-about-io-para text-[#292524]",
-											children: "Based in Nanded, Akath Prakashan is an independent publishing house devoted to Marathi literature and writing across languages. We work with fiction, poetry, essays, criticism, and translations — not because every category needs to be represented, but because good writing can come from anywhere and speak to anyone."
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											"data-about-io-para": "lead-p4",
-											style: { "--io-stagger-index": 5 },
-											className: "akath-about-io-para text-[#292524]",
-											children: "We are interested in writing that notices what others overlook. Stories that make familiar places feel different. Poems that find words for things we have felt but never quite known how to express. Essays that leave us with better questions than the ones we started with."
-										})
-									]
-								})
-							})
-						})
 					})]
-				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.section, {
-					id: "about-why-tortoise",
-					"data-testid": "about-why-tortoise-feature",
-					"data-about-io-block": "folio-04",
-					variants: aboutSectionSequentialVariants,
-					initial: "hidden",
-					whileInView: "visible",
-					viewport: {
-						once: true,
-						amount: .04
-					},
-					className: "akath-seq-step akath-about-io-block scroll-mt-28 max-w-5xl mx-auto w-full min-w-0 rounded-xl bg-[#FAF6EC] text-[#1C1917] border border-[#DCD4C0] p-4 sm:p-8 lg:p-12 space-y-6 sm:space-y-8 overflow-hidden",
-					children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "max-w-2xl mx-auto text-center space-y-2",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								className: "font-mono text-[10.5px] sm:text-[11px] uppercase tracking-[0.16em] sm:tracking-[0.2em] text-[#243B8A] font-bold",
-								children: "Chapter II · Imprint Symbol & Philosophy"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-								className: "akath-about-headline-breathe font-editorial-display not-italic text-[26px] sm:text-[38px] lg:text-[44px] font-extrabold text-[#1C1917] leading-[1.15] tracking-tight",
-								children: "Why the tortoise?"
-							})]
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "rounded-2xl bg-[#FFFDF7] border border-[#DCD4C0] p-5 sm:p-8 space-y-6 min-w-0",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "flex flex-col items-center justify-center text-center space-y-3",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#FAF6EC] border border-[#C89D54]/75 flex items-center justify-center shrink-0",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"aria-hidden": "true",
-										className: "pointer-events-none absolute inset-2 rounded-full border border-dashed border-[#243B8A]/25"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AnimatedTortoiseEmblem, {
-										className: "w-16 h-16 sm:w-20 sm:h-20",
-										variant: "indigo",
-										animate: false,
-										hideAndSeekOnHover: false
-									})]
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "space-y-1 px-2",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "font-editorial-display not-italic text-[17px] sm:text-[20px] font-semibold text-[#243B8A]",
-										children: "The Patient Tortoise · संथ आणि ठाम पावले"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.12em] sm:tracking-[0.16em] text-[#57534E]",
-										children: "One Manuscript · One Book · One Reader at a Time"
-									})]
-								})]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								className: "rounded-xl bg-[#FAF6EC]/85 border border-[#E5DEC9] p-3.5 sm:px-5 sm:py-4 min-w-0",
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.08em] sm:tracking-[0.14em] text-[#243B8A]",
-									children: [
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-											className: "px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate",
-											children: "01 · MANUSCRIPT"
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-											className: "px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate",
-											children: "02 · EDITING"
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-											className: "px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate",
-											children: "03 · PRESSWORK"
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-											className: "px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate",
-											children: "04 · READER"
-										})
-									]
-								})
-							})]
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-testid": "about-prose-breathe-block",
-							className: "akath-about-prose-breathe space-y-3.5 sm:space-y-4 font-editorial-prose not-italic text-[15.5px] sm:text-[17.5px] text-[#292524] leading-[1.78] max-w-[65ch] mx-auto text-center px-1 sm:px-0",
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("article", {
+				ref: aboutArticleRef,
+				"data-testid": "about-editorial-essay",
+				"aria-label": "About Akath Prakashan",
+				className: "relative z-10 max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-14 lg:py-20 space-y-12 sm:space-y-20 min-w-0",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						id: "about-manifesto-top",
+						className: "scroll-mt-28 space-y-6 sm:space-y-10 min-w-0",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "border-b border-[#DCD4C0]/80 pb-6 sm:pb-8 lg:pb-10 space-y-3 sm:space-y-4 max-w-4xl mx-auto text-center",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-about-io-para": "folio-04-p1",
+									"data-about-io-para": "lead-eyebrow",
 									style: { "--io-stagger-index": 0 },
-									className: "akath-about-io-para font-semibold text-[#1C1917]",
-									children: "We chose a tortoise for a reason. It isn't in a hurry. It carries its home with it. And it reminds us that getting somewhere slowly is still getting somewhere."
+									className: "akath-about-io-para text-[10.5px] sm:text-[11.5px] font-mono uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#243B8A] font-bold",
+									children: "About Akath Prakashan · संपादकीय भूमिका · Nanded Imprint"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
+									"data-testid": "about-headline-breathe",
+									className: "akath-about-headline-breathe font-editorial-display not-italic text-[26px] sm:text-[40px] lg:text-[50px] font-extrabold text-[#1C1917] leading-[1.18] tracking-tight",
+									children: "काही पुस्तकं वाचून संपतात. काही मनात घर करतात."
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-about-io-para": "folio-04-p2",
-									style: { "--io-stagger-index": 1 },
-									className: "akath-about-io-para",
-									children: "Publishing has its own pressures to move faster, publish more, and follow what is already selling. We understand those realities. But we also believe there is value in pausing over a sentence, taking another look at a manuscript, and making a book we can stand behind years later."
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-about-io-para": "folio-04-p3",
-									style: { "--io-stagger-index": 2 },
-									className: "akath-about-io-para",
-									children: "We would rather build a small list of books we believe in than fill a catalogue simply to make it bigger."
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-about-io-para": "folio-04-p4",
-									style: { "--io-stagger-index": 3 },
-									className: "akath-about-io-para font-bold text-[#243B8A] pt-1",
-									children: "Akath Prakashan is our attempt to do just that — one manuscript, one book, one reader at a time."
+									className: "akath-about-lead-breathe font-editorial-display italic font-bold text-[18px] sm:text-[24px] lg:text-[26px] text-[#243B8A] leading-[1.35]",
+									children: "Some books end at the last page. Others stay with us."
 								})
 							]
-						})
-					]
-				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.section, {
-					id: "about-chapter-06",
-					"data-testid": "about-editorial-colophon-desk",
-					"data-about-io-block": "colophon-desk",
-					variants: aboutSectionSequentialVariants,
-					initial: "hidden",
-					whileInView: "visible",
-					viewport: {
-						once: true,
-						amount: .04
-					},
-					style: { "--io-block-delay": "60ms" },
-					className: "akath-seq-step akath-about-io-block scroll-mt-28 max-w-5xl mx-auto w-full min-w-0 rounded-xl bg-white border border-[#DCD4C0] overflow-hidden shadow-[0_14px_36px_-22px_rgba(28,25,23,0.12)]",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "bg-[#243B8A] text-[#FFFDF7] px-5 sm:px-8 lg:px-10 py-3.5 flex flex-wrap items-center justify-between gap-2 text-[10.5px] sm:text-[11px] font-mono",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							className: "uppercase tracking-[0.16em] text-[#FFD966] font-bold",
-							children: "Chapter III · Founder & Editorial Leadership"
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							className: "uppercase tracking-[0.14em] text-[#FFFDF7]/85",
-							children: "AKATH PRAKASHAN · NANDED"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "max-w-[65ch] mx-auto text-center px-1 sm:px-0",
+							"data-testid": "about-prose-measure",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(motion.section, {
+								"data-testid": "about-hero-manifesto",
+								"data-about-io-block": "lead-manifesto",
+								variants: aboutSectionSequentialVariants,
+								initial: "hidden",
+								whileInView: "visible",
+								viewport: {
+									once: true,
+									amount: .04
+								},
+								className: "akath-about-io-block",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(motion.div, {
+									variants: aboutItemSequentialVariants,
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-testid": "about-prose-breathe-block",
+										style: { "--breathe-phase": "0.4s" },
+										className: "akath-about-prose-breathe space-y-4 sm:space-y-5 font-editorial-prose not-italic text-[15.5px] sm:text-[18px] text-[#1C1917] leading-[1.82]",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+												"data-about-io-para": "lead-p1",
+												style: { "--io-stagger-index": 1 },
+												className: "akath-about-io-para font-semibold text-[#1C1917] text-[16.5px] sm:text-[19.5px] leading-[1.7]",
+												children: "A book often begins with something small — an idea that refuses to go away, a memory waiting to be written, a question without an easy answer, or a story someone has carried for years."
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+												"data-about-io-para": "lead-p2",
+												style: { "--io-stagger-index": 2 },
+												className: "akath-about-io-para text-[#292524]",
+												children: "At Akath Prakashan, we believe such stories deserve the chance to become books."
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+												"data-about-io-para": "lead-p3",
+												style: { "--io-stagger-index": 3 },
+												className: "akath-about-io-para text-[#292524]",
+												children: "Based in Nanded, Maharashtra, Akath Prakashan is an independent publishing house devoted to Marathi literature and thoughtful writing across languages. We work with fiction, poetry, essays, travel writing, criticism and translations."
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+												"data-about-io-para": "lead-p4",
+												style: { "--io-stagger-index": 4 },
+												className: "akath-about-io-para text-[#292524]",
+												children: "For us, publishing is not simply about taking a manuscript to print. It is about understanding the writer's voice, recognising what a story wants to become, and giving it the editorial attention and craftsmanship it deserves."
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+												"data-about-io-para": "lead-p5",
+												style: { "--io-stagger-index": 5 },
+												className: "akath-about-io-para text-[#292524]",
+												children: "We are drawn to writing that notices the ordinary in extraordinary ways. To stories rooted in familiar places, poems that give shape to unspoken feelings, and ideas that stay with us long after the reading is done."
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+												"data-about-io-para": "lead-p6",
+												style: { "--io-stagger-index": 6 },
+												className: "akath-about-io-para text-[#292524]",
+												children: "We don't publish simply to add another title to a shelf. We publish because we believe a manuscript has something worth saying."
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+												"data-about-io-para": "lead-callout",
+												style: { "--io-stagger-index": 7 },
+												className: "akath-about-io-para font-editorial-display not-italic font-bold text-[18px] sm:text-[22px] text-[#243B8A] leading-[1.45] py-1",
+												children: "Good books don't always demand attention. Sometimes, they earn a place in our lives quietly."
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+												"data-about-io-para": "lead-p7",
+												style: { "--io-stagger-index": 8 },
+												className: "akath-about-io-para text-[#292524]",
+												children: "That is the kind of publishing we hope to practise at Akath."
+											})
+										]
+									})
+								})
+							})
 						})]
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.div, {
-						variants: aboutItemSequentialVariants,
-						className: "p-5 sm:p-8 lg:p-10 space-y-8 min-w-0",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							style: { "--breathe-phase": "4.3s" },
-							className: "akath-about-prose-breathe grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 items-stretch",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-about-io-para": "colophon-founder",
-								style: { "--io-stagger-index": 0 },
-								className: "akath-about-io-para lg:col-span-7 rounded-xl bg-[#FAF6EC] border border-[#DCD4C0] p-5 sm:p-7 flex flex-col justify-between space-y-5 min-w-0",
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.section, {
+						id: "about-why-tortoise",
+						"data-testid": "about-why-tortoise-feature",
+						"data-about-io-block": "folio-04",
+						variants: aboutSectionSequentialVariants,
+						initial: "hidden",
+						whileInView: "visible",
+						viewport: {
+							once: true,
+							amount: .04
+						},
+						className: "akath-seq-step akath-about-io-block scroll-mt-28 max-w-5xl mx-auto w-full min-w-0 rounded-xl bg-[#FAF6EC]/72 backdrop-blur-sm text-[#1C1917] border border-[#DCD4C0]/80 p-4 sm:p-8 lg:p-12 space-y-6 sm:space-y-8 overflow-hidden",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "max-w-2xl mx-auto text-center space-y-2",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									className: "font-mono text-[10.5px] sm:text-[11px] uppercase tracking-[0.16em] sm:tracking-[0.2em] text-[#243B8A] font-bold",
+									children: "Chapter II · Imprint Symbol & Philosophy"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+									className: "akath-about-headline-breathe font-editorial-display not-italic text-[26px] sm:text-[38px] lg:text-[44px] font-extrabold text-[#1C1917] leading-[1.15] tracking-tight",
+									children: "Why the Tortoise?"
+								})]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "rounded-2xl bg-[#FFFDF7]/78 backdrop-blur-xs border border-[#DCD4C0]/80 p-5 sm:p-8 space-y-6 min-w-0",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "space-y-4",
-									children: [
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "flex items-start sm:items-center gap-4",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-												className: "w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#243B8A] text-[#FFD966] border-2 border-[#C89D54] flex flex-col items-center justify-center shrink-0 shadow-xs",
-												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-													className: "font-serif text-[20px] sm:text-[22px] font-bold leading-none",
-													children: "अकथ"
-												})
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-												className: "space-y-1 min-w-0",
-												children: [
-													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-														className: "inline-block text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.16em] text-[#243B8A] font-bold",
-														children: "Founder & Publisher · संस्थापक आणि प्रकाशक"
-													}),
-													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-														"data-testid": "about-founder-name",
-														className: "akath-about-headline-breathe font-editorial-display not-italic text-[24px] sm:text-[32px] lg:text-[36px] font-extrabold text-[#1C1917] leading-[1.15] tracking-tight",
-														children: "Pooja Vasantrao Dhawale"
-													}),
-													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-														className: "font-editorial-display not-italic text-[19px] sm:text-[22px] text-[#174D3A] font-bold",
-														children: "पूजा वसंतराव ढवळे"
-													})
-												]
-											})]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("blockquote", {
-											className: "rounded-lg bg-[#FFFDF7] border-l-4 border-[#243B8A] p-3.5 sm:p-4 font-editorial-prose not-italic text-[14.5px] sm:text-[15.5px] text-[#1C1917] font-medium leading-[1.7]",
-											children: "“Every manuscript deserves patient reading, thoughtful editorial dialogue, and enduring print craftsmanship before it reaches a reader’s hands.”"
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											className: "text-[15px] sm:text-[16px] font-editorial-prose not-italic text-[#292524] leading-[1.78]",
-											children: "Guiding editorial direction, manuscript selection, and imprint stewardship at Akath Prakashan with a commitment to meaningful Marathi literature and lasting author partnerships."
-										})
-									]
+									className: "flex flex-col items-center justify-center text-center space-y-3",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										className: "relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#FAF6EC] border border-[#C89D54]/75 flex items-center justify-center shrink-0",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+											"aria-hidden": "true",
+											className: "pointer-events-none absolute inset-2 rounded-full border border-dashed border-[#243B8A]/25"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AnimatedTortoiseEmblem, {
+											className: "w-16 h-16 sm:w-20 sm:h-20",
+											variant: "indigo",
+											animate: false,
+											hideAndSeekOnHover: false
+										})]
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										className: "space-y-1 px-2",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "font-editorial-display not-italic text-[17px] sm:text-[20px] font-semibold text-[#243B8A]",
+											children: "The Patient Tortoise · संथ आणि ठाम पावले"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.12em] sm:tracking-[0.16em] text-[#57534E]",
+											children: "One Manuscript · One Book · One Reader at a Time"
+										})]
+									})]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									className: "rounded-xl bg-[#FAF6EC]/85 border border-[#E5DEC9] p-3.5 sm:px-5 sm:py-4 min-w-0",
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										className: "grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.08em] sm:tracking-[0.14em] text-[#243B8A]",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												className: "px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate",
+												children: "01 · MANUSCRIPT"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												className: "px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate",
+												children: "02 · EDITING"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												className: "px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate",
+												children: "03 · PRESSWORK"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												className: "px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate",
+												children: "04 · READER"
+											})
+										]
+									})
+								})]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								"data-testid": "about-prose-breathe-block",
+								className: "akath-about-prose-breathe space-y-3.5 sm:space-y-4 font-editorial-prose not-italic text-[15.5px] sm:text-[17.5px] text-[#292524] leading-[1.78] max-w-[65ch] mx-auto text-center px-1 sm:px-0",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-about-io-para": "folio-04-p1",
+										style: { "--io-stagger-index": 0 },
+										className: "akath-about-io-para font-semibold text-[#1C1917]",
+										children: "A tortoise has never been in a hurry to get somewhere."
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-about-io-para": "folio-04-p2",
+										style: { "--io-stagger-index": 1 },
+										className: "akath-about-io-para",
+										children: "It carries its home wherever it goes, moves at its own pace, and takes each step as it comes. There is something reassuring about that."
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-about-io-para": "folio-04-p3",
+										style: { "--io-stagger-index": 2 },
+										className: "akath-about-io-para",
+										children: "We chose the tortoise as the symbol of Akath because it reflects something we believe in — that good work takes time, that every journey has its own pace, and that what lasts is often worth waiting for."
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-about-io-para": "folio-04-p4",
+										style: { "--io-stagger-index": 3 },
+										className: "akath-about-io-para",
+										children: "Publishing has its own pressures. There is always another deadline, another trend, another reason to move faster. But a manuscript cannot always be hurried into becoming a book."
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-about-io-para": "folio-04-p5",
+										style: { "--io-stagger-index": 4 },
+										className: "akath-about-io-para",
+										children: "Some need another reading. Some need an honest conversation between the editor and the writer. Some need time to find the words they were always trying to say."
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-about-io-para": "folio-04-p6",
+										style: { "--io-stagger-index": 5 },
+										className: "akath-about-io-para",
+										children: "We would rather publish fewer books with care than more books without conviction."
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-about-io-para": "folio-04-p7",
+										style: { "--io-stagger-index": 6 },
+										className: "akath-about-io-para",
+										children: "The tortoise reminds us of that responsibility — towards the writer, the words and the reader."
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-about-io-para": "folio-04-p8",
+										style: { "--io-stagger-index": 7 },
+										className: "akath-about-io-para font-bold text-[#243B8A] text-[17px] sm:text-[20px] pt-1",
+										children: "One manuscript. One book. One reader at a time."
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-about-io-para": "folio-04-p9",
+										style: { "--io-stagger-index": 8 },
+										className: "akath-about-io-para text-[#57534E] font-medium",
+										children: "Not a race to publish, but a commitment to publish well."
+									})
+								]
+							})
+						]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.section, {
+						"data-testid": "about-manuscript-invitation",
+						"data-about-io-block": "manuscript-invite",
+						variants: aboutSectionSequentialVariants,
+						initial: "hidden",
+						whileInView: "visible",
+						viewport: {
+							once: true,
+							amount: .04
+						},
+						className: "akath-seq-step akath-about-io-block max-w-4xl mx-auto w-full min-w-0 rounded-2xl bg-[#FFFDF7]/78 backdrop-blur-sm border border-[#DCD4C0]/80 p-6 sm:p-10 lg:p-12 text-center space-y-5 shadow-[0_12px_34px_-22px_rgba(36,59,138,0.16)]",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "space-y-2 max-w-2xl mx-auto",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									className: "font-mono text-[10.5px] sm:text-[11px] uppercase tracking-[0.18em] text-[#174D3A] font-bold",
+									children: "For Writers & Contributors"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+									className: "font-editorial-display not-italic text-[24px] sm:text-[34px] lg:text-[38px] font-extrabold text-[#1C1917] leading-[1.2] tracking-tight",
+									children: "Perhaps Your Manuscript Belongs Here."
+								})]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "max-w-[62ch] mx-auto space-y-4 font-editorial-prose not-italic text-[15.5px] sm:text-[17.5px] text-[#292524] leading-[1.78]",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Every book begins somewhere. Sometimes with a single sentence, sometimes with years of thought, and sometimes with a story that has been waiting to be told." }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "We know that not every manuscript arrives finished. Some are still finding their voice. Others simply need the right editorial conversation." }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "If you have written something you believe in, we would be glad to hear from you." }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "We welcome thoughtful manuscripts, new voices and stories that deserve to find their readers." }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										className: "font-editorial-display not-italic font-bold text-[18px] sm:text-[21px] text-[#243B8A] pt-1",
+										children: "Write to us. Tell us about your work. Let's begin with a conversation."
+									})
+								]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "pt-4 border-t border-[#E6DFCE] max-w-xl mx-auto space-y-3",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									className: "text-xs font-mono uppercase tracking-[0.14em] text-[#57534E]",
+									children: "Editorial correspondence and manuscript submissions:"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "pt-3.5 border-t border-[#DCD4C0] flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#57534E]",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "EDITORIAL STEWARDSHIP" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										className: "text-[#243B8A] font-semibold",
-										children: "NANDED, MAHARASHTRA"
+									className: "flex flex-wrap items-center justify-center gap-3",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+										href: "mailto:akathpublication@gmail.com",
+										className: "inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FAF6EC] hover:bg-[#FFD966]/35 border border-[#DCD4C0] text-sm font-mono font-semibold text-[#243B8A] transition-colors",
+										children: "akathpublication@gmail.com"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+										type: "button",
+										onClick: () => onNavigate("/submit-manuscript"),
+										className: "inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-sm font-medium transition-colors cursor-pointer",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Submit Manuscript Online" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: "w-4 h-4" })]
+									})]
+								})]
+							})
+						]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.section, {
+						id: "about-chapter-06",
+						"data-testid": "about-editorial-colophon-desk",
+						"data-about-io-block": "colophon-desk",
+						variants: aboutSectionSequentialVariants,
+						initial: "hidden",
+						whileInView: "visible",
+						viewport: {
+							once: true,
+							amount: .04
+						},
+						style: { "--io-block-delay": "60ms" },
+						className: "akath-seq-step akath-about-io-block scroll-mt-28 max-w-5xl mx-auto w-full min-w-0 rounded-xl bg-[#FFFDF7]/82 backdrop-blur-sm border border-[#DCD4C0]/85 overflow-hidden shadow-[0_14px_36px_-22px_rgba(28,25,23,0.12)]",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "bg-[#243B8A] text-[#FFFDF7] px-5 sm:px-8 lg:px-10 py-3.5 flex flex-wrap items-center justify-between gap-2 text-[10.5px] sm:text-[11px] font-mono",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "uppercase tracking-[0.16em] text-[#FFD966] font-bold",
+								children: "Chapter III · Founder & Editorial Leadership"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "uppercase tracking-[0.14em] text-[#FFFDF7]/85",
+								children: "AKATH PRAKASHAN · NANDED"
+							})]
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(motion.div, {
+							variants: aboutItemSequentialVariants,
+							className: "p-5 sm:p-8 lg:p-10 space-y-8 min-w-0",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								style: { "--breathe-phase": "4.3s" },
+								className: "akath-about-prose-breathe grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 items-stretch",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									"data-about-io-para": "colophon-founder",
+									style: { "--io-stagger-index": 0 },
+									className: "akath-about-io-para lg:col-span-7 rounded-xl bg-[#FAF6EC] border border-[#DCD4C0] p-5 sm:p-7 flex flex-col justify-between space-y-5 min-w-0",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										className: "space-y-4",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												className: "flex items-start sm:items-center gap-4",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+													className: "w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#243B8A] text-[#FFD966] border-2 border-[#C89D54] flex flex-col items-center justify-center shrink-0 shadow-xs",
+													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+														className: "font-serif text-[20px] sm:text-[22px] font-bold leading-none",
+														children: "अकथ"
+													})
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+													className: "space-y-1 min-w-0",
+													children: [
+														/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+															className: "inline-block text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.16em] text-[#243B8A] font-bold",
+															children: "Founder & Publisher · संस्थापक आणि प्रकाशक"
+														}),
+														/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+															"data-testid": "about-founder-name",
+															className: "akath-about-headline-breathe font-editorial-display not-italic text-[24px] sm:text-[32px] lg:text-[36px] font-extrabold text-[#1C1917] leading-[1.15] tracking-tight",
+															children: "Pooja Vasantrao Dhawale"
+														}),
+														/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+															className: "font-editorial-display not-italic text-[19px] sm:text-[22px] text-[#174D3A] font-bold",
+															children: "पूजा वसंतराव ढवळे"
+														})
+													]
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("blockquote", {
+												className: "rounded-lg bg-[#FFFDF7] border-l-4 border-[#243B8A] p-3.5 sm:p-4 font-editorial-prose not-italic text-[14.5px] sm:text-[15.5px] text-[#1C1917] font-medium leading-[1.7]",
+												children: "“Every manuscript deserves patient reading, thoughtful editorial dialogue, and enduring print craftsmanship before it reaches a reader’s hands.”"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+												className: "text-[15px] sm:text-[16px] font-editorial-prose not-italic text-[#292524] leading-[1.78]",
+												children: "Guiding editorial direction, manuscript selection, and imprint stewardship at Akath Prakashan with a commitment to meaningful Marathi literature and lasting author partnerships."
+											})
+										]
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										className: "pt-3.5 border-t border-[#DCD4C0] flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#57534E]",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "EDITORIAL STEWARDSHIP" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											className: "text-[#243B8A] font-semibold",
+											children: "NANDED, MAHARASHTRA"
+										})]
+									})]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									"data-about-io-para": "colophon-header",
+									style: { "--io-stagger-index": 1 },
+									className: "akath-about-io-para lg:col-span-5 rounded-xl bg-[#FFFDF7] border border-[#DCD4C0] p-5 sm:p-7 flex flex-col justify-between min-w-0",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										className: "pb-3 border-b border-[#DCD4C0]",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#243B8A] font-bold",
+											children: "Imprint Directory · प्रकाशन तपशील"
+										})
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("dl", {
+										className: "divide-y divide-[#E6DFCE] text-[14px] sm:text-[14.5px] my-auto",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												className: "py-3.5 flex flex-col gap-0.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", {
+													className: "text-[10.5px] font-mono uppercase tracking-[0.15em] text-[#57534E] font-semibold",
+													children: "Imprint Name"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("dd", {
+													className: "font-editorial-display not-italic text-[17px] font-bold text-[#1C1917]",
+													children: "Akath Prakashan · अकथ प्रकाशन"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												className: "py-3.5 flex flex-col gap-0.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", {
+													className: "text-[10.5px] font-mono uppercase tracking-[0.15em] text-[#57534E] font-semibold",
+													children: "Headquarters"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("dd", {
+													className: "font-editorial-prose not-italic font-semibold text-[#1C1917]",
+													children: "Nanded, Maharashtra · नांदेड (४३१६०२)"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												className: "py-3.5 flex flex-col gap-0.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", {
+													className: "text-[10.5px] font-mono uppercase tracking-[0.15em] text-[#57534E] font-semibold",
+													children: "Editorial Scope"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("dd", {
+													className: "font-editorial-prose not-italic font-medium text-[#1C1917]",
+													children: "Fiction, Poetry, Essays, Travelogues & Vachankatta"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												className: "pt-3.5 flex flex-col gap-0.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", {
+													className: "text-[10.5px] font-mono uppercase tracking-[0.15em] text-[#57534E] font-semibold",
+													children: "Editorial Correspondence"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("dd", {
+													className: "font-mono text-[12.5px] text-[#243B8A] font-medium break-all",
+													children: [
+														PUBLISHER_IDENTITY.email,
+														" · ",
+														PUBLISHER_IDENTITY.phoneDisplay
+													]
+												})]
+											})
+										]
 									})]
 								})]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-about-io-para": "colophon-header",
-								style: { "--io-stagger-index": 1 },
-								className: "akath-about-io-para lg:col-span-5 rounded-xl bg-[#FFFDF7] border border-[#DCD4C0] p-5 sm:p-7 flex flex-col justify-between min-w-0",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									className: "pb-3 border-b border-[#DCD4C0]",
-									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#243B8A] font-bold",
-										children: "Imprint Directory · प्रकाशन तपशील"
+								className: "grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4 pt-4 border-t border-[#E6DFCE]",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+										type: "button",
+										onClick: () => onNavigate("/books"),
+										className: "group rounded-lg bg-[#FAF6EC] border border-[#DCD4C0] hover:border-[#243B8A] p-4 sm:p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#243B8A] font-bold",
+											children: "01 · Catalogue"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "mt-1 font-editorial-display not-italic text-[17px] sm:text-[18px] font-bold text-[#1C1917] group-hover:text-[#243B8A]",
+											children: lang === "mr" ? "प्रकाशित पुस्तके पहा" : "Explore Published Books"
+										})] }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: "w-4 h-4 text-[#57534E] group-hover:text-[#243B8A] shrink-0" })]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+										type: "button",
+										onClick: () => onNavigate("/vachankatta"),
+										className: "group rounded-lg bg-[#FAF6EC] border border-[#DCD4C0] hover:border-[#243B8A] p-4 sm:p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#174D3A] font-bold",
+											children: "02 · Literary Journal"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "mt-1 font-editorial-display not-italic text-[17px] sm:text-[18px] font-bold text-[#1C1917] group-hover:text-[#174D3A]",
+											children: lang === "mr" ? "वाचनकट्टा आणि साहित्य" : "Read Vachankatta Journal"
+										})] }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: "w-4 h-4 text-[#57534E] group-hover:text-[#174D3A] shrink-0" })]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+										type: "button",
+										onClick: () => onNavigate("/submit-manuscript"),
+										className: "group rounded-lg bg-[#FAF6EC] border border-[#DCD4C0] hover:border-[#243B8A] p-4 sm:p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#243B8A] font-bold",
+											children: "03 · For Authors"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "mt-1 font-editorial-display not-italic text-[17px] sm:text-[18px] font-bold text-[#1C1917] group-hover:text-[#243B8A]",
+											children: lang === "mr" ? "प्रकाशनार्थ संहिता पाठवा" : "Submit Your Manuscript"
+										})] }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: "w-4 h-4 text-[#57534E] group-hover:text-[#243B8A] shrink-0" })]
 									})
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("dl", {
-									className: "divide-y divide-[#E6DFCE] text-[14px] sm:text-[14.5px] my-auto",
-									children: [
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "py-3.5 flex flex-col gap-0.5",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", {
-												className: "text-[10.5px] font-mono uppercase tracking-[0.15em] text-[#57534E] font-semibold",
-												children: "Imprint Name"
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("dd", {
-												className: "font-editorial-display not-italic text-[17px] font-bold text-[#1C1917]",
-												children: "Akath Prakashan · अकथ प्रकाशन"
-											})]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "py-3.5 flex flex-col gap-0.5",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", {
-												className: "text-[10.5px] font-mono uppercase tracking-[0.15em] text-[#57534E] font-semibold",
-												children: "Headquarters"
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("dd", {
-												className: "font-editorial-prose not-italic font-semibold text-[#1C1917]",
-												children: "Nanded, Maharashtra · नांदेड (४३१६०२)"
-											})]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "py-3.5 flex flex-col gap-0.5",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", {
-												className: "text-[10.5px] font-mono uppercase tracking-[0.15em] text-[#57534E] font-semibold",
-												children: "Editorial Scope"
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("dd", {
-												className: "font-editorial-prose not-italic font-medium text-[#1C1917]",
-												children: "Fiction, Poetry, Essays, Travelogues & Vachankatta"
-											})]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "pt-3.5 flex flex-col gap-0.5",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", {
-												className: "text-[10.5px] font-mono uppercase tracking-[0.15em] text-[#57534E] font-semibold",
-												children: "Editorial Correspondence"
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("dd", {
-												className: "font-mono text-[12.5px] text-[#243B8A] font-medium break-all",
-												children: [
-													PUBLISHER_IDENTITY.email,
-													" · ",
-													PUBLISHER_IDENTITY.phoneDisplay
-												]
-											})]
-										})
-									]
-								})]
+								]
 							})]
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4 pt-4 border-t border-[#E6DFCE]",
-							children: [
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
-									type: "button",
-									onClick: () => onNavigate("/books"),
-									className: "group rounded-lg bg-[#FAF6EC] border border-[#DCD4C0] hover:border-[#243B8A] p-4 sm:p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#243B8A] font-bold",
-										children: "01 · Catalogue"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "mt-1 font-editorial-display not-italic text-[17px] sm:text-[18px] font-bold text-[#1C1917] group-hover:text-[#243B8A]",
-										children: lang === "mr" ? "प्रकाशित पुस्तके पहा" : "Explore Published Books"
-									})] }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: "w-4 h-4 text-[#57534E] group-hover:text-[#243B8A] shrink-0" })]
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
-									type: "button",
-									onClick: () => onNavigate("/vachankatta"),
-									className: "group rounded-lg bg-[#FAF6EC] border border-[#DCD4C0] hover:border-[#243B8A] p-4 sm:p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#174D3A] font-bold",
-										children: "02 · Literary Journal"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "mt-1 font-editorial-display not-italic text-[17px] sm:text-[18px] font-bold text-[#1C1917] group-hover:text-[#174D3A]",
-										children: lang === "mr" ? "वाचनकट्टा आणि साहित्य" : "Read Vachankatta Journal"
-									})] }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: "w-4 h-4 text-[#57534E] group-hover:text-[#174D3A] shrink-0" })]
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
-									type: "button",
-									onClick: () => onNavigate("/submit-manuscript"),
-									className: "group rounded-lg bg-[#FAF6EC] border border-[#DCD4C0] hover:border-[#243B8A] p-4 sm:p-5 text-left transition-colors cursor-pointer flex items-center justify-between gap-4",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#243B8A] font-bold",
-										children: "03 · For Authors"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "mt-1 font-editorial-display not-italic text-[17px] sm:text-[18px] font-bold text-[#1C1917] group-hover:text-[#243B8A]",
-										children: lang === "mr" ? "प्रकाशनार्थ संहिता पाठवा" : "Submit Your Manuscript"
-									})] }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, { className: "w-4 h-4 text-[#57534E] group-hover:text-[#243B8A] shrink-0" })]
-								})
-							]
 						})]
-					})]
-				})
-			]
-		})]
+					})
+				]
+			})
+		]
 	});
 };
 var SubmitManuscriptView = ({ onSubmitManuscript }) => {

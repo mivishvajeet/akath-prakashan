@@ -5864,16 +5864,21 @@ async function startServer() {
   app.use('/assets', express.static(publicAssetsPath));
 
   // Normalize nested-route requests for Vite modules and static assets (e.g. /books/src/main.tsx -> /src/main.tsx)
+  // Guard: never slice requests that already start at a valid root prefix (such as /src/assets/images/...)
+  const rootAssetPrefixes = [
+    '/src/',
+    '/assets/',
+    '/node_modules/',
+    '/@vite/',
+    '/@react-refresh',
+    '/@fs/',
+    '/@id/',
+  ];
   app.use((req, _res, next) => {
-    for (const prefix of [
-      '/src/',
-      '/assets/',
-      '/node_modules/',
-      '/@vite/',
-      '/@react-refresh',
-      '/@fs/',
-      '/@id/',
-    ]) {
+    if (rootAssetPrefixes.some((prefix) => req.path.startsWith(prefix))) {
+      return next();
+    }
+    for (const prefix of rootAssetPrefixes) {
       const idx = req.path.indexOf(prefix);
       if (idx > 0) {
         req.url = req.url.slice(idx);
@@ -5897,6 +5902,9 @@ async function startServer() {
     const assetsPath = path.join(distPath, 'assets');
     app.use('/assets', express.static(assetsPath));
     app.use((req, res, next) => {
+      if (req.path.startsWith('/assets/')) {
+        return next();
+      }
       const assetsIdx = req.path.indexOf('/assets/');
       if (assetsIdx > 0) {
         req.url = req.url.slice(assetsIdx);

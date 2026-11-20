@@ -2510,6 +2510,20 @@
     will-change: auto;
   }
 
+  .akath-landscape-mist-slow,
+  .akath-landscape-mist-deep,
+  .akath-river-shimmer-a,
+  .akath-river-shimmer-b,
+  .akath-diya-glint,
+  .akath-parallax-far,
+  .akath-parallax-mid,
+  .akath-parallax-near {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    will-change: auto;
+  }
+
   .storybook-tortoise-eyelid,
   .storybook-floating-leaf-a,
   .storybook-floating-leaf-b,
@@ -2536,6 +2550,88 @@
 }
 
 /* =========================================================================
+   Archival Sahyadri & Godavari Landscape Illustrations — Whisper-Quiet Motion
+   - Ultra-slow horizontal mist drift, gentle river shimmer & rAF parallax
+   - Automatically paused when off-screen and disabled for reduced motion
+   ========================================================================= */
+@keyframes akath-landscape-mist-drift-a {
+  0% {
+    transform: translate3d(-16px, 0, 0);
+  }
+  100% {
+    transform: translate3d(18px, 0, 0);
+  }
+}
+
+@keyframes akath-landscape-mist-drift-b {
+  0% {
+    transform: translate3d(14px, 0, 0);
+  }
+  100% {
+    transform: translate3d(-14px, 0, 0);
+  }
+}
+
+@keyframes akath-river-shimmer-pulse {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: translate3d(-3px, 0, 0);
+  }
+  50% {
+    opacity: 0.84;
+    transform: translate3d(4px, 0, 0);
+  }
+}
+
+@keyframes akath-diya-glint-breathe {
+  0%,
+  100% {
+    opacity: 0.48;
+  }
+  50% {
+    opacity: 0.86;
+  }
+}
+
+.akath-landscape-mist-slow {
+  animation: akath-landscape-mist-drift-a 38s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.akath-landscape-mist-deep {
+  animation: akath-landscape-mist-drift-b 46s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.akath-river-shimmer-a {
+  animation: akath-river-shimmer-pulse 11s ease-in-out infinite;
+}
+
+.akath-river-shimmer-b {
+  animation: akath-river-shimmer-pulse 14s ease-in-out 2.5s infinite;
+}
+
+.akath-diya-glint {
+  animation: akath-diya-glint-breathe 7.5s ease-in-out infinite;
+}
+
+.akath-parallax-far {
+  transform: translate3d(0, var(--akath-px-far, 0px), 0);
+  will-change: transform;
+}
+
+.akath-parallax-mid {
+  transform: translate3d(0, var(--akath-px-mid, 0px), 0);
+  will-change: transform;
+}
+
+.akath-parallax-near {
+  transform: translate3d(0, var(--akath-px-near, 0px), 0);
+  will-change: transform;
+}
+
+/* =========================================================================
    Performance Engineering: Off-Screen Animation Pausing & Paint Containment
    ========================================================================= */
 .akath-footer-offscreen .akath-footer-star,
@@ -2544,9 +2640,15 @@
 .akath-footer-offscreen .akath-footer-mote-a,
 .akath-footer-offscreen .akath-footer-mote-b,
 .akath-footer-offscreen .akath-footer-mote-c,
-.akath-footer-offscreen .akath-wordmark-shirorekha-beam {
+.akath-footer-offscreen .akath-wordmark-shirorekha-beam,
+.akath-landscape-offscreen .akath-landscape-mist-slow,
+.akath-landscape-offscreen .akath-landscape-mist-deep,
+.akath-landscape-offscreen .akath-river-shimmer-a,
+.akath-landscape-offscreen .akath-river-shimmer-b,
+.akath-landscape-offscreen .akath-diya-glint {
   animation-play-state: paused !important;
 }
+
 
 
 
