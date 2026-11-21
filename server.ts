@@ -112,7 +112,8 @@ function resolveServerPort(): number {
     if (Number.isFinite(cliPort) && cliPort > 0) return cliPort;
   }
   const envPort = Number(process.env.PORT);
-  const nginxPort = Number(process.env.NGINX_PORT) || 8080;
+  const rawNginxPort = process.env.NGINX_PORT ? Number(process.env.NGINX_PORT) : NaN;
+  const nginxPort = Number.isFinite(rawNginxPort) && rawNginxPort > 0 ? rawNginxPort : null;
   if (Number.isFinite(envPort) && envPort > 0 && envPort !== nginxPort) {
     return envPort;
   }
