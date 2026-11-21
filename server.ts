@@ -105,7 +105,20 @@ import {
 
 const app = express();
 app.disable('x-powered-by');
-const PORT = Number(process.env.PORT) || 3000;
+function resolveServerPort(): number {
+  const portFlagIdx = process.argv.findIndex((arg) => arg === '--port' || arg === '-p');
+  if (portFlagIdx !== -1 && process.argv[portFlagIdx + 1]) {
+    const cliPort = Number(process.argv[portFlagIdx + 1]);
+    if (Number.isFinite(cliPort) && cliPort > 0) return cliPort;
+  }
+  const envPort = Number(process.env.PORT);
+  const nginxPort = Number(process.env.NGINX_PORT) || 8080;
+  if (Number.isFinite(envPort) && envPort > 0 && envPort !== nginxPort) {
+    return envPort;
+  }
+  return Number(process.env.DEFAULT_APP_PORT) || 3000;
+}
+const PORT = resolveServerPort();
 const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'akath_sid';
 const SESSION_TTL_MS =
   Math.max(1, Number(process.env.SESSION_TTL_HOURS) || 24) * 60 * 60 * 1000;
@@ -5892,8 +5905,13 @@ async function startServer() {
   });
 
   if (process.env.NODE_ENV !== 'production') {
+    const hmrDisabled = process.env.DISABLE_HMR === 'true';
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: hmrDisabled ? false : undefined,
+        watch: hmrDisabled ? null : undefined,
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);

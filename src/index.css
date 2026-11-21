@@ -2514,10 +2514,78 @@
   .akath-landscape-mist-deep,
   .akath-river-shimmer-a,
   .akath-river-shimmer-b,
+  .akath-godavari-ripple-flow-a,
+  .akath-godavari-ripple-flow-b,
+  .akath-godavari-ring-a,
+  .akath-godavari-ring-b,
+  .akath-godavari-ring-c,
+  .akath-katta-ember-a,
+  .akath-katta-ember-b,
+  .akath-banyan-root-sway-a,
+  .akath-banyan-root-sway-b,
+  .akath-banyan-leaf-drift-a,
+  .akath-banyan-leaf-drift-b,
+  .akath-about-banyan-hover-glow,
+  .akath-about-banyan-canopy-shimmer,
+  .akath-leaf-shimmer-layer-a,
+  .akath-leaf-shimmer-layer-b,
+  .akath-leaf-shimmer-layer-c,
+  .akath-about-banyan-sun-dapples,
+  .akath-about-breeze-leaf-1,
+  .akath-about-breeze-leaf-2,
+  .akath-about-breeze-leaf-3,
+  .akath-about-breeze-leaf-4,
+  .akath-about-breeze-leaf-5,
+  .akath-lamp-pendulum,
+  .akath-speaker-gesture,
   .akath-diya-glint,
+  .akath-star-twinkle-a,
+  .akath-star-twinkle-b,
+  .akath-gold-sheen-sweep,
+  .akath-svg-shimmer-overlay,
+  .akath-landscape-svg-luminous,
   .akath-parallax-far,
   .akath-parallax-mid,
-  .akath-parallax-near {
+  .akath-parallax-river,
+  .akath-parallax-trees,
+  .akath-parallax-near,
+  .akath-hero-parallax-sky,
+  .akath-hero-parallax-mountains,
+  .akath-hero-parallax-mid,
+  .akath-hero-parallax-river,
+  .akath-hero-parallax-trees,
+  .akath-uw-parallax-bg,
+  .akath-uw-parallax-mid,
+  .akath-uw-parallax-fg,
+  .akath-uw-tortoise-swim,
+  .akath-uw-front-near,
+  .akath-uw-front-far,
+  .akath-uw-rear-near,
+  .akath-uw-rear-far,
+  .akath-uw-head,
+  .akath-uw-fish-1,
+  .akath-uw-fish-2,
+  .akath-uw-fish-3,
+  .akath-uw-fish-4,
+  .akath-uw-tail-fast,
+  .akath-uw-tail-med,
+  .akath-uw-tail-slow,
+  .akath-uw-sway-a,
+  .akath-uw-sway-b,
+  .akath-uw-sway-c,
+  .akath-uw-sway-coral,
+  .akath-uw-ray-a,
+  .akath-uw-ray-b,
+  .akath-uw-bubble-slow,
+  .akath-uw-bubble-fast,
+  .akath-uw-jelly-drift,
+  .akath-uw-jelly-bell,
+  .akath-uw-jelly-tentacles,
+  .akath-uw-fry-school,
+  .akath-uw-mote,
+  .akath-uw-surface-a,
+  .akath-uw-surface-b,
+  .akath-uw-svg-luminous {
     animation: none !important;
     transition: none !important;
     transform: none !important;
@@ -2527,7 +2595,12 @@
   .storybook-tortoise-eyelid,
   .storybook-floating-leaf-a,
   .storybook-floating-leaf-b,
-  .storybook-shooting-star {
+  .storybook-shooting-star,
+  .akath-about-breeze-leaf-1,
+  .akath-about-breeze-leaf-2,
+  .akath-about-breeze-leaf-3,
+  .akath-about-breeze-leaf-4,
+  .akath-about-breeze-leaf-5 {
     opacity: 0 !important;
   }
 
@@ -2550,8 +2623,8 @@
 }
 
 /* =========================================================================
-   Archival Sahyadri & Godavari Landscape Illustrations — Whisper-Quiet Motion
-   - Ultra-slow horizontal mist drift, gentle river shimmer & rAF parallax
+   Archival Sahyadri & Godavari Landscape Illustrations — Luminous Glow,
+   Premium Shimmer Overlay & CSS-Driven Multi-Plane Scroll Parallax
    - Automatically paused when off-screen and disabled for reduced motion
    ========================================================================= */
 @keyframes akath-landscape-mist-drift-a {
@@ -2575,23 +2648,83 @@
 @keyframes akath-river-shimmer-pulse {
   0%,
   100% {
-    opacity: 0.42;
-    transform: translate3d(-3px, 0, 0);
+    opacity: 0.6;
+    transform: translate3d(-4px, 0, 0);
   }
   50% {
-    opacity: 0.84;
-    transform: translate3d(4px, 0, 0);
+    opacity: 1;
+    transform: translate3d(5px, 0, 0);
   }
 }
 
 @keyframes akath-diya-glint-breathe {
   0%,
   100% {
-    opacity: 0.48;
+    opacity: 0.74;
   }
   50% {
-    opacity: 0.86;
+    opacity: 1;
   }
+}
+
+@keyframes akath-star-twinkle {
+  0%,
+  100% {
+    opacity: 0.56;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.16);
+  }
+}
+
+@keyframes akath-gold-sheen-glide {
+  0% {
+    transform: translate3d(-24%, 0, 0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate3d(18%, 0, 0);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(-24%, 0, 0);
+    opacity: 0.35;
+  }
+}
+
+@keyframes akath-svg-shimmer-sweep {
+  0% {
+    transform: translate3d(-38%, 0, 0);
+    opacity: 0.42;
+  }
+  50% {
+    transform: translate3d(38%, 0, 0);
+    opacity: 0.92;
+  }
+  100% {
+    transform: translate3d(-38%, 0, 0);
+    opacity: 0.42;
+  }
+}
+
+@keyframes akath-svg-luminous-breathe {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 12px rgba(255, 212, 92, 0.22)) saturate(1.14)
+      contrast(1.04) brightness(1.015);
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(255, 217, 102, 0.36)) saturate(1.22)
+      contrast(1.06) brightness(1.035);
+  }
+}
+
+.akath-landscape-svg-luminous {
+  filter: drop-shadow(0 0 14px rgba(255, 212, 92, 0.26)) saturate(1.16)
+    contrast(1.04) brightness(1.02);
+  animation: akath-svg-luminous-breathe 11s ease-in-out infinite;
 }
 
 .akath-landscape-mist-slow {
@@ -2605,30 +2738,1086 @@
 }
 
 .akath-river-shimmer-a {
-  animation: akath-river-shimmer-pulse 11s ease-in-out infinite;
+  animation: akath-river-shimmer-pulse 7.5s ease-in-out infinite;
 }
 
 .akath-river-shimmer-b {
-  animation: akath-river-shimmer-pulse 14s ease-in-out 2.5s infinite;
+  animation: akath-river-shimmer-pulse 9.5s ease-in-out 2s infinite;
+}
+
+/* Subtle Lightweight Godavari Water Surface Ripple & Lantern Ember Animations */
+@keyframes akath-godavari-current-a {
+  0% {
+    stroke-dashoffset: 0;
+    transform: translate3d(-6px, 0, 0);
+  }
+  50% {
+    transform: translate3d(6px, 0.7px, 0);
+  }
+  100% {
+    stroke-dashoffset: -118;
+    transform: translate3d(-6px, 0, 0);
+  }
+}
+
+@keyframes akath-godavari-current-b {
+  0% {
+    stroke-dashoffset: 0;
+    transform: translate3d(5px, 0, 0);
+  }
+  50% {
+    transform: translate3d(-5px, -0.6px, 0);
+  }
+  100% {
+    stroke-dashoffset: -108;
+    transform: translate3d(5px, 0, 0);
+  }
+}
+
+@keyframes akath-godavari-ring-expand {
+  0% {
+    transform: scale(0.45);
+    opacity: 0;
+  }
+  22% {
+    opacity: 0.72;
+  }
+  75% {
+    opacity: 0.30;
+  }
+  100% {
+    transform: scale(1.38);
+    opacity: 0;
+  }
+}
+
+@keyframes akath-katta-ember-rise {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(0.85);
+    opacity: 0.25;
+  }
+  45% {
+    transform: translate3d(1.5px, -6px, 0) scale(1.1);
+    opacity: 0.92;
+  }
+  85% {
+    transform: translate3d(-1px, -11px, 0) scale(0.7);
+    opacity: 0.15;
+  }
+}
+
+.akath-godavari-ripple-flow-a {
+  animation: akath-godavari-current-a 12s linear infinite;
+  will-change: transform;
+}
+
+.akath-godavari-ripple-flow-b {
+  animation: akath-godavari-current-b 15s linear infinite;
+  will-change: transform;
+}
+
+.akath-godavari-ring-a,
+.akath-godavari-ring-b,
+.akath-godavari-ring-c {
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+.akath-godavari-ring-a {
+  animation: akath-godavari-ring-expand 6.4s ease-out infinite;
+}
+
+.akath-godavari-ring-b {
+  animation: akath-godavari-ring-expand 7.6s ease-out -2.4s infinite;
+}
+
+.akath-godavari-ring-c {
+  animation: akath-godavari-ring-expand 8.2s ease-out -4.8s infinite;
+}
+
+@keyframes akath-banyan-root-sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(1.6deg);
+  }
+}
+
+.akath-katta-ember-a {
+  animation: akath-katta-ember-rise 5.6s ease-in-out infinite;
+}
+
+.akath-katta-ember-b {
+  animation: akath-katta-ember-rise 6.8s ease-in-out -2.6s infinite;
+}
+
+.akath-banyan-root-sway-a {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: akath-banyan-root-sway 7.4s ease-in-out infinite;
+}
+
+.akath-banyan-root-sway-b {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: akath-banyan-root-sway 9.2s ease-in-out -3.4s infinite;
+}
+
+@keyframes akath-speaker-hand-recite {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  40% {
+    transform: rotate(-2.2deg);
+  }
+  70% {
+    transform: rotate(1.1deg);
+  }
+}
+
+.akath-speaker-gesture {
+  transform-box: fill-box;
+  transform-origin: bottom left;
+  animation: akath-speaker-hand-recite 6.4s ease-in-out infinite;
+}
+
+@keyframes akath-banyan-leaf-drift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  55% {
+    transform: translate3d(-6px, 24px, 0) rotate(-18deg);
+    opacity: 0.78;
+  }
+  100% {
+    transform: translate3d(5px, 48px, 0) rotate(14deg);
+    opacity: 0;
+  }
+}
+
+@keyframes akath-lamp-pendulum-sway {
+  0%,
+  100% {
+    transform: rotate(-1.4deg);
+  }
+  50% {
+    transform: rotate(1.4deg);
+  }
+}
+
+.akath-banyan-leaf-drift-a {
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: akath-banyan-leaf-drift 11s ease-in-out infinite;
+}
+
+.akath-banyan-leaf-drift-b {
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: akath-banyan-leaf-drift 13.5s ease-in-out -5.2s infinite;
+}
+
+.akath-lamp-pendulum {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: akath-lamp-pendulum-sway 8.2s ease-in-out infinite;
+}
+
+/* About Banyan Tree — Subtle Hover Leaf Shimmer & Soft Transient Golden Light Glow */
+@keyframes akath-about-banyan-glow-bloom {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  26% {
+    opacity: 0.92;
+    transform: scale(1.03);
+  }
+  64% {
+    opacity: 0.44;
+    transform: scale(1.07);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes akath-about-leaf-shimmer-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.30;
+  }
+  50% {
+    transform: translate3d(1.4px, -1.2px, 0) scale(1.012);
+    opacity: 0.42;
+  }
+}
+
+@keyframes akath-about-leaf-shimmer-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.96;
+  }
+  50% {
+    transform: translate3d(-1.2px, -1.6px, 0) scale(1.015);
+    opacity: 1;
+  }
+}
+
+@keyframes akath-about-leaf-shimmer-c {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(0.9deg) translate3d(0.8px, -0.8px, 0);
+  }
+  70% {
+    transform: rotate(-0.7deg) translate3d(-0.6px, 0.4px, 0);
+  }
+}
+
+@keyframes akath-about-dapple-twinkle {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.88;
+    transform: scale(1.04);
+  }
+}
+
+.akath-about-banyan-interactive {
+  cursor: default;
+}
+
+.akath-about-banyan-hover-glow {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+.akath-about-banyan-hover-glow.is-pulsing {
+  animation: akath-about-banyan-glow-bloom 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.akath-about-banyan-canopy-shimmer {
+  transition: filter 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.akath-about-banyan-sun-dapples {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center center;
+  transition: opacity 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.akath-about-banyan-interactive:hover .akath-about-banyan-canopy-shimmer,
+.akath-about-banyan-interactive.is-banyan-hovered .akath-about-banyan-canopy-shimmer {
+  filter: drop-shadow(0 0 10px rgba(255, 224, 122, 0.48)) brightness(1.06) saturate(1.08);
+}
+
+.akath-about-banyan-interactive:hover .akath-leaf-shimmer-layer-a,
+.akath-about-banyan-interactive.is-banyan-hovered .akath-leaf-shimmer-layer-a {
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: akath-about-leaf-shimmer-a 2.1s ease-in-out infinite;
+}
+
+.akath-about-banyan-interactive:hover .akath-leaf-shimmer-layer-b,
+.akath-about-banyan-interactive.is-banyan-hovered .akath-leaf-shimmer-layer-b {
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: akath-about-leaf-shimmer-b 1.85s ease-in-out 0.15s infinite;
+}
+
+.akath-about-banyan-interactive:hover .akath-leaf-shimmer-layer-c,
+.akath-about-banyan-interactive.is-banyan-hovered .akath-leaf-shimmer-layer-c {
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: akath-about-leaf-shimmer-c 2.3s ease-in-out infinite;
+}
+
+.akath-about-banyan-interactive:hover .akath-about-banyan-sun-dapples,
+.akath-about-banyan-interactive.is-banyan-hovered .akath-about-banyan-sun-dapples {
+  opacity: 0.72;
+  animation: akath-about-dapple-twinkle 2.2s ease-in-out infinite;
+}
+
+/* About Section — Lightweight Floating Banyan Leaves Drifting Slowly Across the Breeze */
+@keyframes akath-about-breeze-glide-a {
+  0% {
+    transform: translate3d(-24px, -6px, 0) rotate(-14deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.76;
+  }
+  38% {
+    transform: translate3d(135px, 16px, 0) rotate(16deg);
+    opacity: 0.80;
+  }
+  68% {
+    transform: translate3d(285px, 4px, 0) rotate(-10deg);
+    opacity: 0.72;
+  }
+  90% {
+    opacity: 0.56;
+  }
+  100% {
+    transform: translate3d(420px, 34px, 0) rotate(18deg);
+    opacity: 0;
+  }
+}
+
+@keyframes akath-about-breeze-glide-b {
+  0% {
+    transform: translate3d(-18px, 0px, 0) rotate(10deg);
+    opacity: 0;
+  }
+  14% {
+    opacity: 0.72;
+  }
+  44% {
+    transform: translate3d(160px, -18px, 0) rotate(-16deg);
+    opacity: 0.76;
+  }
+  74% {
+    transform: translate3d(325px, 12px, 0) rotate(14deg);
+    opacity: 0.66;
+  }
+  100% {
+    transform: translate3d(460px, 26px, 0) rotate(-12deg);
+    opacity: 0;
+  }
+}
+
+@keyframes akath-about-breeze-glide-c {
+  0% {
+    transform: translate3d(-16px, -4px, 0) rotate(-8deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.68;
+  }
+  50% {
+    transform: translate3d(185px, 22px, 0) rotate(20deg);
+    opacity: 0.74;
+  }
+  85% {
+    opacity: 0.52;
+  }
+  100% {
+    transform: translate3d(370px, 42px, 0) rotate(-14deg);
+    opacity: 0;
+  }
+}
+
+.akath-about-breeze-leaf-1,
+.akath-about-breeze-leaf-2,
+.akath-about-breeze-leaf-3,
+.akath-about-breeze-leaf-4,
+.akath-about-breeze-leaf-5 {
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+.akath-about-breeze-leaf-1 {
+  animation: akath-about-breeze-glide-a 20s ease-in-out -3s infinite;
+}
+
+.akath-about-breeze-leaf-2 {
+  animation: akath-about-breeze-glide-b 24s ease-in-out -11s infinite;
+}
+
+.akath-about-breeze-leaf-3 {
+  animation: akath-about-breeze-glide-c 22s ease-in-out -7s infinite;
+}
+
+.akath-about-breeze-leaf-4 {
+  animation: akath-about-breeze-glide-a 26s ease-in-out -17s infinite;
+}
+
+.akath-about-breeze-leaf-5 {
+  animation: akath-about-breeze-glide-b 23s ease-in-out -5s infinite;
 }
 
 .akath-diya-glint {
-  animation: akath-diya-glint-breathe 7.5s ease-in-out infinite;
+  animation: akath-diya-glint-breathe 4.8s ease-in-out infinite;
 }
 
+.akath-star-twinkle-a {
+  animation: akath-star-twinkle 4.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+.akath-star-twinkle-b {
+  animation: akath-star-twinkle 5.6s ease-in-out 1.8s infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+.akath-gold-sheen-sweep {
+  animation: akath-gold-sheen-glide 15s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.akath-svg-shimmer-overlay {
+  animation: akath-svg-shimmer-sweep 13s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Light CSS-driven Multi-Plane Scroll Parallax (works reliably inside overflow-hidden sections & fixed backdrops) */
 .akath-parallax-far {
-  transform: translate3d(0, var(--akath-px-far, 0px), 0);
+  transform: translate3d(0, calc(var(--akath-scroll-p, 0) * -14px), 0);
   will-change: transform;
 }
 
 .akath-parallax-mid {
-  transform: translate3d(0, var(--akath-px-mid, 0px), 0);
+  transform: translate3d(0, calc(var(--akath-scroll-p, 0) * 6px), 0);
   will-change: transform;
 }
 
-.akath-parallax-near {
-  transform: translate3d(0, var(--akath-px-near, 0px), 0);
+.akath-parallax-river {
+  transform: translate3d(
+    calc(var(--akath-scroll-p, 0) * -8px),
+    calc(var(--akath-scroll-p, 0) * 14px),
+    0
+  );
   will-change: transform;
+}
+
+.akath-parallax-trees,
+.akath-parallax-near {
+  transform: translate3d(0, calc(var(--akath-scroll-p, 0) * 22px), 0);
+  will-change: transform;
+}
+
+/* Dedicated Hero Scroll-Triggered Multi-Plane Parallax (0 at top -> 1 while scrolling past Hero) */
+.akath-hero-parallax-sky,
+.akath-hero-parallax-mountains,
+.akath-hero-parallax-mid,
+.akath-hero-parallax-river,
+.akath-hero-parallax-trees {
+  transform-box: view-box;
+  transform-origin: 50% 85%;
+  transition: transform 90ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.akath-hero-parallax-sky {
+  transform: translate3d(0, calc(var(--akath-hero-scroll, 0) * 64px), 0)
+    scale(calc(1 + var(--akath-hero-scroll, 0) * 0.03));
+}
+
+.akath-hero-parallax-mountains {
+  transform: translate3d(0, calc(var(--akath-hero-scroll, 0) * 48px), 0)
+    scale(calc(1 + var(--akath-hero-scroll, 0) * 0.02));
+}
+
+.akath-hero-parallax-mid {
+  transform: translate3d(0, calc(var(--akath-hero-scroll, 0) * 22px), 0);
+}
+
+.akath-hero-parallax-river {
+  transform: translate3d(
+    calc(var(--akath-hero-scroll, 0) * 16px),
+    calc(var(--akath-hero-scroll, 0) * -14px),
+    0
+  );
+}
+
+.akath-hero-parallax-trees {
+  transform: translate3d(
+    calc(var(--akath-hero-scroll, 0) * -10px),
+    calc(var(--akath-hero-scroll, 0) * -38px),
+    0
+  );
+}
+
+/* =========================================================================
+   Akath Prakashan Homepage Hero — "The Little World Beneath the Waves"
+   Exact 4.000-second seamless infinite loop + 3-plane underwater parallax
+   ========================================================================= */
+@keyframes akath-uw-tortoise-swim {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate3d(-5.5px, -7.5px, 0) rotate(1.45deg);
+  }
+  50% {
+    transform: translate3d(-11px, 0px, 0) rotate(0.35deg);
+  }
+  75% {
+    transform: translate3d(-5.5px, 7.5px, 0) rotate(-1.35deg);
+  }
+}
+
+@keyframes akath-uw-front-near-stroke {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  22% {
+    transform: rotate(-14deg);
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+  76% {
+    transform: rotate(14.5deg);
+  }
+}
+
+@keyframes akath-uw-front-far-stroke {
+  0%,
+  100% {
+    transform: rotate(3.8deg);
+  }
+  25% {
+    transform: rotate(11.5deg);
+  }
+  50% {
+    transform: rotate(-3.8deg);
+  }
+  75% {
+    transform: rotate(-11.5deg);
+  }
+}
+
+@keyframes akath-uw-rear-near-kick {
+  0%,
+  100% {
+    transform: rotate(7.8deg);
+  }
+  25% {
+    transform: rotate(-2.5deg);
+  }
+  50% {
+    transform: rotate(-7.8deg);
+  }
+  75% {
+    transform: rotate(2.5deg);
+  }
+}
+
+@keyframes akath-uw-rear-far-kick {
+  0%,
+  100% {
+    transform: rotate(-6.8deg);
+  }
+  25% {
+    transform: rotate(1.8deg);
+  }
+  50% {
+    transform: rotate(6.8deg);
+  }
+  75% {
+    transform: rotate(-1.8deg);
+  }
+}
+
+@keyframes akath-uw-head-nod {
+  0%,
+  100% {
+    transform: rotate(0.7deg);
+  }
+  30% {
+    transform: rotate(-2.1deg);
+  }
+  55% {
+    transform: rotate(-0.4deg);
+  }
+  82% {
+    transform: rotate(2.1deg);
+  }
+}
+
+@keyframes akath-uw-fish1-loop {
+  0%,
+  100% {
+    transform: translate3d(0px, 4.5px, 0) rotate(2.4deg);
+  }
+  25% {
+    transform: translate3d(34px, 0px, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0px, -4.5px, 0) rotate(-2.4deg);
+  }
+  75% {
+    transform: translate3d(-34px, 0px, 0) rotate(0deg);
+  }
+}
+
+@keyframes akath-uw-fish2-loop {
+  0%,
+  100% {
+    transform: translate3d(-18px, 5px, 0) rotate(-1.6deg);
+  }
+  25% {
+    transform: translate3d(-15px, -5.5px, 0) rotate(1.6deg);
+  }
+  50% {
+    transform: translate3d(18px, -5px, 0) rotate(1.6deg);
+  }
+  75% {
+    transform: translate3d(15px, 5.5px, 0) rotate(-1.6deg);
+  }
+}
+
+@keyframes akath-uw-fish3-loop {
+  0%,
+  100% {
+    transform: translate3d(13px, -2.8px, 0) rotate(-0.8deg);
+  }
+  50% {
+    transform: translate3d(-13px, 2.8px, 0) rotate(0.8deg);
+  }
+}
+
+@keyframes akath-uw-fish4-loop {
+  0%,
+  100% {
+    transform: translate3d(-14px, -1.2px, 0) rotate(-0.7deg);
+  }
+  50% {
+    transform: translate3d(14px, 1.2px, 0) rotate(0.7deg);
+  }
+}
+
+@keyframes akath-uw-tail-flick {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(8.5deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
+  75% {
+    transform: rotate(-8.5deg);
+  }
+}
+
+@keyframes akath-uw-plant-sway-a {
+  0%,
+  100% {
+    transform: rotate(0.6deg);
+  }
+  25% {
+    transform: rotate(3.4deg);
+  }
+  50% {
+    transform: rotate(-0.6deg);
+  }
+  75% {
+    transform: rotate(-3.4deg);
+  }
+}
+
+@keyframes akath-uw-plant-sway-b {
+  0%,
+  100% {
+    transform: rotate(3.6deg);
+  }
+  25% {
+    transform: rotate(-1.2deg);
+  }
+  50% {
+    transform: rotate(-3.6deg);
+  }
+  75% {
+    transform: rotate(1.2deg);
+  }
+}
+
+@keyframes akath-uw-plant-sway-c {
+  0%,
+  100% {
+    transform: rotate(1.5deg);
+  }
+  25% {
+    transform: rotate(2.6deg);
+  }
+  50% {
+    transform: rotate(-1.5deg);
+  }
+  75% {
+    transform: rotate(-2.6deg);
+  }
+}
+
+@keyframes akath-uw-ray-drift-a {
+  0%,
+  100% {
+    transform: translate3d(0px, 0, 0);
+    opacity: 0.88;
+  }
+  25% {
+    transform: translate3d(9px, 0, 0);
+    opacity: 1;
+  }
+  50% {
+    transform: translate3d(0px, 0, 0);
+    opacity: 0.88;
+  }
+  75% {
+    transform: translate3d(-9px, 0, 0);
+    opacity: 0.78;
+  }
+}
+
+@keyframes akath-uw-ray-drift-b {
+  0%,
+  100% {
+    transform: translate3d(0px, 0, 0);
+    opacity: 0.94;
+  }
+  25% {
+    transform: translate3d(-7.5px, 0, 0);
+    opacity: 0.82;
+  }
+  50% {
+    transform: translate3d(0px, 0, 0);
+    opacity: 0.94;
+  }
+  75% {
+    transform: translate3d(7.5px, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes akath-uw-bubble-rise {
+  0% {
+    transform: translate3d(0px, 0px, 0) scale(0.9);
+    opacity: 0;
+  }
+  16% {
+    opacity: 0.62;
+  }
+  50% {
+    transform: translate3d(7px, -98px, 0) scale(0.98);
+    opacity: 0.66;
+  }
+  84% {
+    opacity: 0.48;
+  }
+  100% {
+    transform: translate3d(0px, -196px, 0) scale(1.04);
+    opacity: 0;
+  }
+}
+
+.akath-uw-tortoise-swim {
+  animation: akath-uw-tortoise-swim 4s linear infinite;
+  transform-origin: 170px 105px;
+  will-change: transform;
+}
+
+.akath-uw-front-near {
+  transform-origin: 132px 114px;
+  animation: akath-uw-front-near-stroke 4s linear infinite;
+}
+
+.akath-uw-front-far {
+  transform-origin: 114px 114px;
+  animation: akath-uw-front-far-stroke 4s linear infinite;
+}
+
+.akath-uw-rear-near {
+  transform-origin: 234px 126px;
+  animation: akath-uw-rear-near-kick 4s linear infinite;
+}
+
+.akath-uw-rear-far {
+  transform-origin: 248px 122px;
+  animation: akath-uw-rear-far-kick 4s linear infinite;
+}
+
+.akath-uw-head {
+  transform-origin: 98px 102px;
+  animation: akath-uw-head-nod 4s linear infinite;
+}
+
+.akath-uw-fish-1 {
+  animation: akath-uw-fish1-loop 4s linear infinite;
+  will-change: transform;
+}
+
+.akath-uw-fish-2 {
+  animation: akath-uw-fish2-loop 4s linear infinite;
+  will-change: transform;
+}
+
+.akath-uw-fish-3 {
+  animation: akath-uw-fish3-loop 4s linear infinite;
+  will-change: transform;
+}
+
+.akath-uw-fish-4 {
+  animation: akath-uw-fish4-loop 4s linear infinite;
+  will-change: transform;
+}
+
+.akath-uw-tail-fast {
+  transform-origin: 24px 24px;
+  animation: akath-uw-tail-flick 1s linear infinite;
+}
+
+.akath-uw-tail-med {
+  transform-origin: 64px 19px;
+  animation: akath-uw-tail-flick 1.3333s linear infinite;
+}
+
+.akath-uw-tail-slow {
+  transform-origin: 18px 26px;
+  animation: akath-uw-tail-flick 2s linear infinite;
+}
+
+.akath-uw-sway-a {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: akath-uw-plant-sway-a 4s linear infinite;
+}
+
+.akath-uw-sway-b {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: akath-uw-plant-sway-b 4s linear infinite;
+}
+
+.akath-uw-sway-c,
+.akath-uw-sway-coral {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: akath-uw-plant-sway-c 4s linear infinite;
+}
+
+.akath-uw-ray-a {
+  animation: akath-uw-ray-drift-a 4s linear infinite;
+}
+
+.akath-uw-ray-b {
+  animation: akath-uw-ray-drift-b 4s linear infinite;
+}
+
+.akath-uw-bubble-slow {
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: akath-uw-bubble-rise 4s linear infinite;
+  will-change: transform, opacity;
+}
+
+.akath-uw-bubble-fast {
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: akath-uw-bubble-rise 2s linear infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes akath-uw-jelly-drift {
+  0%,
+  100% {
+    transform: translate3d(2px, 0px, 0) rotate(1.8deg);
+  }
+  25% {
+    transform: translate3d(5.5px, -11.5px, 0) rotate(2.6deg);
+  }
+  50% {
+    transform: translate3d(-2px, 0px, 0) rotate(-1.8deg);
+  }
+  75% {
+    transform: translate3d(-5.5px, 11.5px, 0) rotate(-2.6deg);
+  }
+}
+
+@keyframes akath-uw-jelly-bell-pulse {
+  0%,
+  100% {
+    transform: scale(1.03, 0.965);
+  }
+  25% {
+    transform: scale(1.055, 0.94);
+  }
+  50% {
+    transform: scale(0.97, 1.035);
+  }
+  75% {
+    transform: scale(0.945, 1.06);
+  }
+}
+
+@keyframes akath-uw-jelly-tentacle-sway {
+  0%,
+  100% {
+    transform: rotate(3.8deg);
+  }
+  50% {
+    transform: rotate(-3.8deg);
+  }
+}
+
+@keyframes akath-uw-fry-glide {
+  0%,
+  100% {
+    transform: translate3d(6px, 3.5px, 0) rotate(1.7deg);
+  }
+  25% {
+    transform: translate3d(22px, -3px, 0) rotate(-0.5deg);
+  }
+  50% {
+    transform: translate3d(-6px, -3.5px, 0) rotate(-1.7deg);
+  }
+  75% {
+    transform: translate3d(-22px, 3px, 0) rotate(0.5deg);
+  }
+}
+
+@keyframes akath-uw-mote-float {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0) scale(0.88);
+    opacity: 0.32;
+  }
+  25% {
+    transform: translate3d(7px, -10px, 0) scale(1.12);
+    opacity: 0.88;
+  }
+  50% {
+    transform: translate3d(0px, -16px, 0) scale(0.95);
+    opacity: 0.56;
+  }
+  75% {
+    transform: translate3d(-7px, -8px, 0) scale(1.08);
+    opacity: 0.82;
+  }
+}
+
+@keyframes akath-uw-surface-ripple-a {
+  0%,
+  100% {
+    transform: translate3d(0px, 0, 0);
+  }
+  25% {
+    transform: translate3d(24px, 0, 0);
+  }
+  50% {
+    transform: translate3d(0px, 0, 0);
+  }
+  75% {
+    transform: translate3d(-24px, 0, 0);
+  }
+}
+
+@keyframes akath-uw-surface-ripple-b {
+  0%,
+  100% {
+    transform: translate3d(0px, 0, 0);
+  }
+  25% {
+    transform: translate3d(-18px, 0, 0);
+  }
+  50% {
+    transform: translate3d(0px, 0, 0);
+  }
+  75% {
+    transform: translate3d(18px, 0, 0);
+  }
+}
+
+.akath-uw-svg-luminous {
+  filter: saturate(1.18) contrast(1.06) brightness(1.01);
+}
+
+.akath-uw-jelly-drift {
+  transform-origin: 60px 55px;
+  animation: akath-uw-jelly-drift 4s linear infinite;
+  will-change: transform;
+}
+
+.akath-uw-jelly-bell {
+  transform-origin: 60px 44px;
+  animation: akath-uw-jelly-bell-pulse 4s linear infinite;
+}
+
+.akath-uw-jelly-tentacles {
+  transform-origin: 60px 66px;
+  animation: akath-uw-jelly-tentacle-sway 4s linear infinite;
+}
+
+.akath-uw-fry-school {
+  animation: akath-uw-fry-glide 4s linear infinite;
+  will-change: transform;
+}
+
+.akath-uw-mote {
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: akath-uw-mote-float 4s linear infinite;
+  will-change: transform, opacity;
+}
+
+.akath-uw-surface-a {
+  animation: akath-uw-surface-ripple-a 4s linear infinite;
+  will-change: transform;
+}
+
+.akath-uw-surface-b {
+  animation: akath-uw-surface-ripple-b 4s linear infinite;
+  will-change: transform;
+}
+
+/* 3-Plane Underwater Scroll + Subtle Pointer Diorama Parallax */
+.akath-uw-parallax-bg,
+.akath-uw-parallax-mid,
+.akath-uw-parallax-fg {
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.akath-uw-parallax-bg {
+  transform: translate3d(
+    calc(var(--akath-ptr-x, 0) * -4px),
+    calc(var(--akath-hero-scroll, 0) * 26px + var(--akath-ptr-y, 0) * -3px),
+    0
+  );
+}
+
+.akath-uw-parallax-mid {
+  transform: translate3d(
+    calc(var(--akath-ptr-x, 0) * 7px),
+    calc(var(--akath-hero-scroll, 0) * 12px + var(--akath-ptr-y, 0) * 5px),
+    0
+  );
+}
+
+.akath-uw-parallax-fg {
+  transform: translate3d(
+    calc(var(--akath-ptr-x, 0) * 12px),
+    calc(var(--akath-hero-scroll, 0) * -20px + var(--akath-ptr-y, 0) * 7px),
+    0
+  );
 }
 
 /* =========================================================================
@@ -2641,11 +3830,67 @@
 .akath-footer-offscreen .akath-footer-mote-b,
 .akath-footer-offscreen .akath-footer-mote-c,
 .akath-footer-offscreen .akath-wordmark-shirorekha-beam,
+.akath-landscape-offscreen .akath-landscape-svg-luminous,
 .akath-landscape-offscreen .akath-landscape-mist-slow,
 .akath-landscape-offscreen .akath-landscape-mist-deep,
 .akath-landscape-offscreen .akath-river-shimmer-a,
 .akath-landscape-offscreen .akath-river-shimmer-b,
-.akath-landscape-offscreen .akath-diya-glint {
+.akath-landscape-offscreen .akath-godavari-ripple-flow-a,
+.akath-landscape-offscreen .akath-godavari-ripple-flow-b,
+.akath-landscape-offscreen .akath-godavari-ring-a,
+.akath-landscape-offscreen .akath-godavari-ring-b,
+.akath-landscape-offscreen .akath-godavari-ring-c,
+.akath-landscape-offscreen .akath-katta-ember-a,
+.akath-landscape-offscreen .akath-katta-ember-b,
+.akath-landscape-offscreen .akath-banyan-root-sway-a,
+.akath-landscape-offscreen .akath-banyan-root-sway-b,
+.akath-landscape-offscreen .akath-banyan-leaf-drift-a,
+.akath-landscape-offscreen .akath-banyan-leaf-drift-b,
+.akath-landscape-offscreen .akath-about-banyan-hover-glow,
+.akath-landscape-offscreen .akath-leaf-shimmer-layer-a,
+.akath-landscape-offscreen .akath-leaf-shimmer-layer-b,
+.akath-landscape-offscreen .akath-leaf-shimmer-layer-c,
+.akath-landscape-offscreen .akath-about-banyan-sun-dapples,
+.akath-landscape-offscreen .akath-about-breeze-leaf-1,
+.akath-landscape-offscreen .akath-about-breeze-leaf-2,
+.akath-landscape-offscreen .akath-about-breeze-leaf-3,
+.akath-landscape-offscreen .akath-about-breeze-leaf-4,
+.akath-landscape-offscreen .akath-about-breeze-leaf-5,
+.akath-landscape-offscreen .akath-lamp-pendulum,
+.akath-landscape-offscreen .akath-speaker-gesture,
+.akath-landscape-offscreen .akath-diya-glint,
+.akath-landscape-offscreen .akath-star-twinkle-a,
+.akath-landscape-offscreen .akath-star-twinkle-b,
+.akath-landscape-offscreen .akath-gold-sheen-sweep,
+.akath-landscape-offscreen .akath-svg-shimmer-overlay,
+.akath-landscape-offscreen .akath-uw-tortoise-swim,
+.akath-landscape-offscreen .akath-uw-front-near,
+.akath-landscape-offscreen .akath-uw-front-far,
+.akath-landscape-offscreen .akath-uw-rear-near,
+.akath-landscape-offscreen .akath-uw-rear-far,
+.akath-landscape-offscreen .akath-uw-head,
+.akath-landscape-offscreen .akath-uw-fish-1,
+.akath-landscape-offscreen .akath-uw-fish-2,
+.akath-landscape-offscreen .akath-uw-fish-3,
+.akath-landscape-offscreen .akath-uw-fish-4,
+.akath-landscape-offscreen .akath-uw-tail-fast,
+.akath-landscape-offscreen .akath-uw-tail-med,
+.akath-landscape-offscreen .akath-uw-tail-slow,
+.akath-landscape-offscreen .akath-uw-sway-a,
+.akath-landscape-offscreen .akath-uw-sway-b,
+.akath-landscape-offscreen .akath-uw-sway-c,
+.akath-landscape-offscreen .akath-uw-sway-coral,
+.akath-landscape-offscreen .akath-uw-ray-a,
+.akath-landscape-offscreen .akath-uw-ray-b,
+.akath-landscape-offscreen .akath-uw-bubble-slow,
+.akath-landscape-offscreen .akath-uw-bubble-fast,
+.akath-landscape-offscreen .akath-uw-jelly-drift,
+.akath-landscape-offscreen .akath-uw-jelly-bell,
+.akath-landscape-offscreen .akath-uw-jelly-tentacles,
+.akath-landscape-offscreen .akath-uw-fry-school,
+.akath-landscape-offscreen .akath-uw-mote,
+.akath-landscape-offscreen .akath-uw-surface-a,
+.akath-landscape-offscreen .akath-uw-surface-b {
   animation-play-state: paused !important;
 }
 

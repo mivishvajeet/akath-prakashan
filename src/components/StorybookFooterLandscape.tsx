@@ -248,10 +248,10 @@ export const StorybookFooterLandscape: React.FC = () => {
               <rect x="20" y="2" width="6" height="4" fill="#302C25" fillOpacity="0.82" />
               <rect x="30" y="2" width="6" height="4" fill="#302C25" fillOpacity="0.82" />
               <rect x="38" y="2" width="6" height="4" fill="#302C25" fillOpacity="0.82" />
-              {/* Flagpole & Stepped Fluttering Saffron Flag */}
+              {/* Flagpole & Stepped Fluttering Cobalt-and-Gold Flag */}
               <rect x="22" y="-12" width="2" height="14" fill="#F5EBDD" />
               <g className="storybook-fort-flag">
-                <rect x="24" y="-12" width="12" height="4" fill="#EF6855" />
+                <rect x="24" y="-12" width="12" height="4" fill="#243B8A" />
                 <rect x="24" y="-8" width="8" height="3" fill="#E8BC69" />
               </g>
             </g>

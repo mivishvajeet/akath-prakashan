@@ -445,138 +445,139 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </div>
 
       {/* =====================================================================
-          1. HERO — QUIET LITERARY STILLNESS, POISE & FEATURED GALLERY PLINTH
+          1. HERO — GODAVARI RIVERFRONT DUSK LANDSCAPE & FEATURED EDITION PLINTH
           ===================================================================== */}
       <section
         ref={heroRef}
         data-testid="home-publishing-hero"
         className={`akath-io-section ${
           isHeroVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden border-b border-[#E5DEC9]/75 pt-8 sm:pt-10 lg:pt-12 pb-9 sm:pb-11 lg:pb-12`}
+        } relative z-10 w-full overflow-hidden border-b border-[#E5DEC9]/75 bg-gradient-to-b from-[#FAF8F0] via-[#FAF8F1] to-[#F3F6FC] pb-9 sm:pb-11 lg:pb-12`}
       >
-        {/* Serene, Low-Opacity Akath Tortoise & Open-Book Literary Crest Watermark */}
-        <HeroPublicationWatermark />
+        {/* Dedicated Full-Bleed Luminous Godavari River & Sahyadri Hero Stage (Richly Visible Across All Devices) */}
+        <div className="relative w-full min-h-[560px] sm:min-h-[560px] lg:min-h-[610px] xl:min-h-[640px] flex flex-col justify-start pt-9 sm:pt-11 lg:pt-12 pb-44 sm:pb-36 lg:pb-40">
+          <HeroPublicationWatermark />
 
-        <div className="w-full max-w-[1120px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10 min-w-0 space-y-7 sm:space-y-9">
-          {/* Center-Aligned Poised Literary Statement with Staggered Editorial Reveal */}
-          <motion.div
-            data-testid="home-hero-identity-column"
-            variants={heroRevealContainer}
-            initial="hidden"
-            animate="visible"
-            className="w-full max-w-3xl mx-auto flex flex-col items-center text-center space-y-4 sm:space-y-4.5"
-          >
-            <h1
-              data-testid="home-hero-main-headline"
-              className="w-full font-serif not-italic text-[#1C1917] tracking-[-0.025em] text-center [text-wrap:balance]"
+          <div className="w-full max-w-[1120px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10 min-w-0">
+            {/* Center-Aligned Poised Literary Statement with Staggered Editorial Reveal */}
+            <motion.div
+              data-testid="home-hero-identity-column"
+              variants={heroRevealContainer}
+              initial="hidden"
+              animate="visible"
+              className="w-full max-w-2xl lg:max-w-[660px] mx-auto flex flex-col items-center text-center space-y-3.5 sm:space-y-4.5"
             >
-              <motion.span
+              <h1
+                data-testid="home-hero-main-headline"
+                className="w-full font-serif not-italic text-[#1C1917] tracking-[-0.025em] text-center [text-wrap:balance] drop-shadow-[0_1px_12px_rgba(253,248,236,0.9)]"
+              >
+                <motion.span
+                  variants={heroRevealItem}
+                  className="block font-normal text-[clamp(1.85rem,6.4vw,2.75rem)] sm:text-[clamp(2.45rem,4.4vw,3.3rem)] lg:text-[clamp(2.8rem,3.5vw,3.6rem)] leading-[1.2] text-[#242220]"
+                >
+                  {isMr ? 'शब्दांना पुस्तकाचं रूप देणारी' : 'Every story deserves'}{' '}
+                </motion.span>
+                <motion.span
+                  variants={heroRevealItem}
+                  className="block mt-1 font-semibold text-[clamp(2.15rem,7.8vw,3.25rem)] sm:text-[clamp(2.9rem,5.2vw,3.9rem)] lg:text-[clamp(3.3rem,4.1vw,4.3rem)] leading-[1.12] text-[#1E357E]"
+                >
+                  {isMr ? 'प्रकाशन संस्था.' : 'a place on the shelf.'}
+                </motion.span>
+              </h1>
+
+              {/* Quiet Minimal Gold Hairline */}
+              <motion.div
+                variants={heroHairlineItem}
+                aria-hidden="true"
+                className="pt-0.5 origin-center"
+              >
+                <span className="block w-14 h-px bg-[#C89D54]/80 mx-auto" />
+              </motion.div>
+
+              <motion.p
                 variants={heroRevealItem}
-                className="block font-normal text-[clamp(1.85rem,6.4vw,2.75rem)] sm:text-[clamp(2.5rem,4.6vw,3.35rem)] lg:text-[clamp(2.85rem,3.6vw,3.65rem)] leading-[1.2] text-[#2B2927]"
+                data-testid="home-hero-supporting-line"
+                className="max-w-[42ch] mx-auto text-center text-[17px] sm:text-[19.5px] lg:text-[21.5px] font-serif not-italic font-medium text-[#1E357E] leading-[1.45]"
               >
-                {isMr ? 'शब्दांना पुस्तकाचं रूप देणारी' : 'Every story deserves'}{' '}
-              </motion.span>
-              <motion.span
+                {isMr
+                  ? 'नवे स्वर शोधतो. कथांना आकार देतो. पुस्तके प्रकाशित करतो.'
+                  : 'Discovering voices. Shaping stories. Publishing books.'}
+              </motion.p>
+
+              <motion.p
                 variants={heroRevealItem}
-                className="block mt-1 font-semibold text-[clamp(2.15rem,7.8vw,3.25rem)] sm:text-[clamp(2.95rem,5.5vw,3.95rem)] lg:text-[clamp(3.35rem,4.2vw,4.35rem)] leading-[1.12] text-[#243B8A]"
+                className="text-[14.5px] sm:text-[16px] lg:text-[17px] font-sans not-italic font-normal text-[#37332F] leading-[1.7] max-w-[50ch] mx-auto text-center"
               >
-                {isMr ? 'प्रकाशन संस्था.' : 'a place on the shelf.'}
-              </motion.span>
-            </h1>
+                {isMr
+                  ? 'अकथ प्रकाशनमध्ये आम्ही अर्थपूर्ण मराठी लेखनाला जिवंत रूप देतो — मूळ कथा, वैयक्तिक अनुभव आणि विचार वाचनीय, जपण्याजोग्या व इतरांपर्यंत पोहोचणाऱ्या पुस्तकांत घडवण्यासाठी लेखकांसोबत काम करतो.'
+                  : 'At Akath Prakashan, we bring meaningful Marathi writing to life — working with authors to turn original stories, personal narratives and ideas into books worth reading, sharing and keeping.'}
+              </motion.p>
 
-            {/* Quiet Minimal Gold Hairline */}
-            <motion.div
-              variants={heroHairlineItem}
-              aria-hidden="true"
-              className="pt-0.5 origin-center"
-            >
-              <span className="block w-12 h-px bg-[#C89D54]/70 mx-auto" />
+              {/* Focused Dual Actions */}
+              <motion.div
+                variants={heroRevealItem}
+                className="w-full flex flex-wrap items-center justify-center gap-3.5 pt-2"
+              >
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/books')}
+                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] font-medium text-sm shadow-[0_12px_26px_-10px_rgba(36,59,138,0.5)] transition-all cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  <BookOpen className="w-4 h-4 text-[#FFD966]" />
+                  <span>{isMr ? 'आमची पुस्तके पहा' : 'Explore Our Books'}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/submit-manuscript')}
+                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#FFFDF7]/85 hover:bg-[#1C1917] text-[#1C1917] hover:text-[#FFFDF7] border border-[#1C1917]/25 backdrop-blur-xs font-medium text-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  <Feather className="w-4 h-4 text-[#EF6855]" />
+                  <span>
+                    {isMr ? 'आमच्यासोबत प्रकाशित करा' : 'Publish With Us'}
+                  </span>
+                </button>
+              </motion.div>
             </motion.div>
+          </div>
+        </div>
 
-            <motion.p
-              variants={heroRevealItem}
-              data-testid="home-hero-supporting-line"
-              className="max-w-[44ch] mx-auto text-center text-[17.5px] sm:text-[20px] lg:text-[22px] font-serif not-italic font-medium text-[#243B8A] leading-[1.45]"
+        {/* Featured Edition Selector Tabs & Interactive 3D Book Showcase Plinth (Cleanly Below the Godavari Riverfront Stage) */}
+        <div className="w-full max-w-[1120px] mx-auto px-4 sm:px-8 lg:px-12 relative z-20 -mt-6 sm:-mt-8 min-w-0 space-y-5 sm:space-y-6">
+          <div className="w-full min-w-0">
+            <div
+              data-testid="home-hero-anchors-rail"
+              className="akath-swipe-rail flex flex-wrap sm:flex-nowrap items-center justify-center gap-x-5 gap-y-2 overflow-x-auto sm:overflow-visible snap-x snap-mandatory w-full pb-1 sm:pb-0 border-b border-[#E5DEC9]/80 max-w-2xl mx-auto"
             >
-              {isMr
-                ? 'नवे स्वर शोधतो. कथांना आकार देतो. पुस्तके प्रकाशित करतो.'
-                : 'Discovering voices. Shaping stories. Publishing books.'}
-            </motion.p>
-
-            <motion.p
-              variants={heroRevealItem}
-              className="text-[15px] sm:text-[16.5px] lg:text-[17.5px] font-sans not-italic font-normal text-[#44403C] leading-[1.7] max-w-[54ch] mx-auto text-center"
-            >
-              {isMr
-                ? 'अकथ प्रकाशनमध्ये आम्ही अर्थपूर्ण मराठी लेखनाला जिवंत रूप देतो — मूळ कथा, वैयक्तिक अनुभव आणि विचार वाचनीय, जपण्याजोग्या व इतरांपर्यंत पोहोचणाऱ्या पुस्तकांत घडवण्यासाठी लेखकांसोबत काम करतो.'
-                : 'At Akath Prakashan, we bring meaningful Marathi writing to life — working with authors to turn original stories, personal narratives and ideas into books worth reading, sharing and keeping.'}
-            </motion.p>
-
-            {/* Focused Dual Actions */}
-            <motion.div
-              variants={heroRevealItem}
-              className="w-full flex flex-wrap items-center justify-center gap-3.5 pt-2"
-            >
-              <button
-                type="button"
-                onClick={() => onNavigate('/books')}
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] font-medium text-sm shadow-[0_10px_24px_-10px_rgba(36,59,138,0.45)] transition-all cursor-pointer whitespace-nowrap shrink-0"
-              >
-                <BookOpen className="w-4 h-4 text-[#FFD966]" />
-                <span>{isMr ? 'आमची पुस्तके पहा' : 'Explore Our Books'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onNavigate('/submit-manuscript')}
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-transparent hover:bg-[#1C1917] text-[#1C1917] hover:text-[#FFFDF7] border border-[#1C1917]/20 font-medium text-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
-              >
-                <Feather className="w-4 h-4 text-[#EF6855]" />
-                <span>
-                  {isMr ? 'आमच्यासोबत प्रकाशित करा' : 'Publish With Us'}
-                </span>
-              </button>
-            </motion.div>
-
-            {/* Clean Understated Edition Selector Tabs */}
-            <motion.div
-              variants={heroRevealItem}
-              className="w-full pt-3 min-w-0"
-            >
-              <div
-                data-testid="home-hero-anchors-rail"
-                className="akath-swipe-rail flex flex-wrap sm:flex-nowrap items-center justify-center gap-x-5 gap-y-2 overflow-x-auto sm:overflow-visible snap-x snap-mandatory w-full pb-1 sm:pb-0 border-b border-[#E5DEC9]/70 max-w-2xl mx-auto"
-              >
-                {books.map((book, idx) => {
-                  const isSelected = book.id === activeHeroBook?.id;
-                  const enMeta = BOOK_ENGLISH_META[book.id];
-                  return (
-                    <button
-                      key={book.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedBookId(book.id);
-                        setShowFullSpread(false);
-                      }}
-                      className={`snap-start shrink-0 pb-2.5 text-xs sm:text-[13px] font-serif transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 border-b-2 -mb-px ${
-                        isSelected
-                          ? 'border-[#243B8A] text-[#243B8A] font-semibold'
-                          : 'border-transparent text-[#57534E] hover:text-[#1C1917]'
-                      }`}
-                    >
-                      <span className="font-mono text-[10.5px] opacity-70 tabular-nums">
-                        0{idx + 1}
-                      </span>
-                      <span className="max-w-[215px] sm:max-w-none truncate">
-                        {isMr ? book.title : enMeta?.titleEn || book.title}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </motion.div>
-          </motion.div>
+              {books.map((book, idx) => {
+                const isSelected = book.id === activeHeroBook?.id;
+                const enMeta = BOOK_ENGLISH_META[book.id];
+                return (
+                  <button
+                    key={book.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedBookId(book.id);
+                      setShowFullSpread(false);
+                    }}
+                    className={`snap-start shrink-0 pb-2.5 text-xs sm:text-[13px] font-serif transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 border-b-2 -mb-px ${
+                      isSelected
+                        ? 'border-[#243B8A] text-[#243B8A] font-semibold'
+                        : 'border-transparent text-[#57534E] hover:text-[#1C1917]'
+                    }`}
+                  >
+                    <span className="font-mono text-[10.5px] opacity-70 tabular-nums">
+                      0{idx + 1}
+                    </span>
+                    <span className="max-w-[215px] sm:max-w-none truncate">
+                      {isMr ? book.title : enMeta?.titleEn || book.title}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Interactive 3D Tilt & Open-Page Folio Edition Showcase */}
           {activeHeroBook && (
@@ -1265,20 +1266,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
         data-testid="home-about-akath"
         className={`akath-io-section ${
           isAboutAkathVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden py-10 sm:py-14 lg:py-16 bg-[#FAF6EC]`}
+        } relative z-10 w-full overflow-hidden pt-10 pb-48 sm:pt-14 sm:pb-40 lg:py-20 bg-[#FAF6EC]`}
       >
         {/* Layered Sahyadri Mountains & Nanded Godavari Dusk Landscape (20–25% Opacity SVG) */}
         <AboutLandscapeBackdrop />
 
-        <div className="relative z-10 max-w-[960px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6 min-w-0">
+        <div className="relative z-10 max-w-[960px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6 min-w-0 pointer-events-none">
           <div className="py-4 sm:py-6 flex flex-col items-center text-center space-y-5">
             <AnimatedTortoiseEmblem
               variant="forest"
               animate={false}
-              className="w-20 h-20 sm:w-24 sm:h-24 shrink-0"
+              className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 pointer-events-auto"
             />
 
-            <div className="space-y-2.5 max-w-2xl mx-auto">
+            <div className="space-y-2.5 max-w-2xl mx-auto pointer-events-auto">
               <p className="text-[11px] sm:text-xs font-mono not-italic font-semibold uppercase tracking-[0.2em] text-[#243B8A]">
                 {isMr
                   ? '०५ · आमची ओळख · THE JOURNEY OF A STORY'
@@ -1302,7 +1303,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </p>
             </div>
 
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-3 pointer-events-auto">
               <button
                 type="button"
                 data-testid="brand-film-discover-books"
