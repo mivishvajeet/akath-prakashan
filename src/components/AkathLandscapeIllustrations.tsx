@@ -57,7 +57,8 @@ function useSubtleLandscapeMotion(
   containerRef: React.RefObject<HTMLDivElement | null>,
   mode: 'hero' | 'section' | 'fixed' = 'section'
 ): boolean {
-  const [isOffscreen, setIsOffscreen] = useState(false);
+  // Start below-the-fold landscape sections paused until scrolled into viewport
+  const [isOffscreen, setIsOffscreen] = useState(mode !== 'hero');
 
   useEffect(() => {
     const node = containerRef.current;
@@ -66,18 +67,17 @@ function useSubtleLandscapeMotion(
     const reducedMotionQuery = window.matchMedia?.(
       '(prefers-reduced-motion: reduce)'
     );
-    if (reducedMotionQuery?.matches) {
-      node.style.setProperty('--akath-scroll-p', '0');
-      node.style.setProperty('--akath-hero-scroll', '0');
-      return;
-    }
+    const isTouchOrCompact = window.matchMedia?.(
+      '(max-width: 1023px), (pointer: coarse)'
+    )?.matches;
 
-    let inView = true;
+    let inView = mode === 'hero';
     let rafId: number | null = null;
+    const enableScrollParallax = !reducedMotionQuery?.matches && !isTouchOrCompact;
 
     const updateParallax = () => {
       rafId = null;
-      if (!inView || !containerRef.current) return;
+      if (!enableScrollParallax || !inView || !containerRef.current) return;
 
       const vh = window.innerHeight || 800;
       if (mode === 'hero') {
@@ -85,7 +85,7 @@ function useSubtleLandscapeMotion(
         const heroProgress = Math.min(1, Math.max(0, window.scrollY / heroRange));
         containerRef.current.style.setProperty(
           '--akath-hero-scroll',
-          heroProgress.toFixed(4)
+          heroProgress.toFixed(3)
         );
         return;
       }
@@ -103,7 +103,6 @@ function useSubtleLandscapeMotion(
         progress = Math.max(-1, Math.min(1, centerOffset / (vh * 0.8)));
       }
 
-      // Single normalized scroll progress (-1..1) consumed by pure CSS calc() parallax rules
       containerRef.current.style.setProperty(
         '--akath-scroll-p',
         progress.toFixed(3)
@@ -111,7 +110,7 @@ function useSubtleLandscapeMotion(
     };
 
     const scheduleUpdate = () => {
-      if (!inView || rafId !== null) return;
+      if (!enableScrollParallax || !inView || rafId !== null) return;
       rafId = window.requestAnimationFrame(updateParallax);
     };
 
@@ -124,23 +123,32 @@ function useSubtleLandscapeMotion(
         (entries) => {
           const visible = entries.some((e) => e.isIntersecting);
           inView = visible;
-          setIsOffscreen(!visible);
-          if (visible) scheduleUpdate();
+          setIsOffscreen((prev) => (prev !== !visible ? !visible : prev));
+          if (visible && enableScrollParallax) scheduleUpdate();
         },
         { rootMargin: '120px 0px 120px 0px', threshold: 0.01 }
       );
       observer.observe(node);
+    } else if (mode === 'fixed') {
+      setIsOffscreen(false);
     }
 
-    updateParallax();
-    window.addEventListener('scroll', scheduleUpdate, { passive: true });
-    window.addEventListener('resize', scheduleUpdate, { passive: true });
+    if (enableScrollParallax) {
+      updateParallax();
+      window.addEventListener('scroll', scheduleUpdate, { passive: true });
+      window.addEventListener('resize', scheduleUpdate, { passive: true });
+    } else {
+      node.style.setProperty('--akath-scroll-p', '0');
+      node.style.setProperty('--akath-hero-scroll', '0');
+    }
 
     return () => {
       if (rafId !== null) window.cancelAnimationFrame(rafId);
       observer?.disconnect();
-      window.removeEventListener('scroll', scheduleUpdate);
-      window.removeEventListener('resize', scheduleUpdate);
+      if (enableScrollParallax) {
+        window.removeEventListener('scroll', scheduleUpdate);
+        window.removeEventListener('resize', scheduleUpdate);
+      }
     };
   }, [containerRef, mode]);
 
@@ -192,20 +200,7 @@ const InkWashDefs: React.FC<InkWashDefsProps> = ({
       <stop offset="100%" stopColor="#E6A62A" stopOpacity="0.2" />
     </linearGradient>
 
-    {/* Lightweight Luminous Bloom Filter for Stars, Moons, Diyas & Glints */}
-    <filter
-      id={`luminousGlow-${uid}`}
-      x="-60%"
-      y="-60%"
-      width="220%"
-      height="220%"
-    >
-      <feGaussianBlur stdDeviation="2.2" result="softGlow" />
-      <feMerge>
-        <feMergeNode in="softGlow" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
-    </filter>
+    {/* Soft Zero-Cost Radial Halo Replaces Expensive feGaussianBlur Filters */}
 
     {/* Distant Sahyadri Basalt Mesa Wash */}
     <linearGradient id={`farWash-${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
@@ -245,34 +240,11 @@ const InkWashDefs: React.FC<InkWashDefsProps> = ({
       <stop offset="100%" stopColor={surfaceHex} stopOpacity="0" />
     </linearGradient>
 
-    {/* Subtle Diagonal Luminous Shimmer Gradient Overlay Sweeping Across the Vector Plate */}
-    <linearGradient id={`shimmerVeil-${uid}`} x1="0%" y1="0%" x2="100%" y2="22%">
-      <stop offset="0%" stopColor="#FFFDF2" stopOpacity="0" />
-      <stop offset="34%" stopColor="#FFD966" stopOpacity="0" />
-      <stop offset="47%" stopColor="#FFF7D6" stopOpacity="0.30" />
-      <stop offset="53%" stopColor="#FFD966" stopOpacity="0.22" />
-      <stop offset="66%" stopColor="#FFFDF2" stopOpacity="0" />
-      <stop offset="100%" stopColor="#FFFDF2" stopOpacity="0" />
-    </linearGradient>
-
-    {/* Subtle Gilded Cotton-Rag Paper Stipple */}
-    <pattern
-      id={`ragGrain-${uid}`}
-      width="32"
-      height="32"
-      patternUnits="userSpaceOnUse"
-    >
-      <circle cx="5" cy="7" r="0.5" fill="#243B8A" opacity="0.06" />
-      <circle cx="17" cy="4" r="0.55" fill="#FFD966" opacity="0.14" />
-      <circle cx="27" cy="14" r="0.5" fill="#1B2D6B" opacity="0.06" />
-      <circle cx="10" cy="22" r="0.55" fill="#E6A62A" opacity="0.12" />
-      <circle cx="24" cy="28" r="0.5" fill="#243B8A" opacity="0.055" />
-    </pattern>
   </defs>
 );
 
 /**
- * Crisp 4-point specular star / river-sun glint with soft luminous bloom.
+ * Crisp 4-point specular star / river-sun glint with zero-cost soft halo.
  */
 const DiamondSparkle: React.FC<{
   cx: number;
@@ -285,9 +257,9 @@ const DiamondSparkle: React.FC<{
   <g
     transform={`translate(${cx}, ${cy})`}
     className={className}
-    filter={`url(#luminousGlow-${uid})`}
     opacity={opacity}
   >
+    <circle cx="0" cy="0" r={r * 1.1} fill="#FFD966" opacity="0.22" />
     <path
       d={`M 0 ${-r} Q 0 0 ${r} 0 Q 0 0 0 ${r} Q 0 0 ${-r} 0 Q 0 0 0 ${-r} Z`}
       fill={`url(#goldFoil-${uid})`}
@@ -719,7 +691,7 @@ const BanyanVachankattaScene: React.FC<{
           <path d="M -3.5 -2 L -2.6 -10.5 L 2.6 -10.5 L 3.5 -2 Z" fill="#FFF8D6" fillOpacity="0.52" stroke="#1B2D6B" strokeWidth="0.9" />
           <path d="M -3.8 -10.5 L 3.8 -10.5 L 2.2 -13 L -2.2 -13 Z" fill="#1B2D6B" />
           <path d="M -3.2 -12 Q 0 -16 3.2 -12" fill="none" stroke="#1B2D6B" strokeWidth="0.95" />
-          <g className="akath-diya-glint" filter={`url(#luminousGlow-${uid})`}>
+          <g className="akath-diya-glint">
             <circle cx="0" cy="-6.2" r="9.5" fill="#FFD966" opacity="0.58" />
             <circle cx="0" cy="-6.2" r="3.9" fill="#EF6855" opacity="0.92" />
             <circle cx="0" cy="-6.6" r="1.85" fill="#FFFDF6" opacity="1" />
@@ -944,7 +916,7 @@ const AboutBanyanStorytellerScene: React.FC<{
           ry="34"
           fill="#FFFBE6"
           opacity="0.48"
-          filter={`url(#luminousGlow-${uid})`}
+         
         />
       </g>
 
@@ -996,9 +968,9 @@ const AboutBanyanStorytellerScene: React.FC<{
           <ellipse cx="74" cy="34" rx="16" ry="7" />
           <ellipse cx="148" cy="22" rx="22" ry="8" />
           <ellipse cx="222" cy="36" rx="18" ry="7.5" />
-          <circle cx="110" cy="46" r="2.2" fill="#FFFDF4" filter={`url(#luminousGlow-${uid})`} />
-          <circle cx="188" cy="28" r="2.4" fill="#FFFDF4" filter={`url(#luminousGlow-${uid})`} />
-          <circle cx="246" cy="48" r="1.9" fill="#FFD966" filter={`url(#luminousGlow-${uid})`} />
+          <circle cx="110" cy="46" r="2.2" fill="#FFFDF4" />
+          <circle cx="188" cy="28" r="2.4" fill="#FFFDF4" />
+          <circle cx="246" cy="48" r="1.9" fill="#FFD966" />
         </g>
 
         {/* Breathing Parchment Sky Openings */}
@@ -1108,7 +1080,7 @@ const AboutBanyanStorytellerScene: React.FC<{
         <path d="M -5 23 L 5 23 L 3.4 20 L -3.4 20 Z" fill="#1B2D6B" />
         <path d="M -4 23 L -3 31 L 3 31 L 4 23 Z" fill="#FFF8D6" fillOpacity="0.58" stroke="#1B2D6B" strokeWidth="0.85" />
         <path d="M -4.2 31 L 4.2 31 L 1.8 33.4 L -1.8 33.4 Z" fill="#1B2D6B" />
-        <g className="akath-diya-glint" filter={`url(#luminousGlow-${uid})`}>
+        <g className="akath-diya-glint">
           <circle cx="0" cy="27.2" r="9.5" fill="#FFD966" opacity="0.56" />
           <circle cx="0" cy="27.2" r="3.8" fill="#EF6855" opacity="0.90" />
           <circle cx="0" cy="26.8" r="1.8" fill="#FFFDF6" opacity="1" />
@@ -1313,10 +1285,10 @@ const AboutDriftingBanyanLeaves: React.FC<{ tier: ViewportTier }> = ({ tier }) =
   const leaves =
     tier === 'mobile'
       ? [
-          { x: 140, y: 458, scale: 1.0, fill: '#4E8660', cls: 'akath-about-breeze-leaf-1' },
-          { x: 245, y: 506, scale: 0.88, fill: '#D9BC62', cls: 'akath-about-breeze-leaf-2' },
-          { x: 96, y: 392, scale: 0.92, fill: '#6D9E73', cls: 'akath-about-breeze-leaf-3' },
-          { x: 310, y: 468, scale: 0.84, fill: '#356E52', cls: 'akath-about-breeze-leaf-4' },
+          { x: 64, y: 452, scale: 0.94, fill: '#4E8660', cls: 'akath-about-breeze-leaf-1' },
+          { x: 168, y: 498, scale: 0.84, fill: '#D9BC62', cls: 'akath-about-breeze-leaf-2' },
+          { x: 42, y: 386, scale: 0.88, fill: '#6D9E73', cls: 'akath-about-breeze-leaf-3' },
+          { x: 248, y: 464, scale: 0.80, fill: '#356E52', cls: 'akath-about-breeze-leaf-4' },
         ]
       : tier === 'tablet'
       ? [
@@ -1372,45 +1344,45 @@ const GodavariWaterRipples: React.FC<{
   if (tier === 'mobile') {
     return (
       <g id="godavari-water-ripples-mobile" fill="none" strokeLinecap="round">
-        {/* Flowing Sinusoidal Current Ripples */}
-        <g className="akath-godavari-ripple-flow-a" opacity="0.62">
+        {/* Flowing Sinusoidal Current Ripples Tuned for 430px Portrait Mobile Framing */}
+        <g className="akath-godavari-ripple-flow-a" opacity="0.64">
           <path
-            d="M -40 597 Q 45 593 130 598 T 300 597 T 470 599 T 680 596"
+            d="M -30 607 Q 45 603 120 608 T 270 606 T 460 608"
             stroke="#FFF8DC"
             strokeWidth="1.05"
-            strokeDasharray="24 22 14 28"
+            strokeDasharray="22 20 14 26"
           />
           <path
-            d="M -30 622 Q 70 618 170 623 T 370 621 T 570 624 T 690 620"
+            d="M -24 631 Q 62 627 148 632 T 318 630 T 462 632"
             stroke="#243B8A"
             strokeWidth="0.85"
-            strokeDasharray="18 26 12 30"
-            opacity="0.48"
+            strokeDasharray="16 24 12 28"
+            opacity="0.46"
           />
         </g>
-        <g className="akath-godavari-ripple-flow-b" opacity="0.54">
+        <g className="akath-godavari-ripple-flow-b" opacity="0.56">
           <path
-            d="M -40 609 Q 60 606 160 611 T 360 608 T 560 612 T 680 609"
+            d="M -30 619 Q 54 615 138 620 T 306 618 T 460 620"
             stroke={`url(#goldBeam-${uid})`}
             strokeWidth="1.15"
-            strokeDasharray="20 26 16 24"
+            strokeDasharray="18 22 14 22"
           />
           <path
-            d="M -20 632 Q 90 629 200 633 T 420 631 T 660 633"
+            d="M -18 643 Q 74 639 168 644 T 356 641 T 456 644"
             stroke="#FFFDF4"
             strokeWidth="0.8"
-            strokeDasharray="14 30"
-            opacity="0.65"
+            strokeDasharray="14 26"
+            opacity="0.66"
           />
         </g>
-        {/* Subtle Expanding Concentric Water Surface Rings */}
-        <g transform="translate(224, 616)">
-          <ellipse cx="0" cy="0" rx="22" ry="3.2" stroke="#FFF8DC" strokeWidth="0.95" className="akath-godavari-ring-a" />
-          <ellipse cx="0" cy="0" rx="13" ry="1.9" stroke="#FFD966" strokeWidth="0.75" className="akath-godavari-ring-b" />
+        {/* Subtle Expanding Concentric Water Surface Rings Centered Inside Safe Mobile Frame */}
+        <g transform="translate(116, 624)">
+          <ellipse cx="0" cy="0" rx="20" ry="2.9" stroke="#FFF8DC" strokeWidth="0.92" className="akath-godavari-ring-a" />
+          <ellipse cx="0" cy="0" rx="12" ry="1.8" stroke="#FFD966" strokeWidth="0.72" className="akath-godavari-ring-b" />
         </g>
-        <g transform="translate(498, 608)">
-          <ellipse cx="0" cy="0" rx="26" ry="3.6" stroke="#FFD966" strokeWidth="0.95" className="akath-godavari-ring-b" />
-          <ellipse cx="0" cy="0" rx="15" ry="2.1" stroke="#FFFDF6" strokeWidth="0.75" className="akath-godavari-ring-c" />
+        <g transform="translate(316, 616)">
+          <ellipse cx="0" cy="0" rx="22" ry="3.2" stroke="#FFD966" strokeWidth="0.92" className="akath-godavari-ring-b" />
+          <ellipse cx="0" cy="0" rx="13" ry="1.9" stroke="#FFFDF6" strokeWidth="0.72" className="akath-godavari-ring-c" />
         </g>
       </g>
     );
@@ -1547,16 +1519,426 @@ const SahyadriWatchtowerFort: React.FC<{
       strokeWidth="1.2"
       opacity="0.86"
     />
-    {/* Engraved Stone Courses & Shadow Hatching */}
+    {/* Engraved Stone Courses, Embrasures & Shadow Hatching (Flag-Free Stone Bastion) */}
     <g stroke="#1B2D6B" strokeWidth="0.7" opacity="0.38">
       <line x1="6" y1="19" x2="98" y2="19" />
       <line x1="6" y1="24" x2="98" y2="24" />
       <line x1="58" y1="12" x2="70" y2="12" />
       <line x1="60" y1="15" x2="70" y2="15" />
+      <line x1="44" y1="13" x2="44" y2="18" />
+      <line x1="60" y1="13" x2="60" y2="18" />
     </g>
-    <line x1="52" y1="6" x2="52" y2="-10" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.2" opacity="0.88" />
-    <path d="M 52 -10 L 64 -7 L 52 -4 Z" fill="#243B8A" opacity="0.76" />
-    <path d="M 52 -10 L 64 -7" stroke="#FFD966" strokeWidth="0.85" opacity="0.9" />
+    {/* Subtle Warm Watchtower Arch Lantern Glint */}
+    <circle
+      cx="21"
+      cy="23.5"
+      r="1.45"
+      fill="#FFD966"
+      className="akath-diya-glint"
+     
+      opacity="0.80"
+    />
+  </g>
+);
+
+/**
+ * 2B. Hand-Engraved Deccan Buddhist Great Stupa & Torana Gateway (Sanchi / Paithan Heritage)
+ * Stepped circular Medhi drum with carved Vedika railing, hemispherical Anda dome gilded by
+ * twilight sun-rim, square Harmika, three-tiered golden Chatravali parasols, triple-architrave
+ * Torana gateway crowned by a Dharmachakra wheel, monolithic Stambha pillar, and entrance diyas.
+ */
+const BuddhistStupaMonastery: React.FC<{
+  transform: string;
+  surfaceHex: string;
+  uid: string;
+}> = ({ transform, surfaceHex, uid }) => (
+  <g transform={transform} strokeLinecap="round" strokeLinejoin="round">
+    {/* Soft Radiant Dusk Halo Behind Golden Chatravali Crown */}
+    <ellipse cx="86" cy="24" rx="46" ry="24" fill="#FFD966" opacity="0.16" />
+
+    {/* Monolithic Ashokan-Inspired Stambha Stone Pillar (Left) */}
+    <g>
+      <path d="M 10 98 L 12 46 L 16 46 L 18 98 Z" fill="#1B2D6B" opacity="0.28" />
+      <path d="M 10 98 L 12 46 L 16 46 L 18 98" fill="none" stroke="#1B2D6B" strokeWidth="1.0" opacity="0.54" />
+      {/* Inverted Bell-Lotus Capital & Abacus */}
+      <path d="M 9.5 46 C 10.5 41.5, 17.5 41.5, 18.5 46 Z" fill="#243B8A" opacity="0.46" stroke="#1B2D6B" strokeWidth="0.85" />
+      <rect x="9" y="40.5" width="10" height="2.2" rx="0.5" fill={`url(#goldFoil-${uid})`} opacity="0.88" />
+      {/* Miniature Crown Wheel on Pillar */}
+      <circle cx="14" cy="37" r="2.6" fill="none" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.95" opacity="0.90" />
+      <circle cx="14" cy="37" r="0.8" fill="#FFD966" opacity="0.95" />
+    </g>
+
+    {/* Companion Miniature Votive Stupa (Right Terrace) */}
+    <g>
+      <path d="M 140 98 L 140 88 C 140 76, 148 70, 155 70 C 162 70, 170 76, 170 88 L 170 98 Z" fill="#1B2D6B" opacity="0.24" />
+      <path d="M 140 98 L 140 88 C 140 76, 148 70, 155 70 C 162 70, 170 76, 170 88 L 170 98" fill="none" stroke="#1B2D6B" strokeWidth="1.0" opacity="0.48" />
+      <line x1="138" y1="88" x2="172" y2="88" stroke="#1B2D6B" strokeWidth="0.9" opacity="0.46" />
+      <rect x="151.5" y="66.5" width="7" height="3.5" fill="#1B2D6B" opacity="0.34" stroke="#1B2D6B" strokeWidth="0.75" />
+      <line x1="155" y1="66.5" x2="155" y2="60.5" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.05" opacity="0.88" />
+      <line x1="151.8" y1="63.5" x2="158.2" y2="63.5" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.9" opacity="0.88" />
+    </g>
+
+    {/* Great Stupa Base Plinth & Stepped Circular Medhi Drum */}
+    <path
+      d="M 16 102 L 16 96 L 26 96 L 26 84 L 146 84 L 146 96 L 156 96 L 156 102 Z"
+      fill="#1B2D6B"
+      opacity="0.25"
+    />
+    {/* Hemispherical Anda Dome Archival Wash */}
+    <path
+      d="M 34 84 C 34 40, 58 23, 86 23 C 114 23, 138 40, 138 84 Z"
+      fill="#1B2D6B"
+      opacity="0.26"
+    />
+    {/* Sunlit Paper-Highlight Crescent Along Western Curve of the Anda Dome */}
+    <path
+      d="M 41 80 C 42 46, 60 28, 84 26 C 66 31, 52 50, 50 80 Z"
+      fill={surfaceHex}
+      opacity="0.54"
+    />
+    {/* Crisp Hand-Engraved Anda Dome Outline & Concentric Masonry Courses */}
+    <g fill="none" stroke="#1B2D6B" opacity="0.52">
+      <path d="M 34 84 C 34 40, 58 23, 86 23 C 114 23, 138 40, 138 84" strokeWidth="1.35" />
+      <path d="M 24 84 L 148 84 M 22 96 L 150 96 M 12 102 L 160 102" strokeWidth="1.2" />
+      {/* Subtle Curved Stone Courses & Shadow Hatching on Right Hemisphere */}
+      <path d="M 42 66 Q 86 60 130 66" strokeWidth="0.72" opacity="0.58" />
+      <path d="M 50 48 Q 86 43 122 48" strokeWidth="0.72" opacity="0.52" />
+      <path d="M 110 31 C 122 42, 128 60, 130 82 M 118 39 C 127 50, 132 64, 134 82" strokeWidth="0.68" opacity="0.50" />
+      {/* Carved Lotus-Petal Collar Ring Around Drum */}
+      <path
+        d="M 36 84 Q 41 79 46 84 Q 51 79 56 84 Q 61 79 66 84 M 106 84 Q 111 79 116 84 Q 121 79 126 84 Q 131 79 136 84"
+        strokeWidth="0.8"
+        opacity="0.66"
+      />
+    </g>
+
+    {/* Carved Vedika Stone Balustrade Railing Across Medhi Terrace */}
+    <g stroke="#1B2D6B" strokeWidth="0.82" opacity="0.52">
+      <line x1="28" y1="88" x2="66" y2="88" />
+      <line x1="28" y1="92" x2="66" y2="92" />
+      <line x1="106" y1="88" x2="144" y2="88" />
+      <line x1="106" y1="92" x2="144" y2="92" />
+      {/* Vertical Vedika Posts */}
+      <line x1="34" y1="84" x2="34" y2="96" />
+      <line x1="43" y1="84" x2="43" y2="96" />
+      <line x1="52" y1="84" x2="52" y2="96" />
+      <line x1="61" y1="84" x2="61" y2="96" />
+      <line x1="111" y1="84" x2="111" y2="96" />
+      <line x1="120" y1="84" x2="120" y2="96" />
+      <line x1="129" y1="84" x2="129" y2="96" />
+      <line x1="138" y1="84" x2="138" y2="96" />
+    </g>
+
+    {/* Gilded Dusk Sun-Rim Catching the Anda Dome Shoulder */}
+    <path
+      d="M 35 76 C 37 42, 58 24, 86 23 C 102 23, 116 28, 125 38"
+      fill="none"
+      stroke={`url(#goldFoil-${uid})`}
+      strokeWidth="1.4"
+      opacity="0.88"
+    />
+
+    {/* Square Carved Harmika Pavilion & Golden Three-Tiered Chatravali Parasols */}
+    <g>
+      <rect x="75" y="14" width="22" height="9" rx="0.6" fill="#1B2D6B" opacity="0.34" stroke="#1B2D6B" strokeWidth="1.05" />
+      <g stroke={surfaceHex} strokeWidth="0.65" opacity="0.65">
+        <line x1="79" y1="15" x2="79" y2="22" />
+        <line x1="83.5" y1="15" x2="83.5" y2="22" />
+        <line x1="88.5" y1="15" x2="88.5" y2="22" />
+        <line x1="93" y1="15" x2="93" y2="22" />
+      </g>
+      {/* Gleaming Gold-Foil Yashti Mast & 3 Tiered Sacred Parasols */}
+      <g
+        stroke={`url(#goldFoil-${uid})`}
+        fill={`url(#goldFoil-${uid})`}
+       
+        opacity="0.96"
+      >
+        <line x1="86" y1="14" x2="86" y2="-3.5" strokeWidth="1.45" />
+        <path d="M 76 10 Q 86 7.5 96 10" fill="none" strokeWidth="1.35" />
+        <path d="M 78.5 6 Q 86 3.8 93.5 6" fill="none" strokeWidth="1.25" />
+        <path d="M 81.2 2 Q 86 0.2 90.8 2" fill="none" strokeWidth="1.15" />
+        <circle cx="86" cy="-4.2" r="1.75" stroke="none" />
+      </g>
+    </g>
+
+    {/* Iconic Front Carved Torana Gateway (Triple Volute-Scrolled Architraves + Dharmachakra) */}
+    <g>
+      {/* Paper-Cleared Gateway Opening */}
+      <rect x="76" y="72" width="20" height="26" fill={surfaceHex} opacity="0.82" />
+      {/* Twin Carved Upright Stone Pillars */}
+      <rect x="71" y="62" width="5" height="36" fill="#1B2D6B" opacity="0.40" stroke="#1B2D6B" strokeWidth="0.95" />
+      <rect x="96" y="62" width="5" height="36" fill="#1B2D6B" opacity="0.40" stroke="#1B2D6B" strokeWidth="0.95" />
+      {/* Three Gracefully Curved Architraves with Rolled Volute Ends */}
+      <g fill="none" stroke="#1B2D6B" strokeWidth="1.55" opacity="0.62">
+        <path d="M 63 72 Q 86 67.5 109 72" />
+        <path d="M 64.5 65.5 Q 86 61.2 107.5 65.5" />
+        <path d="M 66.5 59 Q 86 54.8 105.5 59" />
+      </g>
+      {/* Delicate Gold Highlight on Architrave Ridges & Rolled Volute Tips */}
+      <g fill="none" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.85" opacity="0.88">
+        <path d="M 66.5 58.6 Q 86 54.4 105.5 58.6" />
+        <circle cx="62.5" cy="72" r="1.4" />
+        <circle cx="109.5" cy="72" r="1.4" />
+        <circle cx="64" cy="65.5" r="1.3" />
+        <circle cx="108" cy="65.5" r="1.3" />
+        <circle cx="66" cy="59" r="1.2" />
+        <circle cx="106" cy="59" r="1.2" />
+      </g>
+      {/* Miniature Golden Dharmachakra Wheel Crowning the Torana Gateway */}
+      <g>
+        <circle cx="86" cy="51.2" r="4.1" fill={surfaceHex} fillOpacity="0.82" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.1" />
+        <g stroke="#1B2D6B" strokeWidth="0.55" opacity="0.68">
+          <line x1="86" y1="47.4" x2="86" y2="55" />
+          <line x1="82.2" y1="51.2" x2="89.8" y2="51.2" />
+          <line x1="83.3" y1="48.5" x2="88.7" y2="53.9" />
+          <line x1="88.7" y1="48.5" x2="83.3" y2="53.9" />
+        </g>
+        <circle cx="86" cy="51.2" r="1.0" fill="#FFD966" />
+      </g>
+      {/* Stepped Stone Entry Stairs */}
+      <path d="M 74 98 L 98 98 M 71 101 L 101 101" stroke="#1B2D6B" strokeWidth="0.9" opacity="0.46" />
+    </g>
+
+    {/* Warm Glowing Entrance Diyas Flanking the Torana Threshold */}
+    <g className="akath-diya-glint">
+      <circle cx="67.5" cy="94" r="3.1" fill="#FFD966" opacity="0.48" />
+      <circle cx="67.5" cy="94" r="1.2" fill="#FFFDF6" opacity="0.96" />
+      <circle cx="104.5" cy="94" r="3.1" fill="#FFD966" opacity="0.48" />
+      <circle cx="104.5" cy="94" r="1.2" fill="#FFFDF6" opacity="0.96" />
+    </g>
+  </g>
+);
+
+/**
+ * 2C. Hand-Engraved Ajanta / Ellora Rock-Cut Buddhist Chaitya Cave Hall (Marathwada Heritage)
+ * Sculpted Deccan basalt cliff facade featuring the iconic horseshoe Gavaksha (Chaitya) arch,
+ * radiating vaulted ribs, warm lantern-lit sanctum revealing an inner votive stupa, and
+ * flanking pillared Vihara niches carved directly into the hillside stone.
+ */
+const AjantaChaityaCaveHall: React.FC<{
+  transform: string;
+  surfaceHex: string;
+  uid: string;
+}> = ({ transform, surfaceHex, uid }) => (
+  <g transform={transform} strokeLinecap="round" strokeLinejoin="round">
+    {/* Carved Basalt Cliff Face Mass */}
+    <path
+      d="M 4 82 L 8 28 C 12 16, 30 9, 72 9 C 114 9, 132 16, 136 28 L 140 82 Z"
+      fill="#1B2D6B"
+      opacity="0.24"
+    />
+    {/* Cliff Facade Archival Contour & Horizontal Basalt Strata */}
+    <g fill="none" stroke="#1B2D6B" opacity="0.48">
+      <path d="M 4 82 L 8 28 C 12 16, 30 9, 72 9 C 114 9, 132 16, 136 28 L 140 82" strokeWidth="1.25" />
+      <path d="M 10 34 L 44 34 M 100 34 L 134 34" strokeWidth="0.82" opacity="0.62" />
+      <path d="M 8 44 L 38 44 M 106 44 L 136 44" strokeWidth="0.78" opacity="0.54" />
+      <path d="M 2 82 L 142 82" strokeWidth="1.2" />
+    </g>
+
+    {/* Sunlit Golden Rim Catching the Rock-Cut Cliff Brow */}
+    <path
+      d="M 14 22 C 26 12, 48 9, 72 9 C 94 9, 114 12, 126 19"
+      fill="none"
+      stroke={`url(#goldFoil-${uid})`}
+      strokeWidth="1.3"
+      opacity="0.84"
+    />
+
+    {/* Flanking Rock-Cut Vihara Pillared Meditation Niches */}
+    <g>
+      <path d="M 16 78 L 16 52 Q 25 45 34 52 L 34 78 Z" fill={surfaceHex} opacity="0.70" stroke="#1B2D6B" strokeWidth="0.95" />
+      <line x1="22" y1="53" x2="22" y2="78" stroke="#1B2D6B" strokeWidth="0.85" opacity="0.54" />
+      <line x1="28" y1="53" x2="28" y2="78" stroke="#1B2D6B" strokeWidth="0.85" opacity="0.54" />
+      {/* Mini Kudu Horseshoe Arch Motif Above Left Niche */}
+      <path d="M 19 42 C 19 36, 25 33, 25 33 C 25 33, 31 36, 31 42" fill="none" stroke="#1B2D6B" strokeWidth="0.85" opacity="0.56" />
+
+      <path d="M 110 78 L 110 52 Q 119 45 128 52 L 128 78 Z" fill={surfaceHex} opacity="0.70" stroke="#1B2D6B" strokeWidth="0.95" />
+      <line x1="116" y1="53" x2="116" y2="78" stroke="#1B2D6B" strokeWidth="0.85" opacity="0.54" />
+      <line x1="122" y1="53" x2="122" y2="78" stroke="#1B2D6B" strokeWidth="0.85" opacity="0.54" />
+      {/* Mini Kudu Horseshoe Arch Motif Above Right Niche */}
+      <path d="M 113 42 C 113 36, 119 33, 119 33 C 119 33, 125 36, 125 42" fill="none" stroke="#1B2D6B" strokeWidth="0.85" opacity="0.56" />
+    </g>
+
+    {/* Iconic Horseshoe Chaitya Gavaksha Window & Sanctum Portal */}
+    <g>
+      {/* Recessed Warm Paper-Lit Archway Interior */}
+      <path
+        d="M 46 80 L 46 56 C 42 38, 52 21, 72 16 C 92 21, 102 38, 98 56 L 98 80 Z"
+        fill={surfaceHex}
+        opacity="0.84"
+      />
+      {/* Warm Candlelit Inner Sanctum Wash */}
+      <ellipse cx="72" cy="64" rx="22" ry="18" fill="#FFD966" opacity="0.26" />
+
+      {/* Outer Carved Ogee Horseshoe Chaitya Molding + Finial */}
+      <path
+        d="M 42 58 C 37 36, 50 17, 72 11 C 94 17, 107 36, 102 58"
+        fill="none"
+        stroke="#1B2D6B"
+        strokeWidth="1.65"
+        opacity="0.62"
+      />
+      <path
+        d="M 46 56 C 42 38, 52 21, 72 16 C 92 21, 102 38, 98 56"
+        fill="none"
+        stroke={`url(#goldFoil-${uid})`}
+        strokeWidth="1.25"
+        opacity="0.90"
+      />
+      {/* Radiating Carved Stone Vault Ribs Inside the Chaitya Window */}
+      <g stroke="#1B2D6B" strokeWidth="0.72" opacity="0.46">
+        <line x1="72" y1="45" x2="72" y2="17" />
+        <line x1="72" y1="45" x2="57" y2="23" />
+        <line x1="72" y1="45" x2="87" y2="23" />
+        <line x1="72" y1="45" x2="48" y2="35" />
+        <line x1="72" y1="45" x2="96" y2="35" />
+        <path d="M 46 47 Q 72 42 98 47" fill="none" strokeWidth="1.05" />
+      </g>
+
+      {/* Portal Pillars Framing the Inner Chaitya Hall */}
+      <rect x="46" y="47" width="4.5" height="33" fill="#1B2D6B" opacity="0.34" stroke="#1B2D6B" strokeWidth="0.85" />
+      <rect x="93.5" y="47" width="4.5" height="33" fill="#1B2D6B" opacity="0.34" stroke="#1B2D6B" strokeWidth="0.85" />
+
+      {/* Inner Votive Stupa Silhouetted Inside the Glowing Cave Hall */}
+      <path
+        d="M 60 80 L 60 69 C 60 58, 65.5 53, 72 53 C 78.5 53, 84 58, 84 69 L 84 80 Z"
+        fill="#1B2D6B"
+        opacity="0.42"
+        stroke="#1B2D6B"
+        strokeWidth="0.95"
+      />
+      <rect x="68.5" y="49.5" width="7" height="3.5" fill="#1B2D6B" opacity="0.50" />
+      <line x1="72" y1="49.5" x2="72" y2="45.5" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.1" />
+
+      {/* Subtle Warm Sanctuary Lamp Glow at Stupa Base */}
+      <g className="akath-diya-glint">
+        <circle cx="72" cy="75.5" r="3.6" fill="#FFD966" opacity="0.54" />
+        <circle cx="72" cy="75.5" r="1.4" fill="#FFFDF6" opacity="0.98" />
+      </g>
+    </g>
+  </g>
+);
+
+/**
+ * 2D. Soft Painterly Twilight Sky Cloud Ribbons (Flank-Framed — Never Obscures Typography)
+ * Lightweight layered cotton-parchment cirrus bands with delicate gold-leaf dusk undersides.
+ */
+const TwilightCloudRibbons: React.FC<{
+  tier: ViewportTier;
+  uid: string;
+}> = ({ tier, uid }) => {
+  if (tier === 'mobile') {
+    return (
+      <g fill="none" strokeLinecap="round" opacity="0.62">
+        <g className="akath-cloud-drift-a">
+          <path
+            d="M 16 146 Q 42 134 68 142 Q 92 136 116 146 Q 82 152 16 146 Z"
+            fill="#FFFDF6"
+            fillOpacity="0.68"
+          />
+          <path d="M 24 147 Q 68 149 112 146" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.9" opacity="0.65" />
+        </g>
+        <g className="akath-cloud-drift-b">
+          <path
+            d="M 294 128 Q 324 116 352 124 Q 378 118 404 128 Q 362 135 294 128 Z"
+            fill="#FFFDF6"
+            fillOpacity="0.64"
+          />
+          <path d="M 302 129 Q 350 132 398 128" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.9" opacity="0.62" />
+        </g>
+      </g>
+    );
+  }
+
+  if (tier === 'tablet') {
+    return (
+      <g fill="none" strokeLinecap="round" opacity="0.68">
+        <g className="akath-cloud-drift-a">
+          <path
+            d="M 64 188 Q 112 168 164 182 Q 204 172 246 188 Q 180 198 64 188 Z"
+            fill="#FFFDF6"
+            fillOpacity="0.72"
+          />
+          <path d="M 78 190 Q 158 194 238 188" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.0" opacity="0.68" />
+        </g>
+        <g className="akath-cloud-drift-b">
+          <path
+            d="M 812 168 Q 862 148 914 162 Q 960 152 1006 168 Q 934 178 812 168 Z"
+            fill="#FFFDF6"
+            fillOpacity="0.68"
+          />
+          <path d="M 824 170 Q 912 174 996 168" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.0" opacity="0.66" />
+        </g>
+      </g>
+    );
+  }
+
+  return (
+    <g fill="none" strokeLinecap="round" opacity="0.72">
+      <g className="akath-cloud-drift-a">
+        <path
+          d="M 84 194 Q 146 168 214 186 Q 268 172 326 194 Q 232 206 84 194 Z"
+          fill="#FFFDF6"
+          fillOpacity="0.74"
+        />
+        <path d="M 102 196 Q 208 202 316 194" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.05" opacity="0.70" />
+        <path
+          d="M 380 236 Q 424 222 470 232 Q 506 226 540 236 Q 474 244 380 236 Z"
+          fill="#FFFDF6"
+          fillOpacity="0.56"
+        />
+      </g>
+      <g className="akath-cloud-drift-b">
+        <path
+          d="M 1168 172 Q 1236 146 1308 164 Q 1364 152 1424 172 Q 1326 184 1168 172 Z"
+          fill="#FFFDF6"
+          fillOpacity="0.72"
+        />
+        <path d="M 1184 174 Q 1302 180 1412 172" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.05" opacity="0.68" />
+        <path
+          d="M 1036 224 Q 1084 210 1134 220 Q 1170 214 1206 224 Q 1136 232 1036 224 Z"
+          fill="#FFFDF6"
+          fillOpacity="0.54"
+        />
+      </g>
+    </g>
+  );
+};
+
+/**
+ * 2E. Serene Wooden Godavari Dusk Skiff (Hodi) With Bow Lantern & Golden Reflection
+ */
+const GodavariEveningSkiff: React.FC<{
+  transform: string;
+  uid: string;
+}> = ({ transform, uid }) => (
+  <g transform={transform} strokeLinecap="round" strokeLinejoin="round">
+    <g className="akath-skiff-bob">
+      {/* Gentle Water Ripple Under Keel */}
+      <ellipse cx="28" cy="18.5" rx="28" ry="2.6" fill="#243B8A" opacity="0.18" />
+      <line x1="6" y1="21" x2="50" y2="21" stroke={`url(#goldBeam-${uid})`} strokeWidth="1.0" opacity="0.68" />
+      {/* Curved Timber Hodi Hull */}
+      <path
+        d="M 2 11 C 12 18.5, 44 18.5, 56 10 C 48 13.5, 10 13.5, 2 11 Z"
+        fill="#1B2D6B"
+        fillOpacity="0.64"
+        stroke="#152254"
+        strokeWidth="1.0"
+      />
+      <path d="M 8 12.2 Q 29 14.2 50 11.6" fill="none" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.85" opacity="0.85" />
+      {/* Seated Boatman Silhouette & Resting Oar */}
+      <path d="M 30 12.5 C 30.5 7, 35 6.5, 36.5 12.5 Z" fill="#1B2D6B" opacity="0.62" />
+      <circle cx="33.2" cy="4.8" r="2.0" fill="#1B2D6B" opacity="0.66" />
+      <line x1="28" y1="9.5" x2="17" y2="17.5" stroke="#1B2D6B" strokeWidth="0.95" opacity="0.64" />
+      {/* Small Warm Brass Bow Lantern & Shimmering Reflection */}
+      <line x1="7.5" y1="11.5" x2="7.5" y2="6.5" stroke="#1B2D6B" strokeWidth="0.85" opacity="0.62" />
+      <g className="akath-diya-glint">
+        <circle cx="7.5" cy="5.8" r="3.4" fill="#FFD966" opacity="0.48" />
+        <circle cx="7.5" cy="5.8" r="1.25" fill="#FFFDF6" opacity="0.98" />
+      </g>
+      <line x1="4.5" y1="23.5" x2="11.5" y2="23.5" stroke="#FFD966" strokeWidth="1.15" opacity="0.64" />
+    </g>
   </g>
 );
 
@@ -1624,7 +2006,7 @@ const HemadpanthiStoneShikhara: React.FC<{
     <g
       stroke={`url(#goldFoil-${uid})`}
       fill={`url(#goldFoil-${uid})`}
-      filter={`url(#luminousGlow-${uid})`}
+     
       opacity="0.96"
     >
       <ellipse cx="66" cy="9" rx="6.8" ry="2.5" fill="none" strokeWidth="1.35" />
@@ -1635,7 +2017,7 @@ const HemadpanthiStoneShikhara: React.FC<{
     </g>
 
     {/* Warm Glowing Sanctum Lamp Inside Doorway */}
-    <g className="akath-diya-glint" filter={`url(#luminousGlow-${uid})`}>
+    <g className="akath-diya-glint">
       <circle cx="118" cy="83" r="3.6" fill="#FFD966" opacity="0.50" />
       <circle cx="118" cy="83" r="1.9" fill="#EF6855" opacity="0.82" />
       <circle cx="118" cy="82.6" r="0.95" fill="#FFFDF4" opacity="0.98" />
@@ -1645,8 +2027,8 @@ const HemadpanthiStoneShikhara: React.FC<{
 
 /**
  * 4. Monumental Sahyadri Maratha Hill-Fort Citadel (About Exclusive — Right Crest)
- * Twin circular stone buruj bastions, arched mahadarwaza gate, crenellated
- * rampart gilded by twilight sun, and midnight-indigo & gold watchtower standard.
+ * Twin circular stone buruj bastions, arched mahadarwaza gate, and crenellated
+ * rampart gilded by twilight sun (clean flag-free heritage stonework).
  */
 const SahyadriCitadelFort: React.FC<{
   transform: string;
@@ -1696,13 +2078,9 @@ const SahyadriCitadelFort: React.FC<{
       r="2.1"
       fill="#FFD966"
       className="akath-diya-glint"
-      filter={`url(#luminousGlow-${uid})`}
+     
       opacity="0.84"
     />
-    {/* Watchtower Standard (Archival Indigo & Gold) */}
-    <line x1="48" y1="9" x2="48" y2="-12" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.3" opacity="0.90" />
-    <path d="M 48 -12 L 63 -8.5 L 48 -4.5 Z" fill="#243B8A" opacity="0.80" />
-    <path d="M 48 -12 L 63 -8.5" stroke="#FFD966" strokeWidth="0.9" opacity="0.92" />
   </g>
 );
 
@@ -1791,14 +2169,14 @@ const EngravedGhatMandapa: React.FC<{
     <g
       stroke={`url(#goldFoil-${uid})`}
       fill={`url(#goldFoil-${uid})`}
-      filter={`url(#luminousGlow-${uid})`}
+     
       opacity="0.96"
     >
       <line x1="94" y1="16" x2="94" y2="2" strokeWidth="1.6" />
       <circle cx="94" cy="5.5" r="2.4" stroke="none" />
       <line x1="94" y1="64" x2="94" y2="80" strokeWidth="1.05" />
     </g>
-    <g className="akath-diya-glint" filter={`url(#luminousGlow-${uid})`}>
+    <g className="akath-diya-glint">
       <circle cx="94" cy="83" r="6.5" fill="#FFD966" opacity="0.46" />
       <circle cx="94" cy="83" r="3.4" fill="#EF6855" opacity="0.82" />
       <circle cx="94" cy="82.6" r="1.5" fill="#FFFDF6" opacity="1" />
@@ -1845,7 +2223,7 @@ const StoneDeepstambh: React.FC<{
     </g>
     <line x1="16" y1="18" x2="13" y2="70" stroke={surfaceHex} strokeWidth="0.85" opacity="0.62" />
     {/* Glowing Crown & Lamp-Bracket Diya Glints */}
-    <g className="akath-diya-glint" filter={`url(#luminousGlow-${uid})`}>
+    <g className="akath-diya-glint">
       <circle cx="19" cy="4" r="4.6" fill="#FFD966" opacity="0.52" />
       <circle cx="19" cy="4" r="2.4" fill="#EF6855" opacity="0.85" />
       <circle cx="19" cy="3.6" r="1.1" fill="#FFFDF6" opacity="1" />
@@ -2010,7 +2388,7 @@ const GodavariReeds: React.FC<{ transform: string }> = ({ transform }) => (
    Godavari riverfront ghats with animated water ripples, and a hand-drawn
    heritage Banyan tree with a literary discussion gathering beneath its boughs.
    ============================================================================ */
-export const HeroPublicationWatermark: React.FC = () => {
+export const HeroPublicationWatermark: React.FC = React.memo(() => {
   const uid = useId().replace(/:/g, '');
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tier = useLandscapeViewportTier();
@@ -2020,7 +2398,7 @@ export const HeroPublicationWatermark: React.FC = () => {
   const isTablet = tier === 'tablet';
 
   const viewBox = isMobile
-    ? '0 0 640 680'
+    ? '0 0 430 680'
     : isTablet
     ? '0 0 1120 620'
     : '0 0 1600 620';
@@ -2032,6 +2410,7 @@ export const HeroPublicationWatermark: React.FC = () => {
       ref={containerRef}
       aria-hidden="true"
       data-testid="hero-dusk-landscape-svg"
+      style={{ contain: 'layout style paint' }}
       className={`pointer-events-none absolute inset-0 overflow-hidden select-none bg-[#FAF8F0] ${
         isOffscreen ? 'akath-landscape-offscreen' : ''
       }`}
@@ -2055,18 +2434,16 @@ export const HeroPublicationWatermark: React.FC = () => {
         >
           <InkWashDefs uid={uid} surfaceHex={surfaceHex} sunCy="60%" />
 
-          {/* Subtle Gilded Cotton-Rag Paper Stipple */}
-          <rect width="100%" height="100%" fill={`url(#ragGrain-${uid})`} />
-
-          {/* Radiant Dusk Solar Corona Behind the Sahyadri Horizon */}
+          {/* Radiant Dusk Solar Corona & Soft Drifting Twilight Clouds */}
           <g className="akath-hero-parallax-sky" data-parallax-layer="sky">
             <ellipse
-              cx={isMobile ? 320 : isTablet ? 560 : 800}
-              cy={isMobile ? 426 : 364}
-              rx={isMobile ? 340 : isTablet ? 520 : 680}
-              ry={isMobile ? 225 : 265}
+              cx={isMobile ? 215 : isTablet ? 560 : 800}
+              cy={isMobile ? 430 : 364}
+              rx={isMobile ? 255 : isTablet ? 520 : 680}
+              ry={isMobile ? 215 : 265}
               fill={`url(#duskSun-${uid})`}
             />
+            <TwilightCloudRibbons tier={tier} uid={uid} />
           </g>
 
           {/* LAYER 1 — Sky Meridian Arcs, Gleaming Crescent Moon & Stepped Sahyadri Basalt Mesas */}
@@ -2078,48 +2455,50 @@ export const HeroPublicationWatermark: React.FC = () => {
             {isMobile ? (
               <>
                 <path
-                  d="M 24 410 Q 320 220 616 410"
+                  d="M 16 392 Q 215 216 414 392"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
                   strokeWidth="1.05"
                   strokeDasharray="3.5 7.5"
                   opacity="0.48"
                 />
-                <g transform="translate(534, 154) scale(0.88)">
+                {/* Crescent Moon Positioned Safely Inside 360px–430px Mobile Corridor */}
+                <g transform="translate(332, 84) scale(0.80)">
                   <path
                     d="M 22 4 A 24 24 0 1 0 42 36 A 18 18 0 1 1 22 4 Z"
                     fill={`url(#goldFoil-${uid})`}
-                    filter={`url(#luminousGlow-${uid})`}
+                   
                     opacity="0.95"
                   />
-                  <DiamondSparkle cx={-16} cy={18} r={6.5} uid={uid} className="akath-star-twinkle-a" />
-                  <DiamondSparkle cx={48} cy={10} r={4.5} uid={uid} className="akath-star-twinkle-b" />
+                  <DiamondSparkle cx={-16} cy={18} r={6.2} uid={uid} className="akath-star-twinkle-a" />
+                  <DiamondSparkle cx={48} cy={10} r={4.4} uid={uid} className="akath-star-twinkle-b" />
                 </g>
-                <DiamondSparkle cx={94} cy={184} r={5.0} uid={uid} className="akath-star-twinkle-b" opacity={0.85} />
-                {/* Far Stepped Basalt Mesas (Mobile) */}
+                <DiamondSparkle cx={56} cy={106} r={4.8} uid={uid} className="akath-star-twinkle-b" opacity={0.86} />
+                <DiamondSparkle cx={114} cy={138} r={3.6} uid={uid} className="akath-star-twinkle-a" opacity={0.78} />
+                {/* Far Stepped Basalt Mesas (Mobile Portrait 430x680) */}
                 <path
-                  d="M -16 488 C 12 454, 34 422, 66 418 L 138 416 C 154 416, 166 436, 192 444 C 228 452, 258 432, 294 432 L 344 434 C 368 436, 392 454, 424 446 C 452 438, 474 402, 504 398 L 574 398 C 598 400, 622 426, 656 436 L 656 680 L -16 680 Z"
+                  d="M -16 462 C 8 434, 24 406, 48 402 L 116 400 C 134 402, 148 424, 174 430 C 198 436, 224 418, 254 418 L 296 420 C 314 422, 326 436, 344 426 C 362 414, 376 388, 398 386 L 446 388 L 446 680 L -16 680 Z"
                   fill={`url(#farWash-${uid})`}
                 />
                 <path
-                  d="M -16 488 C 12 454, 34 422, 66 418 L 138 416 C 154 416, 166 436, 192 444 C 228 452, 258 432, 294 432 L 344 434 C 368 436, 392 454, 424 446 C 452 438, 474 402, 504 398 L 574 398 C 598 400, 622 426, 656 436"
+                  d="M -16 462 C 8 434, 24 406, 48 402 L 116 400 C 134 402, 148 424, 174 430 C 198 436, 224 418, 254 418 L 296 420 C 314 422, 326 436, 344 426 C 362 414, 376 388, 398 386 L 446 388"
                   fill="none"
                   stroke="#243B8A"
-                  strokeWidth="1.3"
+                  strokeWidth="1.25"
                   opacity="0.44"
                 />
                 <path
-                  d="M 48 424 C 56 419, 62 418, 138 416 M 274 433 L 344 434 M 486 404 C 494 399, 500 398, 574 398"
+                  d="M 36 408 C 42 403, 46 402, 116 400 M 242 419 L 296 420 M 382 392 C 390 387, 394 386, 442 388"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
                   strokeWidth="1.35"
-                  opacity="0.80"
+                  opacity="0.82"
                 />
                 {/* Contour-Following Deccan Basalt Step Ledges */}
-                <g fill="none" stroke="#243B8A" strokeWidth="0.78" opacity="0.32">
-                  <path d="M 52 430 L 146 429 M 42 442 L 158 441" />
-                  <path d="M 488 410 L 584 410 M 476 422 L 598 423" />
-                  <path d="M 138 416 C 148 430, 158 444, 174 456 M 574 398 C 588 414, 602 428, 620 442" />
+                <g fill="none" stroke="#243B8A" strokeWidth="0.74" opacity="0.32">
+                  <path d="M 34 414 L 122 413 M 26 426 L 134 425" />
+                  <path d="M 378 398 L 444 398 M 368 410 L 444 410" />
+                  <path d="M 116 400 C 126 414, 136 426, 150 436" />
                 </g>
               </>
             ) : isTablet ? (
@@ -2144,7 +2523,7 @@ export const HeroPublicationWatermark: React.FC = () => {
                   <path
                     d="M 22 4 A 24 24 0 1 0 42 36 A 18 18 0 1 1 22 4 Z"
                     fill={`url(#goldFoil-${uid})`}
-                    filter={`url(#luminousGlow-${uid})`}
+                   
                     opacity="0.96"
                   />
                   <DiamondSparkle cx={-20} cy={18} r={7.2} uid={uid} className="akath-star-twinkle-a" />
@@ -2200,7 +2579,7 @@ export const HeroPublicationWatermark: React.FC = () => {
                   <path
                     d="M 22 4 A 24 24 0 1 0 42 36 A 18 18 0 1 1 22 4 Z"
                     fill={`url(#goldFoil-${uid})`}
-                    filter={`url(#luminousGlow-${uid})`}
+                   
                     opacity="0.96"
                   />
                   <DiamondSparkle cx={-20} cy={18} r={7.5} uid={uid} className="akath-star-twinkle-a" />
@@ -2251,7 +2630,7 @@ export const HeroPublicationWatermark: React.FC = () => {
               opacity="0.42"
               transform={
                 isMobile
-                  ? 'translate(-156, 130) scale(0.84)'
+                  ? 'translate(-172, 62) scale(0.76)'
                   : isTablet
                   ? 'translate(-76, 12) scale(0.92)'
                   : undefined
@@ -2270,7 +2649,7 @@ export const HeroPublicationWatermark: React.FC = () => {
           <path
             d={
               isMobile
-                ? 'M -50 482 C 60 456, 164 470, 268 456 C 378 442, 488 464, 690 448 L 690 512 C 520 496, 392 514, 260 502 C 134 490, 48 508, -50 500 Z'
+                ? 'M -30 462 C 42 440, 120 456, 206 444 C 292 432, 362 452, 466 438 L 466 494 C 360 480, 270 496, 176 486 C 88 476, 30 490, -30 482 Z'
                 : isTablet
                 ? 'M -60 404 C 130 376, 310 408, 520 384 C 710 362, 910 398, 1180 374 L 1180 444 C 940 426, 730 448, 520 434 C 310 420, 120 440, -60 428 Z'
                 : 'M -60 398 C 180 364, 410 406, 680 378 C 940 352, 1210 398, 1660 366 L 1660 442 C 1320 422, 1020 448, 720 432 C 420 416, 180 440, -60 426 Z'
@@ -2280,7 +2659,7 @@ export const HeroPublicationWatermark: React.FC = () => {
             opacity="0.80"
           />
 
-          {/* LAYER 2 — Midground Contour-Hatched Escarpments & Distant Watchtower */}
+          {/* LAYER 2 — Midground Escarpments, Buddhist Stupa Monastery & Flag-Free Sahyadri Watchtower */}
           <g
             className="akath-hero-parallax-mid"
             data-parallax-layer="mid"
@@ -2289,29 +2668,36 @@ export const HeroPublicationWatermark: React.FC = () => {
             {isMobile ? (
               <>
                 <path
-                  d="M -16 532 C 26 492, 58 470, 98 468 L 166 468 C 194 470, 218 502, 266 508 C 318 514, 354 494, 404 490 C 444 486, 476 460, 524 460 L 604 462 L 656 488 L 656 680 L -16 680 Z"
+                  d="M -16 498 C 12 468, 36 452, 74 452 L 138 452 C 164 454, 182 484, 215 490 C 254 496, 286 474, 316 462 C 336 454, 356 446, 388 446 L 446 456 L 446 680 L -16 680 Z"
                   fill={`url(#midWash-${uid})`}
                 />
                 <path
-                  d="M -16 532 C 26 492, 58 470, 98 468 L 166 468 C 194 470, 218 502, 266 508 C 318 514, 354 494, 404 490 C 444 486, 476 460, 524 460 L 604 462 L 656 488"
+                  d="M -16 498 C 12 468, 36 452, 74 452 L 138 452 C 164 454, 182 484, 215 490 C 254 496, 286 474, 316 462 C 336 454, 356 446, 388 446 L 446 456"
                   fill="none"
                   stroke="#1B2D6B"
-                  strokeWidth="1.35"
+                  strokeWidth="1.3"
                   opacity="0.46"
                 />
                 <path
-                  d="M 52 478 C 70 470, 84 468, 166 468 M 484 466 C 500 461, 512 460, 604 462"
+                  d="M 28 462 C 44 454, 58 452, 138 452 M 328 456 C 346 448, 364 446, 412 449"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
                   strokeWidth="1.4"
-                  opacity="0.82"
+                  opacity="0.84"
                 />
-                <g fill="none" stroke="#1B2D6B" strokeWidth="0.78" opacity="0.32">
-                  <path d="M 166 468 C 178 482, 190 496, 210 510 M 152 470 C 164 486, 174 498, 190 512 M 136 472 C 146 486, 156 498, 168 510" />
-                  <path d="M 78 482 L 172 481 M 498 474 L 610 475" />
+                <g fill="none" stroke="#1B2D6B" strokeWidth="0.74" opacity="0.32">
+                  <path d="M 38 466 L 142 466 M 138 452 C 150 466, 160 478, 174 490" />
+                  <path d="M 326 466 L 424 466" />
                 </g>
+                {/* Western Deccan Buddhist Great Stupa & Torana (Cleanly Inside Safe Mobile Corridor) */}
+                <BuddhistStupaMonastery
+                  transform="translate(18, 382) scale(0.68)"
+                  surfaceHex={surfaceHex}
+                  uid={uid}
+                />
+                {/* Flag-Free Sahyadri Watchtower Bastion on Eastern Ridge */}
                 <SahyadriWatchtowerFort
-                  transform="translate(96, 449) scale(0.68)"
+                  transform="translate(324, 428) scale(0.66)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
@@ -2341,7 +2727,12 @@ export const HeroPublicationWatermark: React.FC = () => {
                   <path d="M 972 368 C 1002 388, 1034 406, 1074 420 M 946 370 C 974 388, 1002 404, 1036 418" />
                 </g>
                 <SahyadriWatchtowerFort
-                  transform="translate(152, 370) scale(0.84)"
+                  transform="translate(148, 370) scale(0.80)"
+                  surfaceHex={surfaceHex}
+                  uid={uid}
+                />
+                <BuddhistStupaMonastery
+                  transform="translate(262, 366) scale(0.76)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
@@ -2374,8 +2765,21 @@ export const HeroPublicationWatermark: React.FC = () => {
                   <path d="M 574 348 C 598 372, 624 396, 662 418 M 552 350 C 574 374, 598 396, 632 416 M 528 352 C 546 374, 566 394, 594 410" />
                   <path d="M 1384 348 C 1418 370, 1456 392, 1502 412 M 1358 350 C 1390 372, 1426 392, 1468 410" />
                 </g>
+                {/* Deccan Great Buddhist Stupa & Torana Gateway on Western Terrace */}
+                <BuddhistStupaMonastery
+                  transform="translate(226, 336) scale(0.86)"
+                  surfaceHex={surfaceHex}
+                  uid={uid}
+                />
+                {/* Flag-Free Sahyadri Watchtower Bastion on Upper Crest */}
                 <SahyadriWatchtowerFort
                   transform="translate(464, 324) scale(0.92)"
+                  surfaceHex={surfaceHex}
+                  uid={uid}
+                />
+                {/* Subtle Rock-Cut Ajanta Chaitya Hall Carved Into Far-Eastern Basalt Escarpment */}
+                <AjantaChaityaCaveHall
+                  transform="translate(1372, 344) scale(0.76)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
@@ -2387,7 +2791,7 @@ export const HeroPublicationWatermark: React.FC = () => {
           <path
             d={
               isMobile
-                ? 'M -50 538 C 90 520, 210 534, 340 524 C 460 514, 560 532, 690 522 L 690 568 C 540 554, 400 570, 250 560 C 120 550, 30 564, -50 556 Z'
+                ? 'M -30 532 C 62 516, 148 530, 232 520 C 314 510, 386 526, 466 516 L 466 562 C 362 548, 268 564, 168 554 C 82 544, 24 558, -30 550 Z'
                 : isTablet
                 ? 'M -60 452 C 180 434, 390 456, 620 442 C 830 428, 990 450, 1180 438 L 1180 486 C 950 472, 740 488, 520 478 C 300 468, 120 484, -60 474 Z'
                 : 'M -60 450 C 240 426, 520 454, 820 438 C 1100 424, 1340 452, 1660 436 L 1660 486 C 1340 470, 1020 488, 720 476 C 420 464, 160 484, -60 472 Z'
@@ -2397,7 +2801,7 @@ export const HeroPublicationWatermark: React.FC = () => {
             opacity="0.64"
           />
 
-          {/* LAYER 3A — Stepped Nanded Ghats & Shimmering Godavari River Plane */}
+          {/* LAYER 3A — Stepped Nanded Ghats, Serene Skiff & Shimmering Godavari River Plane */}
           <g
             className="akath-hero-parallax-river"
             data-parallax-layer="river"
@@ -2406,41 +2810,47 @@ export const HeroPublicationWatermark: React.FC = () => {
             {isMobile ? (
               <>
                 <path
-                  d="M -16 560 Q 112 534 234 552 T 456 544 Q 554 532 656 548 L 656 710 L -16 710 Z"
+                  d="M -16 562 Q 84 542 178 556 T 340 552 Q 392 544 446 556 L 446 710 L -16 710 Z"
                   fill={`url(#nearWash-${uid})`}
                 />
                 <path
-                  d="M -16 560 Q 112 534 234 552 T 456 544 Q 554 532 656 548"
+                  d="M -16 562 Q 84 542 178 556 T 340 552 Q 392 544 446 556"
                   fill="none"
                   stroke="#174D3A"
-                  strokeWidth="1.3"
+                  strokeWidth="1.25"
                   opacity="0.46"
                 />
-                <g stroke="#1B2D6B" strokeWidth="1.1" opacity="0.42">
-                  <line x1="226" y1="560" x2="518" y2="560" />
-                  <line x1="214" y1="568" x2="532" y2="568" />
-                  <line x1="202" y1="576" x2="544" y2="576" />
+                {/* Centered Stepped Nanded Stone Ghat Stairs Directly Below the Banyan Katta */}
+                <g stroke="#1B2D6B" strokeWidth="1.05" opacity="0.44">
+                  <line x1="78" y1="572" x2="352" y2="572" />
+                  <line x1="66" y1="580" x2="364" y2="580" />
+                  <line x1="54" y1="588" x2="376" y2="588" />
+                </g>
+                <g stroke="#FFF8DC" strokeWidth="0.85" opacity="0.72">
+                  <line x1="80" y1="573" x2="350" y2="573" />
+                  <line x1="68" y1="581" x2="362" y2="581" />
                 </g>
                 {/* Luminous Godavari River Dusk Band */}
                 <path
-                  d="M -24 588 Q 160 572 332 586 T 664 584 L 664 654 Q 450 634 260 642 T -24 650 Z"
+                  d="M -20 598 Q 112 584 218 596 T 450 594 L 450 664 Q 312 646 184 654 T -20 660 Z"
                   fill={`url(#riverWash-${uid})`}
                 />
-                <path d="M -24 588 Q 160 572 332 586 T 664 584" fill="none" stroke={`url(#goldBeam-${uid})`} strokeWidth="1.3" opacity="0.76" />
-                {/* Dappled Banyan Canopy & Warm Lantern Reflection on the Godavari */}
-                <g stroke="#174D3A" strokeWidth="1.15" opacity="0.32">
-                  <line x1="264" y1="598" x2="476" y2="598" strokeDasharray="18 8" />
-                  <line x1="292" y1="607" x2="448" y2="607" strokeDasharray="14 9" />
-                  <line x1="322" y1="616" x2="418" y2="616" strokeDasharray="10 9" />
+                <path d="M -20 598 Q 112 584 218 596 T 450 594" fill="none" stroke={`url(#goldBeam-${uid})`} strokeWidth="1.3" opacity="0.78" />
+                {/* Dappled Banyan Canopy & Warm Lantern Reflection Centered on the Godavari */}
+                <g stroke="#174D3A" strokeWidth="1.1" opacity="0.30">
+                  <line x1="118" y1="608" x2="312" y2="608" strokeDasharray="16 8" />
+                  <line x1="142" y1="617" x2="288" y2="617" strokeDasharray="12 9" />
+                  <line x1="168" y1="626" x2="262" y2="626" strokeDasharray="10 8" />
                 </g>
-                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.8" filter={`url(#luminousGlow-${uid})`}>
-                  <line x1="94" y1="602" x2="188" y2="602" className="akath-river-shimmer-a" />
-                  <line x1="316" y1="612" x2="432" y2="612" className="akath-river-shimmer-b" />
-                  <line x1="456" y1="604" x2="544" y2="604" className="akath-river-shimmer-a" />
+                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.75">
+                  <line x1="48" y1="612" x2="122" y2="612" className="akath-river-shimmer-a" />
+                  <line x1="162" y1="622" x2="268" y2="622" className="akath-river-shimmer-b" />
+                  <line x1="296" y1="614" x2="378" y2="614" className="akath-river-shimmer-a" />
                 </g>
+                <GodavariEveningSkiff transform="translate(32, 608) scale(0.72)" uid={uid} />
                 <GodavariWaterRipples tier="mobile" uid={uid} />
-                <DiamondSparkle cx={368} cy={612} r={5.2} uid={uid} className="akath-star-twinkle-a" opacity={0.94} />
-                <DiamondSparkle cx={496} cy={604} r={4.2} uid={uid} className="akath-star-twinkle-b" opacity={0.88} />
+                <DiamondSparkle cx={215} cy={622} r={5.0} uid={uid} className="akath-star-twinkle-a" opacity={0.94} />
+                <DiamondSparkle cx={336} cy={614} r={4.0} uid={uid} className="akath-star-twinkle-b" opacity={0.88} />
               </>
             ) : isTablet ? (
               <>
@@ -2471,12 +2881,13 @@ export const HeroPublicationWatermark: React.FC = () => {
                   <line x1="740" y1="544" x2="896" y2="544" strokeDasharray="14 10" />
                   <line x1="772" y1="554" x2="864" y2="554" strokeDasharray="12 10" />
                 </g>
-                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.9" filter={`url(#luminousGlow-${uid})`}>
+                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.9">
                   <line x1="220" y1="538" x2="345" y2="538" className="akath-river-shimmer-a" />
                   <line x1="470" y1="548" x2="645" y2="548" className="akath-river-shimmer-b" />
                   <line x1="754" y1="540" x2="885" y2="540" className="akath-river-shimmer-a" />
                   <line x1="518" y1="559" x2="615" y2="559" className="akath-river-shimmer-b" />
                 </g>
+                <GodavariEveningSkiff transform="translate(364, 534) scale(0.84)" uid={uid} />
                 <GodavariWaterRipples tier="tablet" uid={uid} />
                 <DiamondSparkle cx={556} cy={548} r={5.6} uid={uid} className="akath-star-twinkle-a" opacity={0.95} />
                 <DiamondSparkle cx={816} cy={540} r={4.5} uid={uid} className="akath-star-twinkle-b" opacity={0.90} />
@@ -2528,7 +2939,7 @@ export const HeroPublicationWatermark: React.FC = () => {
                   <line x1="1164" y1="561" x2="1216" y2="561" strokeDasharray="12 9" />
                 </g>
                 {/* Gleaming Gold-Foil Dusk Water Shimmer Lines */}
-                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="2.0" filter={`url(#luminousGlow-${uid})`}>
+                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="2.0">
                   <line x1="210" y1="549" x2="318" y2="549" className="akath-river-shimmer-b" />
                   <line x1="420" y1="536" x2="552" y2="536" className="akath-river-shimmer-a" />
                   <line x1="686" y1="545" x2="880" y2="545" className="akath-river-shimmer-b" />
@@ -2536,6 +2947,8 @@ export const HeroPublicationWatermark: React.FC = () => {
                   <line x1="994" y1="538" x2="1118" y2="538" className="akath-river-shimmer-b" />
                   <line x1="1142" y1="548" x2="1264" y2="548" className="akath-river-shimmer-a" />
                 </g>
+                {/* Serene Hand-Drawn Wooden Godavari Skiff Gliding Quietly at Dusk */}
+                <GodavariEveningSkiff transform="translate(524, 532) scale(0.95)" uid={uid} />
                 {/* Subtle Animated SVG Ripple Layer Over Godavari Water Surface */}
                 <GodavariWaterRipples tier="desktop" uid={uid} />
                 {/* Specular Sun-Glints Dancing on the Godavari */}
@@ -2554,28 +2967,24 @@ export const HeroPublicationWatermark: React.FC = () => {
           >
             {isMobile ? (
               <>
-                <EngravedNeemTree
-                  transform="translate(106, 488) scale(0.54)"
-                  surfaceHex={surfaceHex}
-                  uid={uid}
-                />
+                {/* Mathematically Centered Hero Banyan Literary Circle (x=70..360, center=215) */}
                 <BanyanVachankattaScene
-                  transform="translate(212, 392) scale(1.04)"
+                  transform="translate(70, 412) scale(1.0)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
-                <GodavariReeds transform="translate(158, 538) scale(0.72)" />
-                <GodavariReeds transform="translate(508, 536) scale(0.68)" />
+                <GodavariReeds transform="translate(18, 550) scale(0.64)" />
+                <GodavariReeds transform="translate(372, 550) scale(0.64)" />
               </>
             ) : isTablet ? (
               <>
                 <EngravedBanyanTree
-                  transform="translate(94, 392) scale(0.84)"
+                  transform="translate(26, 396) scale(0.78)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
                 <EngravedNeemTree
-                  transform="translate(256, 412) scale(0.70)"
+                  transform="translate(402, 418) scale(0.64)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
@@ -2589,12 +2998,12 @@ export const HeroPublicationWatermark: React.FC = () => {
             ) : (
               <>
                 <EngravedBanyanTree
-                  transform="translate(116, 378) scale(0.98)"
+                  transform="translate(42, 382) scale(0.92)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
                 <EngravedNeemTree
-                  transform="translate(294, 402) scale(0.82)"
+                  transform="translate(388, 404) scale(0.76)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
@@ -2603,26 +3012,17 @@ export const HeroPublicationWatermark: React.FC = () => {
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
-                <GodavariReeds transform="translate(388, 462) scale(0.95)" />
+                <GodavariReeds transform="translate(476, 466) scale(0.92)" />
                 <GodavariReeds transform="translate(1414, 464) scale(0.9)" />
               </>
             )}
           </g>
 
-          {/* In-SVG Luminous Gold-Ivory Shimmer Gradient Overlay */}
-          <rect
-            x="-45%"
-            y="0"
-            width="190%"
-            height="100%"
-            fill={`url(#shimmerVeil-${uid})`}
-            className="akath-svg-shimmer-overlay"
-          />
         </svg>
 
-        {/* Subtle Animated Gilded Foil Sheen Gliding Across the Plate */}
+        {/* Subtle Animated Gilded Foil Sheen Gliding Across the Plate (Desktop Only) */}
         <div
-          className="akath-gold-sheen-sweep absolute inset-y-0 -inset-x-[24%] pointer-events-none"
+          className="hidden lg:block akath-gold-sheen-sweep absolute inset-y-0 -inset-x-[24%] pointer-events-none"
           style={{
             background:
               'linear-gradient(112deg, rgba(255, 253, 245, 0) 28%, rgba(255, 217, 102, 0.14) 45%, rgba(255, 250, 224, 0.26) 50%, rgba(255, 217, 102, 0.12) 56%, rgba(255, 253, 245, 0) 72%)',
@@ -2674,7 +3074,7 @@ export const HeroPublicationWatermark: React.FC = () => {
       />
     </div>
   );
-};
+});
 
 /* ============================================================================
    2. FOR AUTHORS — CHAPTER II: INTIMATE GODAVARI GHAT STUDY (ILLUMINATED)
@@ -2683,7 +3083,7 @@ export const HeroPublicationWatermark: React.FC = () => {
    skiff, opposite-bank lit deepstambh, sunlit neem grove, reeds, and gleaming
    golden-hour Godavari water reflections.
    ============================================================================ */
-export const AuthorsLandscapeBackdrop: React.FC = () => {
+export const AuthorsLandscapeBackdrop: React.FC = React.memo(() => {
   const uid = useId().replace(/:/g, '');
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tier = useLandscapeViewportTier();
@@ -2693,7 +3093,7 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
   const isTablet = tier === 'tablet';
 
   const viewBox = isMobile
-    ? '0 0 640 760'
+    ? '0 0 430 700'
     : isTablet
     ? '0 0 1120 720'
     : '0 0 1600 720';
@@ -2705,6 +3105,7 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
       ref={containerRef}
       aria-hidden="true"
       data-testid="authors-dusk-landscape-svg"
+      style={{ contain: 'layout style paint' }}
       className={`pointer-events-none absolute inset-0 overflow-hidden select-none bg-[#F4EDE0] ${
         isOffscreen ? 'akath-landscape-offscreen' : ''
       }`}
@@ -2727,15 +3128,12 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
         >
           <InkWashDefs uid={uid} surfaceHex={surfaceHex} sunCy="56%" />
 
-          {/* Subtle Gilded Paper Stipple */}
-          <rect width="100%" height="100%" fill={`url(#ragGrain-${uid})`} />
-
           {/* Radiant Low Horizon Dusk Corona */}
           <ellipse
-            cx={isMobile ? 320 : isTablet ? 560 : 800}
-            cy={isMobile ? 506 : 454}
-            rx={isMobile ? 330 : isTablet ? 510 : 660}
-            ry={isMobile ? 205 : 245}
+            cx={isMobile ? 215 : isTablet ? 560 : 800}
+            cy={isMobile ? 492 : 454}
+            rx={isMobile ? 245 : isTablet ? 510 : 660}
+            ry={isMobile ? 195 : 245}
             fill={`url(#duskSun-${uid})`}
           />
 
@@ -2744,7 +3142,7 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
             <g
               transform={
                 isMobile
-                  ? 'translate(76, 134) scale(0.86)'
+                  ? 'translate(42, 92) scale(0.80)'
                   : isTablet
                   ? 'translate(124, 118) scale(0.94)'
                   : 'translate(192, 116)'
@@ -2753,7 +3151,7 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
               <path
                 d="M 22 4 A 24 24 0 1 0 42 36 A 18 18 0 1 1 22 4 Z"
                 fill={`url(#goldFoil-${uid})`}
-                filter={`url(#luminousGlow-${uid})`}
+               
                 opacity="0.96"
               />
               <DiamondSparkle cx={58} cy={18} r={6.8} uid={uid} className="akath-star-twinkle-a" />
@@ -2788,7 +3186,7 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
               opacity="0.40"
               transform={
                 isMobile
-                  ? 'translate(-790, 62)'
+                  ? 'translate(-930, 12) scale(0.84)'
                   : isTablet
                   ? 'translate(-380, 26)'
                   : undefined
@@ -2801,18 +3199,18 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
             {isMobile ? (
               <>
                 <path
-                  d="M -16 538 C 46 512, 116 498, 194 504 C 266 510, 326 496, 404 494 C 484 492, 560 508, 656 522 L 656 760 L -16 760 Z"
+                  d="M -16 516 C 34 494, 86 482, 146 488 C 202 494, 246 480, 304 478 C 356 476, 404 490, 446 502 L 446 700 L -16 700 Z"
                   fill={`url(#farWash-${uid})`}
                 />
                 <path
-                  d="M -16 538 C 46 512, 116 498, 194 504 C 266 510, 326 496, 404 494 C 484 492, 560 508, 656 522"
+                  d="M -16 516 C 34 494, 86 482, 146 488 C 202 494, 246 480, 304 478 C 356 476, 404 490, 446 502"
                   fill="none"
                   stroke="#243B8A"
                   strokeWidth="1.2"
                   opacity="0.38"
                 />
                 <path
-                  d="M 88 503 C 124 499, 160 501, 194 504 M 332 496 C 368 494, 412 493, 456 495"
+                  d="M 52 487 C 84 483, 114 485, 146 488 M 248 480 C 276 478, 310 477, 344 479"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
                   strokeWidth="1.35"
@@ -2871,7 +3269,7 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
           <path
             d={
               isMobile
-                ? 'M -50 536 C 80 516, 200 532, 330 518 C 460 506, 560 526, 690 516 L 690 572 C 520 556, 380 574, 240 562 C 110 550, 30 564, -50 558 Z'
+                ? 'M -30 518 C 56 500, 140 516, 224 504 C 310 494, 382 512, 466 502 L 466 552 C 354 538, 258 554, 162 544 C 76 534, 24 546, -30 540 Z'
                 : isTablet
                 ? 'M -60 492 C 160 466, 380 494, 620 476 C 840 460, 990 486, 1180 470 L 1180 532 C 950 516, 720 536, 500 522 C 280 508, 120 528, -60 518 Z'
                 : 'M -60 488 C 220 458, 490 494, 800 472 C 1090 452, 1340 488, 1660 466 L 1660 530 C 1340 512, 1020 534, 720 520 C 420 506, 160 526, -60 516 Z'
@@ -2886,28 +3284,28 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
             {isMobile ? (
               <>
                 <path
-                  d="M -16 588 Q 140 562 276 584 T 656 574 L 656 760 L -16 760 Z"
+                  d="M -16 562 Q 98 540 198 558 T 446 550 L 446 700 L -16 700 Z"
                   fill={`url(#midWash-${uid})`}
                 />
                 <path
-                  d="M -16 588 Q 140 562 276 584 T 656 574"
+                  d="M -16 562 Q 98 540 198 558 T 446 550"
                   fill="none"
                   stroke="#1B2D6B"
                   strokeWidth="1.2"
                   opacity="0.40"
                 />
                 <EngravedGhatMandapa
-                  transform="translate(18, 474) scale(0.84)"
+                  transform="translate(14, 464) scale(0.74)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
                 <StoneDeepstambh
-                  transform="translate(468, 514) scale(0.84)"
+                  transform="translate(290, 500) scale(0.76)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
                 <EngravedNeemTree
-                  transform="translate(502, 496) scale(0.9)"
+                  transform="translate(322, 486) scale(0.74)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
@@ -2988,22 +3386,22 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
             {isMobile ? (
               <>
                 <path
-                  d="M -24 610 Q 180 594 340 606 T 664 604 L 664 790 L -24 790 Z"
+                  d="M -20 584 Q 118 570 226 582 T 450 580 L 450 720 L -20 720 Z"
                   fill={`url(#riverWash-${uid})`}
                 />
-                <path d="M -24 610 Q 180 594 340 606 T 664 604" fill="none" stroke={`url(#goldBeam-${uid})`} strokeWidth="1.35" opacity="0.76" />
-                <g stroke="#1B2D6B" strokeWidth="1.1" opacity="0.34">
-                  <line x1="56" y1="624" x2="156" y2="624" />
-                  <line x1="68" y1="634" x2="142" y2="634" />
-                  <line x1="82" y1="644" x2="128" y2="644" />
+                <path d="M -20 584 Q 118 570 226 582 T 450 580" fill="none" stroke={`url(#goldBeam-${uid})`} strokeWidth="1.35" opacity="0.76" />
+                <g stroke="#1B2D6B" strokeWidth="1.05" opacity="0.34">
+                  <line x1="42" y1="598" x2="128" y2="598" />
+                  <line x1="52" y1="608" x2="116" y2="608" />
+                  <line x1="64" y1="618" x2="104" y2="618" />
                 </g>
-                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.85" filter={`url(#luminousGlow-${uid})`}>
-                  <line x1="184" y1="636" x2="320" y2="636" className="akath-river-shimmer-a" />
-                  <line x1="230" y1="652" x2="412" y2="652" className="akath-river-shimmer-b" />
-                  <line x1="364" y1="628" x2="492" y2="628" className="akath-river-shimmer-a" />
+                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.8">
+                  <line x1="128" y1="610" x2="236" y2="610" className="akath-river-shimmer-a" />
+                  <line x1="164" y1="626" x2="306" y2="626" className="akath-river-shimmer-b" />
+                  <line x1="258" y1="602" x2="354" y2="602" className="akath-river-shimmer-a" />
                 </g>
-                <DiamondSparkle cx={322} cy={652} r={5.4} uid={uid} className="akath-star-twinkle-a" opacity={0.94} />
-                <DiamondSparkle cx={434} cy={628} r={4.2} uid={uid} className="akath-star-twinkle-b" opacity={0.88} />
+                <DiamondSparkle cx={232} cy={626} r={5.0} uid={uid} className="akath-star-twinkle-a" opacity={0.94} />
+                <DiamondSparkle cx={312} cy={602} r={4.0} uid={uid} className="akath-star-twinkle-b" opacity={0.88} />
               </>
             ) : isTablet ? (
               <>
@@ -3017,7 +3415,7 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
                   <line x1="110" y1="602" x2="202" y2="602" />
                   <line x1="126" y1="614" x2="188" y2="614" />
                 </g>
-                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.95" filter={`url(#luminousGlow-${uid})`}>
+                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.95">
                   <line x1="330" y1="604" x2="498" y2="604" className="akath-river-shimmer-a" />
                   <line x1="468" y1="620" x2="684" y2="620" className="akath-river-shimmer-b" />
                   <line x1="696" y1="600" x2="854" y2="600" className="akath-river-shimmer-a" />
@@ -3042,7 +3440,7 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
                   <line x1="1216" y1="604" x2="1240" y2="604" />
                 </g>
                 {/* Gleaming Gold-Foil Water Shimmer Bars */}
-                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="2.0" filter={`url(#luminousGlow-${uid})`}>
+                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="2.0">
                   <line x1="426" y1="604" x2="612" y2="604" className="akath-river-shimmer-a" />
                   <line x1="674" y1="618" x2="928" y2="618" className="akath-river-shimmer-b" />
                   <line x1="744" y1="636" x2="878" y2="636" className="akath-river-shimmer-a" />
@@ -3059,7 +3457,7 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
           {/* Foreground Botanicals Plane — Riverbank Reeds (Independent Depth Motion) */}
           <g className="akath-parallax-trees" strokeLinecap="round">
             {isMobile ? (
-              <GodavariReeds transform="translate(556, 610) scale(0.9)" />
+              <GodavariReeds transform="translate(366, 588) scale(0.78)" />
             ) : isTablet ? (
               <>
                 <GodavariReeds transform="translate(998, 566) scale(1.04)" />
@@ -3073,20 +3471,11 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
             )}
           </g>
 
-          {/* In-SVG Luminous Gold-Ivory Shimmer Gradient Overlay */}
-          <rect
-            x="-45%"
-            y="0"
-            width="190%"
-            height="100%"
-            fill={`url(#shimmerVeil-${uid})`}
-            className="akath-svg-shimmer-overlay"
-          />
         </svg>
 
-        {/* Subtle Animated Gilded Foil Sheen Gliding Across the Plate */}
+        {/* Subtle Animated Gilded Foil Sheen Gliding Across the Plate (Desktop Only) */}
         <div
-          className="akath-gold-sheen-sweep absolute inset-y-0 -inset-x-[24%] pointer-events-none"
+          className="hidden lg:block akath-gold-sheen-sweep absolute inset-y-0 -inset-x-[24%] pointer-events-none"
           style={{
             background:
               'linear-gradient(112deg, rgba(255, 253, 245, 0) 28%, rgba(255, 217, 102, 0.14) 45%, rgba(255, 250, 224, 0.25) 50%, rgba(255, 217, 102, 0.12) 56%, rgba(255, 253, 245, 0) 72%)',
@@ -3136,7 +3525,7 @@ export const AuthorsLandscapeBackdrop: React.FC = () => {
       />
     </div>
   );
-};
+});
 
 /* ============================================================================
    3. ABOUT — CHAPTER III: ELEVATED SAHYADRI HORIZON (ILLUMINATED PLATE)
@@ -3154,7 +3543,7 @@ export interface AboutLandscapeBackdropProps {
   bottomFadeRgba?: string;
 }
 
-export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
+export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = React.memo(({
   surfaceHex = '#FAF6EC',
   topFadeRgba = 'rgba(244, 237, 224, 0.72)',
   bottomFadeRgba = 'rgba(250, 246, 236, 0.85)',
@@ -3174,7 +3563,7 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
   const isTablet = tier === 'tablet';
 
   const viewBox = isMobile
-    ? '0 0 640 720'
+    ? '0 0 430 680'
     : isTablet
     ? '0 0 1120 660'
     : '0 0 1600 640';
@@ -3187,7 +3576,7 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
       className={`pointer-events-none absolute inset-0 overflow-hidden select-none ${
         isOffscreen ? 'akath-landscape-offscreen' : ''
       }`}
-      style={{ backgroundColor: surfaceHex }}
+      style={{ backgroundColor: surfaceHex, contain: 'layout style paint' }}
     >
       {/* Radiant Golden-Hour Horizon Atmospheric Wash */}
       <div
@@ -3207,24 +3596,22 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
         >
           <InkWashDefs uid={uid} surfaceHex={surfaceHex} sunCy="62%" />
 
-          {/* Subtle Gilded Cotton-Rag Paper Stipple */}
-          <rect width="100%" height="100%" fill={`url(#ragGrain-${uid})`} />
-
-          {/* Radiant Golden-Dusk Horizon Halo Behind High Sahyadri Plateaus */}
+          {/* Radiant Golden-Dusk Horizon Halo & Soft Twilight Clouds */}
           <ellipse
-            cx={isMobile ? 320 : isTablet ? 560 : 800}
-            cy={isMobile ? 446 : 386}
-            rx={isMobile ? 350 : isTablet ? 530 : 700}
-            ry={isMobile ? 225 : 265}
+            cx={isMobile ? 215 : isTablet ? 560 : 800}
+            cy={isMobile ? 430 : 386}
+            rx={isMobile ? 255 : isTablet ? 530 : 700}
+            ry={isMobile ? 210 : 265}
             fill={`url(#duskSun-${uid})`}
           />
+          <TwilightCloudRibbons tier={tier} uid={uid} />
 
           {/* LAYER 1 — Monumental Terraced Deccan Trap Basalt Plateaus */}
           <g className="akath-parallax-far" strokeLinecap="round">
             <path
               d={
                 isMobile
-                  ? 'M 36 420 Q 320 250 604 420'
+                  ? 'M 20 398 Q 215 232 410 398'
                   : isTablet
                   ? 'M 80 374 Q 560 156 1040 374'
                   : 'M 120 364 Q 800 132 1480 364'
@@ -3238,7 +3625,7 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
             <g
               transform={
                 isMobile
-                  ? 'translate(518, 174) scale(0.84)'
+                  ? 'translate(352, 92) scale(0.80)'
                   : isTablet
                   ? 'translate(944, 130) scale(0.92)'
                   : 'translate(1354, 126)'
@@ -3249,9 +3636,9 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
               <DiamondSparkle cx={-20} cy={22} r={4.4} uid={uid} className="akath-star-twinkle-a" opacity={0.86} />
             </g>
             <DiamondSparkle
-              cx={isMobile ? 104 : isTablet ? 186 : 244}
-              cy={isMobile ? 196 : isTablet ? 148 : 144}
-              r={isMobile ? 5.2 : 6.0}
+              cx={isMobile ? 62 : isTablet ? 186 : 244}
+              cy={isMobile ? 108 : isTablet ? 148 : 144}
+              r={isMobile ? 5.0 : 6.0}
               uid={uid}
               className="akath-star-twinkle-b"
               opacity={0.88}
@@ -3260,25 +3647,25 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
             {isMobile ? (
               <>
                 <path
-                  d="M -16 492 C 4 468, 18 438, 38 436 L 116 434 C 132 436, 144 456, 168 458 C 194 460, 214 418, 240 416 L 318 416 C 338 418, 352 450, 384 458 C 424 466, 456 410, 484 408 L 568 406 C 594 408, 616 438, 656 446 L 656 720 L -16 720 Z"
+                  d="M -16 462 C 4 440, 18 416, 38 414 L 106 412 C 122 414, 136 434, 162 436 C 186 438, 206 404, 232 402 L 284 402 C 302 404, 314 426, 336 430 C 358 434, 374 394, 396 392 L 446 392 L 446 680 L -16 680 Z"
                   fill={`url(#farWash-${uid})`}
                 />
                 <path
-                  d="M -16 492 C 4 468, 18 438, 38 436 L 116 434 C 132 436, 144 456, 168 458 C 194 460, 214 418, 240 416 L 318 416 C 338 418, 352 450, 384 458 C 424 466, 456 410, 484 408 L 568 406 C 594 408, 616 438, 656 446"
+                  d="M -16 462 C 4 440, 18 416, 38 414 L 106 412 C 122 414, 136 434, 162 436 C 186 438, 206 404, 232 402 L 284 402 C 302 404, 314 426, 336 430 C 358 434, 374 394, 396 392 L 446 392"
                   fill="none"
                   stroke="#243B8A"
-                  strokeWidth="1.35"
+                  strokeWidth="1.3"
                   opacity="0.44"
                 />
                 <path
-                  d="M 38 436 L 116 434 M 240 416 L 318 416 M 484 408 L 568 406"
+                  d="M 38 414 L 106 412 M 232 402 L 284 402 M 396 392 L 442 392"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
                   strokeWidth="1.4"
                   opacity="0.82"
                 />
-                <g fill="none" stroke="#243B8A" strokeWidth="0.78" opacity="0.32">
-                  <path d="M 28 448 L 126 447 M 228 428 L 328 428 M 472 420 L 578 420 M 462 434 L 592 434" />
+                <g fill="none" stroke="#243B8A" strokeWidth="0.74" opacity="0.32">
+                  <path d="M 28 426 L 114 425 M 222 414 L 294 414 M 382 406 L 444 406" />
                 </g>
               </>
             ) : isTablet ? (
@@ -3343,7 +3730,7 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
           <path
             d={
               isMobile
-                ? 'M -50 492 C 70 468, 190 486, 320 470 C 440 456, 550 478, 690 464 L 690 526 C 530 510, 390 528, 250 516 C 120 504, 30 520, -50 512 Z'
+                ? 'M -30 468 C 56 446, 140 464, 224 450 C 308 438, 382 458, 466 444 L 466 500 C 362 486, 268 502, 168 492 C 80 482, 24 496, -30 488 Z'
                 : isTablet
                 ? 'M -60 426 C 160 398, 370 428, 600 404 C 820 384, 980 416, 1180 396 L 1180 466 C 950 448, 730 470, 510 454 C 290 440, 120 460, -60 450 Z'
                 : 'M -60 420 C 220 386, 480 424, 780 398 C 1070 374, 1330 418, 1660 388 L 1660 462 C 1340 444, 1020 468, 720 452 C 420 436, 160 458, -60 446 Z'
@@ -3353,38 +3740,45 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
             opacity="0.78"
           />
 
-          {/* LAYER 2 — Fortified Maratha Hill-Fort Citadel & Valley Hemadpanthi Stone Shikhara */}
+          {/* LAYER 2 — Buddhist Great Stupa, Ajanta Rock-Cut Chaitya Cave Hall & Flag-Free Sahyadri Citadel */}
           <g className="akath-parallax-mid" strokeLinecap="round">
             {isMobile ? (
               <>
                 <path
-                  d="M -16 544 C 38 510, 86 502, 148 518 C 216 534, 286 546, 366 534 C 424 524, 464 476, 514 472 L 598 472 L 656 506 L 656 720 L -16 720 Z"
+                  d="M -16 516 C 24 484, 62 478, 116 492 C 170 506, 220 518, 268 504 C 296 494, 314 452, 344 446 L 404 446 L 446 472 L 446 680 L -16 680 Z"
                   fill={`url(#midWash-${uid})`}
                 />
                 <path
-                  d="M -16 544 C 38 510, 86 502, 148 518 C 216 534, 286 546, 366 534 C 424 524, 464 476, 514 472 L 598 472 L 656 506"
+                  d="M -16 516 C 24 484, 62 478, 116 492 C 170 506, 220 518, 268 504 C 296 494, 314 452, 344 446 L 404 446 L 446 472"
                   fill="none"
                   stroke="#1B2D6B"
-                  strokeWidth="1.35"
+                  strokeWidth="1.3"
                   opacity="0.46"
                 />
                 <path
-                  d="M 484 480 C 498 474, 508 472, 598 472"
+                  d="M 322 454 C 334 448, 340 446, 404 446"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
                   strokeWidth="1.45"
-                  opacity="0.84"
+                  opacity="0.86"
                 />
-                <g fill="none" stroke="#1B2D6B" strokeWidth="0.78" opacity="0.32">
-                  <path d="M 488 486 L 610 486 M 474 498 L 622 498" />
+                <g fill="none" stroke="#1B2D6B" strokeWidth="0.74" opacity="0.32">
+                  <path d="M 326 460 L 414 460 M 314 472 L 424 472" />
                 </g>
-                <HemadpanthiStoneShikhara
-                  transform="translate(72, 462) scale(0.56)"
+                {/* Western Heritage Valley: Great Buddhist Stupa & Torana */}
+                <BuddhistStupaMonastery
+                  transform="translate(18, 412) scale(0.66)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
+                {/* Eastern Basalt Plateau: Flag-Free Sahyadri Citadel Above Ajanta Rock-Cut Chaitya Hall */}
                 <SahyadriCitadelFort
-                  transform="translate(476, 444) scale(0.76)"
+                  transform="translate(294, 422) scale(0.62)"
+                  surfaceHex={surfaceHex}
+                  uid={uid}
+                />
+                <AjantaChaityaCaveHall
+                  transform="translate(298, 458) scale(0.68)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
@@ -3417,8 +3811,13 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
-                <HemadpanthiStoneShikhara
-                  transform="translate(166, 396) scale(0.72)"
+                <AjantaChaityaCaveHall
+                  transform="translate(814, 424) scale(0.84)"
+                  surfaceHex={surfaceHex}
+                  uid={uid}
+                />
+                <BuddhistStupaMonastery
+                  transform="translate(154, 392) scale(0.84)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
@@ -3448,13 +3847,25 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
                   <path d="M 1368 378 C 1408 402, 1448 424, 1498 444 M 1334 380 C 1372 404, 1412 426, 1456 444" />
                   <path d="M 122 454 C 190 452, 248 462, 314 480 M 96 470 C 166 468, 224 476, 286 492" />
                 </g>
+                {/* Eastern Sahyadri Escarpment: Flag-Free Citadel Above Ajanta Rock-Cut Chaitya Cave Hall */}
                 <SahyadriCitadelFort
                   transform="translate(1192, 342) scale(1.04)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
+                <AjantaChaityaCaveHall
+                  transform="translate(1158, 404) scale(0.96)"
+                  surfaceHex={surfaceHex}
+                  uid={uid}
+                />
+                {/* Western Marathwada Heritage Valley: Great Buddhist Stupa & Companion Hemadpanthi Shikhara */}
                 <HemadpanthiStoneShikhara
-                  transform="translate(268, 386) scale(0.84)"
+                  transform="translate(34, 406) scale(0.68)"
+                  surfaceHex={surfaceHex}
+                  uid={uid}
+                />
+                <BuddhistStupaMonastery
+                  transform="translate(232, 376) scale(0.96)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
@@ -3466,7 +3877,7 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
           <path
             d={
               isMobile
-                ? 'M -50 572 C 90 554, 210 570, 340 558 C 460 548, 560 566, 690 554 L 690 604 C 540 590, 400 606, 250 596 C 120 586, 30 600, -50 592 Z'
+                ? 'M -30 546 C 58 530, 142 544, 228 534 C 314 524, 386 540, 466 530 L 466 578 C 362 564, 268 580, 168 570 C 82 560, 24 572, -30 564 Z'
                 : isTablet
                 ? 'M -60 508 C 180 486, 390 510, 620 494 C 830 480, 990 504, 1180 490 L 1180 542 C 950 528, 740 546, 520 534 C 300 524, 120 540, -60 530 Z'
                 : 'M -60 504 C 240 478, 520 508, 820 492 C 1100 476, 1340 506, 1660 488 L 1660 542 C 1340 526, 1020 544, 720 532 C 420 520, 160 538, -60 528 Z'
@@ -3481,18 +3892,18 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
             {isMobile ? (
               <>
                 <path
-                  d="M -24 616 Q 156 588 320 606 T 664 598 L 664 750 L -24 750 Z"
+                  d="M -20 594 Q 108 570 216 586 T 450 578 L 450 704 L -20 704 Z"
                   fill={`url(#nearWash-${uid})`}
                 />
                 <path
-                  d="M -24 616 Q 156 588 320 606 T 664 598"
+                  d="M -20 594 Q 108 570 216 586 T 450 578"
                   fill="none"
                   stroke="#174D3A"
-                  strokeWidth="1.3"
+                  strokeWidth="1.25"
                   opacity="0.46"
                 />
                 <path
-                  d="M -24 644 Q 186 626 352 638 T 664 632"
+                  d="M -20 626 Q 124 610 236 620 T 450 614"
                   fill="none"
                   stroke={`url(#goldBeam-${uid})`}
                   strokeWidth="1.45"
@@ -3540,7 +3951,7 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
                   fill="none"
                   stroke={`url(#goldBeam-${uid})`}
                   strokeWidth="1.7"
-                  filter={`url(#luminousGlow-${uid})`}
+                 
                   opacity="0.88"
                 />
                 <path
@@ -3559,13 +3970,9 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
           <g className="akath-parallax-trees" strokeLinecap="round">
             {isMobile ? (
               <>
+                {/* Mathematically Centered About Banyan Storytelling Circle (x=66..364, center=215) */}
                 <AboutBanyanStorytellerScene
-                  transform="translate(166, 514) scale(1.06)"
-                  surfaceHex={surfaceHex}
-                  uid={uid}
-                />
-                <EngravedNeemTree
-                  transform="translate(476, 580) scale(0.64)"
+                  transform="translate(66, 494) scale(1.0)"
                   surfaceHex={surfaceHex}
                   uid={uid}
                 />
@@ -3607,20 +4014,11 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
           {/* LAYER 3C — Lightweight Floating Banyan Leaves Drifting Slowly Across the About Section */}
           <AboutDriftingBanyanLeaves tier={tier} />
 
-          {/* In-SVG Luminous Gold-Ivory Shimmer Gradient Overlay */}
-          <rect
-            x="-45%"
-            y="0"
-            width="190%"
-            height="100%"
-            fill={`url(#shimmerVeil-${uid})`}
-            className="akath-svg-shimmer-overlay pointer-events-none"
-          />
         </svg>
 
-        {/* Subtle Animated Gilded Foil Sheen Gliding Across the Plate */}
+        {/* Subtle Animated Gilded Foil Sheen Gliding Across the Plate (Desktop Only) */}
         <div
-          className="akath-gold-sheen-sweep absolute inset-y-0 -inset-x-[24%] pointer-events-none"
+          className="hidden lg:block akath-gold-sheen-sweep absolute inset-y-0 -inset-x-[24%] pointer-events-none"
           style={{
             background:
               'linear-gradient(112deg, rgba(255, 253, 245, 0) 28%, rgba(255, 217, 102, 0.14) 45%, rgba(255, 250, 224, 0.25) 50%, rgba(255, 217, 102, 0.12) 56%, rgba(255, 253, 245, 0) 72%)',
@@ -3665,4 +4063,4 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = ({
       />
     </div>
   );
-};
+});

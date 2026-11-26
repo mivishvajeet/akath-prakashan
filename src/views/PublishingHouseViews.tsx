@@ -1768,7 +1768,7 @@ export const EditorialSelectDropdown: React.FC<EditorialSelectDropdownProps> = (
       }
     };
     document.addEventListener('mousedown', handlePointerDownOutside);
-    document.addEventListener('touchstart', handlePointerDownOutside);
+    document.addEventListener('touchstart', handlePointerDownOutside, { passive: true });
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('mousedown', handlePointerDownOutside);

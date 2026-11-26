@@ -297,9 +297,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const [aboutAkathRef, isAboutAkathVisible] =
     useIntersectionReveal<HTMLElement>();
 
-  // Smooth whole-page scroll theme engine: shifts canvas & orbit stroke colors gracefully
+  // Smooth whole-page scroll theme engine: active on desktop lg+ only (zero scroll re-renders on mobile/tablet)
   useEffect(() => {
-    if (typeof IntersectionObserver === 'undefined') return;
+    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') return;
+    if (window.matchMedia?.('(max-width: 1023px)').matches) return;
     const sectionPairs: Array<[HomepageThemeSectionId, HTMLElement | null]> = [
       ['hero', heroRef.current],
       ['what-we-do', whatWeDoRef.current],
@@ -423,18 +424,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
     <div
       style={{
         backgroundColor: activeTheme.canvasBg,
-        transition: 'background-color 900ms cubic-bezier(0.22, 1, 0.36, 1)',
+        transition: 'background-color 700ms cubic-bezier(0.22, 1, 0.36, 1)',
+        overflowX: 'clip',
       }}
-      className="relative text-[#1C1917] w-full max-w-[100vw] overflow-x-hidden transition-colors duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+      className="relative text-[#1C1917] w-full max-w-[100vw] overflow-x-hidden"
     >
-      {/* Continuous Ambient Concentric Orbit Backdrop (quietly muted in Hero, active in lower orbital sections) */}
+      {/* Continuous Ambient Concentric Orbit Backdrop (Desktop lg+ only — zero mobile/tablet full-viewport SVG overdraw) */}
       <div
         aria-hidden="true"
-        className={`pointer-events-none fixed inset-0 z-0 overflow-hidden flex items-center justify-center transition-opacity duration-700 ${
+        className={`hidden lg:flex pointer-events-none fixed inset-0 z-0 overflow-hidden items-center justify-center transition-opacity duration-700 ${
           activeThemeSection === 'hero' ? 'opacity-0' : 'opacity-45'
         }`}
       >
-        <div className="w-[720px] h-[720px] sm:w-[980px] sm:h-[980px] lg:w-[1240px] lg:h-[1240px]">
+        <div className="w-[1240px] h-[1240px]">
           <ConcentricOrbitRings
             primaryStroke={activeTheme.orbitPrimary}
             secondaryStroke={activeTheme.orbitSecondary}
@@ -455,7 +457,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         } relative z-10 w-full overflow-hidden border-b border-[#E5DEC9]/75 bg-gradient-to-b from-[#FAF8F0] via-[#FAF8F1] to-[#F3F6FC] pb-9 sm:pb-11 lg:pb-12`}
       >
         {/* Dedicated Full-Bleed Luminous Godavari River & Sahyadri Hero Stage (Richly Visible Across All Devices) */}
-        <div className="relative w-full min-h-[560px] sm:min-h-[560px] lg:min-h-[610px] xl:min-h-[640px] flex flex-col justify-start pt-9 sm:pt-11 lg:pt-12 pb-44 sm:pb-36 lg:pb-40">
+        <div className="relative w-full min-h-[600px] sm:min-h-[560px] lg:min-h-[610px] xl:min-h-[640px] flex flex-col justify-start pt-8 sm:pt-11 lg:pt-12 pb-56 sm:pb-36 lg:pb-40">
           <HeroPublicationWatermark />
 
           <div className="w-full max-w-[1120px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10 min-w-0">
@@ -531,7 +533,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate('/submit-manuscript')}
-                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#FFFDF7]/85 hover:bg-[#1C1917] text-[#1C1917] hover:text-[#FFFDF7] border border-[#1C1917]/25 backdrop-blur-xs font-medium text-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#FFFDF7]/95 hover:bg-[#1C1917] text-[#1C1917] hover:text-[#FFFDF7] border border-[#1C1917]/25 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap shrink-0"
                 >
                   <Feather className="w-4 h-4 text-[#EF6855]" />
                   <span>
@@ -608,9 +610,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <section
         ref={whatWeDoRef}
         data-testid="home-what-we-do"
-        className={`akath-io-section ${
+        className={`akath-io-section akath-cv-section ${
           isWhatWeDoVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 border-b border-[#E5DEC9]/65 bg-transparent`}
+        } relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 border-b border-[#E5DEC9]/65 bg-[#F3F6FC] lg:bg-transparent`}
       >
         <div className="max-w-[1280px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6 sm:space-y-7 min-w-0">
           {/* Center-Aligned Editorial Section Header */}
@@ -656,10 +658,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         setActiveCapabilityIdx(idx);
                       }
                     }}
-                    className={`relative snap-start shrink-0 w-[235px] sm:w-[255px] md:w-full cursor-pointer transition-all duration-300 rounded-2xl border p-3.5 sm:p-4 flex flex-col justify-between backdrop-blur-md ${
+                    className={`relative snap-start shrink-0 w-[235px] sm:w-[255px] md:w-full cursor-pointer transition-colors duration-200 rounded-2xl border p-3.5 sm:p-4 flex flex-col justify-between md:backdrop-blur-sm ${
                       isActive
-                        ? 'bg-white/95 border-[#243B8A]/45 shadow-[0_12px_32px_-16px_rgba(36,59,138,0.28)]'
-                        : 'bg-white/60 border-[#DCD4C0]/75 hover:bg-white/85'
+                        ? 'bg-white border-[#243B8A]/45 shadow-[0_12px_28px_-16px_rgba(36,59,138,0.26)]'
+                        : 'bg-white/90 md:bg-white/70 border-[#DCD4C0]/75 hover:bg-white/95'
                     }`}
                   >
                     {isActive && (
@@ -739,9 +741,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <section
         ref={howWePublishRef}
         data-testid="home-how-we-publish"
-        className={`akath-io-section ${
+        className={`akath-io-section akath-cv-section ${
           isHowWePublishVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 border-b border-white/10 bg-[#121C45]/92 text-[#FFFDF7] transition-colors duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]`}
+        } relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 border-b border-white/10 bg-[#121C45] lg:bg-[#121C45]/92 text-[#FFFDF7]`}
       >
         <div
           aria-hidden="true"
@@ -969,9 +971,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <section
         ref={ourBooksRef}
         data-testid="home-published-books"
-        className={`akath-io-section ${
+        className={`akath-io-section akath-cv-section ${
           isOurBooksVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 border-b border-[#E5DEC9]/75 bg-transparent`}
+        } relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 border-b border-[#E5DEC9]/75 bg-[#FFFDF7] lg:bg-transparent`}
       >
         <div className="max-w-[1340px] mx-auto px-4 sm:px-8 lg:px-12 space-y-5 sm:space-y-6 lg:space-y-7 min-w-0">
           {/* Center-Aligned Header */}
@@ -1100,10 +1102,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   key={book.id}
                   data-testid={`home-book-showcase-${book.id}`}
                   onMouseEnter={() => setActiveBookRailIndex(idx)}
-                  className={`snap-start shrink-0 w-[302px] sm:w-[368px] md:w-[388px] lg:w-auto h-full rounded-2xl overflow-hidden border backdrop-blur-md flex flex-col justify-between transition-all duration-300 ${
+                  className={`snap-start shrink-0 w-[302px] sm:w-[368px] md:w-[388px] lg:w-auto h-full rounded-2xl overflow-hidden border md:backdrop-blur-sm flex flex-col justify-between transition-colors duration-200 ${
                     isHighlighted
-                      ? 'border-[#243B8A]/40 bg-white/95 shadow-[0_18px_46px_-22px_rgba(36,59,138,0.28)]'
-                      : 'border-[#DCD4C0]/85 bg-white/80 hover:border-[#243B8A]/35'
+                      ? 'border-[#243B8A]/40 bg-white shadow-[0_16px_40px_-22px_rgba(36,59,138,0.26)]'
+                      : 'border-[#DCD4C0]/85 bg-white/95 md:bg-white/85 hover:border-[#243B8A]/35'
                   }`}
                 >
                   <div className="px-4 sm:px-5 py-2.5 sm:py-3 bg-[#FAF6EC]/80 border-b border-[#E5DEC9]/80 flex items-center justify-between text-[10.5px] sm:text-[11px] font-mono text-[#57534E]">
@@ -1211,9 +1213,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <section
         ref={forAuthorsRef}
         data-testid="home-manuscript-desk"
-        className={`akath-io-section ${
+        className={`akath-io-section akath-cv-section ${
           isForAuthorsVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden py-12 sm:py-16 lg:py-20 border-b border-[#DCD4C0]/80 bg-[#F4EDE0] text-[#1C1917] transition-colors duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]`}
+        } relative z-10 w-full overflow-hidden py-12 sm:py-16 lg:py-20 border-b border-[#DCD4C0]/80 bg-[#F4EDE0] text-[#1C1917]`}
       >
         {/* Layered Sahyadri Mountains & Nanded Godavari Dusk Landscape (20–25% Opacity SVG) */}
         <AuthorsLandscapeBackdrop />
@@ -1264,9 +1266,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <section
         ref={aboutAkathRef}
         data-testid="home-about-akath"
-        className={`akath-io-section ${
+        className={`akath-io-section akath-cv-section ${
           isAboutAkathVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden pt-10 pb-48 sm:pt-14 sm:pb-40 lg:py-20 bg-[#FAF6EC]`}
+        } relative z-10 w-full overflow-hidden pt-10 pb-56 sm:pt-14 sm:pb-44 lg:py-20 bg-[#FAF6EC]`}
       >
         {/* Layered Sahyadri Mountains & Nanded Godavari Dusk Landscape (20–25% Opacity SVG) */}
         <AboutLandscapeBackdrop />

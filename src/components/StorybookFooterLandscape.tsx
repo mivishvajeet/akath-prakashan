@@ -31,7 +31,7 @@ import { useLanguage } from '../i18n/translations';
  * - Soft Golden Yellow: #E8BC69
  * - Pixel Ink: #302C25
  */
-export const StorybookFooterLandscape: React.FC = () => {
+export const StorybookFooterLandscape: React.FC = React.memo(() => {
   const { lang } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInViewport, setIsInViewport] = useState(false);
@@ -76,6 +76,7 @@ export const StorybookFooterLandscape: React.FC = () => {
           ? 'कासवाचा १६-बिट पिक्सेल साहित्यिक प्रवास — वाचन हाच प्रवास'
           : "The Tortoise's 16-Bit Pixel-Art Literary Journey — Animated Marathi Countryside"
       }
+      style={{ contain: 'layout style paint' }}
       className={`akath-storybook-landscape akath-pixel-art-stage relative w-full overflow-hidden select-none pointer-events-none ${
         isAnimationPaused ? 'is-paused' : ''
       }`}
@@ -240,7 +241,7 @@ export const StorybookFooterLandscape: React.FC = () => {
             <rect x="540" y="152" width="104" height="4" fill="#E8BC69" fillOpacity="0.45" />
             <rect x="920" y="148" width="108" height="4" fill="#E8BC69" fillOpacity="0.45" />
 
-            {/* 16-Bit Sahyadri Hill-Fort Bastions (गड-किल्ले तटबंदी) & Fluttering Flag */}
+            {/* 16-Bit Sahyadri Hill-Fort Bastions (गड-किल्ले तटबंदी — Flag-Free Stonework) */}
             <g transform="translate(566, 136)">
               <rect x="0" y="6" width="44" height="10" fill="#302C25" fillOpacity="0.82" />
               <rect x="0" y="2" width="6" height="4" fill="#302C25" fillOpacity="0.82" />
@@ -248,12 +249,7 @@ export const StorybookFooterLandscape: React.FC = () => {
               <rect x="20" y="2" width="6" height="4" fill="#302C25" fillOpacity="0.82" />
               <rect x="30" y="2" width="6" height="4" fill="#302C25" fillOpacity="0.82" />
               <rect x="38" y="2" width="6" height="4" fill="#302C25" fillOpacity="0.82" />
-              {/* Flagpole & Stepped Fluttering Cobalt-and-Gold Flag */}
-              <rect x="22" y="-12" width="2" height="14" fill="#F5EBDD" />
-              <g className="storybook-fort-flag">
-                <rect x="24" y="-12" width="12" height="4" fill="#243B8A" />
-                <rect x="24" y="-8" width="8" height="3" fill="#E8BC69" />
-              </g>
+              <rect x="20" y="10" width="4" height="4" fill="#E8BC69" fillOpacity="0.85" />
             </g>
 
             {/* Second Distant Fort Watchtower at x=956 */}
@@ -1022,6 +1018,6 @@ export const StorybookFooterLandscape: React.FC = () => {
       </svg>
     </div>
   );
-};
+});
 
 export default StorybookFooterLandscape;

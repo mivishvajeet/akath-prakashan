@@ -189,11 +189,14 @@ export const Navbar: React.FC<NavbarProps> = ({
     const activeChip = container.querySelector<HTMLElement>(
       '[data-active-quick-link="true"]'
     );
-    if (activeChip && typeof activeChip.scrollIntoView === 'function') {
-      activeChip.scrollIntoView({
-        behavior: 'smooth',
-        inline: 'center',
-        block: 'nearest',
+    if (activeChip && container.scrollWidth > container.clientWidth) {
+      const targetLeft =
+        activeChip.offsetLeft -
+        container.clientWidth / 2 +
+        activeChip.offsetWidth / 2;
+      container.scrollTo({
+        left: Math.max(0, targetLeft),
+        behavior: 'auto',
       });
     }
   }, [currentPath]);
@@ -339,10 +342,10 @@ export const Navbar: React.FC<NavbarProps> = ({
         data-testid="primary-navbar"
         data-immersive-hidden={immersiveHidden ? 'true' : 'false'}
         aria-hidden={immersiveHidden ? true : undefined}
-        className={`sticky top-0 z-50 text-[#1C1917] w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`sticky top-0 z-50 text-[#1C1917] w-full transition-[background-color,box-shadow,transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           scrolled
-            ? 'bg-[#FFFDF7]/95 backdrop-blur-2xl border-b border-[#DCD4C0]/90 shadow-[0_10px_34px_-14px_rgba(36,59,138,0.14)]'
-            : 'bg-[#FAF9FF]/80 backdrop-blur-xl border-b border-[#E5DEC9]/65'
+            ? 'bg-[#FFFDF7]/97 md:bg-[#FFFDF7]/92 md:backdrop-blur-md border-b border-[#DCD4C0]/90 shadow-[0_10px_28px_-14px_rgba(36,59,138,0.14)]'
+            : 'bg-[#FAF9FF]/96 md:bg-[#FAF9FF]/86 md:backdrop-blur-md border-b border-[#E5DEC9]/65'
         } ${
           immersiveHidden
             ? '-translate-y-full opacity-0 pointer-events-none'
@@ -913,7 +916,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           aria-hidden="true"
           onTouchStart={handleEdgeSwipeStart}
           onTouchEnd={handleEdgeSwipeEnd}
-          className="fixed top-20 right-0 bottom-16 w-4 z-40 lg:hidden touch-pan-y select-none"
+          className="fixed top-20 right-0 bottom-16 w-3 z-40 lg:hidden touch-pan-y select-none"
         />
       )}
 

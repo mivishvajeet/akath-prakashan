@@ -46,8 +46,19 @@ export default defineConfig(({command, mode}) => {
       rollupOptions: {
         output: {
           entryFileNames: 'assets/app-bundle.js',
-          chunkFileNames: 'assets/[name].js',
+          chunkFileNames: 'assets/[name]-[hash].js',
           assetFileNames: 'assets/[name][extname]',
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            if (id.includes('firebase')) return 'vendor-firebase';
+            if (id.includes('motion') || id.includes('framer-motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('lucide-react')) return 'vendor-icons';
+            if (id.includes('react-dom') || id.includes('/react/')) {
+              return 'vendor-react';
+            }
+          },
         },
       },
     },

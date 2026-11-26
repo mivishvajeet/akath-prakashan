@@ -15,7 +15,7 @@ interface CapabilitySpecimenPlateProps {
  * Renders crisp architectural/editorial SVG scenes alongside the active editorial
  * narrative inside a cohesive frosted-glass landscape showcase.
  */
-export const CapabilitySpecimenPlate: React.FC<CapabilitySpecimenPlateProps> = ({
+export const CapabilitySpecimenPlate: React.FC<CapabilitySpecimenPlateProps> = React.memo(({
   activeIndex,
   isMr,
   title,
@@ -28,7 +28,7 @@ export const CapabilitySpecimenPlate: React.FC<CapabilitySpecimenPlateProps> = (
   const progressPercent = ((activeIndex + 1) / 4) * 100;
 
   return (
-    <div className="relative w-full flex flex-col justify-between rounded-3xl bg-white/88 backdrop-blur-xl border border-[#DCD4C0]/85 shadow-[0_24px_64px_-26px_rgba(36,59,138,0.2)] px-4 py-4 sm:px-7 sm:py-6 overflow-hidden">
+    <div className="relative w-full flex flex-col justify-between rounded-3xl bg-white/96 md:bg-white/90 md:backdrop-blur-md border border-[#DCD4C0]/85 shadow-[0_24px_64px_-26px_rgba(36,59,138,0.2)] px-4 py-4 sm:px-7 sm:py-6 overflow-hidden">
       {/* Subtle Concentric Blueprint Halo */}
       <div
         aria-hidden="true"
@@ -500,7 +500,7 @@ export const CapabilitySpecimenPlate: React.FC<CapabilitySpecimenPlateProps> = (
       </div>
     </div>
   );
-};
+});
 
 interface JourneyStageGlyphProps {
   index: number;

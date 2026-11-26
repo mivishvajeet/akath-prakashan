@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import {
   BookRecord,
   AuthorRecord,
@@ -26,36 +26,104 @@ import {
 } from './utils/githubPagesAdapter';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
-import { SearchModal } from './components/SearchModal';
 import { HomeView } from './views/HomeView';
-import { BooksCatalogueView, BookDetailView } from './views/BooksAndStoreView';
-import { VachankattaHubView, ArticleDetailView } from './views/VachankattaView';
-import {
-  AuthorsListView,
-  AuthorDetailView,
-  AboutAkathView,
-  SubmitManuscriptView,
-  ContactView,
-} from './views/PublishingHouseViews';
-import {
-  CartView,
-  CheckoutView,
-  OrderTrackingView,
-  PolicyDocumentView,
-} from './views/CommerceAndPolicyViews';
-import { AdminDashboardView, TechnicalAuditView } from './views/AdminAndAuditViews';
-import {
-  AuthPageView,
-  ReaderAccountView,
-  AuthorPortalView,
-  authFetch,
-  setAuthSessionTokens,
-} from './views/AuthAndRoleViews';
-import {
-  signOutFirebaseClient,
-  syncOrderToCloud,
-  syncManuscriptToCloud,
-} from './firebase/client';
+import { authFetch, setAuthSessionTokens } from './utils/authSession';
+
+const AuthPageView = lazy(() =>
+  import('./views/AuthAndRoleViews').then((m) => ({
+    default: m.AuthPageView,
+  }))
+);
+const ReaderAccountView = lazy(() =>
+  import('./views/AuthAndRoleViews').then((m) => ({
+    default: m.ReaderAccountView,
+  }))
+);
+const AuthorPortalView = lazy(() =>
+  import('./views/AuthAndRoleViews').then((m) => ({
+    default: m.AuthorPortalView,
+  }))
+);
+
+const SearchModal = lazy(() =>
+  import('./components/SearchModal').then((m) => ({ default: m.SearchModal }))
+);
+const BooksCatalogueView = lazy(() =>
+  import('./views/BooksAndStoreView').then((m) => ({
+    default: m.BooksCatalogueView,
+  }))
+);
+const BookDetailView = lazy(() =>
+  import('./views/BooksAndStoreView').then((m) => ({
+    default: m.BookDetailView,
+  }))
+);
+const VachankattaHubView = lazy(() =>
+  import('./views/VachankattaView').then((m) => ({
+    default: m.VachankattaHubView,
+  }))
+);
+const ArticleDetailView = lazy(() =>
+  import('./views/VachankattaView').then((m) => ({
+    default: m.ArticleDetailView,
+  }))
+);
+const AuthorsListView = lazy(() =>
+  import('./views/PublishingHouseViews').then((m) => ({
+    default: m.AuthorsListView,
+  }))
+);
+const AuthorDetailView = lazy(() =>
+  import('./views/PublishingHouseViews').then((m) => ({
+    default: m.AuthorDetailView,
+  }))
+);
+const AboutAkathView = lazy(() =>
+  import('./views/PublishingHouseViews').then((m) => ({
+    default: m.AboutAkathView,
+  }))
+);
+const SubmitManuscriptView = lazy(() =>
+  import('./views/PublishingHouseViews').then((m) => ({
+    default: m.SubmitManuscriptView,
+  }))
+);
+const ContactView = lazy(() =>
+  import('./views/PublishingHouseViews').then((m) => ({
+    default: m.ContactView,
+  }))
+);
+const CartView = lazy(() =>
+  import('./views/CommerceAndPolicyViews').then((m) => ({
+    default: m.CartView,
+  }))
+);
+const CheckoutView = lazy(() =>
+  import('./views/CommerceAndPolicyViews').then((m) => ({
+    default: m.CheckoutView,
+  }))
+);
+const OrderTrackingView = lazy(() =>
+  import('./views/CommerceAndPolicyViews').then((m) => ({
+    default: m.OrderTrackingView,
+  }))
+);
+const PolicyDocumentView = lazy(() =>
+  import('./views/CommerceAndPolicyViews').then((m) => ({
+    default: m.PolicyDocumentView,
+  }))
+);
+const AdminDashboardView = lazy(() =>
+  import('./views/AdminAndAuditViews').then((m) => ({
+    default: m.AdminDashboardView,
+  }))
+);
+const TechnicalAuditView = lazy(() =>
+  import('./views/AdminAndAuditViews').then((m) => ({
+    default: m.TechnicalAuditView,
+  }))
+);
+
 
 const CART_STORAGE_KEY = 'akath_cart_v1';
 const LANG_STORAGE_KEY = 'akath_lang_v2';
@@ -151,7 +219,7 @@ export default function App() {
     window.history.pushState({}, '', fullHistoryUrl);
     setCurrentPath(normalizedRoute);
     setIsImmersiveNavHidden(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'auto' });
   }, []);
 
   // Fetch initial publishing bootstrap data
@@ -276,7 +344,7 @@ export default function App() {
           },
           csrfToken
         ),
-        signOutFirebaseClient(),
+        import('./firebase/client').then((m) => m.signOutFirebaseClient()),
       ]);
     } finally {
       setAuthSessionTokens(null, null);
@@ -480,6 +548,7 @@ export default function App() {
       };
     }
     try {
+      const { syncOrderToCloud } = await import('./firebase/client');
       await syncOrderToCloud(data.order as OrderRecord);
     } catch {
       // Non-blocking cloud sync fallback
@@ -513,6 +582,7 @@ export default function App() {
     if (outcome === 'success') {
       setCartItems([]);
       try {
+        const { syncOrderToCloud } = await import('./firebase/client');
         await syncOrderToCloud(data.order as OrderRecord);
       } catch {
         // Non-blocking cloud sync fallback
@@ -569,6 +639,7 @@ export default function App() {
       };
     }
     try {
+      const { syncManuscriptToCloud } = await import('./firebase/client');
       await syncManuscriptToCloud(data.submission as ManuscriptSubmission);
     } catch {
       // Non-blocking cloud sync fallback
@@ -950,7 +1021,15 @@ export default function App() {
         />
 
         <main id="main-content" className="flex-1">
-          {renderMainView()}
+          <Suspense
+            fallback={
+              <div className="min-h-[60vh] flex items-center justify-center bg-[#FAF8F0]">
+                <div className="w-7 h-7 rounded-full border-2 border-[#243B8A]/20 border-t-[#243B8A] animate-spin" />
+              </div>
+            }
+          >
+            {renderMainView()}
+          </Suspense>
         </main>
 
         <Footer
@@ -958,14 +1037,18 @@ export default function App() {
           onSubscribeNewsletter={handleSubscribeNewsletter}
         />
 
-        <SearchModal
-          isOpen={searchOpen}
-          onClose={() => setSearchOpen(false)}
-          books={books}
-          authors={authors}
-          articles={articles}
-          onNavigate={navigate}
-        />
+        {searchOpen && (
+          <Suspense fallback={null}>
+            <SearchModal
+              isOpen={searchOpen}
+              onClose={() => setSearchOpen(false)}
+              books={books}
+              authors={authors}
+              articles={articles}
+              onNavigate={navigate}
+            />
+          </Suspense>
+        )}
 
         {/* Interactive Added-to-Bag Floating Mini-Cart Notification Bar */}
         {recentlyAddedBookId && currentPath !== '/cart' && currentPath !== '/checkout' && (() => {

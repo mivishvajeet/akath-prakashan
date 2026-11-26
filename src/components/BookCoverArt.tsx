@@ -133,7 +133,7 @@ const BookCoverArtInner: React.FC<BookCoverArtProps> = ({
               }
             : undefined
         }
-        className={`relative aspect-[3/4] select-none overflow-hidden rounded-r-sm transition-transform duration-300 will-change-transform ${
+        className={`relative aspect-[3/4] select-none overflow-hidden rounded-r-sm transition-transform duration-300 ${
           onClick ? 'cursor-pointer' : ''
         } ${
           interactive ? 'group-hover:-translate-y-1' : ''

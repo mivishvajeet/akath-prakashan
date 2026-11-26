@@ -26,7 +26,7 @@ interface FooterProps {
   }>;
 }
 
-export const Footer: React.FC<FooterProps> = ({
+export const Footer: React.FC<FooterProps> = React.memo(({
   onNavigate,
   onSubscribeNewsletter,
 }) => {
@@ -275,7 +275,7 @@ export const Footer: React.FC<FooterProps> = ({
           ===================================================================== */}
       <div className="relative z-20 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-7 sm:pt-12 pb-2 sm:pb-4">
         {/* ROW 1: UNIFIED AKATH LITERARY NEWSLETTER & 4-COLUMN DIRECTORY */}
-        <div className="rounded-xl bg-[#0F1B3A]/85 backdrop-blur-md border border-[#E8BC69]/25 p-5 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 shadow-[0_18px_42px_-20px_rgba(6,11,26,0.65)]">
+        <div className="rounded-xl bg-[#0F1B3A]/95 md:bg-[#0F1B3A]/88 md:backdrop-blur-sm border border-[#E8BC69]/25 p-5 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 shadow-[0_18px_42px_-20px_rgba(6,11,26,0.65)]">
           {/* Left 5 Columns: Akath Literary Newsletter */}
           <div className="lg:col-span-5 lg:border-r lg:border-[#E8BC69]/20 lg:pr-8 flex flex-col justify-between space-y-4">
             <div className="space-y-3">
@@ -791,4 +791,4 @@ export const Footer: React.FC<FooterProps> = ({
       </div>
     </footer>
   );
-};
+});

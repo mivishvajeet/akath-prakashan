@@ -98,7 +98,7 @@ interface ConcentricOrbitRingsProps {
  * inspired by modern fintech landing experiences — pauses automatically
  * when outside the viewport via IntersectionObserver.
  */
-export const ConcentricOrbitRings: React.FC<ConcentricOrbitRingsProps> = ({
+export const ConcentricOrbitRings: React.FC<ConcentricOrbitRingsProps> = React.memo(({
   primaryStroke,
   secondaryStroke,
   glowColor,
@@ -220,7 +220,7 @@ export const ConcentricOrbitRings: React.FC<ConcentricOrbitRingsProps> = ({
       </svg>
     </div>
   );
-};
+});
 
 interface BookMetaLookup {
   titleEn: string;
@@ -308,12 +308,12 @@ export const RotatingBookOrbitStage: React.FC<RotatingBookOrbitStageProps> = ({
             onChangeIndex((activeIndex - 1 + books.length) % books.length)
           }
           aria-label={isMr ? 'मागील पुस्तक' : 'Previous rotating book'}
-          className="w-8 h-8 rounded-full bg-white/85 backdrop-blur-md border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+          className="w-8 h-8 rounded-full bg-white/95 md:bg-white/85 md:backdrop-blur-sm border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer shadow-xs"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
 
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/85 backdrop-blur-md border border-[#DCD4C0] text-[11px] font-mono text-[#57534E]">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 md:bg-white/85 md:backdrop-blur-sm border border-[#DCD4C0] text-[11px] font-mono text-[#57534E]">
           {books.map((b, idx) => {
             const active = idx === activeIndex;
             return (
@@ -353,7 +353,7 @@ export const RotatingBookOrbitStage: React.FC<RotatingBookOrbitStageProps> = ({
           type="button"
           onClick={() => onChangeIndex((activeIndex + 1) % books.length)}
           aria-label={isMr ? 'पुढील पुस्तक' : 'Next rotating book'}
-          className="w-8 h-8 rounded-full bg-white/85 backdrop-blur-md border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+          className="w-8 h-8 rounded-full bg-white/95 md:bg-white/85 md:backdrop-blur-sm border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer shadow-xs"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -412,10 +412,10 @@ export const RotatingBookOrbitStage: React.FC<RotatingBookOrbitStageProps> = ({
                 mass: 0.9,
               }}
               style={{ transformStyle: 'preserve-3d' }}
-              className={`absolute w-[180px] sm:w-[220px] rounded-2xl p-3 sm:p-3.5 cursor-pointer select-none backdrop-blur-md transition-shadow ${
+              className={`absolute w-[180px] sm:w-[220px] rounded-2xl p-3 sm:p-3.5 cursor-pointer select-none transition-shadow ${
                 isCenter
-                  ? 'bg-white/95 border border-[#243B8A]/25 shadow-[0_24px_60px_-16px_rgba(36,59,138,0.28)]'
-                  : 'bg-[#FFFDF7]/85 border border-[#DCD4C0]/80 shadow-[0_14px_34px_-14px_rgba(28,25,23,0.16)]'
+                  ? 'bg-white border border-[#243B8A]/25 shadow-[0_24px_60px_-16px_rgba(36,59,138,0.28)]'
+                  : 'bg-[#FFFDF7]/95 border border-[#DCD4C0]/80 shadow-[0_14px_34px_-14px_rgba(28,25,23,0.16)]'
               }`}
             >
               <div className="flex items-center justify-between text-[10px] font-mono text-[#57534E] pb-2 mb-2 border-b border-[#E5DEC9]/80">
@@ -459,7 +459,7 @@ export const RotatingBookOrbitStage: React.FC<RotatingBookOrbitStageProps> = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.22 }}
-          className="relative z-20 max-w-xl mx-auto mt-3 sm:mt-4 rounded-2xl bg-white/85 backdrop-blur-md border border-[#DCD4C0] px-4 py-3.5 sm:px-6 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm"
+          className="relative z-20 max-w-xl mx-auto mt-3 sm:mt-4 rounded-2xl bg-white/95 md:bg-white/88 md:backdrop-blur-sm border border-[#DCD4C0] px-4 py-3.5 sm:px-6 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm"
         >
           <div className="text-center sm:text-left min-w-0">
             <h3 className="font-serif text-base sm:text-lg font-medium text-[#1C1917] truncate">
@@ -664,7 +664,7 @@ export const AuthorStudioExperience: React.FC<AuthorStudioExperienceProps> = ({
       className="relative w-full max-w-5xl mx-auto"
     >
       {/* Tactile Warm Archival Editorial Folio Desk */}
-      <div className="relative rounded-3xl border border-[#D8CEBA] bg-[#FFFDF7]/94 backdrop-blur-md shadow-[0_28px_72px_-32px_rgba(36,59,138,0.22)] overflow-hidden">
+      <div className="relative rounded-3xl border border-[#D8CEBA] bg-[#FFFDF7]/97 md:bg-[#FFFDF7]/94 md:backdrop-blur-sm shadow-[0_24px_64px_-30px_rgba(36,59,138,0.2)] overflow-hidden">
         {/* Top Literary Gold & Royal Indigo Hairline Accent */}
         <div className="relative h-[3px] w-full bg-[#EFE7D6] overflow-hidden">
           <div

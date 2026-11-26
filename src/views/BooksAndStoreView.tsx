@@ -13,7 +13,7 @@ import { resolvePublicAssetUrl } from '../utils/githubPagesAdapter';
 import { BookCard } from '../components/BookCard';
 import { AnimatedTortoiseEmblem } from '../components/SarvamIllustrations';
 import { useLanguage } from '../i18n/translations';
-import { authFetch } from './AuthAndRoleViews';
+import { authFetch } from '../utils/authSession';
 import { EditorialSelectDropdown } from './PublishingHouseViews';
 import {
   Search,
