@@ -429,7 +429,7 @@ export const RotatingBookOrbitStage: React.FC<RotatingBookOrbitStageProps> = ({
                 </span>
               </div>
 
-              <div className="mx-auto w-[124px] sm:w-[150px] drop-shadow-md">
+              <div className="mx-auto w-[124px] sm:w-[150px] rounded-sm shadow-[0_10px_22px_-8px_rgba(28,25,23,0.28)]">
                 <BookCoverArt
                   book={book}
                   author={bookAuthor}

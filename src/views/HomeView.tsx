@@ -471,7 +471,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             >
               <h1
                 data-testid="home-hero-main-headline"
-                className="w-full font-serif not-italic text-[#1C1917] tracking-[-0.025em] text-center [text-wrap:balance] drop-shadow-[0_1px_12px_rgba(253,248,236,0.9)]"
+                className="w-full font-serif not-italic text-[#1C1917] tracking-[-0.025em] text-center [text-wrap:balance] [text-shadow:0_1px_12px_rgba(253,248,236,0.9)]"
               >
                 <motion.span
                   variants={heroRevealItem}
@@ -1268,9 +1268,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
         data-testid="home-about-akath"
         className={`akath-io-section akath-cv-section ${
           isAboutAkathVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden pt-10 pb-56 sm:pt-14 sm:pb-44 lg:py-20 bg-[#FAF6EC]`}
+        } relative z-10 w-full overflow-hidden pt-12 pb-60 sm:pt-16 sm:pb-52 lg:pt-20 lg:pb-64 bg-[#FAF6EC]`}
       >
-        {/* Layered Sahyadri Mountains & Nanded Godavari Dusk Landscape (20–25% Opacity SVG) */}
+        {/* Layered Sahyadri Mountains, Buddhist Stupa & Intergenerational Banyan Dusk Landscape */}
         <AboutLandscapeBackdrop />
 
         <div className="relative z-10 max-w-[960px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6 min-w-0 pointer-events-none">
@@ -1282,23 +1282,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
             />
 
             <div className="space-y-2.5 max-w-2xl mx-auto pointer-events-auto">
-              <p className="text-[11px] sm:text-xs font-mono not-italic font-semibold uppercase tracking-[0.2em] text-[#243B8A]">
+              <p className="text-[11px] sm:text-xs font-mono not-italic font-bold uppercase tracking-[0.2em] text-[#1D327A]">
                 {isMr
                   ? '०५ · आमची ओळख · THE JOURNEY OF A STORY'
                   : '05 · ABOUT AKATH PRAKASHAN · THE JOURNEY OF A STORY'}
               </p>
 
-              <h2 className="text-2xl sm:text-4xl font-serif not-italic font-medium text-[#1C1917] tracking-tight leading-tight">
+              <h2 className="text-2xl sm:text-4xl font-serif not-italic font-semibold text-[#141210] tracking-tight leading-tight [text-wrap:balance]">
                 Rooted in Language. Driven by Stories.
               </h2>
 
-              <p className="text-sm sm:text-[16.5px] font-sans not-italic font-normal text-[#44403C] leading-relaxed">
+              <p className="text-sm sm:text-[16.5px] font-sans not-italic font-normal text-[#2C2825] leading-relaxed">
                 {isMr
                   ? 'अकथ प्रकाशन ही विचारशील लेखन, अर्थपूर्ण कथा आणि नवे आवाज मुद्रित स्वरूपात वाचकांपर्यंत आणण्यासाठी बांधिलकी जपणारी मराठी प्रकाशन संस्था आहे.'
                   : 'Akath Prakashan is a Marathi publishing initiative committed to bringing thoughtful writing, meaningful stories and new voices into print.'}
               </p>
 
-              <p className="font-serif text-base sm:text-lg font-medium text-[#174D3A] pt-1">
+              <p className="font-serif text-base sm:text-lg font-semibold text-[#123F30] pt-1">
                 {isMr
                   ? 'संथ पावले · सखोल अक्षरे · चिरंतन ग्रंथ'
                   : 'Slow steps. Deep letters. Enduring books.'}

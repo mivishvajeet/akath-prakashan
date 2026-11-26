@@ -348,7 +348,7 @@ export const HeroInteractiveBookPlinth: React.FC<
                               secondaryBooks[0].title
                             }`
                       }
-                      className="hidden sm:block absolute left-3 lg:left-4 w-[96px] lg:w-[108px] -rotate-6 opacity-75 hover:opacity-100 transition-opacity cursor-pointer z-10 drop-shadow-lg"
+                      className="hidden sm:block absolute left-3 lg:left-4 w-[96px] lg:w-[108px] -rotate-6 opacity-75 hover:opacity-100 transition-opacity cursor-pointer z-10 rounded-sm shadow-[0_14px_26px_-10px_rgba(28,25,23,0.34)]"
                     >
                       <BookCoverArt
                         book={secondaryBooks[0]}
@@ -412,7 +412,7 @@ export const HeroInteractiveBookPlinth: React.FC<
                               secondaryBooks[1].title
                             }`
                       }
-                      className="hidden sm:block absolute right-3 lg:right-4 w-[96px] lg:w-[108px] rotate-6 opacity-75 hover:opacity-100 transition-opacity cursor-pointer z-20 drop-shadow-lg"
+                      className="hidden sm:block absolute right-3 lg:right-4 w-[96px] lg:w-[108px] rotate-6 opacity-75 hover:opacity-100 transition-opacity cursor-pointer z-20 rounded-sm shadow-[0_14px_26px_-10px_rgba(28,25,23,0.34)]"
                     >
                       <BookCoverArt
                         book={secondaryBooks[1]}

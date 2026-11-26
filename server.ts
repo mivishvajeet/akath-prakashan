@@ -106,6 +106,11 @@ import {
 const app = express();
 app.disable('x-powered-by');
 function resolveServerPort(): number {
+  const portEqArg = process.argv.find((arg) => arg.startsWith('--port='));
+  if (portEqArg) {
+    const cliPort = Number(portEqArg.split('=')[1]);
+    if (Number.isFinite(cliPort) && cliPort > 0) return cliPort;
+  }
   const portFlagIdx = process.argv.findIndex((arg) => arg === '--port' || arg === '-p');
   if (portFlagIdx !== -1 && process.argv[portFlagIdx + 1]) {
     const cliPort = Number(process.argv[portFlagIdx + 1]);
@@ -5910,6 +5915,7 @@ async function startServer() {
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
+        allowedHosts: true,
         hmr: hmrDisabled ? false : undefined,
         watch: hmrDisabled ? null : undefined,
       },
@@ -5942,4 +5948,7 @@ async function startServer() {
   });
 }
 
-startServer();
+startServer().catch((err) => {
+  console.error('Failed to start Akath Prakashan server:', err);
+  process.exit(1);
+});

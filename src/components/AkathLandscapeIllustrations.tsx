@@ -174,69 +174,78 @@ const InkWashDefs: React.FC<InkWashDefsProps> = ({
   sunCy = '60%',
 }) => (
   <defs>
-    {/* Radiant Golden-Hour Horizon Corona */}
-    <radialGradient id={`duskSun-${uid}`} cx="50%" cy={sunCy} r="50%">
-      <stop offset="0%" stopColor="#FFFBE6" stopOpacity="0.82" />
-      <stop offset="28%" stopColor="#FFD966" stopOpacity="0.46" />
-      <stop offset="56%" stopColor="#EF6855" stopOpacity="0.22" />
+    {/* Archival Vertical Sky Atmospheric Wash (Cool Mist Zenith -> Warm Vellum Horizon) */}
+    <linearGradient id={`skyWash-${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stopColor="#EEF1F8" stopOpacity="0.46" />
+      <stop offset="38%" stopColor={surfaceHex} stopOpacity="0.18" />
+      <stop offset="74%" stopColor="#F5E9CE" stopOpacity="0.34" />
+      <stop offset="100%" stopColor={surfaceHex} stopOpacity="0" />
+    </linearGradient>
+
+    {/* Refined Warm Champagne-Ochre Dusk Horizon Corona (Quiet Editorial Glow) */}
+    <radialGradient id={`duskSun-${uid}`} cx="50%" cy={sunCy} r="52%">
+      <stop offset="0%" stopColor="#FFFDF5" stopOpacity="0.78" />
+      <stop offset="30%" stopColor="#F3DC9B" stopOpacity="0.34" />
+      <stop offset="58%" stopColor="#DFA57E" stopOpacity="0.12" />
       <stop offset="100%" stopColor="#243B8A" stopOpacity="0" />
     </radialGradient>
 
-    {/* Metallic Gold-Leaf Foil Gradient for Finials, Rim-Light & Shimmer */}
+    {/* Burnished Antique Brass & Champagne Gold-Leaf Foil Gradient */}
     <linearGradient id={`goldFoil-${uid}`} x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#FFFDF2" />
-      <stop offset="24%" stopColor="#FFD966" />
-      <stop offset="52%" stopColor="#E6A62A" />
-      <stop offset="78%" stopColor="#FFF2B2" />
-      <stop offset="100%" stopColor="#C88A1E" />
+      <stop offset="0%" stopColor="#FDF6DC" />
+      <stop offset="26%" stopColor="#DEC074" />
+      <stop offset="54%" stopColor="#B58D3D" />
+      <stop offset="78%" stopColor="#F1DDA4" />
+      <stop offset="100%" stopColor="#8E6C28" />
     </linearGradient>
 
-    {/* Horizontal Specular Gold-Leaf River & Horizon Sheen */}
+    {/* Horizontal Specular Champagne-Gold River & Horizon Glint */}
     <linearGradient id={`goldBeam-${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stopColor="#FFD966" stopOpacity="0.18" />
-      <stop offset="30%" stopColor="#FFF8D6" stopOpacity="0.95" />
-      <stop offset="50%" stopColor="#FFFFFF" stopOpacity="1" />
-      <stop offset="72%" stopColor="#FFD966" stopOpacity="0.9" />
-      <stop offset="100%" stopColor="#E6A62A" stopOpacity="0.2" />
+      <stop offset="0%" stopColor="#C8A55B" stopOpacity="0.12" />
+      <stop offset="28%" stopColor="#F5E5B8" stopOpacity="0.78" />
+      <stop offset="50%" stopColor="#FFFDF4" stopOpacity="0.92" />
+      <stop offset="72%" stopColor="#DFC077" stopOpacity="0.72" />
+      <stop offset="100%" stopColor="#A68238" stopOpacity="0.14" />
     </linearGradient>
 
     {/* Soft Zero-Cost Radial Halo Replaces Expensive feGaussianBlur Filters */}
 
-    {/* Distant Sahyadri Basalt Mesa Wash */}
+    {/* Layer 1: Distant Aerial-Haze Sahyadri Basalt Mesa Wash (Lightest Depth Tier) */}
     <linearGradient id={`farWash-${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stopColor="#243B8A" stopOpacity="0.22" />
-      <stop offset="65%" stopColor="#243B8A" stopOpacity="0.11" />
-      <stop offset="100%" stopColor="#243B8A" stopOpacity="0.025" />
+      <stop offset="0%" stopColor="#465A8E" stopOpacity="0.15" />
+      <stop offset="62%" stopColor="#465A8E" stopOpacity="0.075" />
+      <stop offset="100%" stopColor="#465A8E" stopOpacity="0.015" />
     </linearGradient>
 
-    {/* Midground Deccan Escarpment Wash */}
+    {/* Layer 2: Midground Archival Lapis-Slate Deccan Escarpment Wash */}
     <linearGradient id={`midWash-${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stopColor="#1B2D6B" stopOpacity="0.29" />
-      <stop offset="68%" stopColor="#1B2D6B" stopOpacity="0.15" />
-      <stop offset="100%" stopColor="#1B2D6B" stopOpacity="0.04" />
+      <stop offset="0%" stopColor="#22356B" stopOpacity="0.24" />
+      <stop offset="66%" stopColor="#22356B" stopOpacity="0.125" />
+      <stop offset="100%" stopColor="#22356B" stopOpacity="0.03" />
     </linearGradient>
 
-    {/* Foreground Foothill & Riverbank Wash */}
+    {/* Layer 3: Foreground Deep Botanical Pine & Basalt Riverbank Wash */}
     <linearGradient id={`nearWash-${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stopColor="#174D3A" stopOpacity="0.28" />
-      <stop offset="64%" stopColor="#1B2D6B" stopOpacity="0.16" />
-      <stop offset="100%" stopColor="#1B2D6B" stopOpacity="0.06" />
+      <stop offset="0%" stopColor="#164234" stopOpacity="0.28" />
+      <stop offset="58%" stopColor="#1A2E5C" stopOpacity="0.16" />
+      <stop offset="100%" stopColor="#1A2E5C" stopOpacity="0.055" />
     </linearGradient>
 
-    {/* Luminous Sunlit Godavari River Gold-and-Indigo Ribbon */}
+    {/* Serene Archival Lapis-Slate & Champagne-Gold Godavari River Reflection Band */}
     <linearGradient id={`riverWash-${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stopColor="#243B8A" stopOpacity="0.15" />
-      <stop offset="24%" stopColor="#FFD966" stopOpacity="0.46" />
-      <stop offset="48%" stopColor="#FFF7D1" stopOpacity="0.62" />
-      <stop offset="64%" stopColor="#EF6855" stopOpacity="0.26" />
-      <stop offset="80%" stopColor="#FFD966" stopOpacity="0.44" />
-      <stop offset="100%" stopColor="#243B8A" stopOpacity="0.15" />
+      <stop offset="0%" stopColor="#243B8A" stopOpacity="0.20" />
+      <stop offset="18%" stopColor="#46639A" stopOpacity="0.23" />
+      <stop offset="38%" stopColor="#E7D3A2" stopOpacity="0.40" />
+      <stop offset="50%" stopColor="#FFF7DE" stopOpacity="0.54" />
+      <stop offset="64%" stopColor="#D8B878" stopOpacity="0.34" />
+      <stop offset="82%" stopColor="#46639A" stopOpacity="0.22" />
+      <stop offset="100%" stopColor="#243B8A" stopOpacity="0.19" />
     </linearGradient>
 
     {/* Soft Organic Valley Mist Gradient */}
     <linearGradient id={`mistRibbon-${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stopColor={surfaceHex} stopOpacity="0" />
-      <stop offset="46%" stopColor={surfaceHex} stopOpacity="0.72" />
+      <stop offset="48%" stopColor={surfaceHex} stopOpacity="0.78" />
       <stop offset="100%" stopColor={surfaceHex} stopOpacity="0" />
     </linearGradient>
 
@@ -244,7 +253,8 @@ const InkWashDefs: React.FC<InkWashDefsProps> = ({
 );
 
 /**
- * Crisp 4-point specular star / river-sun glint with zero-cost soft halo.
+ * Refined Archival Celestial Pinpoint & Copperplate Star Glint
+ * Replaces chunky cartoon sparkles with restrained astronomical bookplate marks.
  */
 const DiamondSparkle: React.FC<{
   cx: number;
@@ -253,19 +263,38 @@ const DiamondSparkle: React.FC<{
   uid: string;
   className?: string;
   opacity?: number;
-}> = ({ cx, cy, r, uid, className = 'akath-star-twinkle-a', opacity = 0.95 }) => (
-  <g
-    transform={`translate(${cx}, ${cy})`}
-    className={className}
-    opacity={opacity}
+}> = ({ cx, cy, r, uid, className = 'akath-star-twinkle-a', opacity = 0.85 }) => {
+  const s = r * 0.62;
+  return (
+    <g
+      transform={`translate(${cx}, ${cy})`}
+      className={className}
+      opacity={opacity * 0.82}
+    >
+      <circle cx="0" cy="0" r={s * 1.15} fill="#DEC074" opacity="0.16" />
+      <path
+        d={`M 0 ${-s} Q 0 0 ${s} 0 Q 0 0 0 ${s} Q 0 0 ${-s} 0 Q 0 0 0 ${-s} Z`}
+        fill={`url(#goldFoil-${uid})`}
+      />
+      <circle cx="0" cy="0" r={Math.max(0.85, s * 0.22)} fill="#FFFDF6" />
+    </g>
+  );
+};
+
+/**
+ * Subtle Museum-Plate Archival Folio Hairline Frame (Desktop & Tablet)
+ * Gives each illustrated backdrop the composed framing of a fine-press book frontispiece.
+ */
+const ArchivalFolioFrame: React.FC = () => (
+  <div
+    aria-hidden="true"
+    className="hidden md:block pointer-events-none absolute inset-4 lg:inset-6 rounded-sm border border-[#243B8A]/[0.07]"
   >
-    <circle cx="0" cy="0" r={r * 1.1} fill="#FFD966" opacity="0.22" />
-    <path
-      d={`M 0 ${-r} Q 0 0 ${r} 0 Q 0 0 0 ${r} Q 0 0 ${-r} 0 Q 0 0 0 ${-r} Z`}
-      fill={`url(#goldFoil-${uid})`}
-    />
-    <circle cx="0" cy="0" r={Math.max(1, r * 0.24)} fill="#FFFDF6" />
-  </g>
+    <span className="absolute -top-px -left-px w-3.5 h-3.5 border-t border-l border-[#B58D3D]/40" />
+    <span className="absolute -top-px -right-px w-3.5 h-3.5 border-t border-r border-[#B58D3D]/40" />
+    <span className="absolute -bottom-px -left-px w-3.5 h-3.5 border-b border-l border-[#B58D3D]/40" />
+    <span className="absolute -bottom-px -right-px w-3.5 h-3.5 border-b border-r border-[#B58D3D]/40" />
+  </div>
 );
 
 /* ============================================================================
@@ -1830,22 +1859,24 @@ const TwilightCloudRibbons: React.FC<{
 }> = ({ tier, uid }) => {
   if (tier === 'mobile') {
     return (
-      <g fill="none" strokeLinecap="round" opacity="0.62">
+      <g fill="none" strokeLinecap="round" opacity="0.54">
         <g className="akath-cloud-drift-a">
           <path
-            d="M 16 146 Q 42 134 68 142 Q 92 136 116 146 Q 82 152 16 146 Z"
-            fill="#FFFDF6"
-            fillOpacity="0.68"
+            d="M 16 146 Q 42 136 68 142 Q 92 138 116 146 Q 82 151 16 146 Z"
+            fill="#FFFDF8"
+            fillOpacity="0.62"
           />
-          <path d="M 24 147 Q 68 149 112 146" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.9" opacity="0.65" />
+          <path d="M 24 147 Q 68 149 112 146" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.7" opacity="0.52" />
+          <path d="M 32 140 Q 66 135 102 141" stroke="#465A8E" strokeWidth="0.5" opacity="0.16" />
         </g>
         <g className="akath-cloud-drift-b">
           <path
-            d="M 294 128 Q 324 116 352 124 Q 378 118 404 128 Q 362 135 294 128 Z"
-            fill="#FFFDF6"
-            fillOpacity="0.64"
+            d="M 294 128 Q 324 118 352 124 Q 378 120 404 128 Q 362 134 294 128 Z"
+            fill="#FFFDF8"
+            fillOpacity="0.58"
           />
-          <path d="M 302 129 Q 350 132 398 128" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.9" opacity="0.62" />
+          <path d="M 302 129 Q 350 132 398 128" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.7" opacity="0.50" />
+          <path d="M 312 122 Q 352 117 390 123" stroke="#465A8E" strokeWidth="0.5" opacity="0.15" />
         </g>
       </g>
     );
@@ -1853,53 +1884,57 @@ const TwilightCloudRibbons: React.FC<{
 
   if (tier === 'tablet') {
     return (
-      <g fill="none" strokeLinecap="round" opacity="0.68">
+      <g fill="none" strokeLinecap="round" opacity="0.60">
         <g className="akath-cloud-drift-a">
           <path
-            d="M 64 188 Q 112 168 164 182 Q 204 172 246 188 Q 180 198 64 188 Z"
-            fill="#FFFDF6"
-            fillOpacity="0.72"
+            d="M 64 188 Q 112 172 164 182 Q 204 174 246 188 Q 180 196 64 188 Z"
+            fill="#FFFDF8"
+            fillOpacity="0.64"
           />
-          <path d="M 78 190 Q 158 194 238 188" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.0" opacity="0.68" />
+          <path d="M 78 190 Q 158 193 238 188" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.75" opacity="0.56" />
+          <path d="M 92 179 Q 158 172 222 181" stroke="#465A8E" strokeWidth="0.55" opacity="0.16" />
         </g>
         <g className="akath-cloud-drift-b">
           <path
-            d="M 812 168 Q 862 148 914 162 Q 960 152 1006 168 Q 934 178 812 168 Z"
-            fill="#FFFDF6"
-            fillOpacity="0.68"
+            d="M 812 168 Q 862 152 914 162 Q 960 154 1006 168 Q 934 176 812 168 Z"
+            fill="#FFFDF8"
+            fillOpacity="0.60"
           />
-          <path d="M 824 170 Q 912 174 996 168" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.0" opacity="0.66" />
+          <path d="M 824 170 Q 912 173 996 168" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.75" opacity="0.54" />
+          <path d="M 838 159 Q 910 152 982 161" stroke="#465A8E" strokeWidth="0.55" opacity="0.16" />
         </g>
       </g>
     );
   }
 
   return (
-    <g fill="none" strokeLinecap="round" opacity="0.72">
+    <g fill="none" strokeLinecap="round" opacity="0.62">
       <g className="akath-cloud-drift-a">
         <path
-          d="M 84 194 Q 146 168 214 186 Q 268 172 326 194 Q 232 206 84 194 Z"
-          fill="#FFFDF6"
-          fillOpacity="0.74"
+          d="M 84 194 Q 146 174 214 186 Q 268 176 326 194 Q 232 204 84 194 Z"
+          fill="#FFFDF8"
+          fillOpacity="0.66"
         />
-        <path d="M 102 196 Q 208 202 316 194" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.05" opacity="0.70" />
+        <path d="M 102 196 Q 208 200 316 194" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.8" opacity="0.56" />
+        <path d="M 118 183 Q 208 174 298 185" stroke="#465A8E" strokeWidth="0.55" opacity="0.17" />
         <path
-          d="M 380 236 Q 424 222 470 232 Q 506 226 540 236 Q 474 244 380 236 Z"
-          fill="#FFFDF6"
-          fillOpacity="0.56"
+          d="M 380 236 Q 424 224 470 232 Q 506 227 540 236 Q 474 242 380 236 Z"
+          fill="#FFFDF8"
+          fillOpacity="0.48"
         />
       </g>
       <g className="akath-cloud-drift-b">
         <path
-          d="M 1168 172 Q 1236 146 1308 164 Q 1364 152 1424 172 Q 1326 184 1168 172 Z"
-          fill="#FFFDF6"
-          fillOpacity="0.72"
+          d="M 1168 172 Q 1236 152 1308 164 Q 1364 155 1424 172 Q 1326 182 1168 172 Z"
+          fill="#FFFDF8"
+          fillOpacity="0.64"
         />
-        <path d="M 1184 174 Q 1302 180 1412 172" stroke={`url(#goldFoil-${uid})`} strokeWidth="1.05" opacity="0.68" />
+        <path d="M 1184 174 Q 1302 178 1412 172" stroke={`url(#goldFoil-${uid})`} strokeWidth="0.8" opacity="0.54" />
+        <path d="M 1204 161 Q 1304 152 1396 163" stroke="#465A8E" strokeWidth="0.55" opacity="0.17" />
         <path
-          d="M 1036 224 Q 1084 210 1134 220 Q 1170 214 1206 224 Q 1136 232 1036 224 Z"
-          fill="#FFFDF6"
-          fillOpacity="0.54"
+          d="M 1036 224 Q 1084 212 1134 220 Q 1170 215 1206 224 Q 1136 230 1036 224 Z"
+          fill="#FFFDF8"
+          fillOpacity="0.46"
         />
       </g>
     </g>
@@ -2415,12 +2450,12 @@ export const HeroPublicationWatermark: React.FC = React.memo(() => {
         isOffscreen ? 'akath-landscape-offscreen' : ''
       }`}
     >
-      {/* Radiant Golden-Hour Horizon Atmospheric Wash */}
+      {/* Refined Archival Warm-Parchment Atmospheric Horizon Wash */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 88% 58% at 50% 18%, rgba(255, 217, 102, 0.28) 0%, rgba(239, 104, 85, 0.11) 42%, rgba(250, 248, 240, 0) 78%)',
+            'radial-gradient(ellipse 84% 54% at 50% 20%, rgba(235, 207, 138, 0.22) 0%, rgba(214, 158, 122, 0.08) 44%, rgba(250, 248, 240, 0) 78%)',
         }}
       />
 
@@ -2434,8 +2469,15 @@ export const HeroPublicationWatermark: React.FC = React.memo(() => {
         >
           <InkWashDefs uid={uid} surfaceHex={surfaceHex} sunCy="60%" />
 
-          {/* Radiant Dusk Solar Corona & Soft Drifting Twilight Clouds */}
+          {/* Archival Sky Atmospheric Wash + Dusk Corona & Soft Drifting Twilight Clouds */}
           <g className="akath-hero-parallax-sky" data-parallax-layer="sky">
+            <rect
+              x="0"
+              y="0"
+              width={isMobile ? 430 : isTablet ? 1120 : 1600}
+              height={isMobile ? 520 : 460}
+              fill={`url(#skyWash-${uid})`}
+            />
             <ellipse
               cx={isMobile ? 215 : isTablet ? 560 : 800}
               cy={isMobile ? 430 : 364}
@@ -2483,19 +2525,19 @@ export const HeroPublicationWatermark: React.FC = React.memo(() => {
                 <path
                   d="M -16 462 C 8 434, 24 406, 48 402 L 116 400 C 134 402, 148 424, 174 430 C 198 436, 224 418, 254 418 L 296 420 C 314 422, 326 436, 344 426 C 362 414, 376 388, 398 386 L 446 388"
                   fill="none"
-                  stroke="#243B8A"
-                  strokeWidth="1.25"
-                  opacity="0.44"
+                  stroke="#465A8E"
+                  strokeWidth="0.95"
+                  opacity="0.28"
                 />
                 <path
                   d="M 36 408 C 42 403, 46 402, 116 400 M 242 419 L 296 420 M 382 392 C 390 387, 394 386, 442 388"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
-                  strokeWidth="1.35"
-                  opacity="0.82"
+                  strokeWidth="1.0"
+                  opacity="0.56"
                 />
                 {/* Contour-Following Deccan Basalt Step Ledges */}
-                <g fill="none" stroke="#243B8A" strokeWidth="0.74" opacity="0.32">
+                <g fill="none" stroke="#465A8E" strokeWidth="0.62" opacity="0.22">
                   <path d="M 34 414 L 122 413 M 26 426 L 134 425" />
                   <path d="M 378 398 L 444 398 M 368 410 L 444 410" />
                   <path d="M 116 400 C 126 414, 136 426, 150 436" />
@@ -2539,19 +2581,19 @@ export const HeroPublicationWatermark: React.FC = React.memo(() => {
                 <path
                   d="M -16 432 C 28 386, 62 346, 108 342 L 210 340 C 234 340, 252 366, 286 372 C 330 378, 368 326, 412 320 L 494 318 C 534 322, 566 364, 622 368 C 674 370, 710 330, 756 324 L 832 322 C 864 324, 886 352, 922 342 C 958 332, 984 298, 1022 296 L 1094 298 L 1136 330"
                   fill="none"
-                  stroke="#243B8A"
-                  strokeWidth="1.35"
-                  opacity="0.44"
+                  stroke="#465A8E"
+                  strokeWidth="1.0"
+                  opacity="0.28"
                 />
                 <path
                   d="M 86 348 C 96 343, 102 342, 210 340 M 392 324 C 402 321, 408 320, 494 318 M 738 328 L 832 322 M 1004 300 L 1094 298"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
-                  strokeWidth="1.45"
-                  opacity="0.82"
+                  strokeWidth="1.05"
+                  opacity="0.58"
                 />
                 {/* Contour-Following Deccan Basalt Strata & Slope Hachures */}
-                <g fill="none" stroke="#243B8A" strokeWidth="0.78" opacity="0.32">
+                <g fill="none" stroke="#465A8E" strokeWidth="0.65" opacity="0.22">
                   <path d="M 88 355 L 222 354 M 72 369 L 238 369 M 210 340 C 228 358, 246 374, 272 386" />
                   <path d="M 396 332 L 506 332 M 384 345 L 522 346 M 494 318 C 516 340, 540 358, 568 372" />
                   <path d="M 1004 310 L 1106 310 M 990 323 L 1118 324" />
@@ -2598,20 +2640,20 @@ export const HeroPublicationWatermark: React.FC = React.memo(() => {
                 <path
                   d="M -20 426 C 28 378, 66 338, 118 332 L 236 330 C 266 332, 288 362, 330 368 C 378 374, 414 302, 464 294 L 568 292 C 612 296, 646 348, 706 354 C 768 360, 816 332, 868 330 L 948 328 C 986 332, 1022 356, 1068 348 C 1118 340, 1152 282, 1204 276 L 1318 274 C 1356 278, 1390 318, 1438 312 C 1484 306, 1528 294, 1620 332"
                   fill="none"
-                  stroke="#243B8A"
-                  strokeWidth="1.4"
-                  opacity="0.44"
+                  stroke="#465A8E"
+                  strokeWidth="1.0"
+                  opacity="0.28"
                 />
-                {/* Gleaming Golden-Hour Sun-Rim Along Far Mesa Crests */}
+                {/* Delicate Antique-Brass Sun-Rim Along Far Mesa Crests */}
                 <path
                   d="M 94 340 C 106 334, 112 332, 236 330 M 442 300 C 454 295, 460 294, 568 292 M 850 332 L 948 328 M 1182 282 C 1194 277, 1200 276, 1318 274"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
-                  strokeWidth="1.5"
-                  opacity="0.84"
+                  strokeWidth="1.05"
+                  opacity="0.58"
                 />
                 {/* Hand-Placed Contour-Following Deccan Basalt Step Ledges & Shadow-Side Hachures */}
-                <g fill="none" stroke="#243B8A" strokeWidth="0.78" opacity="0.32">
+                <g fill="none" stroke="#465A8E" strokeWidth="0.65" opacity="0.22">
                   <path d="M 96 346 L 250 344 M 78 360 L 266 360 M 64 374 L 222 374" />
                   <path d="M 236 330 C 254 348, 274 364, 304 376 M 212 332 C 228 348, 242 362, 260 372" />
                   <path d="M 444 308 L 584 307 M 426 322 L 600 322 M 412 336 L 564 336" />
@@ -2746,19 +2788,19 @@ export const HeroPublicationWatermark: React.FC = React.memo(() => {
                 <path
                   d="M -20 472 C 46 418, 96 386, 164 382 L 266 380 C 308 384, 344 408, 392 374 C 424 352, 454 348, 502 348 L 574 348 C 618 354, 658 408, 738 416 C 824 424, 884 390, 956 378 C 1018 368, 1068 388, 1126 364 C 1176 344, 1218 342, 1296 344 L 1384 348 C 1442 354, 1510 384, 1620 402"
                   fill="none"
-                  stroke="#1B2D6B"
-                  strokeWidth="1.45"
-                  opacity="0.46"
+                  stroke="#1E306E"
+                  strokeWidth="1.18"
+                  opacity="0.38"
                 />
-                {/* Luminous Gold-Foil Rim Highlight Along Sunward Escarpment Shoulders */}
+                {/* Refined Antique-Brass Rim Highlight Along Sunward Escarpment Shoulders */}
                 <path
                   d="M 88 394 C 118 384, 146 382, 266 380 M 436 352 C 460 348, 496 348, 574 348 M 1178 344 C 1226 342, 1296 344, 1384 348"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
-                  strokeWidth="1.65"
-                  opacity="0.88"
+                  strokeWidth="1.18"
+                  opacity="0.68"
                 />
-                <g fill="none" stroke="#1B2D6B" strokeWidth="0.78" opacity="0.32">
+                <g fill="none" stroke="#1E306E" strokeWidth="0.7" opacity="0.26">
                   <path d="M 134 396 L 284 395 M 114 410 L 298 410" />
                   <path d="M 266 380 C 284 398, 302 414, 326 426 M 246 382 C 262 398, 278 412, 298 424" />
                   <path d="M 456 362 L 588 362 M 440 376 L 606 376" />
@@ -2842,7 +2884,7 @@ export const HeroPublicationWatermark: React.FC = React.memo(() => {
                   <line x1="142" y1="617" x2="288" y2="617" strokeDasharray="12 9" />
                   <line x1="168" y1="626" x2="262" y2="626" strokeDasharray="10 8" />
                 </g>
-                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.75">
+                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.2" opacity="0.86">
                   <line x1="48" y1="612" x2="122" y2="612" className="akath-river-shimmer-a" />
                   <line x1="162" y1="622" x2="268" y2="622" className="akath-river-shimmer-b" />
                   <line x1="296" y1="614" x2="378" y2="614" className="akath-river-shimmer-a" />
@@ -2881,7 +2923,7 @@ export const HeroPublicationWatermark: React.FC = React.memo(() => {
                   <line x1="740" y1="544" x2="896" y2="544" strokeDasharray="14 10" />
                   <line x1="772" y1="554" x2="864" y2="554" strokeDasharray="12 10" />
                 </g>
-                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.9">
+                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.3" opacity="0.86">
                   <line x1="220" y1="538" x2="345" y2="538" className="akath-river-shimmer-a" />
                   <line x1="470" y1="548" x2="645" y2="548" className="akath-river-shimmer-b" />
                   <line x1="754" y1="540" x2="885" y2="540" className="akath-river-shimmer-a" />
@@ -2938,8 +2980,8 @@ export const HeroPublicationWatermark: React.FC = React.memo(() => {
                   <line x1="1136" y1="552" x2="1244" y2="552" strokeDasharray="14 10" />
                   <line x1="1164" y1="561" x2="1216" y2="561" strokeDasharray="12 9" />
                 </g>
-                {/* Gleaming Gold-Foil Dusk Water Shimmer Lines */}
-                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="2.0">
+                {/* Fine Champagne-Gold Dusk Water Shimmer Hairlines */}
+                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.35" opacity="0.86">
                   <line x1="210" y1="549" x2="318" y2="549" className="akath-river-shimmer-b" />
                   <line x1="420" y1="536" x2="552" y2="536" className="akath-river-shimmer-a" />
                   <line x1="686" y1="545" x2="880" y2="545" className="akath-river-shimmer-b" />
@@ -3020,21 +3062,24 @@ export const HeroPublicationWatermark: React.FC = React.memo(() => {
 
         </svg>
 
-        {/* Subtle Animated Gilded Foil Sheen Gliding Across the Plate (Desktop Only) */}
+        {/* Subtle Museum-Plate Archival Folio Hairline Frame */}
+        <ArchivalFolioFrame />
+
+        {/* Subtle Animated Champagne-Gold Foil Sheen Gliding Across the Plate (Desktop Only) */}
         <div
           className="hidden lg:block akath-gold-sheen-sweep absolute inset-y-0 -inset-x-[24%] pointer-events-none"
           style={{
             background:
-              'linear-gradient(112deg, rgba(255, 253, 245, 0) 28%, rgba(255, 217, 102, 0.14) 45%, rgba(255, 250, 224, 0.26) 50%, rgba(255, 217, 102, 0.12) 56%, rgba(255, 253, 245, 0) 72%)',
+              'linear-gradient(112deg, rgba(255, 253, 245, 0) 32%, rgba(222, 192, 116, 0.09) 46%, rgba(255, 251, 236, 0.18) 50%, rgba(222, 192, 116, 0.08) 55%, rgba(255, 253, 245, 0) 70%)',
           }}
         />
 
-        {/* Balanced Center Readability Veil — Keeps Headline Crisp While Banyan Gathering & River Shine Vividly */}
+        {/* Refined Editorial Readability Halo — Gives Display Typography Quiet Contrast & Depth */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 50% 46% at 50% 32%, rgba(250, 248, 240, 0.56) 0%, rgba(250, 248, 240, 0.20) 56%, rgba(250, 248, 240, 0) 100%)',
+              'radial-gradient(ellipse 52% 48% at 50% 30%, rgba(250, 248, 240, 0.72) 0%, rgba(250, 248, 240, 0.28) 58%, rgba(250, 248, 240, 0) 100%)',
           }}
         />
 
@@ -3110,12 +3155,12 @@ export const AuthorsLandscapeBackdrop: React.FC = React.memo(() => {
         isOffscreen ? 'akath-landscape-offscreen' : ''
       }`}
     >
-      {/* Radiant Golden-Parchment Dusk Atmospheric Wash */}
+      {/* Refined Archival Warm-Parchment Atmospheric Horizon Wash */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 88% 58% at 50% 18%, rgba(255, 217, 102, 0.27) 0%, rgba(239, 104, 85, 0.11) 44%, rgba(244, 237, 224, 0) 78%)',
+            'radial-gradient(ellipse 84% 54% at 50% 18%, rgba(226, 198, 134, 0.20) 0%, rgba(206, 152, 118, 0.08) 44%, rgba(244, 237, 224, 0) 78%)',
         }}
       />
 
@@ -3128,7 +3173,14 @@ export const AuthorsLandscapeBackdrop: React.FC = React.memo(() => {
         >
           <InkWashDefs uid={uid} surfaceHex={surfaceHex} sunCy="56%" />
 
-          {/* Radiant Low Horizon Dusk Corona */}
+          {/* Archival Sky Atmospheric Wash + Low Horizon Dusk Corona */}
+          <rect
+            x="0"
+            y="0"
+            width={isMobile ? 430 : isTablet ? 1120 : 1600}
+            height={isMobile ? 540 : 520}
+            fill={`url(#skyWash-${uid})`}
+          />
           <ellipse
             cx={isMobile ? 215 : isTablet ? 560 : 800}
             cy={isMobile ? 492 : 454}
@@ -3473,12 +3525,15 @@ export const AuthorsLandscapeBackdrop: React.FC = React.memo(() => {
 
         </svg>
 
-        {/* Subtle Animated Gilded Foil Sheen Gliding Across the Plate (Desktop Only) */}
+        {/* Subtle Museum-Plate Archival Folio Hairline Frame */}
+        <ArchivalFolioFrame />
+
+        {/* Subtle Animated Champagne-Gold Foil Sheen Gliding Across the Plate (Desktop Only) */}
         <div
           className="hidden lg:block akath-gold-sheen-sweep absolute inset-y-0 -inset-x-[24%] pointer-events-none"
           style={{
             background:
-              'linear-gradient(112deg, rgba(255, 253, 245, 0) 28%, rgba(255, 217, 102, 0.14) 45%, rgba(255, 250, 224, 0.25) 50%, rgba(255, 217, 102, 0.12) 56%, rgba(255, 253, 245, 0) 72%)',
+              'linear-gradient(112deg, rgba(255, 253, 245, 0) 32%, rgba(222, 192, 116, 0.09) 46%, rgba(255, 251, 236, 0.17) 50%, rgba(222, 192, 116, 0.08) 55%, rgba(255, 253, 245, 0) 70%)',
           }}
         />
 
@@ -3487,7 +3542,7 @@ export const AuthorsLandscapeBackdrop: React.FC = React.memo(() => {
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 62% 58% at 50% 45%, rgba(244, 237, 224, 0.56) 0%, rgba(244, 237, 224, 0.22) 60%, rgba(244, 237, 224, 0) 100%)',
+              'radial-gradient(ellipse 64% 58% at 50% 44%, rgba(244, 237, 224, 0.66) 0%, rgba(244, 237, 224, 0.26) 60%, rgba(244, 237, 224, 0) 100%)',
           }}
         />
 
@@ -3578,12 +3633,12 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
       }`}
       style={{ backgroundColor: surfaceHex, contain: 'layout style paint' }}
     >
-      {/* Radiant Golden-Hour Horizon Atmospheric Wash */}
+      {/* Refined Archival Warm-Parchment Atmospheric Horizon Wash */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 88% 58% at 50% 16%, rgba(255, 217, 102, 0.27) 0%, rgba(239, 104, 85, 0.11) 44%, rgba(250, 246, 236, 0) 78%)',
+            'radial-gradient(ellipse 84% 54% at 50% 16%, rgba(235, 207, 138, 0.21) 0%, rgba(214, 158, 122, 0.08) 44%, rgba(250, 246, 236, 0) 78%)',
         }}
       />
 
@@ -3596,7 +3651,14 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
         >
           <InkWashDefs uid={uid} surfaceHex={surfaceHex} sunCy="62%" />
 
-          {/* Radiant Golden-Dusk Horizon Halo & Soft Twilight Clouds */}
+          {/* Archival Sky Wash + Golden-Dusk Horizon Halo & Soft Twilight Clouds */}
+          <rect
+            x="0"
+            y="0"
+            width={isMobile ? 430 : isTablet ? 1120 : 1600}
+            height={isMobile ? 520 : 480}
+            fill={`url(#skyWash-${uid})`}
+          />
           <ellipse
             cx={isMobile ? 215 : isTablet ? 560 : 800}
             cy={isMobile ? 430 : 386}
@@ -3611,38 +3673,64 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
             <path
               d={
                 isMobile
-                  ? 'M 20 398 Q 215 232 410 398'
+                  ? 'M 20 404 Q 215 276 410 404'
                   : isTablet
-                  ? 'M 80 374 Q 560 156 1040 374'
-                  : 'M 120 364 Q 800 132 1480 364'
+                  ? 'M 80 382 Q 560 218 1040 382'
+                  : 'M 120 374 Q 800 198 1480 374'
               }
               fill="none"
               stroke={`url(#goldFoil-${uid})`}
-              strokeWidth="1.15"
-              strokeDasharray="3 8"
-              opacity="0.56"
+              strokeWidth="0.88"
+              strokeDasharray="3 9"
+              opacity="0.30"
             />
             <g
               transform={
                 isMobile
-                  ? 'translate(352, 92) scale(0.80)'
+                  ? 'translate(366, 98) scale(0.76)'
                   : isTablet
-                  ? 'translate(944, 130) scale(0.92)'
-                  : 'translate(1354, 126)'
+                  ? 'translate(972, 134) scale(0.88)'
+                  : 'translate(1410, 128) scale(0.94)'
               }
             >
-              <DiamondSparkle cx={0} cy={0} r={7.2} uid={uid} className="akath-star-twinkle-a" />
-              <DiamondSparkle cx={26} cy={16} r={5.0} uid={uid} className="akath-star-twinkle-b" />
-              <DiamondSparkle cx={-20} cy={22} r={4.4} uid={uid} className="akath-star-twinkle-a" opacity={0.86} />
+              <DiamondSparkle cx={0} cy={0} r={6.6} uid={uid} className="akath-star-twinkle-a" opacity={0.78} />
+              <DiamondSparkle cx={24} cy={16} r={4.6} uid={uid} className="akath-star-twinkle-b" opacity={0.72} />
+              <DiamondSparkle cx={-20} cy={22} r={4.0} uid={uid} className="akath-star-twinkle-a" opacity={0.68} />
             </g>
             <DiamondSparkle
-              cx={isMobile ? 62 : isTablet ? 186 : 244}
-              cy={isMobile ? 108 : isTablet ? 148 : 144}
-              r={isMobile ? 5.0 : 6.0}
+              cx={isMobile ? 52 : isTablet ? 152 : 196}
+              cy={isMobile ? 114 : isTablet ? 152 : 148}
+              r={isMobile ? 4.6 : 5.4}
               uid={uid}
               className="akath-star-twinkle-b"
-              opacity={0.88}
+              opacity={0.74}
             />
+            {/* Distant Evening Birds Gliding Quietly Above the Sahyadri Horizon */}
+            <g
+              fill="none"
+              stroke="#465A8E"
+              strokeWidth={isMobile ? '0.9' : '1.05'}
+              opacity="0.36"
+            >
+              {isMobile ? (
+                <>
+                  <path d="M 164 366 Q 169 361 174 366 Q 179 361 184 366" />
+                  <path d="M 192 356 Q 196 352 200 356 Q 204 352 208 356" />
+                </>
+              ) : isTablet ? (
+                <>
+                  <path d="M 488 308 Q 495 302 502 308 Q 509 302 516 308" />
+                  <path d="M 526 294 Q 531 289 536 294 Q 541 289 546 294" />
+                  <path d="M 560 314 Q 564 310 568 314 Q 572 310 576 314" />
+                </>
+              ) : (
+                <>
+                  <path d="M 702 292 Q 710 285 718 292 Q 726 285 734 292" />
+                  <path d="M 748 278 Q 754 272 760 278 Q 766 272 772 278" />
+                  <path d="M 786 298 Q 791 293 796 298 Q 801 293 806 298" />
+                </>
+              )}
+            </g>
 
             {isMobile ? (
               <>
@@ -3653,18 +3741,18 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
                 <path
                   d="M -16 462 C 4 440, 18 416, 38 414 L 106 412 C 122 414, 136 434, 162 436 C 186 438, 206 404, 232 402 L 284 402 C 302 404, 314 426, 336 430 C 358 434, 374 394, 396 392 L 446 392"
                   fill="none"
-                  stroke="#243B8A"
-                  strokeWidth="1.3"
-                  opacity="0.44"
+                  stroke="#465A8E"
+                  strokeWidth="0.92"
+                  opacity="0.26"
                 />
                 <path
                   d="M 38 414 L 106 412 M 232 402 L 284 402 M 396 392 L 442 392"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
-                  strokeWidth="1.4"
-                  opacity="0.82"
+                  strokeWidth="0.98"
+                  opacity="0.54"
                 />
-                <g fill="none" stroke="#243B8A" strokeWidth="0.74" opacity="0.32">
+                <g fill="none" stroke="#465A8E" strokeWidth="0.62" opacity="0.20">
                   <path d="M 28 426 L 114 425 M 222 414 L 294 414 M 382 406 L 444 406" />
                 </g>
               </>
@@ -3677,18 +3765,18 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
                 <path
                   d="M -16 446 C 18 408, 38 366, 68 364 L 184 362 C 212 364, 232 398, 272 402 C 324 406, 366 346, 404 342 L 516 340 C 552 344, 578 386, 636 392 C 698 398, 742 332, 784 328 L 916 326 C 954 330, 984 370, 1028 364 C 1066 358, 1098 370, 1136 392"
                   fill="none"
-                  stroke="#243B8A"
-                  strokeWidth="1.35"
-                  opacity="0.44"
+                  stroke="#465A8E"
+                  strokeWidth="0.98"
+                  opacity="0.26"
                 />
                 <path
                   d="M 68 364 L 184 362 M 404 342 L 516 340 M 784 328 L 916 326"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
-                  strokeWidth="1.45"
-                  opacity="0.84"
+                  strokeWidth="1.05"
+                  opacity="0.56"
                 />
-                <g fill="none" stroke="#243B8A" strokeWidth="0.78" opacity="0.32">
+                <g fill="none" stroke="#465A8E" strokeWidth="0.65" opacity="0.20">
                   <path d="M 54 378 L 198 377 M 44 392 L 210 392" />
                   <path d="M 388 356 L 528 355 M 516 340 C 538 364, 562 384, 594 396" />
                   <path d="M 768 342 L 930 341 M 752 356 L 946 356 M 916 326 C 942 350, 968 368, 998 378" />
@@ -3703,19 +3791,19 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
                 <path
                   d="M -20 432 C 36 372, 74 324, 126 320 L 284 318 C 328 320, 360 368, 422 374 C 482 378, 524 332, 578 328 L 696 326 C 756 330, 804 382, 892 384 C 974 386, 1024 316, 1094 304 L 1266 302 C 1320 306, 1364 352, 1428 344 C 1488 336, 1546 318, 1620 356"
                   fill="none"
-                  stroke="#243B8A"
-                  strokeWidth="1.4"
-                  opacity="0.44"
+                  stroke="#465A8E"
+                  strokeWidth="1.0"
+                  opacity="0.26"
                 />
-                {/* Sunlit Gold-Foil Rim Along High Deccan Tablelands */}
+                {/* Sunlit Antique-Gold Rim Along High Deccan Tablelands */}
                 <path
                   d="M 102 328 C 114 322, 120 320, 284 318 M 556 334 C 566 329, 574 328, 696 326 M 1068 312 C 1082 306, 1090 304, 1266 302"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
-                  strokeWidth="1.55"
-                  opacity="0.86"
+                  strokeWidth="1.08"
+                  opacity="0.58"
                 />
-                <g fill="none" stroke="#243B8A" strokeWidth="0.78" opacity="0.32">
+                <g fill="none" stroke="#465A8E" strokeWidth="0.66" opacity="0.20">
                   <path d="M 104 334 L 298 333 M 84 350 L 316 349 M 68 366 L 266 365" />
                   <path d="M 284 318 C 312 344, 340 364, 378 378 M 252 320 C 276 344, 300 362, 330 374" />
                   <path d="M 556 342 L 712 341 M 696 326 C 730 352, 766 372, 814 384" />
@@ -3751,18 +3839,18 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
                 <path
                   d="M -16 516 C 24 484, 62 478, 116 492 C 170 506, 220 518, 268 504 C 296 494, 314 452, 344 446 L 404 446 L 446 472"
                   fill="none"
-                  stroke="#1B2D6B"
-                  strokeWidth="1.3"
-                  opacity="0.46"
+                  stroke="#22356B"
+                  strokeWidth="1.05"
+                  opacity="0.36"
                 />
                 <path
                   d="M 322 454 C 334 448, 340 446, 404 446"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
-                  strokeWidth="1.45"
-                  opacity="0.86"
+                  strokeWidth="1.12"
+                  opacity="0.66"
                 />
-                <g fill="none" stroke="#1B2D6B" strokeWidth="0.74" opacity="0.32">
+                <g fill="none" stroke="#22356B" strokeWidth="0.66" opacity="0.24">
                   <path d="M 326 460 L 414 460 M 314 472 L 424 472" />
                 </g>
                 {/* Western Heritage Valley: Great Buddhist Stupa & Torana */}
@@ -3792,18 +3880,18 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
                 <path
                   d="M -16 492 C 74 446, 152 440, 248 468 C 368 502, 488 510, 616 488 C 710 472, 774 406, 846 402 L 992 402 C 1044 406, 1088 436, 1136 452"
                   fill="none"
-                  stroke="#1B2D6B"
-                  strokeWidth="1.35"
-                  opacity="0.46"
+                  stroke="#22356B"
+                  strokeWidth="1.12"
+                  opacity="0.36"
                 />
                 <path
                   d="M 812 414 C 826 406, 838 402, 992 402"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
-                  strokeWidth="1.6"
-                  opacity="0.88"
+                  strokeWidth="1.2"
+                  opacity="0.68"
                 />
-                <g fill="none" stroke="#1B2D6B" strokeWidth="0.78" opacity="0.32">
+                <g fill="none" stroke="#22356B" strokeWidth="0.68" opacity="0.24">
                   <path d="M 822 418 L 1006 418 M 804 434 L 1024 434 M 992 402 C 1022 422, 1052 440, 1088 456" />
                 </g>
                 <SahyadriCitadelFort
@@ -3831,18 +3919,18 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
                 <path
                   d="M -20 486 C 88 434, 186 426, 304 456 C 446 492, 598 506, 756 490 C 892 476, 988 446, 1074 402 C 1116 382, 1152 378, 1216 378 L 1368 378 C 1438 384, 1518 424, 1620 442"
                   fill="none"
-                  stroke="#1B2D6B"
-                  strokeWidth="1.45"
-                  opacity="0.46"
+                  stroke="#22356B"
+                  strokeWidth="1.18"
+                  opacity="0.36"
                 />
                 <path
                   d="M 1074 402 C 1116 382, 1152 378, 1216 378 L 1368 378"
                   fill="none"
                   stroke={`url(#goldFoil-${uid})`}
-                  strokeWidth="1.75"
-                  opacity="0.90"
+                  strokeWidth="1.28"
+                  opacity="0.68"
                 />
-                <g fill="none" stroke="#1B2D6B" strokeWidth="0.78" opacity="0.32">
+                <g fill="none" stroke="#22356B" strokeWidth="0.68" opacity="0.24">
                   <path d="M 1116 394 L 1384 394 M 1084 410 L 1408 410 M 1054 426 L 1430 426" />
                   <path d="M 1368 378 C 1408 402, 1448 424, 1498 444 M 1334 380 C 1372 404, 1412 426, 1456 444" />
                   <path d="M 122 454 C 190 452, 248 462, 314 480 M 96 470 C 166 468, 224 476, 286 492" />
@@ -3887,7 +3975,7 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
             opacity="0.64"
           />
 
-          {/* LAYER 3A — Terraced Foreground Deccan Foreland & Gilded Valley Contour */}
+          {/* LAYER 3A — Terraced Foreground Deccan Foreland & Tranquil Godavari Tributary Ribbon */}
           <g className="akath-parallax-river" strokeLinecap="round">
             {isMobile ? (
               <>
@@ -3898,17 +3986,22 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
                 <path
                   d="M -20 594 Q 108 570 216 586 T 450 578"
                   fill="none"
-                  stroke="#174D3A"
-                  strokeWidth="1.25"
-                  opacity="0.46"
+                  stroke="#164234"
+                  strokeWidth="1.15"
+                  opacity="0.40"
                 />
                 <path
-                  d="M -20 626 Q 124 610 236 620 T 450 614"
+                  d="M -20 622 Q 124 608 236 618 T 450 612 L 450 644 Q 290 632 162 638 T -20 642 Z"
+                  fill={`url(#riverWash-${uid})`}
+                  opacity="0.42"
+                />
+                <path
+                  d="M -20 624 Q 124 610 236 620 T 450 614"
                   fill="none"
                   stroke={`url(#goldBeam-${uid})`}
-                  strokeWidth="1.45"
-                  strokeDasharray="6 6"
-                  opacity="0.80"
+                  strokeWidth="1.18"
+                  strokeDasharray="6 7"
+                  opacity="0.72"
                 />
               </>
             ) : isTablet ? (
@@ -3920,17 +4013,22 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
                 <path
                   d="M -24 558 Q 250 526 520 550 T 1144 538"
                   fill="none"
-                  stroke="#174D3A"
-                  strokeWidth="1.35"
-                  opacity="0.46"
+                  stroke="#164234"
+                  strokeWidth="1.22"
+                  opacity="0.40"
                 />
                 <path
-                  d="M -24 592 Q 300 572 580 586 T 1144 576"
+                  d="M -24 588 Q 300 568 580 582 T 1144 574 L 1144 614 Q 820 598 520 608 T -24 612 Z"
+                  fill={`url(#riverWash-${uid})`}
+                  opacity="0.44"
+                />
+                <path
+                  d="M -24 590 Q 300 570 580 584 T 1144 575"
                   fill="none"
                   stroke={`url(#goldBeam-${uid})`}
-                  strokeWidth="1.55"
+                  strokeWidth="1.25"
                   strokeDasharray="7 7"
-                  opacity="0.82"
+                  opacity="0.74"
                 />
               </>
             ) : (
@@ -3942,25 +4040,34 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
                 <path
                   d="M -28 546 Q 220 512 468 538 T 980 542 Q 1280 524 1628 536"
                   fill="none"
-                  stroke="#174D3A"
-                  strokeWidth="1.4"
+                  stroke="#164234"
+                  strokeWidth="1.25"
+                  opacity="0.40"
+                />
+                <path
+                  d="M -28 574 Q 340 552 740 570 T 1628 560 L 1628 606 Q 1160 588 720 598 T -28 602 Z"
+                  fill={`url(#riverWash-${uid})`}
                   opacity="0.46"
                 />
                 <path
-                  d="M -28 578 Q 340 556 740 574 T 1628 564"
+                  d="M -28 576 Q 340 554 740 572 T 1628 562"
                   fill="none"
                   stroke={`url(#goldBeam-${uid})`}
-                  strokeWidth="1.7"
-                 
-                  opacity="0.88"
+                  strokeWidth="1.32"
+                  opacity="0.78"
                 />
+                <g stroke={`url(#goldBeam-${uid})`} strokeWidth="1.15" opacity="0.72">
+                  <line x1="590" y1="585" x2="718" y2="585" className="akath-river-shimmer-a" />
+                  <line x1="846" y1="591" x2="994" y2="591" className="akath-river-shimmer-b" />
+                  <line x1="1084" y1="582" x2="1196" y2="582" className="akath-river-shimmer-a" />
+                </g>
                 <path
-                  d="M 480 594 Q 800 578 1120 596"
+                  d="M 480 598 Q 800 584 1120 598"
                   fill="none"
-                  stroke="#1B2D6B"
-                  strokeWidth="1.0"
-                  strokeDasharray="5 8"
-                  opacity="0.34"
+                  stroke="#22356B"
+                  strokeWidth="0.92"
+                  strokeDasharray="5 9"
+                  opacity="0.26"
                 />
               </>
             )}
@@ -4016,20 +4123,33 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
 
         </svg>
 
-        {/* Subtle Animated Gilded Foil Sheen Gliding Across the Plate (Desktop Only) */}
+        {/* Subtle Museum-Plate Archival Folio Hairline Frame */}
+        <ArchivalFolioFrame />
+
+        {/* Subtle Animated Champagne-Gold Foil Sheen Gliding Across the Plate (Desktop Only) */}
         <div
           className="hidden lg:block akath-gold-sheen-sweep absolute inset-y-0 -inset-x-[24%] pointer-events-none"
           style={{
             background:
-              'linear-gradient(112deg, rgba(255, 253, 245, 0) 28%, rgba(255, 217, 102, 0.14) 45%, rgba(255, 250, 224, 0.25) 50%, rgba(255, 217, 102, 0.12) 56%, rgba(255, 253, 245, 0) 72%)',
+              'linear-gradient(112deg, rgba(255, 253, 245, 0) 32%, rgba(222, 192, 116, 0.09) 46%, rgba(255, 251, 236, 0.17) 50%, rgba(222, 192, 116, 0.08) 55%, rgba(255, 253, 245, 0) 70%)',
           }}
         />
 
-        {/* Balanced Center Readability Veil — Keeps Unboxed About Prose Crisp While Banyan Storytellers Shine */}
+        {/* Calibrated Top-to-Center Archival Parchment Readability Veil — Guarantees Crisp Top Typography While Preserving Full Horizon & Banyan Panorama Below */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: `radial-gradient(ellipse 52% 48% at 50% 38%, ${surfaceHex}90 0%, ${surfaceHex}36 58%, ${surfaceHex}00 100%)`,
+            background: isWholePageFixed
+              ? `linear-gradient(180deg, ${surfaceHex}F5 0%, ${surfaceHex}E0 26%, ${surfaceHex}A6 48%, ${surfaceHex}30 70%, ${surfaceHex}00 86%)`
+              : `linear-gradient(180deg, ${surfaceHex}FA 0%, ${surfaceHex}F0 28%, ${surfaceHex}CC 48%, ${surfaceHex}4D 66%, ${surfaceHex}00 80%)`,
+          }}
+        />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: isWholePageFixed
+              ? `radial-gradient(ellipse 62% 52% at 50% 30%, ${surfaceHex}D6 0%, ${surfaceHex}70 58%, ${surfaceHex}00 100%)`
+              : `radial-gradient(ellipse 64% 48% at 50% 28%, ${surfaceHex}E0 0%, ${surfaceHex}75 56%, ${surfaceHex}00 100%)`,
           }}
         />
 
@@ -4050,7 +4170,7 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
 
       {/* Seamless Top & Bottom Section Transitions */}
       <div
-        className="absolute inset-x-0 top-0 h-20"
+        className="absolute inset-x-0 top-0 h-24"
         style={{
           background: `linear-gradient(180deg, ${topFadeRgba} 0%, ${surfaceHex}00 100%)`,
         }}

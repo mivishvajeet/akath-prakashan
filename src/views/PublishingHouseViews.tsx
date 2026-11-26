@@ -496,7 +496,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
           =================================================================== */}
       <div
         data-testid="about-archival-dateline"
-        className="border-b border-[#DCD4C0] bg-[#FAF6EC]/90 backdrop-blur-md sticky top-0 z-20 w-full"
+        className="border-b border-[#DCD4C0] bg-[#FAF6EC]/94 backdrop-blur-md sticky top-[58px] sm:top-[64px] z-20 w-full"
       >
         <div className="max-w-[1360px] mx-auto px-3 sm:px-6 lg:px-10 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4 min-w-0">
           {/* Interactive Exhibition Chapter Rail */}
@@ -559,26 +559,26 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
             ================================================================= */}
         <div
           id="about-manifesto-top"
-          className="scroll-mt-28 space-y-6 sm:space-y-10 min-w-0"
+          className="scroll-mt-36 space-y-6 sm:space-y-9 min-w-0 max-w-4xl mx-auto rounded-2xl bg-gradient-to-b from-[#FAF6EC]/92 via-[#FAF6EC]/86 to-[#FAF6EC]/72 border border-[#DCD4C0]/60 px-5 py-7 sm:px-10 sm:py-10"
         >
-          {/* Open, Unboxed Centered Editorial Header Floating Directly Over Full-Page Dusk Landscape */}
-          <div className="border-b border-[#DCD4C0]/80 pb-6 sm:pb-8 lg:pb-10 space-y-3 sm:space-y-4 max-w-4xl mx-auto text-center">
+          {/* Archival Editorial Header Resting Cleanly Over Illuminated Dusk Landscape */}
+          <div className="border-b border-[#DCD4C0]/85 pb-6 sm:pb-8 lg:pb-9 space-y-3 sm:space-y-4 max-w-3xl mx-auto text-center">
             <p
               data-about-io-para="lead-eyebrow"
               style={{ '--io-stagger-index': 0 } as React.CSSProperties}
-              className="akath-about-io-para text-[10.5px] sm:text-[11.5px] font-mono uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#243B8A] font-bold"
+              className="akath-about-io-para text-[10.5px] sm:text-[11.5px] font-mono uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#1D327A] font-bold"
             >
               About Akath Prakashan · संपादकीय भूमिका · Nanded Imprint
             </p>
 
             <h1
               data-testid="about-headline-breathe"
-              className="akath-about-headline-breathe font-editorial-display not-italic text-[26px] sm:text-[40px] lg:text-[50px] font-extrabold text-[#1C1917] leading-[1.18] tracking-tight"
+              className="akath-about-headline-breathe font-editorial-display not-italic text-[26px] sm:text-[40px] lg:text-[48px] font-extrabold text-[#141210] leading-[1.18] tracking-tight [text-wrap:balance]"
             >
               काही पुस्तकं वाचून संपतात. काही मनात घर करतात.
             </h1>
 
-            <p className="akath-about-lead-breathe font-editorial-display italic font-bold text-[18px] sm:text-[24px] lg:text-[26px] text-[#243B8A] leading-[1.35]">
+            <p className="akath-about-lead-breathe font-editorial-display italic font-bold text-[18px] sm:text-[24px] lg:text-[26px] text-[#1D327A] leading-[1.35]">
               Some books end at the last page. Others stay with us.
             </p>
           </div>
@@ -591,13 +591,12 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
             <motion.section
               data-testid="about-hero-manifesto"
               data-about-io-block="lead-manifesto"
-              variants={aboutSectionSequentialVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.04 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               className="akath-about-io-block"
             >
-              <motion.div variants={aboutItemSequentialVariants}>
+              <div>
                 <div
                   data-testid="about-prose-breathe-block"
                   style={{ '--breathe-phase': '0.4s' } as React.CSSProperties}
@@ -606,7 +605,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
                   <p
                     data-about-io-para="lead-p1"
                     style={{ '--io-stagger-index': 1 } as React.CSSProperties}
-                    className="akath-about-io-para font-semibold text-[#1C1917] text-[16.5px] sm:text-[19.5px] leading-[1.7]"
+                    className="akath-about-io-para font-semibold text-[#141210] text-[16.5px] sm:text-[19.5px] leading-[1.7]"
                   >
                     A book often begins with something small — an idea that refuses to go away, a memory waiting to be written, a question without an easy answer, or a story someone has carried for years.
                   </p>
@@ -667,7 +666,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
                     That is the kind of publishing we hope to practise at Akath.
                   </p>
                 </div>
-              </motion.div>
+              </div>
             </motion.section>
           </div>
         </div>
