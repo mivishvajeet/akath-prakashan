@@ -37,6 +37,7 @@ export const StorybookFooterLandscape: React.FC = React.memo(() => {
   const [isInViewport, setIsInViewport] = useState(false);
   const [isUserPaused, setIsUserPaused] = useState(false);
   const [isBlinkingNow, setIsBlinkingNow] = useState(false);
+  const blinkTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const node = containerRef.current;
@@ -52,12 +53,23 @@ export const StorybookFooterLandscape: React.FC = React.memo(() => {
     );
 
     observer.observe(node);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (blinkTimerRef.current !== null) {
+        window.clearTimeout(blinkTimerRef.current);
+      }
+    };
   }, []);
 
   const handleTortoiseInteract = () => {
     setIsBlinkingNow(true);
-    window.setTimeout(() => setIsBlinkingNow(false), 900);
+    if (blinkTimerRef.current !== null) {
+      window.clearTimeout(blinkTimerRef.current);
+    }
+    blinkTimerRef.current = window.setTimeout(() => {
+      setIsBlinkingNow(false);
+      blinkTimerRef.current = null;
+    }, 1150);
   };
 
   const isAnimationPaused = !isInViewport || isUserPaused;
@@ -751,12 +763,29 @@ export const StorybookFooterLandscape: React.FC = React.memo(() => {
             <rect x="2" y="-2" width="4" height="2" fill="#B86F50" />
           </g>
 
-          {/* Evening Firefly Pixel Motes (काजवे) */}
-          <g className="storybook-firefly-pulse" fill="#FFD966">
-            <rect x="348" y="218" width="4" height="4" />
-            <rect x="520" y="196" width="4" height="4" />
-            <rect x="784" y="208" width="4" height="4" />
-            <rect x="940" y="222" width="4" height="4" />
+          <g className="storybook-floating-leaf-c hidden md:inline">
+            <rect x="0" y="0" width="6" height="4" fill="#78845A" />
+            <rect x="2" y="-2" width="4" height="2" fill="#E8BC69" />
+          </g>
+
+          {/* Staggered Evening Firefly Pixel Motes (काजवे) with Soft Golden Halos */}
+          <g className="storybook-firefly-pulse storybook-firefly-a">
+            <rect x="345" y="215" width="10" height="10" fill="#FFD966" fillOpacity="0.22" />
+            <rect x="348" y="218" width="4" height="4" fill="#FFD966" />
+            <rect x="781" y="205" width="10" height="10" fill="#FFD966" fillOpacity="0.22" />
+            <rect x="784" y="208" width="4" height="4" fill="#FFD966" />
+          </g>
+          <g className="storybook-firefly-pulse storybook-firefly-b">
+            <rect x="517" y="193" width="10" height="10" fill="#E8BC69" fillOpacity="0.22" />
+            <rect x="520" y="196" width="4" height="4" fill="#FFFDF7" />
+            <rect x="937" y="219" width="10" height="10" fill="#FFD966" fillOpacity="0.2" />
+            <rect x="940" y="222" width="4" height="4" fill="#FFD966" />
+          </g>
+          <g className="storybook-firefly-pulse storybook-firefly-c hidden sm:inline">
+            <rect x="615" y="182" width="10" height="10" fill="#FFD966" fillOpacity="0.2" />
+            <rect x="618" y="185" width="4" height="4" fill="#FFD966" />
+            <rect x="1082" y="200" width="10" height="10" fill="#E8BC69" fillOpacity="0.2" />
+            <rect x="1085" y="203" width="4" height="4" fill="#FFFDF7" />
           </g>
 
           {/* Ambient 16-Bit Sprite Butterfly (Visible inside mobile/tablet/desktop center frame) */}
@@ -791,6 +820,16 @@ export const StorybookFooterLandscape: React.FC = React.memo(() => {
               {/* 16-Bit Stepped Pixel Ground Shadow */}
               <rect x="18" y="70" width="110" height="6" fill="#302C25" fillOpacity="0.38" />
               <rect x="10" y="72" width="126" height="2" fill="#302C25" fillOpacity="0.22" />
+
+              {/* Subtle Grounded Pixel Footstep Dust Motes Behind Hind Feet */}
+              <g aria-hidden="true" className="storybook-step-dust-a">
+                <rect x="12" y="66" width="4" height="4" fill="#E8BC69" fillOpacity="0.6" />
+                <rect x="4" y="62" width="4" height="4" fill="#F5EBDD" fillOpacity="0.45" />
+              </g>
+              <g aria-hidden="true" className="storybook-step-dust-b">
+                <rect x="20" y="68" width="4" height="4" fill="#B86F50" fillOpacity="0.55" />
+                <rect x="10" y="64" width="4" height="4" fill="#E8BC69" fillOpacity="0.4" />
+              </g>
 
               {/* =============================================================
                   FAR-SIDE 16-BIT SPRITE LEGS (Back-Left & Front-Left)
@@ -909,13 +948,55 @@ export const StorybookFooterLandscape: React.FC = React.memo(() => {
                     <rect x="-2" y="-8" width="4" height="8" fill="#B86F50" />
                   </g>
 
-                  {/* Warm 16-Bit Brass Lantern Perched by the Books */}
+                  {/* Warm 16-Bit Brass Lantern Perched by the Books + Soft Rising Light Motes */}
                   <g transform="translate(96, -8)">
-                    <rect x="-4" y="-4" width="16" height="16" fill="#E8BC69" fillOpacity="0.26" className="storybook-lantern-glow" />
+                    <rect x="-6" y="-6" width="20" height="20" fill="#E8BC69" fillOpacity="0.14" className="storybook-lantern-glow" />
+                    <rect x="-4" y="-4" width="16" height="16" fill="#E8BC69" fillOpacity="0.28" className="storybook-lantern-glow" />
                     <rect x="0" y="0" width="8" height="10" fill="#302C25" />
                     <rect x="2" y="-2" width="4" height="2" fill="#302C25" />
                     <rect x="2" y="2" width="4" height="6" fill="#E8BC69" className="storybook-lantern-glow" />
+                    <rect x="2" y="-8" width="3" height="3" fill="#FFD966" className="storybook-lantern-mote-a" />
+                    <rect x="-4" y="-12" width="2" height="2" fill="#FFFDF7" className="storybook-lantern-mote-b" />
                   </g>
+
+                  {/* Interactive Tap/Click Flourish: Rising Golden Akshara ("अ · क · थ") */}
+                  {isBlinkingNow && (
+                    <g aria-hidden="true" className="storybook-click-akshara">
+                      <text
+                        x="54"
+                        y="-18"
+                        textAnchor="middle"
+                        fill="#FFD966"
+                        fontSize="12"
+                        fontWeight="700"
+                        fontFamily="Noto Serif Devanagari, serif"
+                      >
+                        अ
+                      </text>
+                      <text
+                        x="72"
+                        y="-26"
+                        textAnchor="middle"
+                        fill="#FFFDF7"
+                        fontSize="13"
+                        fontWeight="700"
+                        fontFamily="Noto Serif Devanagari, serif"
+                      >
+                        क
+                      </text>
+                      <text
+                        x="90"
+                        y="-18"
+                        textAnchor="middle"
+                        fill="#E8BC69"
+                        fontSize="12"
+                        fontWeight="700"
+                        fontFamily="Noto Serif Devanagari, serif"
+                      >
+                        थ
+                      </text>
+                    </g>
+                  )}
 
                   {/* Pixel Twine Binding Strap */}
                   <rect x="70" y="0" width="4" height="24" fill="#E8BC69" />

@@ -126,7 +126,7 @@ export const HeroInteractiveBookPlinth: React.FC<
       data-testid="home-featured-edition-dossier"
       className="w-full max-w-5xl mx-auto min-w-0"
     >
-      <div className="relative rounded-3xl bg-white/98 md:bg-white/95 md:backdrop-blur-sm border border-[#E5DEC9] p-4 sm:p-7 lg:p-8 shadow-[0_24px_60px_-30px_rgba(36,59,138,0.2)] overflow-hidden">
+      <div className="relative rounded-3xl bg-white/98 border border-[#E5DEC9] p-4 sm:p-7 lg:p-8 shadow-[0_24px_60px_-30px_rgba(36,59,138,0.2)] overflow-hidden">
         {/* Top Interactive Control Ribbon */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#E5DEC9]/80">
           <div className="flex items-center gap-2.5 min-w-0">

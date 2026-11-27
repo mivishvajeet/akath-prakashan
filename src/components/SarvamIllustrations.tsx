@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 
 /**
  * Sarvam.ai-Inspired Sovereign Architectural & Akath Tortoise Vector System
@@ -22,12 +22,49 @@ interface AnimatedTortoiseEmblemProps {
   hideAndSeekOnHover?: boolean;
 }
 
+const HIDE_SEEK_EASE: [number, number, number, number] = [0.34, 1.2, 0.64, 1];
+const HIDE_SEEK_TRANSITION = {
+  duration: 1.85,
+  ease: HIDE_SEEK_EASE,
+  repeat: Infinity,
+};
+const RESTORE_TRANSITION = {
+  duration: 0.26,
+  ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+};
+
 export const AnimatedTortoiseEmblem: React.FC<AnimatedTortoiseEmblemProps> = ({
   className = 'w-10 h-10',
   variant = 'forest',
   animate = true,
   hideAndSeekOnHover = false,
 }) => {
+  const prefersReducedMotion = useReducedMotion();
+  const stageRef = useRef<HTMLSpanElement | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Sync hover state with an ancestor `.group` container (when present) as well as direct hover
+  useEffect(() => {
+    if (!animate && !hideAndSeekOnHover) return;
+    const node = stageRef.current;
+    if (!node) return;
+    const groupHost = node.closest('.group');
+    if (!groupHost) return;
+
+    const handleEnter = () => setIsHovered(true);
+    const handleLeave = () => setIsHovered(false);
+    groupHost.addEventListener('mouseenter', handleEnter);
+    groupHost.addEventListener('mouseleave', handleLeave);
+    return () => {
+      groupHost.removeEventListener('mouseenter', handleEnter);
+      groupHost.removeEventListener('mouseleave', handleLeave);
+    };
+  }, [animate, hideAndSeekOnHover]);
+
+  const allowMotion = !prefersReducedMotion;
+  const isHideSeekActive = allowMotion && hideAndSeekOnHover && isHovered;
+  const isAmbientActive = allowMotion && animate && !isHovered;
+
   const palette = {
     forest: {
       bg: '#FFFDF7',
@@ -72,143 +109,298 @@ export const AnimatedTortoiseEmblem: React.FC<AnimatedTortoiseEmblemProps> = ({
   }[variant];
 
   return (
-    <svg
-      viewBox="0 0 120 120"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={`select-none ${animate ? 'tortoise-float' : ''} ${
+    <span
+      ref={stageRef}
+      onMouseEnter={animate || hideAndSeekOnHover ? () => setIsHovered(true) : undefined}
+      onMouseLeave={animate || hideAndSeekOnHover ? () => setIsHovered(false) : undefined}
+      className={`akath-tortoise-gpu-stage inline-flex items-center justify-center shrink-0 select-none ${
         hideAndSeekOnHover ? 'tortoise-hide-seek' : ''
       } ${className}`}
       aria-hidden="true"
     >
-      {/* Subtle Rounded Architectural Frame */}
-      <rect
-        x="4"
-        y="4"
-        width="112"
-        height="112"
-        rx="26"
-        fill={palette.bg}
-        stroke={palette.border}
-        strokeWidth="1.5"
-      />
-
-      {/* Fine Inner Geometric Halo */}
-      <circle
-        cx="60"
-        cy="46"
-        r="34"
-        stroke={palette.spiral}
-        strokeOpacity="0.24"
-        strokeWidth="1"
-        strokeDasharray="2 3"
-      />
-
-      {/* TORTOISE GROUP (Top — Symbol of Patient, Enduring Literary Craft) */}
-      <g className={animate ? 'tortoise-emblem-body' : undefined}>
-        {/* Tortoise Head */}
-        <path
-          d="M60 11 C55.5 11 53 15 54 20.5 C55 23 65 23 66 20.5 C67 15 64.5 11 60 11 Z"
-          fill={palette.primary}
-          className="tortoise-head"
+      <motion.svg
+        viewBox="0 0 120 120"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full block"
+        animate={
+          allowMotion && animate && isHovered
+            ? { y: -2, scale: 1.03 }
+            : isAmbientActive
+            ? { y: [0, -3.5, 0], scale: 1 }
+            : { y: 0, scale: 1 }
+        }
+        transition={
+          isAmbientActive
+            ? {
+                duration: 4.4,
+                ease: [0.45, 0.05, 0.55, 0.95],
+                repeat: Infinity,
+              }
+            : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }
+        }
+      >
+        {/* Subtle Rounded Architectural Frame */}
+        <rect
+          x="4"
+          y="4"
+          width="112"
+          height="112"
+          rx="26"
+          fill={palette.bg}
+          stroke={palette.border}
+          strokeWidth="1.5"
         />
 
-        {/* Front Left Flipper */}
-        <path
-          d="M41 26 C33 21 26 23 24 28 C28 31 35 32 41 31 Z"
-          fill={palette.primary}
-          className={animate || hideAndSeekOnHover ? 'tortoise-flipper-l' : undefined}
+        {/* Fine Inner Geometric Halo */}
+        <circle
+          cx="60"
+          cy="46"
+          r="34"
+          stroke={palette.spiral}
+          strokeOpacity="0.24"
+          strokeWidth="1"
+          strokeDasharray="2 3"
         />
 
-        {/* Front Right Flipper */}
-        <path
-          d="M79 26 C87 21 94 23 96 28 C92 31 85 32 79 31 Z"
-          fill={palette.primary}
-          className={animate || hideAndSeekOnHover ? 'tortoise-flipper-r' : undefined}
-        />
-
-        {/* Rear Left Flipper */}
-        <path
-          d="M43 56 C36 59 31 63 32 67 C36 67 42 64 46 59 Z"
-          fill={palette.primary}
-          className="tortoise-flipper-rl"
-        />
-
-        {/* Rear Right Flipper */}
-        <path
-          d="M77 56 C84 59 89 63 88 67 C84 67 78 64 74 59 Z"
-          fill={palette.primary}
-          className="tortoise-flipper-rr"
-        />
-
-        {/* Tiny Tail */}
-        <path
-          d="M58 63 L60 69 L62 63 Z"
-          fill={palette.primary}
-          className="tortoise-tail"
-        />
-
-        {/* Tortoise Carapace & Dual Counter-Rotating Spiral Group */}
-        <g className="tortoise-shell-group">
-          {/* Tortoise Carapace (Outer Shell Silhouette) */}
-          <ellipse
-            cx="60"
-            cy="42"
-            rx="22"
-            ry="21"
+        {/* TORTOISE GROUP (Top — Symbol of Patient, Enduring Literary Craft) */}
+        <motion.g
+          className="akath-tortoise-svg-part"
+          style={{ transformOrigin: 'center center' }}
+          animate={isAmbientActive ? { y: [0, -2, 0] } : { y: 0 }}
+          transition={
+            isAmbientActive
+              ? { duration: 4.2, ease: 'easeInOut', repeat: Infinity }
+              : RESTORE_TRANSITION
+          }
+        >
+          {/* Tortoise Head */}
+          <motion.path
+            d="M60 11 C55.5 11 53 15 54 20.5 C55 23 65 23 66 20.5 C67 15 64.5 11 60 11 Z"
             fill={palette.primary}
+            className="akath-tortoise-svg-part"
+            style={{ transformOrigin: 'center bottom' }}
+            animate={
+              isHideSeekActive
+                ? {
+                    y: [0, 15, 15, 4.5, -0.8, 0],
+                    scale: [1, 0.72, 0.72, 0.92, 1.02, 1],
+                  }
+                : { y: 0, scale: 1 }
+            }
+            transition={
+              isHideSeekActive
+                ? { ...HIDE_SEEK_TRANSITION, times: [0, 0.24, 0.54, 0.74, 0.88, 1] }
+                : RESTORE_TRANSITION
+            }
           />
 
-          {/* Inner Carapace Rim */}
-          <ellipse
-            cx="60"
-            cy="42"
-            rx="18.5"
-            ry="17.5"
-            stroke={palette.innerShell}
-            strokeWidth="1.6"
+          {/* Front Left Flipper */}
+          <motion.path
+            d="M41 26 C33 21 26 23 24 28 C28 31 35 32 41 31 Z"
+            fill={palette.primary}
+            className="akath-tortoise-svg-part"
+            style={{ transformOrigin: 'right center' }}
+            animate={
+              isHideSeekActive
+                ? {
+                    x: [0, 16, 16, 4, 0],
+                    y: [0, 11, 11, 3, 0],
+                    rotate: [0, -28, -28, -7, 0],
+                    scale: [1, 0.68, 0.68, 0.93, 1],
+                  }
+                : isAmbientActive
+                ? { x: 0, y: 0, rotate: [-2, 2.5, -2], scale: 1 }
+                : { x: 0, y: 0, rotate: 0, scale: 1 }
+            }
+            transition={
+              isHideSeekActive
+                ? { ...HIDE_SEEK_TRANSITION, times: [0, 0.24, 0.54, 0.75, 1] }
+                : isAmbientActive
+                ? { duration: 3.6, ease: 'easeInOut', repeat: Infinity }
+                : RESTORE_TRANSITION
+            }
           />
 
-          {/* Signature Akath Dual Counter-Rotating Spiral Motifs Inside the Shell */}
-          <path
-            d="M59 29 C50 29 45 35 46 42 C47 48 53 51 58 49 C62 47 63 42 60 39 C58 37 54 38 54 41"
-            stroke={palette.innerShell}
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            fill="none"
+          {/* Front Right Flipper */}
+          <motion.path
+            d="M79 26 C87 21 94 23 96 28 C92 31 85 32 79 31 Z"
+            fill={palette.primary}
+            className="akath-tortoise-svg-part"
+            style={{ transformOrigin: 'left center' }}
+            animate={
+              isHideSeekActive
+                ? {
+                    x: [0, -16, -16, -4, 0],
+                    y: [0, 11, 11, 3, 0],
+                    rotate: [0, 28, 28, 7, 0],
+                    scale: [1, 0.68, 0.68, 0.93, 1],
+                  }
+                : isAmbientActive
+                ? { x: 0, y: 0, rotate: [2, -2.5, 2], scale: 1 }
+                : { x: 0, y: 0, rotate: 0, scale: 1 }
+            }
+            transition={
+              isHideSeekActive
+                ? { ...HIDE_SEEK_TRANSITION, times: [0, 0.24, 0.54, 0.75, 1] }
+                : isAmbientActive
+                ? { duration: 3.6, ease: 'easeInOut', repeat: Infinity }
+                : RESTORE_TRANSITION
+            }
           />
+
+          {/* Rear Left Flipper */}
+          <motion.path
+            d="M43 56 C36 59 31 63 32 67 C36 67 42 64 46 59 Z"
+            fill={palette.primary}
+            className="akath-tortoise-svg-part"
+            style={{ transformOrigin: 'right top' }}
+            animate={
+              isHideSeekActive
+                ? {
+                    x: [0, 13, 13, 3.5, 0],
+                    y: [0, -11, -11, -3, 0],
+                    rotate: [0, 24, 24, 6, 0],
+                    scale: [1, 0.7, 0.7, 0.93, 1],
+                  }
+                : { x: 0, y: 0, rotate: 0, scale: 1 }
+            }
+            transition={
+              isHideSeekActive
+                ? { ...HIDE_SEEK_TRANSITION, times: [0, 0.24, 0.54, 0.75, 1] }
+                : RESTORE_TRANSITION
+            }
+          />
+
+          {/* Rear Right Flipper */}
+          <motion.path
+            d="M77 56 C84 59 89 63 88 67 C84 67 78 64 74 59 Z"
+            fill={palette.primary}
+            className="akath-tortoise-svg-part"
+            style={{ transformOrigin: 'left top' }}
+            animate={
+              isHideSeekActive
+                ? {
+                    x: [0, -13, -13, -3.5, 0],
+                    y: [0, -11, -11, -3, 0],
+                    rotate: [0, -24, -24, -6, 0],
+                    scale: [1, 0.7, 0.7, 0.93, 1],
+                  }
+                : { x: 0, y: 0, rotate: 0, scale: 1 }
+            }
+            transition={
+              isHideSeekActive
+                ? { ...HIDE_SEEK_TRANSITION, times: [0, 0.24, 0.54, 0.75, 1] }
+                : RESTORE_TRANSITION
+            }
+          />
+
+          {/* Tiny Tail */}
+          <motion.path
+            d="M58 63 L60 69 L62 63 Z"
+            fill={palette.primary}
+            className="akath-tortoise-svg-part"
+            style={{ transformOrigin: 'center top' }}
+            animate={
+              isHideSeekActive
+                ? {
+                    y: [0, -10, -10, -2.5, 0],
+                    scale: [1, 0.65, 0.65, 0.9, 1],
+                  }
+                : { y: 0, scale: 1 }
+            }
+            transition={
+              isHideSeekActive
+                ? { ...HIDE_SEEK_TRANSITION, times: [0, 0.22, 0.56, 0.76, 1] }
+                : RESTORE_TRANSITION
+            }
+          />
+
+          {/* Tortoise Carapace & Dual Counter-Rotating Spiral Group */}
+          <motion.g
+            className="akath-tortoise-svg-part"
+            style={{ transformOrigin: 'center center' }}
+            animate={
+              isHideSeekActive
+                ? {
+                    y: [0, 1.5, 1.5, 0.5, 0],
+                    scale: [1, 1.04, 1.04, 1.012, 1],
+                  }
+                : { y: 0, scale: 1 }
+            }
+            transition={
+              isHideSeekActive
+                ? { ...HIDE_SEEK_TRANSITION, times: [0, 0.24, 0.54, 0.75, 1] }
+                : RESTORE_TRANSITION
+            }
+          >
+            {/* Tortoise Carapace (Outer Shell Silhouette) */}
+            <ellipse
+              cx="60"
+              cy="42"
+              rx="22"
+              ry="21"
+              fill={palette.primary}
+            />
+
+            {/* Inner Carapace Rim */}
+            <ellipse
+              cx="60"
+              cy="42"
+              rx="18.5"
+              ry="17.5"
+              stroke={palette.innerShell}
+              strokeWidth="1.6"
+            />
+
+            {/* Signature Akath Dual Counter-Rotating Spiral Motifs Inside the Shell */}
+            <path
+              d="M59 29 C50 29 45 35 46 42 C47 48 53 51 58 49 C62 47 63 42 60 39 C58 37 54 38 54 41"
+              stroke={palette.innerShell}
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              fill="none"
+            />
+            <path
+              d="M61 55 C70 55 75 49 74 42 C73 36 67 33 62 35 C58 37 57 42 60 45 C62 47 66 46 66 43"
+              stroke={palette.innerShell}
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              fill="none"
+            />
+          </motion.g>
+        </motion.g>
+
+        {/* THREE-LAYERED OPEN BOOK (Bottom — Symbol of Open Knowledge & Reading) */}
+        <g>
+          {/* Top Open Pages Layer */}
+          <motion.path
+            d="M60 85 C48 76 33 74 18 77 C24 84 42 87 60 93 C78 87 96 84 102 77 C87 74 72 76 60 85 Z"
+            fill={palette.primary}
+            className="akath-tortoise-svg-part"
+            style={{ transformOrigin: 'center center' }}
+            animate={isAmbientActive ? { scaleX: [1, 1.022, 1] } : { scaleX: 1 }}
+            transition={
+              isAmbientActive
+                ? { duration: 4.2, ease: 'easeInOut', repeat: Infinity }
+                : RESTORE_TRANSITION
+            }
+          />
+          {/* Middle Pages Layer */}
           <path
-            d="M61 55 C70 55 75 49 74 42 C73 36 67 33 62 35 C58 37 57 42 60 45 C62 47 66 46 66 43"
-            stroke={palette.innerShell}
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            fill="none"
+            d="M60 95 C46 87 30 85 15 87 C22 94 42 97 60 102 C78 97 98 94 105 87 C90 85 74 87 60 95 Z"
+            fill={palette.book}
+            fillOpacity="0.92"
+          />
+          {/* Bottom Book Binding Layer */}
+          <path
+            d="M60 104 C46 97 29 95 14 96 C23 103 42 106 60 110 C78 106 97 103 106 96 C91 95 74 97 60 104 Z"
+            fill={palette.primary}
+            fillOpacity="0.72"
           />
         </g>
-      </g>
-
-      {/* THREE-LAYERED OPEN BOOK (Bottom — Symbol of Open Knowledge & Reading) */}
-      <g>
-        {/* Top Open Pages Layer */}
-        <path
-          d="M60 85 C48 76 33 74 18 77 C24 84 42 87 60 93 C78 87 96 84 102 77 C87 74 72 76 60 85 Z"
-          fill={palette.primary}
-          className={animate ? 'tortoise-book-wave' : undefined}
-        />
-        {/* Middle Pages Layer */}
-        <path
-          d="M60 95 C46 87 30 85 15 87 C22 94 42 97 60 102 C78 97 98 94 105 87 C90 85 74 87 60 95 Z"
-          fill={palette.book}
-          fillOpacity="0.92"
-        />
-        {/* Bottom Book Binding Layer */}
-        <path
-          d="M60 104 C46 97 29 95 14 96 C23 103 42 106 60 110 C78 106 97 103 106 96 C91 95 74 97 60 104 Z"
-          fill={palette.primary}
-          fillOpacity="0.72"
-        />
-      </g>
-    </svg>
+      </motion.svg>
+    </span>
   );
 };
 

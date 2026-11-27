@@ -48,111 +48,41 @@ function useLandscapeViewportTier(): ViewportTier {
 }
 
 /**
- * Lightweight, rAF-throttled scroll parallax & off-screen animation pausing.
- * Writes subtle pixel offsets to CSS custom properties directly on the host
- * element (zero React re-renders during scroll) and fully disables under
- * prefers-reduced-motion.
+ * Lightweight off-screen animation pausing via direct DOM class toggle.
+ * Uses zero scroll event listeners, zero getBoundingClientRect() layout reads,
+ * and zero React state updates during fast scrolling across all devices.
  */
 function useSubtleLandscapeMotion(
   containerRef: React.RefObject<HTMLDivElement | null>,
   mode: 'hero' | 'section' | 'fixed' = 'section'
-): boolean {
-  // Start below-the-fold landscape sections paused until scrolled into viewport
-  const [isOffscreen, setIsOffscreen] = useState(mode !== 'hero');
-
+): void {
   useEffect(() => {
     const node = containerRef.current;
     if (!node || typeof window === 'undefined') return;
 
-    const reducedMotionQuery = window.matchMedia?.(
-      '(prefers-reduced-motion: reduce)'
+    if (mode === 'fixed') {
+      node.classList.remove('akath-landscape-offscreen');
+      return;
+    }
+
+    if (typeof IntersectionObserver === 'undefined') {
+      node.classList.remove('akath-landscape-offscreen');
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.some((e) => e.isIntersecting);
+        node.classList.toggle('akath-landscape-offscreen', !visible);
+      },
+      { rootMargin: '160px 0px 160px 0px', threshold: 0.01 }
     );
-    const isTouchOrCompact = window.matchMedia?.(
-      '(max-width: 1023px), (pointer: coarse)'
-    )?.matches;
-
-    let inView = mode === 'hero';
-    let rafId: number | null = null;
-    const enableScrollParallax = !reducedMotionQuery?.matches && !isTouchOrCompact;
-
-    const updateParallax = () => {
-      rafId = null;
-      if (!enableScrollParallax || !inView || !containerRef.current) return;
-
-      const vh = window.innerHeight || 800;
-      if (mode === 'hero') {
-        const heroRange = Math.max(420, Math.min(720, vh * 0.85));
-        const heroProgress = Math.min(1, Math.max(0, window.scrollY / heroRange));
-        containerRef.current.style.setProperty(
-          '--akath-hero-scroll',
-          heroProgress.toFixed(3)
-        );
-        return;
-      }
-
-      let progress = 0;
-      if (mode === 'fixed') {
-        const docHeight = Math.max(
-          1,
-          document.documentElement.scrollHeight - vh
-        );
-        progress = Math.min(1, Math.max(0, window.scrollY / docHeight)) * 2 - 1;
-      } else {
-        const rect = containerRef.current.getBoundingClientRect();
-        const centerOffset = rect.top + rect.height * 0.5 - vh * 0.5;
-        progress = Math.max(-1, Math.min(1, centerOffset / (vh * 0.8)));
-      }
-
-      containerRef.current.style.setProperty(
-        '--akath-scroll-p',
-        progress.toFixed(3)
-      );
-    };
-
-    const scheduleUpdate = () => {
-      if (!enableScrollParallax || !inView || rafId !== null) return;
-      rafId = window.requestAnimationFrame(updateParallax);
-    };
-
-    let observer: IntersectionObserver | null = null;
-    if (
-      typeof IntersectionObserver !== 'undefined' &&
-      (mode === 'section' || mode === 'hero')
-    ) {
-      observer = new IntersectionObserver(
-        (entries) => {
-          const visible = entries.some((e) => e.isIntersecting);
-          inView = visible;
-          setIsOffscreen((prev) => (prev !== !visible ? !visible : prev));
-          if (visible && enableScrollParallax) scheduleUpdate();
-        },
-        { rootMargin: '120px 0px 120px 0px', threshold: 0.01 }
-      );
-      observer.observe(node);
-    } else if (mode === 'fixed') {
-      setIsOffscreen(false);
-    }
-
-    if (enableScrollParallax) {
-      updateParallax();
-      window.addEventListener('scroll', scheduleUpdate, { passive: true });
-      window.addEventListener('resize', scheduleUpdate, { passive: true });
-    } else {
-      node.style.setProperty('--akath-scroll-p', '0');
-      node.style.setProperty('--akath-hero-scroll', '0');
-    }
+    observer.observe(node);
 
     return () => {
-      if (rafId !== null) window.cancelAnimationFrame(rafId);
-      observer?.disconnect();
-      if (enableScrollParallax) {
-        window.removeEventListener('scroll', scheduleUpdate);
-        window.removeEventListener('resize', scheduleUpdate);
-      }
+      observer.disconnect();
     };
   }, [containerRef, mode]);
-
-  return isOffscreen;
 }
 
 /**
@@ -2427,7 +2357,7 @@ export const HeroPublicationWatermark: React.FC = React.memo(() => {
   const uid = useId().replace(/:/g, '');
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tier = useLandscapeViewportTier();
-  const isOffscreen = useSubtleLandscapeMotion(containerRef, 'hero');
+  useSubtleLandscapeMotion(containerRef, 'hero');
 
   const isMobile = tier === 'mobile';
   const isTablet = tier === 'tablet';
@@ -2446,9 +2376,7 @@ export const HeroPublicationWatermark: React.FC = React.memo(() => {
       aria-hidden="true"
       data-testid="hero-dusk-landscape-svg"
       style={{ contain: 'layout style paint' }}
-      className={`pointer-events-none absolute inset-0 overflow-hidden select-none bg-[#FAF8F0] ${
-        isOffscreen ? 'akath-landscape-offscreen' : ''
-      }`}
+      className="pointer-events-none absolute inset-0 overflow-hidden select-none bg-[#FAF8F0]"
     >
       {/* Refined Archival Warm-Parchment Atmospheric Horizon Wash */}
       <div
@@ -3132,7 +3060,7 @@ export const AuthorsLandscapeBackdrop: React.FC = React.memo(() => {
   const uid = useId().replace(/:/g, '');
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tier = useLandscapeViewportTier();
-  const isOffscreen = useSubtleLandscapeMotion(containerRef, 'section');
+  useSubtleLandscapeMotion(containerRef, 'section');
 
   const isMobile = tier === 'mobile';
   const isTablet = tier === 'tablet';
@@ -3151,9 +3079,7 @@ export const AuthorsLandscapeBackdrop: React.FC = React.memo(() => {
       aria-hidden="true"
       data-testid="authors-dusk-landscape-svg"
       style={{ contain: 'layout style paint' }}
-      className={`pointer-events-none absolute inset-0 overflow-hidden select-none bg-[#F4EDE0] ${
-        isOffscreen ? 'akath-landscape-offscreen' : ''
-      }`}
+      className="pointer-events-none absolute inset-0 overflow-hidden select-none bg-[#F4EDE0] akath-landscape-offscreen"
     >
       {/* Refined Archival Warm-Parchment Atmospheric Horizon Wash */}
       <div
@@ -3609,7 +3535,7 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
 
   // Detect whole-page fixed mount on /about vs homepage Section 05
   const isWholePageFixed = topFadeRgba.includes('0.32');
-  const isOffscreen = useSubtleLandscapeMotion(
+  useSubtleLandscapeMotion(
     containerRef,
     isWholePageFixed ? 'fixed' : 'section'
   );
@@ -3629,7 +3555,7 @@ export const AboutLandscapeBackdrop: React.FC<AboutLandscapeBackdropProps> = Rea
       aria-hidden="true"
       data-testid="about-dusk-landscape-svg"
       className={`pointer-events-none absolute inset-0 overflow-hidden select-none ${
-        isOffscreen ? 'akath-landscape-offscreen' : ''
+        isWholePageFixed ? '' : 'akath-landscape-offscreen'
       }`}
       style={{ backgroundColor: surfaceHex, contain: 'layout style paint' }}
     >

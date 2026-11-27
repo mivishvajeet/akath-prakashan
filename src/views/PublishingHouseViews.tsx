@@ -269,40 +269,14 @@ interface AboutAkathViewProps {
   onNavigate: (path: string) => void;
 }
 
-const aboutSectionSequentialVariants = {
-  hidden: { opacity: 0, y: 14 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 58,
-      damping: 20,
-      mass: 1.08,
-      staggerChildren: 0.12,
-      delayChildren: 0.04,
-    },
-  },
-};
-
-const aboutItemSequentialVariants = {
-  hidden: { opacity: 0, y: 14, scale: 0.996 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 64,
-      damping: 21,
-      mass: 1.05,
-    },
-  },
+export const aboutSectionSequentialVariants = {
+  hidden: { opacity: 1, y: 0 },
+  visible: { opacity: 1, y: 0 },
 };
 
 /**
- * Custom IntersectionObserver hook for staggered paragraph-block scroll-reveal
- * across the About Akath Prakashan literary monograph.
+ * Lightweight mount-only paragraph reveal marker (zero scroll observers or
+ * mid-scroll layout/paint thrashing during fast scrolling on any device).
  */
 function useAboutParagraphScrollReveal(
   containerRef: React.RefObject<HTMLElement | null>,
@@ -311,66 +285,13 @@ function useAboutParagraphScrollReveal(
   useEffect(() => {
     const root = containerRef.current;
     if (!root) return;
-
-    const blocks = Array.from(
-      root.querySelectorAll<HTMLElement>('[data-about-io-block]')
+    const nodes = root.querySelectorAll<HTMLElement>(
+      '[data-about-io-block], [data-about-io-para]'
     );
-    const paragraphs = Array.from(
-      root.querySelectorAll<HTMLElement>('[data-about-io-para]')
-    );
-
-    const revealElement = (el: HTMLElement) => {
+    nodes.forEach((el) => {
       el.classList.add('is-revealed');
       el.setAttribute('data-revealed', 'true');
-    };
-
-    const prefersReducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (prefersReducedMotion || typeof IntersectionObserver === 'undefined') {
-      blocks.forEach(revealElement);
-      paragraphs.forEach(revealElement);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const target = entry.target as HTMLElement;
-            revealElement(target);
-
-            if (target.hasAttribute('data-about-io-block')) {
-              const childParas =
-                target.querySelectorAll<HTMLElement>('[data-about-io-para]');
-              childParas.forEach(revealElement);
-            }
-
-            observer.unobserve(target);
-          }
-        }
-      },
-      {
-        threshold: 0.08,
-        rootMargin: '0px 0px -24px 0px',
-      }
-    );
-
-    blocks.forEach((block) => {
-      if (!block.classList.contains('is-revealed')) {
-        observer.observe(block);
-      }
     });
-
-    paragraphs.forEach((para) => {
-      if (!para.classList.contains('is-revealed')) {
-        observer.observe(para);
-      }
-    });
-
-    return () => observer.disconnect();
   }, [containerRef, activeFilter]);
 }
 
@@ -482,8 +403,11 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
 
   return (
     <div className="relative isolate bg-[#FAF6EC] text-[#1C1917] min-h-screen w-full max-w-[100vw] overflow-x-hidden selection:bg-[#243B8A]/15 selection:text-[#1C1917]">
-      {/* Whole-Page Layered Sahyadri Mountains & Nanded Godavari Dusk Landscape (20–25% Opacity SVG) */}
-      <div className="pointer-events-none fixed inset-0 z-0">
+      {/* Whole-Page Layered Sahyadri Mountains & Nanded Godavari Dusk Landscape (Isolated Compositor Layer) */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{ transform: 'translate3d(0, 0, 0)', contain: 'strict' }}
+      >
         <AboutLandscapeBackdrop
           surfaceHex="#FAF6EC"
           topFadeRgba="rgba(250, 246, 236, 0.32)"
@@ -496,7 +420,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
           =================================================================== */}
       <div
         data-testid="about-archival-dateline"
-        className="border-b border-[#DCD4C0] bg-[#FAF6EC]/94 backdrop-blur-md sticky top-[58px] sm:top-[64px] z-20 w-full"
+        className="border-b border-[#DCD4C0] bg-[#FAF6EC]/98 sticky top-[58px] sm:top-[64px] z-20 w-full"
       >
         <div className="max-w-[1360px] mx-auto px-3 sm:px-6 lg:px-10 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4 min-w-0">
           {/* Interactive Exhibition Chapter Rail */}
@@ -588,13 +512,10 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
             className="max-w-[65ch] mx-auto text-center px-1 sm:px-0"
             data-testid="about-prose-measure"
           >
-            <motion.section
+            <section
               data-testid="about-hero-manifesto"
               data-about-io-block="lead-manifesto"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="akath-about-io-block"
+              className="akath-about-io-block is-revealed"
             >
               <div>
                 <div
@@ -667,7 +588,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
                   </p>
                 </div>
               </div>
-            </motion.section>
+            </section>
           </div>
         </div>
 
@@ -675,15 +596,11 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
             SECTION 2: PROMINENT CENTERPIECE — WHY THE TORTOISE?
             (Fully Responsive on Mobile 360px, Tablet 768px & Desktop)
             ================================================================= */}
-        <motion.section
+        <section
           id="about-why-tortoise"
           data-testid="about-why-tortoise-feature"
           data-about-io-block="folio-04"
-          variants={aboutSectionSequentialVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.04 }}
-          className="akath-seq-step akath-about-io-block scroll-mt-28 max-w-5xl mx-auto w-full min-w-0 rounded-xl bg-[#FAF6EC]/72 backdrop-blur-sm text-[#1C1917] border border-[#DCD4C0]/80 p-4 sm:p-8 lg:p-12 space-y-6 sm:space-y-8 overflow-hidden"
+          className="akath-seq-step akath-about-io-block is-revealed scroll-mt-28 max-w-5xl mx-auto w-full min-w-0 rounded-xl bg-[#FAF6EC]/94 text-[#1C1917] border border-[#DCD4C0]/85 p-4 sm:p-8 lg:p-12 space-y-6 sm:space-y-8 overflow-hidden"
         >
           {/* Centered Header */}
           <div className="max-w-2xl mx-auto text-center space-y-2">
@@ -696,7 +613,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
           </div>
 
           {/* Calm Imprint Seal & 4-Stage Literary Craft Progression (Static — No Tortoise Animation) */}
-          <div className="rounded-2xl bg-[#FFFDF7]/78 backdrop-blur-xs border border-[#DCD4C0]/80 p-5 sm:p-8 space-y-6 min-w-0">
+          <div className="rounded-2xl bg-[#FFFDF7]/96 border border-[#DCD4C0]/85 p-5 sm:p-8 space-y-6 min-w-0">
             <div className="flex flex-col items-center justify-center text-center space-y-3">
               {/* Calm Static Tortoise Seal */}
               <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#FAF6EC] border border-[#C89D54]/75 flex items-center justify-center shrink-0">
@@ -818,19 +735,15 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
               Not a race to publish, but a commitment to publish well.
             </p>
           </div>
-        </motion.section>
+        </section>
 
         {/* =================================================================
             SECTION 2B: PERHAPS YOUR MANUSCRIPT BELONGS HERE.
             ================================================================= */}
-        <motion.section
+        <section
           data-testid="about-manuscript-invitation"
           data-about-io-block="manuscript-invite"
-          variants={aboutSectionSequentialVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.04 }}
-          className="akath-seq-step akath-about-io-block max-w-4xl mx-auto w-full min-w-0 rounded-2xl bg-[#FFFDF7]/78 backdrop-blur-sm border border-[#DCD4C0]/80 p-6 sm:p-10 lg:p-12 text-center space-y-5 shadow-[0_12px_34px_-22px_rgba(36,59,138,0.16)]"
+          className="akath-seq-step akath-about-io-block is-revealed max-w-4xl mx-auto w-full min-w-0 rounded-2xl bg-[#FFFDF7]/95 border border-[#DCD4C0]/85 p-6 sm:p-10 lg:p-12 text-center space-y-5 shadow-[0_12px_34px_-22px_rgba(36,59,138,0.16)]"
         >
           <div className="space-y-2 max-w-2xl mx-auto">
             <p className="font-mono text-[10.5px] sm:text-[11px] uppercase tracking-[0.18em] text-[#174D3A] font-bold">
@@ -880,21 +793,17 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
               </button>
             </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* =================================================================
             SECTION 3: REDESIGNED FOUNDER & IMPRINT STEWARDSHIP SHOWCASE
             ================================================================= */}
-        <motion.section
+        <section
           id="about-chapter-06"
           data-testid="about-editorial-colophon-desk"
           data-about-io-block="colophon-desk"
-          variants={aboutSectionSequentialVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.04 }}
           style={{ '--io-block-delay': '60ms' } as React.CSSProperties}
-          className="akath-seq-step akath-about-io-block scroll-mt-28 max-w-5xl mx-auto w-full min-w-0 rounded-xl bg-[#FFFDF7]/82 backdrop-blur-sm border border-[#DCD4C0]/85 overflow-hidden shadow-[0_14px_36px_-22px_rgba(28,25,23,0.12)]"
+          className="akath-seq-step akath-about-io-block is-revealed scroll-mt-28 max-w-5xl mx-auto w-full min-w-0 rounded-xl bg-[#FFFDF7]/96 border border-[#DCD4C0]/85 overflow-hidden shadow-[0_14px_36px_-22px_rgba(28,25,23,0.12)]"
         >
           {/* Top Editorial Accent Bar */}
           <div className="bg-[#243B8A] text-[#FFFDF7] px-5 sm:px-8 lg:px-10 py-3.5 flex flex-wrap items-center justify-between gap-2 text-[10.5px] sm:text-[11px] font-mono">
@@ -906,10 +815,7 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
             </span>
           </div>
 
-          <motion.div
-            variants={aboutItemSequentialVariants}
-            className="p-5 sm:p-8 lg:p-10 space-y-8 min-w-0"
-          >
+          <div className="p-5 sm:p-8 lg:p-10 space-y-8 min-w-0">
             <div
               style={{ '--breathe-phase': '4.3s' } as React.CSSProperties}
               className="akath-about-prose-breathe grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 items-stretch"
@@ -1065,8 +971,8 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
                 <ArrowRight className="w-4 h-4 text-[#57534E] group-hover:text-[#243B8A] shrink-0" />
               </button>
             </div>
-          </motion.div>
-        </motion.section>
+          </div>
+        </section>
       </article>
     </div>
   );

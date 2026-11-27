@@ -769,7 +769,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
     'auto' | 'on' | 'off'
   >('auto');
   const [isScrollImmersive, setIsScrollImmersive] = useState(false);
-  const [readingProgress, setReadingProgress] = useState(0);
+  const progressBarRef = useRef<HTMLDivElement | null>(null);
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
     typeof window !== 'undefined' ? window.innerWidth : 1280
   );
@@ -916,15 +916,11 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
       const currentY = window.scrollY || 0;
       const docHeight =
         document.documentElement.scrollHeight - window.innerHeight;
-      const progress =
-        docHeight > 0
-          ? Math.min(100, Math.max(0, Math.round((currentY / docHeight) * 100)))
-          : 0;
-      setReadingProgress((prev) =>
-        progress === 0 || progress === 100 || Math.abs(prev - progress) >= 2
-          ? progress
-          : prev
-      );
+      const ratio =
+        docHeight > 0 ? Math.min(1, Math.max(0, currentY / docHeight)) : 0;
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${ratio.toFixed(4)})`;
+      }
 
       const delta = currentY - lastScrollYRef.current;
       if (currentY <= 64) {
@@ -1015,8 +1011,9 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
         className="fixed top-0 inset-x-0 z-50 h-0.5 bg-[#E6DFCE]/60 pointer-events-none"
       >
         <div
-          className="h-full bg-[#243B8A] transition-all duration-150"
-          style={{ width: `${readingProgress}%` }}
+          ref={progressBarRef}
+          className="h-full w-full bg-[#243B8A] origin-left"
+          style={{ transform: 'scaleX(0)' }}
         />
       </div>
 
@@ -1402,7 +1399,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
         <button
           type="button"
           onClick={() => setMobileOutlineOpen(true)}
-          className="lg:hidden px-3 py-2 rounded-xl bg-white/95 backdrop-blur-md border border-[#E6DFCE] shadow-md text-[12px] font-semibold text-[#243B8A] inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+          className="lg:hidden px-3 py-2 rounded-xl bg-white/98 border border-[#E6DFCE] shadow-md text-[12px] font-semibold text-[#243B8A] inline-flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           <List className="w-3.5 h-3.5" />
           <span>{lang === 'mr' ? 'रूपरेषा' : 'Outline'}</span>
@@ -1410,7 +1407,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
         <button
           type="button"
           onClick={handleCycleLeading}
-          className="px-3 py-2 rounded-xl bg-white/95 backdrop-blur-md border border-[#E6DFCE] shadow-md text-[12px] font-mono text-[#252832] hover:border-[#243B8A] transition-colors cursor-pointer tabular-nums"
+          className="px-3 py-2 rounded-xl bg-white/98 border border-[#E6DFCE] shadow-md text-[12px] font-mono text-[#252832] hover:border-[#243B8A] transition-colors cursor-pointer tabular-nums"
         >
           LH {dynamicLineHeight}
         </button>

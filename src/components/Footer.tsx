@@ -35,14 +35,13 @@ export const Footer: React.FC<FooterProps> = React.memo(({
   const [emailError, setEmailError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [hasEnteredView, setHasEnteredView] = useState(false);
   const [openReaderServices, setOpenReaderServices] = useState(false);
   const [openContact, setOpenContact] = useState(false);
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const footerRef = useRef<HTMLElement>(null);
+  const closingLineRef = useRef<HTMLDivElement>(null);
   const wordmarkBannerRef = useRef<HTMLDivElement>(null);
-  const [isFooterInViewport, setIsFooterInViewport] = useState(false);
   const pointerRafRef = useRef<number | null>(null);
 
   const handleWordmarkPointerMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -80,9 +79,10 @@ export const Footer: React.FC<FooterProps> = React.memo(({
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          setIsFooterInViewport(entry.isIntersecting);
+          node.classList.toggle('akath-footer-offscreen', !entry.isIntersecting);
           if (entry.isIntersecting) {
-            setHasEnteredView(true);
+            closingLineRef.current?.classList.add('is-entering');
+            wordmarkBannerRef.current?.classList.add('is-visible');
           }
         }
       },
@@ -178,10 +178,9 @@ export const Footer: React.FC<FooterProps> = React.memo(({
           : 'The Last Page — Akath Prakashan Editorial Footer & Colophon'
       }
       data-testid="the-last-page-footer"
-      className={`last-page-footer relative text-[#F5EBDD] overflow-hidden mt-14 sm:mt-20 border-t border-[#E8BC69]/30 ${
-        !isFooterInViewport ? 'akath-footer-offscreen' : ''
-      }`}
+      className="last-page-footer relative text-[#F5EBDD] overflow-hidden mt-14 sm:mt-20 border-t border-[#E8BC69]/30 akath-footer-offscreen"
       style={{
+        contain: 'layout style',
         background:
           'linear-gradient(180deg, #0C152C 0%, #132247 42%, #1D3162 76%, #2D4238 93%, #302C25 100%)',
       }}
@@ -260,12 +259,20 @@ export const Footer: React.FC<FooterProps> = React.memo(({
 
           {/* Subtle Crescent Moon (Upper Right Sky) */}
           <g transform="translate(1296, 30)">
-            <rect x="-6" y="-2" width="28" height="28" fill="#FFD966" fillOpacity="0.08" />
-            <rect x="8" y="0" width="10" height="3" fill="#FFD966" fillOpacity="0.9" />
-            <rect x="4" y="3" width="10" height="3" fill="#FFD966" fillOpacity="0.9" />
-            <rect x="0" y="6" width="8" height="10" fill="#FFD966" fillOpacity="0.9" />
-            <rect x="4" y="16" width="10" height="3" fill="#FFD966" fillOpacity="0.9" />
-            <rect x="8" y="19" width="10" height="3" fill="#FFD966" fillOpacity="0.9" />
+            <rect x="-8" y="-4" width="32" height="32" fill="#FFD966" fillOpacity="0.09" className="storybook-sun-halo" />
+            <rect x="8" y="0" width="10" height="3" fill="#FFD966" fillOpacity="0.92" />
+            <rect x="4" y="3" width="10" height="3" fill="#FFD966" fillOpacity="0.92" />
+            <rect x="0" y="6" width="8" height="10" fill="#FFD966" fillOpacity="0.92" />
+            <rect x="4" y="16" width="10" height="3" fill="#FFD966" fillOpacity="0.92" />
+            <rect x="8" y="19" width="10" height="3" fill="#FFD966" fillOpacity="0.92" />
+          </g>
+
+          {/* Poetic Golden Shooting Star Streaking Across the Twilight Sky */}
+          <g className="storybook-shooting-star" transform="translate(1160, 44)">
+            <rect x="0" y="0" width="4" height="2" fill="#FFFDF7" />
+            <rect x="4" y="-1" width="10" height="2" fill="#FFD966" fillOpacity="0.82" />
+            <rect x="14" y="-3" width="16" height="2" fill="#E8BC69" fillOpacity="0.48" />
+            <rect x="30" y="-5" width="20" height="1.5" fill="#E8BC69" fillOpacity="0.2" />
           </g>
         </svg>
       </div>
@@ -275,7 +282,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({
           ===================================================================== */}
       <div className="relative z-20 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-7 sm:pt-12 pb-2 sm:pb-4">
         {/* ROW 1: UNIFIED AKATH LITERARY NEWSLETTER & 4-COLUMN DIRECTORY */}
-        <div className="rounded-xl bg-[#0F1B3A]/95 md:bg-[#0F1B3A]/88 md:backdrop-blur-sm border border-[#E8BC69]/25 p-5 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 shadow-[0_18px_42px_-20px_rgba(6,11,26,0.65)]">
+        <div className="rounded-xl bg-[#0F1B3A]/96 border border-[#E8BC69]/25 p-5 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 shadow-[0_18px_42px_-20px_rgba(6,11,26,0.65)]">
           {/* Left 5 Columns: Akath Literary Newsletter */}
           <div className="lg:col-span-5 lg:border-r lg:border-[#E8BC69]/20 lg:pr-8 flex flex-col justify-between space-y-4">
             <div className="space-y-3">
@@ -712,10 +719,9 @@ export const Footer: React.FC<FooterProps> = React.memo(({
             </div>
 
             <div
+              ref={closingLineRef}
               data-testid="footer-closing-line"
-              className={`last-page-closing-quote ${
-                hasEnteredView ? 'is-entering' : ''
-              }`}
+              className="last-page-closing-quote"
             >
               <p className="font-serif not-italic text-[17px] sm:text-[19px] font-semibold text-[#F5EBDD] leading-snug tracking-[-0.01em]">
                 Every story leaves a mark.
@@ -760,10 +766,18 @@ export const Footer: React.FC<FooterProps> = React.memo(({
         ref={wordmarkBannerRef}
         onMouseMove={handleWordmarkPointerMove}
         data-testid="footer-monumental-wordmark"
-        className={`akath-sarvam-wordmark-stage ${
-          hasEnteredView ? 'is-visible' : ''
-        } group relative w-full overflow-hidden pt-4 sm:pt-6 lg:pt-8 pb-0 select-none`}
+        className="akath-sarvam-wordmark-stage group relative w-full overflow-hidden pt-4 sm:pt-6 lg:pt-8 pb-0 select-none"
       >
+        {/* Warm Twilight Horizon Glow & Subtle Fine-Pointer Spotlight */}
+        <div
+          aria-hidden="true"
+          className="akath-wordmark-horizon-glow pointer-events-none absolute inset-x-0 bottom-0 h-[78%] z-0"
+        />
+        <div
+          aria-hidden="true"
+          className="akath-wordmark-cursor-spotlight pointer-events-none hidden md:block absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        />
+
         {/* Monumental Marathi Wordmark ("अकथ प्रकाशन") Framed Cleanly Above the Horizon */}
         <a
           href="/"

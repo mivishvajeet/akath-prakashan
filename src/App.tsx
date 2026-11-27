@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   BookRecord,
   AuthorRecord,
@@ -26,103 +26,39 @@ import {
 } from './utils/githubPagesAdapter';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { SearchModal } from './components/SearchModal';
 import { HomeView } from './views/HomeView';
+import {
+  AuthPageView,
+  ReaderAccountView,
+  AuthorPortalView,
+} from './views/AuthAndRoleViews';
+import {
+  BooksCatalogueView,
+  BookDetailView,
+} from './views/BooksAndStoreView';
+import {
+  VachankattaHubView,
+  ArticleDetailView,
+} from './views/VachankattaView';
+import {
+  AuthorsListView,
+  AuthorDetailView,
+  AboutAkathView,
+  SubmitManuscriptView,
+  ContactView,
+} from './views/PublishingHouseViews';
+import {
+  CartView,
+  CheckoutView,
+  OrderTrackingView,
+  PolicyDocumentView,
+} from './views/CommerceAndPolicyViews';
+import {
+  AdminDashboardView,
+  TechnicalAuditView,
+} from './views/AdminAndAuditViews';
 import { authFetch, setAuthSessionTokens } from './utils/authSession';
-
-const AuthPageView = lazy(() =>
-  import('./views/AuthAndRoleViews').then((m) => ({
-    default: m.AuthPageView,
-  }))
-);
-const ReaderAccountView = lazy(() =>
-  import('./views/AuthAndRoleViews').then((m) => ({
-    default: m.ReaderAccountView,
-  }))
-);
-const AuthorPortalView = lazy(() =>
-  import('./views/AuthAndRoleViews').then((m) => ({
-    default: m.AuthorPortalView,
-  }))
-);
-
-const SearchModal = lazy(() =>
-  import('./components/SearchModal').then((m) => ({ default: m.SearchModal }))
-);
-const BooksCatalogueView = lazy(() =>
-  import('./views/BooksAndStoreView').then((m) => ({
-    default: m.BooksCatalogueView,
-  }))
-);
-const BookDetailView = lazy(() =>
-  import('./views/BooksAndStoreView').then((m) => ({
-    default: m.BookDetailView,
-  }))
-);
-const VachankattaHubView = lazy(() =>
-  import('./views/VachankattaView').then((m) => ({
-    default: m.VachankattaHubView,
-  }))
-);
-const ArticleDetailView = lazy(() =>
-  import('./views/VachankattaView').then((m) => ({
-    default: m.ArticleDetailView,
-  }))
-);
-const AuthorsListView = lazy(() =>
-  import('./views/PublishingHouseViews').then((m) => ({
-    default: m.AuthorsListView,
-  }))
-);
-const AuthorDetailView = lazy(() =>
-  import('./views/PublishingHouseViews').then((m) => ({
-    default: m.AuthorDetailView,
-  }))
-);
-const AboutAkathView = lazy(() =>
-  import('./views/PublishingHouseViews').then((m) => ({
-    default: m.AboutAkathView,
-  }))
-);
-const SubmitManuscriptView = lazy(() =>
-  import('./views/PublishingHouseViews').then((m) => ({
-    default: m.SubmitManuscriptView,
-  }))
-);
-const ContactView = lazy(() =>
-  import('./views/PublishingHouseViews').then((m) => ({
-    default: m.ContactView,
-  }))
-);
-const CartView = lazy(() =>
-  import('./views/CommerceAndPolicyViews').then((m) => ({
-    default: m.CartView,
-  }))
-);
-const CheckoutView = lazy(() =>
-  import('./views/CommerceAndPolicyViews').then((m) => ({
-    default: m.CheckoutView,
-  }))
-);
-const OrderTrackingView = lazy(() =>
-  import('./views/CommerceAndPolicyViews').then((m) => ({
-    default: m.OrderTrackingView,
-  }))
-);
-const PolicyDocumentView = lazy(() =>
-  import('./views/CommerceAndPolicyViews').then((m) => ({
-    default: m.PolicyDocumentView,
-  }))
-);
-const AdminDashboardView = lazy(() =>
-  import('./views/AdminAndAuditViews').then((m) => ({
-    default: m.AdminDashboardView,
-  }))
-);
-const TechnicalAuditView = lazy(() =>
-  import('./views/AdminAndAuditViews').then((m) => ({
-    default: m.TechnicalAuditView,
-  }))
-);
 
 
 const CART_STORAGE_KEY = 'akath_cart_v1';
@@ -173,7 +109,6 @@ export default function App() {
   const [readingLists, setReadingLists] = useState<ReadingList[]>(() =>
     getStaticReadingLists()
   );
-  const [loadingBootstrap, setLoadingBootstrap] = useState(true);
 
   const [cartItems, setCartItems] = useState<CartItemInput[]>(loadInitialCart);
   const [cartQuote, setCartQuote] = useState<CartQuoteResponse | null>(null);
@@ -246,8 +181,6 @@ export default function App() {
       }
     } catch {
       // Static fallback already initialized via getStaticBooks(), etc.
-    } finally {
-      setLoadingBootstrap(false);
     }
   }, []);
 
@@ -671,13 +604,6 @@ export default function App() {
 
   // Route matching
   const renderMainView = () => {
-    if (loadingBootstrap && books.length === 0) {
-      return (
-        <div className="max-w-[1200px] mx-auto px-4 py-20 text-center text-[#706D65]">
-          {lang === 'mr' ? 'अकथ प्रकाशन लोड होत आहे...' : 'Loading Akath Prakashan...'}
-        </div>
-      );
-    }
 
     // 1. Authentication Views (/login, /register, /forgot-password, /reset-password, /verify-email)
     const authModes: Record<
@@ -1021,15 +947,7 @@ export default function App() {
         />
 
         <main id="main-content" className="flex-1">
-          <Suspense
-            fallback={
-              <div className="min-h-[60vh] flex items-center justify-center bg-[#FAF8F0]">
-                <div className="w-7 h-7 rounded-full border-2 border-[#243B8A]/20 border-t-[#243B8A] animate-spin" />
-              </div>
-            }
-          >
-            {renderMainView()}
-          </Suspense>
+          {renderMainView()}
         </main>
 
         <Footer
@@ -1038,16 +956,14 @@ export default function App() {
         />
 
         {searchOpen && (
-          <Suspense fallback={null}>
-            <SearchModal
-              isOpen={searchOpen}
-              onClose={() => setSearchOpen(false)}
-              books={books}
-              authors={authors}
-              articles={articles}
-              onNavigate={navigate}
-            />
-          </Suspense>
+          <SearchModal
+            isOpen={searchOpen}
+            onClose={() => setSearchOpen(false)}
+            books={books}
+            authors={authors}
+            articles={articles}
+            onNavigate={navigate}
+          />
         )}
 
         {/* Interactive Added-to-Bag Floating Mini-Cart Notification Bar */}

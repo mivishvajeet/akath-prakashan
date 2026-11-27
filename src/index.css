@@ -86,29 +86,21 @@
   }
 }
 
-/* Archival Frosted-Glass Paper Overlay & Drawer Surface (Warm White + Midnight Cobalt + Butter Yellow) */
+/* Archival Paper Overlay & Scrolled Navbar Elevation (Zero GPU backdrop-filter stalls) */
 .archival-frosted-overlay {
   background:
     linear-gradient(
       135deg,
-      rgba(255, 253, 247, 0.88) 0%,
-      rgba(255, 217, 102, 0.16) 55%,
-      rgba(36, 59, 138, 0.22) 100%
+      rgba(255, 253, 247, 0.92) 0%,
+      rgba(255, 217, 102, 0.14) 55%,
+      rgba(36, 59, 138, 0.18) 100%
     );
 }
 
-@media (min-width: 768px) {
-  .archival-frosted-overlay {
-    background:
-      linear-gradient(
-        135deg,
-        rgba(255, 253, 247, 0.78) 0%,
-        rgba(255, 217, 102, 0.14) 55%,
-        rgba(36, 59, 138, 0.18) 100%
-      );
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
+.akath-navbar-header[data-scrolled="true"] {
+  background-color: rgba(255, 253, 247, 0.99);
+  border-bottom-color: rgba(220, 212, 192, 0.95);
+  box-shadow: 0 10px 28px -14px rgba(36, 59, 138, 0.14);
 }
 
 .archival-drawer-surface {
@@ -347,274 +339,20 @@
 }
 
 /* =========================================================================
-   CSS-Based Subtle Floating Animation for the Akath 'Tortoise' Logo Emblem
+   Akath 'Tortoise' Emblem & 'Hide-and-Seek' Single-Container GPU Stage
+   - Motion choreography is driven by Framer Motion (motion/react) inside
+     AnimatedTortoiseEmblem for smooth frame-pacing and reduced-motion safety.
+   - Only this outer stage promotes a compositor layer (will-change: transform)
+     with layout containment to prevent layout shifts on low-end mobile devices.
    ========================================================================= */
-@keyframes tortoise-float {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(0, -3.5px, 0);
-  }
-}
-
-@keyframes tortoise-body-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-}
-
-@keyframes tortoise-flipper-left {
-  0%,
-  100% {
-    transform: rotate(-2deg);
-  }
-  50% {
-    transform: rotate(2.5deg);
-  }
-}
-
-@keyframes tortoise-flipper-right {
-  0%,
-  100% {
-    transform: rotate(2deg);
-  }
-  50% {
-    transform: rotate(-2.5deg);
-  }
-}
-
-@keyframes tortoise-book-breathe {
-  0%,
-  100% {
-    transform: scaleX(1);
-  }
-  50% {
-    transform: scaleX(1.022);
-  }
-}
-
-.tortoise-float {
-  animation: tortoise-float 4.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-  transform-box: fill-box;
-  will-change: transform;
-  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.group:hover .tortoise-float,
-.tortoise-float:hover {
-  animation-play-state: paused;
-  transform: translate3d(0, -2px, 0) scale(1.03);
-}
-
-.tortoise-emblem-body {
-  animation: tortoise-body-float 4.2s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center center;
+.akath-tortoise-gpu-stage {
+  contain: layout style;
+  transform: translate3d(0, 0, 0);
   will-change: transform;
 }
 
-.tortoise-head {
+.akath-tortoise-svg-part {
   transform-box: fill-box;
-  transform-origin: center bottom;
-  will-change: transform;
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.tortoise-flipper-l {
-  animation: tortoise-flipper-left 3.6s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: right center;
-  will-change: transform;
-}
-
-.tortoise-flipper-r {
-  animation: tortoise-flipper-right 3.6s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: left center;
-  will-change: transform;
-}
-
-.tortoise-flipper-rl {
-  transform-box: fill-box;
-  transform-origin: right top;
-  will-change: transform;
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.tortoise-flipper-rr {
-  transform-box: fill-box;
-  transform-origin: left top;
-  will-change: transform;
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.tortoise-tail {
-  transform-box: fill-box;
-  transform-origin: center top;
-  will-change: transform;
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.tortoise-shell-group {
-  transform-box: fill-box;
-  transform-origin: center center;
-  will-change: transform;
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.tortoise-book-wave {
-  animation: tortoise-book-breathe 4.2s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center center;
-  will-change: transform;
-}
-
-/* ==========================================================================
-   TORTOISE 'HIDE-AND-SEEK' MICRO-INTERACTION (Footer Emblem Hover)
-   Builds upon the tortoise keyframe foundation: when hovered, the tortoise
-   momentarily retracts its head, flippers, and tail into its carapace,
-   pauses inside the shell, and gently peeks back out.
-   ========================================================================== */
-@keyframes tortoise-head-hide-seek {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  24%,
-  54% {
-    transform: translateY(15px) scale(0.72);
-  }
-  74% {
-    transform: translateY(4.5px) scale(0.92);
-  }
-  88% {
-    transform: translateY(-0.8px) scale(1.02);
-  }
-}
-
-@keyframes tortoise-flipper-fl-hide-seek {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg) scale(1);
-  }
-  24%,
-  54% {
-    transform: translate(16px, 11px) rotate(-28deg) scale(0.68);
-  }
-  75% {
-    transform: translate(4px, 3px) rotate(-7deg) scale(0.93);
-  }
-}
-
-@keyframes tortoise-flipper-fr-hide-seek {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg) scale(1);
-  }
-  24%,
-  54% {
-    transform: translate(-16px, 11px) rotate(28deg) scale(0.68);
-  }
-  75% {
-    transform: translate(-4px, 3px) rotate(7deg) scale(0.93);
-  }
-}
-
-@keyframes tortoise-flipper-rl-hide-seek {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg) scale(1);
-  }
-  24%,
-  54% {
-    transform: translate(13px, -11px) rotate(24deg) scale(0.7);
-  }
-  75% {
-    transform: translate(3.5px, -3px) rotate(6deg) scale(0.93);
-  }
-}
-
-@keyframes tortoise-flipper-rr-hide-seek {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg) scale(1);
-  }
-  24%,
-  54% {
-    transform: translate(-13px, -11px) rotate(-24deg) scale(0.7);
-  }
-  75% {
-    transform: translate(-3.5px, -3px) rotate(-6deg) scale(0.93);
-  }
-}
-
-@keyframes tortoise-tail-hide-seek {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  22%,
-  56% {
-    transform: translateY(-10px) scale(0.65);
-  }
-  76% {
-    transform: translateY(-2.5px) scale(0.9);
-  }
-}
-
-@keyframes tortoise-shell-hide-seek {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  24%,
-  54% {
-    transform: translateY(1.5px) scale(1.04);
-  }
-  75% {
-    transform: translateY(0.5px) scale(1.012);
-  }
-}
-
-.group:hover .tortoise-hide-seek .tortoise-head,
-.tortoise-hide-seek:hover .tortoise-head {
-  animation: tortoise-head-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
-}
-
-.group:hover .tortoise-hide-seek .tortoise-flipper-l,
-.tortoise-hide-seek:hover .tortoise-flipper-l {
-  animation: tortoise-flipper-fl-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
-}
-
-.group:hover .tortoise-hide-seek .tortoise-flipper-r,
-.tortoise-hide-seek:hover .tortoise-flipper-r {
-  animation: tortoise-flipper-fr-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
-}
-
-.group:hover .tortoise-hide-seek .tortoise-flipper-rl,
-.tortoise-hide-seek:hover .tortoise-flipper-rl {
-  animation: tortoise-flipper-rl-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
-}
-
-.group:hover .tortoise-hide-seek .tortoise-flipper-rr,
-.tortoise-hide-seek:hover .tortoise-flipper-rr {
-  animation: tortoise-flipper-rr-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
-}
-
-.group:hover .tortoise-hide-seek .tortoise-tail,
-.tortoise-hide-seek:hover .tortoise-tail {
-  animation: tortoise-tail-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
-}
-
-.group:hover .tortoise-hide-seek .tortoise-shell-group,
-.tortoise-hide-seek:hover .tortoise-shell-group {
-  animation: tortoise-shell-hide-seek 1.85s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
 }
 
 /* ==========================================================================
@@ -736,158 +474,17 @@
 }
 
 /* =========================================================================
-   WalkingTortoise — Patient Tortoise Bottom-of-Page Traverse Animation
-   A slow, meditative CSS-only horizontal cycle along the bottom margin
-   horizon line. Uses GPU-composited translate3d + container query units (cqw)
-   so it glides smoothly across mobile (320px–430px), tablet (768px), and desktop.
+   WalkingTortoise — Single-Container GPU Layer for rAF Traverse Engine
+   - Frame-paced traversal, flipping, leg strides, body sway, head nod, and
+     page breathing are computed in WalkingTortoise.tsx via requestAnimationFrame.
+   - Containment + single `will-change: transform` on `.akath-patient-tortoise-runner`
+     prevents layout shifts and redundant GPU layer promotion on low-end mobile.
    ========================================================================= */
 
 .akath-patient-traverse-track {
   container-type: inline-size;
-}
-
-@keyframes akath-patient-traverse {
-  0% {
-    transform: translate3d(4px, 0, 0);
-  }
-  44% {
-    transform: translate3d(calc(100cqw - 68px), 0, 0);
-  }
-  50% {
-    transform: translate3d(calc(100cqw - 68px), 0, 0);
-  }
-  94% {
-    transform: translate3d(4px, 0, 0);
-  }
-  100% {
-    transform: translate3d(4px, 0, 0);
-  }
-}
-
-@keyframes akath-patient-turn {
-  0%,
-  45% {
-    transform: scaleX(1);
-  }
-  49%,
-  95% {
-    transform: scaleX(-1);
-  }
-  99%,
-  100% {
-    transform: scaleX(1);
-  }
-}
-
-@keyframes akath-traverse-footstep-pulse {
-  0%,
-  100% {
-    opacity: 0.22;
-    transform: scale(0.85);
-  }
-  50% {
-    opacity: 0.72;
-    transform: scale(1.15);
-  }
-}
-
-@keyframes akath-traverse-horizon-shimmer {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-  50% {
-    opacity: 0.85;
-  }
-}
-
-@keyframes akath-tortoise-traverse {
-  0% {
-    transform: translate3d(4%, 0, 0);
-  }
-  43% {
-    transform: translate3d(245%, 0, 0);
-  }
-  50% {
-    transform: translate3d(245%, 0, 0);
-  }
-  93% {
-    transform: translate3d(4%, 0, 0);
-  }
-  100% {
-    transform: translate3d(4%, 0, 0);
-  }
-}
-
-@keyframes akath-tortoise-turn {
-  0%,
-  44% {
-    transform: scaleX(1);
-  }
-  48%,
-  94% {
-    transform: scaleX(-1);
-  }
-  98%,
-  100% {
-    transform: scaleX(1);
-  }
-}
-
-@keyframes akath-tortoise-leg-stride-a {
-  0%,
-  100% {
-    transform: rotate(-7deg) translateY(0px);
-  }
-  50% {
-    transform: rotate(7deg) translateY(-1.2px);
-  }
-}
-
-@keyframes akath-tortoise-leg-stride-b {
-  0%,
-  100% {
-    transform: rotate(7deg) translateY(-1.2px);
-  }
-  50% {
-    transform: rotate(-7deg) translateY(0px);
-  }
-}
-
-@keyframes akath-tortoise-body-sway {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-1.3px);
-  }
-}
-
-@keyframes akath-tortoise-head-nod {
-  0%,
-  100% {
-    transform: translate(0px, 0px) rotate(0deg);
-  }
-  50% {
-    transform: translate(1px, -0.8px) rotate(-1.5deg);
-  }
-}
-
-.akath-patient-traverse-stage {
-  --traverse-duration: 20s;
-}
-
-@media (min-width: 640px) {
-  .akath-patient-traverse-stage {
-    --traverse-duration: 26s;
-  }
-}
-
-@media (min-width: 1024px) {
-  .akath-patient-traverse-stage {
-    --traverse-duration: 32s;
-  }
+  contain: layout style paint;
+  --akath-traverse-max-x: calc(100cqw - 68px);
 }
 
 .akath-patient-tortoise-runner {
@@ -895,87 +492,14 @@
   bottom: 9px;
   left: 0;
   width: 84px;
-  animation: akath-patient-traverse var(--traverse-duration, 24s) cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  height: 44px;
+  transform: translate3d(4px, 0, 0);
   will-change: transform;
+  contain: layout style;
 }
 
 .akath-patient-tortoise-flip {
-  animation: akath-patient-turn var(--traverse-duration, 24s) cubic-bezier(0.42, 0, 0.58, 1) infinite;
   transform-origin: center center;
-}
-
-/* Explicit pause state (via mobile/desktop toggle button) */
-.akath-patient-traverse-stage.is-paused .akath-patient-tortoise-runner,
-.akath-patient-traverse-stage.is-paused .akath-patient-tortoise-flip,
-.akath-patient-traverse-stage.is-paused .akath-walking-tortoise-leg-a,
-.akath-patient-traverse-stage.is-paused .akath-walking-tortoise-leg-b,
-.akath-patient-traverse-stage.is-paused .akath-walking-tortoise-body,
-.akath-patient-traverse-stage.is-paused .akath-walking-tortoise-head {
-  animation-play-state: paused;
-}
-
-/* Guard hover-to-pause behind pointer:fine so mobile touch taps never freeze the tortoise */
-@media (hover: hover) and (pointer: fine) {
-  .akath-patient-traverse-stage:hover .akath-patient-tortoise-runner,
-  .akath-patient-traverse-stage:hover .akath-patient-tortoise-flip,
-  .akath-patient-traverse-stage:hover .akath-walking-tortoise-leg-a,
-  .akath-patient-traverse-stage:hover .akath-walking-tortoise-leg-b,
-  .akath-patient-traverse-stage:hover .akath-walking-tortoise-body,
-  .akath-patient-traverse-stage:hover .akath-walking-tortoise-head {
-    animation-play-state: paused;
-  }
-}
-
-.akath-traverse-footstep {
-  animation: akath-traverse-footstep-pulse 4.8s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center center;
-  will-change: transform;
-}
-
-.akath-traverse-horizon-line {
-  animation: akath-traverse-horizon-shimmer 7s ease-in-out infinite;
-  transform-box: fill-box;
-  will-change: transform;
-}
-
-.akath-walking-tortoise-traveler {
-  animation: akath-tortoise-traverse 32s ease-in-out infinite;
-  will-change: transform;
-}
-
-.akath-walking-tortoise-turner {
-  animation: akath-tortoise-turn 32s ease-in-out infinite;
-  transform-origin: center center;
-  will-change: transform;
-}
-
-.akath-walking-tortoise-leg-a {
-  animation: akath-tortoise-leg-stride-a 1.8s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: top center;
-  will-change: transform;
-}
-
-.akath-walking-tortoise-leg-b {
-  animation: akath-tortoise-leg-stride-b 1.8s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: top center;
-  will-change: transform;
-}
-
-.akath-walking-tortoise-body {
-  animation: akath-tortoise-body-sway 1.8s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center center;
-  will-change: transform;
-}
-
-.akath-walking-tortoise-head {
-  animation: akath-tortoise-head-nod 3.6s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: left center;
-  will-change: transform;
 }
 
 /* =========================================================================
@@ -1060,49 +584,42 @@
   animation: akath-stage-loupe-scan 5.2s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-stage-quill {
   animation: akath-stage-quill-glide 3.8s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: bottom left;
-  will-change: transform;
 }
 
 .akath-stage-proof-mark {
   animation: akath-stage-proof-pulse 2.8s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-stage-caliper {
   animation: akath-stage-caliper-slide 4.2s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-stage-stamp {
   animation: akath-stage-stamp-float 3.6s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-stage-book {
   animation: akath-stage-book-wing 4s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-stage-flow-line {
   stroke-dasharray: 6 6;
   animation: akath-stage-dash-flow 1.8s linear infinite;
   transform-box: fill-box;
-  will-change: transform;
 }
 
 @keyframes akath-sequential-reveal {
@@ -1117,7 +634,7 @@
 }
 
 .akath-seq-step {
-  will-change: transform, opacity;
+  contain: layout style;
 }
 
 /* =========================================================================
@@ -1171,42 +688,36 @@
   animation: akath-footer-page-left 4.6s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: right bottom;
-  will-change: transform;
 }
 
 .akath-footer-wing-right {
   animation: akath-footer-page-right 4.6s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: left bottom;
-  will-change: transform;
 }
 
 .akath-footer-mote-a {
   animation: akath-footer-mote-float 3.8s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-footer-mote-b {
   animation: akath-footer-mote-float 4.4s ease-in-out 1.1s infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-footer-mote-c {
   animation: akath-footer-mote-float 5.1s ease-in-out 2.2s infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-footer-star {
   animation: akath-footer-star-pulse 4.2s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 /* =========================================================================
@@ -1289,63 +800,54 @@
   animation: akath-colophon-orbit 38s linear infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-colophon-aura {
   animation: akath-colophon-aura-pulse 5.6s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-colophon-page-left {
   animation: akath-colophon-page-breathe-left 4.8s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: right bottom;
-  will-change: transform;
 }
 
 .akath-colophon-page-right {
   animation: akath-colophon-page-breathe-right 4.8s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: left bottom;
-  will-change: transform;
 }
 
 .akath-colophon-shell-pulse {
   animation: akath-colophon-shell-breathe 4.4s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center bottom;
-  will-change: transform;
 }
 
 .akath-colophon-head-nod {
   animation: akath-colophon-head-watch 5.2s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: left center;
-  will-change: transform;
 }
 
 .akath-colophon-glyph-a {
   animation: akath-colophon-glyph-rise 4.2s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-colophon-glyph-b {
   animation: akath-colophon-glyph-rise 4.8s ease-in-out 1.1s infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-colophon-glyph-c {
   animation: akath-colophon-glyph-rise 5.3s ease-in-out 2.2s infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 /* =========================================================================
@@ -1585,12 +1087,12 @@
 @keyframes storybook-sun-glow-breathe {
   0%,
   100% {
-    transform: translate3d(0px, 0px, 0px);
-    opacity: 0.24;
+    transform: translate3d(0px, 0px, 0px) scale(0.96);
+    opacity: 0.22;
   }
   50% {
-    transform: translate3d(0px, -2px, 0px);
-    opacity: 0.42;
+    transform: translate3d(0px, -2px, 0px) scale(1.06);
+    opacity: 0.44;
   }
 }
 
@@ -1600,7 +1102,7 @@
     transform: translate3d(0px, 0px, 0px);
   }
   50% {
-    transform: translate3d(-2px, 0px, 0px);
+    transform: translate3d(-2.5px, -0.5px, 0px);
   }
 }
 
@@ -1620,7 +1122,7 @@
     transform: translate3d(0px, 0px, 0px);
   }
   50% {
-    transform: translate3d(-2px, 0px, 0px);
+    transform: translate3d(-2.2px, 0px, 0px);
   }
 }
 
@@ -1630,48 +1132,72 @@
     transform: translate3d(0px, 0px, 0px);
   }
   50% {
-    transform: translate3d(-2px, 0px, 0px);
+    transform: translate3d(-1.8px, 0px, 0px);
   }
 }
 
 @keyframes storybook-floating-leaf-drift-a {
   0% {
-    transform: translate3d(960px, 140px, 0px);
+    transform: translate3d(980px, 136px, 0px);
     opacity: 0;
   }
-  10% {
+  12% {
+    opacity: 0.92;
+  }
+  35% {
+    transform: translate3d(820px, 174px, 0px);
+  }
+  65% {
+    transform: translate3d(640px, 206px, 0px);
     opacity: 0.9;
   }
-  50% {
-    transform: translate3d(700px, 198px, 0px);
-    opacity: 0.95;
-  }
   90% {
-    opacity: 0.85;
+    opacity: 0.72;
   }
   100% {
-    transform: translate3d(460px, 252px, 0px);
+    transform: translate3d(440px, 254px, 0px);
     opacity: 0;
   }
 }
 
 @keyframes storybook-floating-leaf-drift-b {
   0% {
-    transform: translate3d(1080px, 124px, 0px);
+    transform: translate3d(1100px, 118px, 0px);
     opacity: 0;
   }
   15% {
     opacity: 0.85;
   }
-  55% {
-    transform: translate3d(760px, 186px, 0px);
-    opacity: 0.9;
+  45% {
+    transform: translate3d(870px, 168px, 0px);
   }
-  90% {
-    opacity: 0.8;
+  75% {
+    transform: translate3d(660px, 208px, 0px);
+    opacity: 0.82;
   }
   100% {
-    transform: translate3d(480px, 244px, 0px);
+    transform: translate3d(470px, 248px, 0px);
+    opacity: 0;
+  }
+}
+
+@keyframes storybook-floating-leaf-drift-c {
+  0% {
+    transform: translate3d(860px, 128px, 0px);
+    opacity: 0;
+  }
+  14% {
+    opacity: 0.82;
+  }
+  50% {
+    transform: translate3d(650px, 184px, 0px);
+    opacity: 0.88;
+  }
+  88% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate3d(420px, 246px, 0px);
     opacity: 0;
   }
 }
@@ -1682,7 +1208,7 @@
     transform: scaleY(1);
   }
   50% {
-    transform: scaleY(0.35);
+    transform: scaleY(0.32);
   }
 }
 
@@ -1692,73 +1218,73 @@
     transform: translate3d(560px, 210px, 0px);
   }
   25% {
-    transform: translate3d(584px, 196px, 0px);
+    transform: translate3d(586px, 194px, 0px);
   }
   50% {
-    transform: translate3d(604px, 206px, 0px);
+    transform: translate3d(608px, 205px, 0px);
   }
   75% {
-    transform: translate3d(576px, 218px, 0px);
+    transform: translate3d(578px, 219px, 0px);
   }
 }
 
-/* Choreographed 16-Bit Sprite Butterfly: Swoops past the tortoise in integer steps */
+/* Choreographed 16-Bit Sprite Butterfly: Glides smoothly past the tortoise */
 @keyframes storybook-butterfly-encounter {
   0%,
-  36% {
-    transform: translate3d(260px, -64px, 0px);
+  34% {
+    transform: translate3d(264px, -64px, 0px);
     opacity: 0;
   }
-  42% {
-    transform: translate3d(216px, -32px, 0px);
+  41% {
+    transform: translate3d(214px, -30px, 0px);
     opacity: 1;
   }
   50% {
-    transform: translate3d(176px, 12px, 0px);
+    transform: translate3d(174px, 10px, 0px);
     opacity: 1;
   }
   56% {
-    transform: translate3d(162px, 20px, 0px);
+    transform: translate3d(160px, 18px, 0px);
     opacity: 1;
   }
-  62% {
-    transform: translate3d(144px, 8px, 0px);
+  63% {
+    transform: translate3d(140px, 6px, 0px);
     opacity: 1;
   }
-  70% {
-    transform: translate3d(96px, -28px, 0px);
-    opacity: 0.9;
+  71% {
+    transform: translate3d(92px, -28px, 0px);
+    opacity: 0.88;
   }
-  78%,
+  80%,
   100% {
-    transform: translate3d(24px, -68px, 0px);
+    transform: translate3d(18px, -70px, 0px);
     opacity: 0;
   }
 }
 
-/* Choreographed Tortoise Journey: Stepped 16-bit progress along the path */
+/* Choreographed Tortoise Journey: Gentle forward glide & settle along the path */
 @keyframes storybook-tortoise-choreography {
   0%,
   100% {
-    transform: translate3d(-12px, 0px, 0px);
+    transform: translate3d(-14px, 0px, 0px);
   }
-  52%,
+  50%,
   62% {
-    transform: translate3d(12px, 0px, 0px);
+    transform: translate3d(14px, 0px, 0px);
   }
 }
 
-/* Pure integer-pixel 4-beat quadruped walk cycle (ZERO diagonal rotation artifacts) */
+/* Calibrated 4-beat 16-bit quadruped walk cycle matched to the serene path pace */
 @keyframes storybook-leg-stride-near-front {
   0%,
   100% {
-    transform: translate3d(-4px, 0px, 0px);
+    transform: translate3d(-5px, 0px, 0px);
   }
   25% {
     transform: translate3d(0px, -4px, 0px);
   }
   50% {
-    transform: translate3d(4px, 0px, 0px);
+    transform: translate3d(5px, 0px, 0px);
   }
   75% {
     transform: translate3d(0px, 0px, 0px);
@@ -1768,13 +1294,13 @@
 @keyframes storybook-leg-stride-near-back {
   0%,
   100% {
-    transform: translate3d(4px, 0px, 0px);
+    transform: translate3d(5px, 0px, 0px);
   }
   25% {
     transform: translate3d(0px, 0px, 0px);
   }
   50% {
-    transform: translate3d(-4px, 0px, 0px);
+    transform: translate3d(-5px, 0px, 0px);
   }
   75% {
     transform: translate3d(0px, -4px, 0px);
@@ -1784,13 +1310,13 @@
 @keyframes storybook-leg-stride-far-front {
   0%,
   100% {
-    transform: translate3d(4px, 0px, 0px);
+    transform: translate3d(5px, 0px, 0px);
   }
   25% {
     transform: translate3d(0px, 0px, 0px);
   }
   50% {
-    transform: translate3d(-4px, 0px, 0px);
+    transform: translate3d(-5px, 0px, 0px);
   }
   75% {
     transform: translate3d(0px, -4px, 0px);
@@ -1800,13 +1326,13 @@
 @keyframes storybook-leg-stride-far-back {
   0%,
   100% {
-    transform: translate3d(-4px, 0px, 0px);
+    transform: translate3d(-5px, 0px, 0px);
   }
   25% {
     transform: translate3d(0px, -4px, 0px);
   }
   50% {
-    transform: translate3d(4px, 0px, 0px);
+    transform: translate3d(5px, 0px, 0px);
   }
   75% {
     transform: translate3d(0px, 0px, 0px);
@@ -1847,23 +1373,23 @@
   }
 }
 
-/* Stepped integer-pixel head & neck movement synchronized with butterfly encounter */
+/* Observant head & neck movement synchronized with butterfly encounter */
 @keyframes storybook-tortoise-head-choreography {
   0%,
   24%,
-  48%,
+  46%,
   68%,
   100% {
     transform: translate3d(0px, 0px, 0px);
   }
   12%,
-  36%,
+  35%,
   84% {
     transform: translate3d(2px, -2px, 0px);
   }
-  53%,
+  52%,
   60% {
-    transform: translate3d(2px, -4px, 0px);
+    transform: translate3d(3px, -4px, 0px);
   }
 }
 
@@ -1901,6 +1427,74 @@
   }
 }
 
+@keyframes storybook-step-dust-puff {
+  0% {
+    transform: translate3d(4px, 0px, 0px);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.72;
+  }
+  75% {
+    transform: translate3d(-14px, -5px, 0px);
+    opacity: 0.25;
+  }
+  100% {
+    transform: translate3d(-22px, -8px, 0px);
+    opacity: 0;
+  }
+}
+
+@keyframes storybook-lantern-mote-rise {
+  0% {
+    transform: translate3d(0px, 2px, 0px);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  75% {
+    transform: translate3d(-5px, -12px, 0px);
+    opacity: 0.45;
+  }
+  100% {
+    transform: translate3d(-8px, -18px, 0px);
+    opacity: 0;
+  }
+}
+
+@keyframes storybook-click-akshara-rise {
+  0% {
+    transform: translate3d(0px, 8px, 0px) scale(0.85);
+    opacity: 0;
+  }
+  22% {
+    transform: translate3d(0px, -4px, 0px) scale(1.06);
+    opacity: 1;
+  }
+  80% {
+    transform: translate3d(0px, -20px, 0px) scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(0px, -28px, 0px) scale(0.96);
+    opacity: 0;
+  }
+}
+
+@keyframes storybook-tortoise-happy-hop {
+  0%,
+  100% {
+    transform: translate3d(0px, 0px, 0px);
+  }
+  35% {
+    transform: translate3d(0px, -5px, 0px);
+  }
+  70% {
+    transform: translate3d(0px, -1px, 0px);
+  }
+}
+
 .akath-pixel-svg {
   image-rendering: pixelated;
   shape-rendering: crispEdges;
@@ -1919,7 +1513,7 @@
 @keyframes storybook-celestial-twinkle-a {
   0%,
   100% {
-    opacity: 1;
+    opacity: 0.96;
     transform: translate3d(0px, 0px, 0px);
   }
   50% {
@@ -1931,7 +1525,7 @@
 @keyframes storybook-celestial-twinkle-b {
   0%,
   100% {
-    opacity: 0.48;
+    opacity: 0.46;
   }
   50% {
     opacity: 1;
@@ -1943,45 +1537,52 @@
   100% {
     opacity: 0.92;
   }
-  35% {
-    opacity: 0.3;
+  40% {
+    opacity: 0.32;
   }
-  70% {
+  72% {
     opacity: 0.98;
   }
 }
 
 @keyframes storybook-shooting-star-streak {
   0%,
-  72% {
+  76% {
     transform: translate3d(0px, 0px, 0px);
     opacity: 0;
   }
-  76% {
-    transform: translate3d(-24px, 6px, 0px);
-    opacity: 0.95;
+  79% {
+    transform: translate3d(-26px, 7px, 0px);
+    opacity: 0.96;
   }
-  84% {
-    transform: translate3d(-168px, 42px, 0px);
-    opacity: 0.9;
+  87% {
+    transform: translate3d(-190px, 48px, 0px);
+    opacity: 0.85;
   }
-  90%,
+  92%,
   100% {
-    transform: translate3d(-260px, 64px, 0px);
+    transform: translate3d(-280px, 70px, 0px);
     opacity: 0;
   }
 }
 
-.storybook-pixel-stars,
-.storybook-star-twinkle-a,
-.storybook-star-twinkle-b,
-.storybook-star-twinkle-c,
-.storybook-shooting-star,
+/* Promote ONLY the 5 scrolling parallax bands + tortoise rig to GPU layers to save mobile VRAM */
 .storybook-layer-far-peaks,
 .storybook-layer-clouds,
 .storybook-layer-hills,
 .storybook-layer-midground,
 .storybook-layer-foreground,
+.storybook-tortoise-journey {
+  transform-box: fill-box;
+  will-change: transform;
+}
+
+/* Inner SVG parts use transform-box: fill-box without redundant GPU texture promotion */
+.storybook-pixel-stars,
+.storybook-star-twinkle-a,
+.storybook-star-twinkle-b,
+.storybook-star-twinkle-c,
+.storybook-shooting-star,
 .storybook-sun-halo,
 .storybook-tree-canopy-sway,
 .storybook-banyan-roots,
@@ -1989,10 +1590,10 @@
 .storybook-grass-sway-b,
 .storybook-floating-leaf-a,
 .storybook-floating-leaf-b,
+.storybook-floating-leaf-c,
 .storybook-butterfly-wings,
 .storybook-butterfly-ambient,
 .storybook-butterfly-choreographed,
-.storybook-tortoise-journey,
 .storybook-tortoise-leg-fr,
 .storybook-tortoise-leg-br,
 .storybook-tortoise-leg-fl,
@@ -2004,139 +1605,150 @@
 .storybook-tortoise-head,
 .storybook-tortoise-eyelid,
 .storybook-tortoise-tail,
+.storybook-step-dust-a,
+.storybook-step-dust-b,
+.storybook-lantern-mote-a,
+.storybook-lantern-mote-b,
+.storybook-click-akshara,
 .storybook-fort-flag,
 .storybook-chimney-smoke,
 .storybook-lantern-glow,
 .storybook-hanging-lantern,
 .storybook-firefly-pulse {
   transform-box: fill-box;
-  will-change: transform;
 }
 
 .storybook-pixel-stars {
-  animation: storybook-pixel-stars-twinkle 2.4s steps(2, end) infinite;
+  animation: storybook-pixel-stars-twinkle 3.2s ease-in-out infinite;
 }
 
 .storybook-star-twinkle-a {
-  animation: storybook-celestial-twinkle-a 3.2s steps(3, end) infinite;
+  animation: storybook-celestial-twinkle-a 4.4s ease-in-out infinite;
 }
 
 .storybook-star-twinkle-b {
-  animation: storybook-celestial-twinkle-b 4.1s steps(3, end) 0.9s infinite;
+  animation: storybook-celestial-twinkle-b 5.6s ease-in-out 1.2s infinite;
 }
 
 .storybook-star-twinkle-c {
-  animation: storybook-celestial-twinkle-c 5.2s steps(3, end) 1.8s infinite;
+  animation: storybook-celestial-twinkle-c 6.8s ease-in-out 2.4s infinite;
 }
 
 .storybook-shooting-star {
-  animation: storybook-shooting-star-streak 14s steps(18, end) infinite;
+  animation: storybook-shooting-star-streak 15s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
+/* Calibrated depth parallax ratios matching the tortoise's calm, grounded stride */
 .storybook-layer-far-peaks {
-  animation: storybook-scroll-tile 120s linear infinite;
+  animation: storybook-scroll-tile 150s linear infinite;
 }
 
 .storybook-layer-clouds {
-  animation: storybook-scroll-tile 88s linear infinite;
+  animation: storybook-scroll-tile 110s linear infinite;
 }
 
 .storybook-layer-hills {
-  animation: storybook-scroll-tile 56s linear infinite;
+  animation: storybook-scroll-tile 84s linear infinite;
 }
 
 .storybook-layer-midground {
-  animation: storybook-scroll-tile 28s linear infinite;
+  animation: storybook-scroll-tile 48s linear infinite;
 }
 
 .storybook-layer-foreground {
-  animation: storybook-scroll-tile 14s linear infinite;
+  animation: storybook-scroll-tile 26s linear infinite;
 }
 
 .storybook-sun-halo {
-  animation: storybook-sun-glow-breathe 4.2s steps(2, end) infinite;
+  transform-origin: center center;
+  animation: storybook-sun-glow-breathe 5.8s ease-in-out infinite;
 }
 
 .storybook-tree-canopy-sway {
-  animation: storybook-canopy-breeze 3.4s steps(2, end) infinite;
+  animation: storybook-canopy-breeze 5.2s ease-in-out infinite;
 }
 
 .storybook-banyan-roots {
-  animation: storybook-roots-sway 3.2s steps(2, end) infinite;
+  animation: storybook-roots-sway 4.6s ease-in-out 0.6s infinite;
 }
 
 .storybook-grass-sway-a {
-  animation: storybook-grass-wind-a 2.2s steps(2, end) infinite;
+  animation: storybook-grass-wind-a 3.4s ease-in-out infinite;
 }
 
 .storybook-grass-sway-b {
-  animation: storybook-grass-wind-b 2.6s steps(2, end) 0.6s infinite;
+  animation: storybook-grass-wind-b 4.1s ease-in-out 0.9s infinite;
 }
 
 .storybook-floating-leaf-a {
-  animation: storybook-floating-leaf-drift-a 14s steps(28, end) infinite;
+  animation: storybook-floating-leaf-drift-a 16s ease-in-out infinite;
 }
 
 .storybook-floating-leaf-b {
-  animation: storybook-floating-leaf-drift-b 18s steps(32, end) 5s infinite;
+  animation: storybook-floating-leaf-drift-b 20s ease-in-out 5.5s infinite;
+}
+
+.storybook-floating-leaf-c {
+  animation: storybook-floating-leaf-drift-c 18s ease-in-out 10.5s infinite;
 }
 
 .storybook-butterfly-wings {
-  animation: storybook-butterfly-wing-flutter 0.28s steps(2, end) infinite;
+  animation: storybook-butterfly-wing-flutter 0.3s steps(2, end) infinite;
   transform-box: fill-box;
   transform-origin: center center;
 }
 
 .storybook-butterfly-ambient {
-  animation: storybook-butterfly-ambient-curve 10s steps(16, end) infinite;
+  animation: storybook-butterfly-ambient-curve 12s ease-in-out infinite;
 }
 
 .storybook-butterfly-choreographed {
-  animation: storybook-butterfly-encounter 16s steps(32, end) infinite;
+  animation: storybook-butterfly-encounter 18s ease-in-out infinite;
 }
 
 .storybook-tortoise-journey {
-  animation: storybook-tortoise-choreography 16s steps(12, end) infinite;
+  animation: storybook-tortoise-choreography 18s ease-in-out infinite;
 }
 
+/* Signature crisp 16-bit 4-beat quadruped walk cadence (1.04s synced to foreground pace) */
 .storybook-tortoise-leg-fr {
-  animation: storybook-leg-stride-near-front 0.84s steps(4, end) infinite;
+  animation: storybook-leg-stride-near-front 1.04s steps(4, end) infinite;
 }
 
 .storybook-tortoise-leg-br {
-  animation: storybook-leg-stride-near-back 0.84s steps(4, end) infinite;
+  animation: storybook-leg-stride-near-back 1.04s steps(4, end) infinite;
 }
 
 .storybook-tortoise-leg-fl {
-  animation: storybook-leg-stride-far-front 0.84s steps(4, end) infinite;
+  animation: storybook-leg-stride-far-front 1.04s steps(4, end) infinite;
 }
 
 .storybook-tortoise-leg-bl {
-  animation: storybook-leg-stride-far-back 0.84s steps(4, end) infinite;
+  animation: storybook-leg-stride-far-back 1.04s steps(4, end) infinite;
 }
 
 .storybook-tortoise-body {
-  animation: storybook-tortoise-body-walk 0.84s steps(4, end) infinite;
+  animation: storybook-tortoise-body-walk 1.04s steps(4, end) infinite;
 }
 
 .storybook-tortoise-books {
-  animation: storybook-tortoise-books-bounce 0.84s steps(4, end) 0.06s infinite;
+  animation: storybook-tortoise-books-bounce 1.04s steps(4, end) 0.08s infinite;
 }
 
 .storybook-top-book-wing-l {
-  animation: storybook-pixel-book-wing-flutter 1.6s steps(2, end) infinite;
+  animation: storybook-pixel-book-wing-flutter 2.4s ease-in-out infinite;
 }
 
 .storybook-top-book-wing-r {
-  animation: storybook-pixel-book-wing-flutter 1.6s steps(2, end) 0.2s infinite;
+  animation: storybook-pixel-book-wing-flutter 2.4s ease-in-out 0.3s infinite;
 }
 
 .storybook-tortoise-head {
-  animation: storybook-tortoise-head-choreography 16s steps(8, end) infinite;
+  animation: storybook-tortoise-head-choreography 18s ease-in-out infinite;
 }
 
 .storybook-tortoise-eyelid {
-  animation: storybook-tortoise-blink-choreography 16s linear infinite;
+  animation: storybook-tortoise-blink-choreography 18s linear infinite;
   transform-box: fill-box;
   transform-origin: center top;
 }
@@ -2146,8 +1758,33 @@
   opacity: 1 !important;
 }
 
+.storybook-tortoise-stage.is-manual-blink .storybook-tortoise-body {
+  animation: storybook-tortoise-happy-hop 0.55s cubic-bezier(0.22, 1, 0.36, 1) 1;
+}
+
+.storybook-click-akshara {
+  transform-origin: center bottom;
+  animation: storybook-click-akshara-rise 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 .storybook-tortoise-tail {
-  animation: storybook-tortoise-tail-wag 1.2s steps(2, end) infinite;
+  animation: storybook-tortoise-tail-wag 1.6s ease-in-out infinite;
+}
+
+.storybook-step-dust-a {
+  animation: storybook-step-dust-puff 1.04s ease-out infinite;
+}
+
+.storybook-step-dust-b {
+  animation: storybook-step-dust-puff 1.04s ease-out 0.52s infinite;
+}
+
+.storybook-lantern-mote-a {
+  animation: storybook-lantern-mote-rise 2.8s ease-out infinite;
+}
+
+.storybook-lantern-mote-b {
+  animation: storybook-lantern-mote-rise 3.4s ease-out 1.3s infinite;
 }
 
 @keyframes storybook-fort-flag-flutter {
@@ -2161,14 +1798,17 @@
 }
 
 @keyframes storybook-chimney-smoke-rise {
-  0%,
-  100% {
-    transform: translate3d(0px, 0px, 0px);
-    opacity: 0.72;
+  0% {
+    transform: translate3d(0px, 1px, 0px);
+    opacity: 0.78;
   }
   50% {
     transform: translate3d(-2px, -3px, 0px);
-    opacity: 0.4;
+    opacity: 0.45;
+  }
+  100% {
+    transform: translate3d(-4px, -7px, 0px);
+    opacity: 0.12;
   }
 }
 
@@ -2178,7 +1818,7 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.72;
+    opacity: 0.76;
   }
 }
 
@@ -2188,7 +1828,7 @@
     transform: translate3d(0px, 0px, 0px);
   }
   50% {
-    transform: translate3d(-1px, 0px, 0px);
+    transform: translate3d(-1.5px, 0.5px, 0px);
   }
 }
 
@@ -2196,32 +1836,51 @@
   0%,
   100% {
     transform: translate3d(0px, 0px, 0px);
-    opacity: 0.95;
+    opacity: 0.94;
   }
-  50% {
-    transform: translate3d(4px, -4px, 0px);
-    opacity: 0.35;
+  33% {
+    transform: translate3d(5px, -6px, 0px);
+    opacity: 0.48;
+  }
+  66% {
+    transform: translate3d(-3px, -10px, 0px);
+    opacity: 0.88;
   }
 }
 
 .storybook-fort-flag {
-  animation: storybook-fort-flag-flutter 0.9s steps(2, end) infinite;
+  animation: storybook-fort-flag-flutter 1.2s ease-in-out infinite;
 }
 
 .storybook-chimney-smoke {
-  animation: storybook-chimney-smoke-rise 2.8s steps(3, end) infinite;
+  animation: storybook-chimney-smoke-rise 4.2s ease-in-out infinite;
 }
 
 .storybook-lantern-glow {
-  animation: storybook-lantern-flicker 1.8s steps(2, end) infinite;
+  animation: storybook-lantern-flicker 2.8s ease-in-out infinite;
 }
 
 .storybook-hanging-lantern {
-  animation: storybook-hanging-lantern-sway 3.2s steps(2, end) infinite;
+  animation: storybook-hanging-lantern-sway 4.4s ease-in-out infinite;
 }
 
 .storybook-firefly-pulse {
-  animation: storybook-firefly-float 3.4s steps(3, end) infinite;
+  animation: storybook-firefly-float 5.2s ease-in-out infinite;
+}
+
+.storybook-firefly-a {
+  animation-duration: 4.8s;
+  animation-delay: 0s;
+}
+
+.storybook-firefly-b {
+  animation-duration: 5.9s;
+  animation-delay: 1.6s;
+}
+
+.storybook-firefly-c {
+  animation-duration: 6.6s;
+  animation-delay: 3.1s;
 }
 
 /* Pause all animations when scrolled outside viewport or manually paused */
@@ -2333,7 +1992,6 @@
 .editorial-room-tortoise-head,
 .editorial-courier-tortoise {
   transform-box: fill-box;
-  will-change: transform;
 }
 
 .editorial-room-clouds-far {
@@ -2431,33 +2089,28 @@
   animation: akath-orbit-cw 52s linear infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-orbit-ring-ccw {
   animation: akath-orbit-ccw 68s linear infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-orbit-ring-slow {
   animation: akath-orbit-cw 96s linear infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-ring-breathe {
   animation: akath-ring-breathe 8s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-studio-beam-line {
   animation: akath-studio-beam 4.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-  will-change: transform;
 }
 
 .akath-orbit-paused .akath-orbit-ring-cw,
@@ -2501,32 +2154,8 @@
   .akath-about-lead-breathe,
   .akath-about-prose-breathe,
   .akath-about-prose-breathe > p,
-  .tortoise-float,
-  .group:hover .tortoise-float,
-  .tortoise-float:hover,
-  .tortoise-emblem-body,
-  .tortoise-head,
-  .tortoise-flipper-l,
-  .tortoise-flipper-r,
-  .tortoise-flipper-rl,
-  .tortoise-flipper-rr,
-  .tortoise-tail,
-  .tortoise-shell-group,
-  .tortoise-book-wave,
-  .group:hover .tortoise-hide-seek .tortoise-head,
-  .tortoise-hide-seek:hover .tortoise-head,
-  .group:hover .tortoise-hide-seek .tortoise-flipper-l,
-  .tortoise-hide-seek:hover .tortoise-flipper-l,
-  .group:hover .tortoise-hide-seek .tortoise-flipper-r,
-  .tortoise-hide-seek:hover .tortoise-flipper-r,
-  .group:hover .tortoise-hide-seek .tortoise-flipper-rl,
-  .tortoise-hide-seek:hover .tortoise-flipper-rl,
-  .group:hover .tortoise-hide-seek .tortoise-flipper-rr,
-  .tortoise-hide-seek:hover .tortoise-flipper-rr,
-  .group:hover .tortoise-hide-seek .tortoise-tail,
-  .tortoise-hide-seek:hover .tortoise-tail,
-  .group:hover .tortoise-hide-seek .tortoise-shell-group,
-  .tortoise-hide-seek:hover .tortoise-shell-group,
+  .akath-tortoise-gpu-stage,
+  .akath-tortoise-svg-part,
   .last-page-tortoise-peek,
   .last-page-tortoise-peek.is-entering,
   .last-page-closing-quote,
@@ -2536,16 +2165,8 @@
   .last-page-creator-credit:focus-visible,
   .last-page-creator-credit::after,
   .last-page-creator-mark,
-  .akath-walking-tortoise-traveler,
-  .akath-walking-tortoise-turner,
   .akath-patient-tortoise-runner,
   .akath-patient-tortoise-flip,
-  .akath-traverse-footstep,
-  .akath-traverse-horizon-line,
-  .akath-walking-tortoise-leg-a,
-  .akath-walking-tortoise-leg-b,
-  .akath-walking-tortoise-body,
-  .akath-walking-tortoise-head,
   .akath-colophon-orbit-ring,
   .akath-colophon-aura,
   .akath-colophon-page-left,
@@ -2589,6 +2210,7 @@
   .storybook-grass-sway-b,
   .storybook-floating-leaf-a,
   .storybook-floating-leaf-b,
+  .storybook-floating-leaf-c,
   .storybook-butterfly-wings,
   .storybook-butterfly-ambient,
   .storybook-butterfly-choreographed,
@@ -2604,6 +2226,13 @@
   .storybook-tortoise-head,
   .storybook-tortoise-eyelid,
   .storybook-tortoise-tail,
+  .storybook-step-dust-a,
+  .storybook-step-dust-b,
+  .storybook-lantern-mote-a,
+  .storybook-lantern-mote-b,
+  .storybook-click-akshara,
+  .storybook-shooting-star,
+  .storybook-firefly-pulse,
   .editorial-room-clouds-far,
   .editorial-room-clouds-near,
   .editorial-room-typewriter-keys,
@@ -2834,25 +2463,21 @@
 .akath-landscape-mist-slow {
   animation: akath-landscape-mist-drift-a 38s ease-in-out infinite alternate;
   transform-box: fill-box;
-  will-change: transform;
 }
 
 .akath-landscape-mist-deep {
   animation: akath-landscape-mist-drift-b 46s ease-in-out infinite alternate;
   transform-box: fill-box;
-  will-change: transform;
 }
 
 .akath-river-shimmer-a {
   animation: akath-river-shimmer-pulse 7.5s ease-in-out infinite;
   transform-box: fill-box;
-  will-change: transform;
 }
 
 .akath-river-shimmer-b {
   animation: akath-river-shimmer-pulse 9.5s ease-in-out 2s infinite;
   transform-box: fill-box;
-  will-change: transform;
 }
 
 /* Pure GPU-composited Godavari Water Surface Ripple & Lantern Ember Animations (Zero main-thread stroke repaint) */
@@ -2922,13 +2547,11 @@
 .akath-godavari-ripple-flow-a {
   animation: akath-godavari-current-a 12s ease-in-out infinite;
   transform-box: fill-box;
-  will-change: transform;
 }
 
 .akath-godavari-ripple-flow-b {
   animation: akath-godavari-current-b 15s ease-in-out infinite;
   transform-box: fill-box;
-  will-change: transform;
 }
 
 .akath-godavari-ring-a,
@@ -2936,7 +2559,6 @@
 .akath-godavari-ring-c {
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-godavari-ring-a {
@@ -2965,28 +2587,24 @@
   animation: akath-katta-ember-rise 5.6s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-katta-ember-b {
   animation: akath-katta-ember-rise 6.8s ease-in-out -2.6s infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-banyan-root-sway-a {
   transform-box: fill-box;
   transform-origin: top center;
   animation: akath-banyan-root-sway 7.4s ease-in-out infinite;
-  will-change: transform;
 }
 
 .akath-banyan-root-sway-b {
   transform-box: fill-box;
   transform-origin: top center;
   animation: akath-banyan-root-sway 9.2s ease-in-out -3.4s infinite;
-  will-change: transform;
 }
 
 @keyframes akath-speaker-hand-recite {
@@ -3006,7 +2624,6 @@
   transform-box: fill-box;
   transform-origin: bottom left;
   animation: akath-speaker-hand-recite 6.4s ease-in-out infinite;
-  will-change: transform;
 }
 
 @keyframes akath-banyan-leaf-drift {
@@ -3041,21 +2658,18 @@
   transform-box: fill-box;
   transform-origin: center center;
   animation: akath-banyan-leaf-drift 11s ease-in-out infinite;
-  will-change: transform;
 }
 
 .akath-banyan-leaf-drift-b {
   transform-box: fill-box;
   transform-origin: center center;
   animation: akath-banyan-leaf-drift 13.5s ease-in-out -5.2s infinite;
-  will-change: transform;
 }
 
 .akath-lamp-pendulum {
   transform-box: fill-box;
   transform-origin: top center;
   animation: akath-lamp-pendulum-sway 8.2s ease-in-out infinite;
-  will-change: transform;
 }
 
 /* About Banyan Tree — Subtle Hover Leaf Shimmer & Soft Transient Golden Light Glow */
@@ -3135,7 +2749,6 @@
   opacity: 0;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-about-banyan-hover-glow.is-pulsing {
@@ -3151,7 +2764,6 @@
   opacity: 0;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
   transition: opacity 500ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -3167,7 +2779,6 @@
 .akath-about-banyan-interactive.is-banyan-hovered .akath-leaf-shimmer-layer-a {
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
   animation: akath-about-leaf-shimmer-a 2.1s ease-in-out infinite;
 }
 
@@ -3175,7 +2786,6 @@
 .akath-about-banyan-interactive.is-banyan-hovered .akath-leaf-shimmer-layer-b {
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
   animation: akath-about-leaf-shimmer-b 1.85s ease-in-out 0.15s infinite;
 }
 
@@ -3183,7 +2793,6 @@
 .akath-about-banyan-interactive.is-banyan-hovered .akath-leaf-shimmer-layer-c {
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
   animation: akath-about-leaf-shimmer-c 2.3s ease-in-out infinite;
 }
 
@@ -3269,7 +2878,6 @@
 .akath-about-breeze-leaf-5 {
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-about-breeze-leaf-1 {
@@ -3295,7 +2903,6 @@
 .akath-diya-glint {
   animation: akath-diya-glint-breathe 4.8s ease-in-out infinite;
   transform-box: fill-box;
-  will-change: transform;
 }
 
 @keyframes akath-cloud-drift {
@@ -3321,19 +2928,16 @@
 .akath-cloud-drift-a {
   animation: akath-cloud-drift 28s ease-in-out infinite;
   transform-box: fill-box;
-  will-change: transform;
 }
 
 .akath-cloud-drift-b {
   animation: akath-cloud-drift 34s ease-in-out -14s infinite reverse;
   transform-box: fill-box;
-  will-change: transform;
 }
 
 .akath-skiff-bob {
   transform-box: fill-box;
   transform-origin: center bottom;
-  will-change: transform;
   animation: akath-skiff-gentle-bob 7.4s ease-in-out infinite;
 }
 
@@ -3341,102 +2945,26 @@
   animation: akath-star-twinkle 4.4s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-star-twinkle-b {
   animation: akath-star-twinkle 5.6s ease-in-out 1.8s infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-gold-sheen-sweep {
   animation: akath-gold-sheen-glide 15s ease-in-out infinite;
-  will-change: transform;
 }
 
 .akath-svg-shimmer-overlay {
   animation: akath-svg-shimmer-sweep 13s ease-in-out infinite;
   transform-box: fill-box;
-  will-change: transform;
 }
 
-/* Desktop Fine-Pointer Only Scroll Parallax (Zero scroll-linked SVG style recalc on mobile/tablet touch devices) */
-@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
-  .akath-parallax-far,
-  .akath-parallax-mid,
-  .akath-parallax-river,
-  .akath-parallax-trees,
-  .akath-parallax-near {
-    transform-box: fill-box;
-    will-change: transform;
-  }
-
-  .akath-parallax-far {
-    transform: translate3d(0, calc(var(--akath-scroll-p, 0) * -14px), 0);
-  }
-
-  .akath-parallax-mid {
-    transform: translate3d(0, calc(var(--akath-scroll-p, 0) * 6px), 0);
-  }
-
-  .akath-parallax-river {
-    transform: translate3d(
-      calc(var(--akath-scroll-p, 0) * -8px),
-      calc(var(--akath-scroll-p, 0) * 14px),
-      0
-    );
-  }
-
-  .akath-parallax-trees,
-  .akath-parallax-near {
-    transform: translate3d(0, calc(var(--akath-scroll-p, 0) * 22px), 0);
-  }
-
-  .akath-hero-parallax-sky,
-  .akath-hero-parallax-mountains,
-  .akath-hero-parallax-mid,
-  .akath-hero-parallax-river,
-  .akath-hero-parallax-trees {
-    transform-box: fill-box;
-    transform-origin: center center;
-    will-change: transform;
-  }
-
-  .akath-hero-parallax-sky {
-    transform: translate3d(0, calc(var(--akath-hero-scroll, 0) * 56px), 0);
-  }
-
-  .akath-hero-parallax-mountains {
-    transform: translate3d(0, calc(var(--akath-hero-scroll, 0) * 40px), 0);
-  }
-
-  .akath-hero-parallax-mid {
-    transform: translate3d(0, calc(var(--akath-hero-scroll, 0) * 18px), 0);
-  }
-
-  .akath-hero-parallax-river {
-    transform: translate3d(
-      calc(var(--akath-hero-scroll, 0) * 12px),
-      calc(var(--akath-hero-scroll, 0) * -10px),
-      0
-    );
-  }
-
-  .akath-hero-parallax-trees {
-    transform: translate3d(
-      calc(var(--akath-hero-scroll, 0) * -8px),
-      calc(var(--akath-hero-scroll, 0) * -28px),
-      0
-    );
-  }
-}
-
-/* Below-the-fold layout/paint skipping for buttery 60/120fps scrolling */
+/* Isolate section layout & style without content-visibility un-skip stutters during fast scrolling */
 .akath-cv-section {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 760px;
+  contain: layout style;
 }
 
 /* Pause non-essential ambient animations on mobile/coarse-pointer devices to guarantee locked 60fps scroll */
@@ -3736,101 +3264,86 @@
   animation: akath-uw-tortoise-swim 4s linear infinite;
   transform-box: fill-box;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .akath-uw-front-near {
   transform-box: fill-box;
   transform-origin: 80% 25%;
   animation: akath-uw-front-near-stroke 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-front-far {
   transform-box: fill-box;
   transform-origin: 75% 25%;
   animation: akath-uw-front-far-stroke 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-rear-near {
   transform-box: fill-box;
   transform-origin: 20% 25%;
   animation: akath-uw-rear-near-kick 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-rear-far {
   transform-box: fill-box;
   transform-origin: 20% 25%;
   animation: akath-uw-rear-far-kick 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-head {
   transform-box: fill-box;
   transform-origin: right center;
   animation: akath-uw-head-nod 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-fish-1 {
   transform-box: fill-box;
   animation: akath-uw-fish1-loop 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-fish-2 {
   transform-box: fill-box;
   animation: akath-uw-fish2-loop 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-fish-3 {
   transform-box: fill-box;
   animation: akath-uw-fish3-loop 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-fish-4 {
   transform-box: fill-box;
   animation: akath-uw-fish4-loop 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-tail-fast {
   transform-box: fill-box;
   transform-origin: center center;
   animation: akath-uw-tail-flick 1s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-tail-med {
   transform-box: fill-box;
   transform-origin: center center;
   animation: akath-uw-tail-flick 1.3333s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-tail-slow {
   transform-box: fill-box;
   transform-origin: center center;
   animation: akath-uw-tail-flick 2s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-sway-a {
   transform-box: fill-box;
   transform-origin: 50% 100%;
   animation: akath-uw-plant-sway-a 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-sway-b {
   transform-box: fill-box;
   transform-origin: 50% 100%;
   animation: akath-uw-plant-sway-b 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-sway-c,
@@ -3838,33 +3351,28 @@
   transform-box: fill-box;
   transform-origin: 50% 100%;
   animation: akath-uw-plant-sway-c 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-ray-a {
   transform-box: fill-box;
   animation: akath-uw-ray-drift-a 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-ray-b {
   transform-box: fill-box;
   animation: akath-uw-ray-drift-b 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-bubble-slow {
   transform-box: fill-box;
   transform-origin: center center;
   animation: akath-uw-bubble-rise 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-bubble-fast {
   transform-box: fill-box;
   transform-origin: center center;
   animation: akath-uw-bubble-rise 2s linear infinite;
-  will-change: transform;
 }
 
 @keyframes akath-uw-jelly-drift {
@@ -3986,55 +3494,47 @@
   transform-box: fill-box;
   transform-origin: center center;
   animation: akath-uw-jelly-drift 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-jelly-bell {
   transform-box: fill-box;
   transform-origin: center center;
   animation: akath-uw-jelly-bell-pulse 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-jelly-tentacles {
   transform-box: fill-box;
   transform-origin: center top;
   animation: akath-uw-jelly-tentacle-sway 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-fry-school {
   transform-box: fill-box;
   animation: akath-uw-fry-glide 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-mote {
   transform-box: fill-box;
   transform-origin: center center;
   animation: akath-uw-mote-float 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-surface-a {
   transform-box: fill-box;
   animation: akath-uw-surface-ripple-a 4s linear infinite;
-  will-change: transform;
 }
 
 .akath-uw-surface-b {
   transform-box: fill-box;
   animation: akath-uw-surface-ripple-b 4s linear infinite;
-  will-change: transform;
 }
 
-/* 3-Plane Underwater Scroll + Subtle Pointer Diorama Parallax */
+/* 3-Plane Underwater Subtle Pointer Diorama Parallax */
 .akath-uw-parallax-bg,
 .akath-uw-parallax-mid,
 .akath-uw-parallax-fg {
   transform-box: fill-box;
   transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
 }
 
 .akath-uw-parallax-bg {
@@ -4071,6 +3571,12 @@
 .akath-footer-offscreen .akath-footer-mote-b,
 .akath-footer-offscreen .akath-footer-mote-c,
 .akath-footer-offscreen .akath-wordmark-shirorekha-beam,
+.akath-footer-offscreen .akath-wordmark-horizon-glow,
+.akath-footer-offscreen .storybook-star-twinkle-a,
+.akath-footer-offscreen .storybook-star-twinkle-b,
+.akath-footer-offscreen .storybook-star-twinkle-c,
+.akath-footer-offscreen .storybook-shooting-star,
+.akath-footer-offscreen .storybook-sun-halo,
 .akath-landscape-offscreen .akath-landscape-svg-luminous,
 .akath-landscape-offscreen .akath-landscape-mist-slow,
 .akath-landscape-offscreen .akath-landscape-mist-deep,

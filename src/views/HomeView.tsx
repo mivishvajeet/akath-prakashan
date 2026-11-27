@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   ArrowRight,
   BookOpen,
@@ -33,60 +33,10 @@ import {
   JourneyStageGlyph,
 } from '../components/PublishingCraftVisuals';
 import {
-  ConcentricOrbitRings,
   RotatingBookOrbitStage,
   AuthorStudioExperience,
-  HOMEPAGE_SECTION_THEMES,
-  HomepageThemeSectionId,
 } from '../components/AtmosphericOrbitBackdrop';
 import { useLanguage } from '../i18n/translations';
-
-/**
- * IntersectionObserver hook for subtle section reveals
- */
-function useIntersectionReveal<T extends HTMLElement>(
-  options: IntersectionObserverInit = {
-    threshold: 0.08,
-    rootMargin: '0px 0px -24px 0px',
-  }
-): [React.RefObject<T | null>, boolean] {
-  const ref = useRef<T | null>(null);
-  const [isVisible, setIsVisible] = useState<boolean>(false);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-
-    if (
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-      setIsVisible(true);
-      return;
-    }
-
-    if (typeof IntersectionObserver === 'undefined') {
-      setIsVisible(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(entry.target);
-          break;
-        }
-      }
-    }, options);
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [options.threshold, options.rootMargin]);
-
-  return [ref, isVisible];
-}
 
 interface HomeViewProps {
   books: BookRecord[];
@@ -281,84 +231,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const [activeBookRailIndex, setActiveBookRailIndex] = useState<number>(0);
   const [activeCapabilityIdx, setActiveCapabilityIdx] = useState<number>(0);
   const [activeJourneyIdx, setActiveJourneyIdx] = useState<number>(0);
-  const [activeThemeSection, setActiveThemeSection] =
-    useState<HomepageThemeSectionId>('hero');
 
   const catalogRailRef = useRef<HTMLDivElement | null>(null);
   const catalogScrollRafRef = useRef<number | null>(null);
-
-  const [heroRef, isHeroVisible] = useIntersectionReveal<HTMLElement>();
-  const [whatWeDoRef, isWhatWeDoVisible] = useIntersectionReveal<HTMLElement>();
-  const [howWePublishRef, isHowWePublishVisible] =
-    useIntersectionReveal<HTMLElement>();
-  const [ourBooksRef, isOurBooksVisible] = useIntersectionReveal<HTMLElement>();
-  const [forAuthorsRef, isForAuthorsVisible] =
-    useIntersectionReveal<HTMLElement>();
-  const [aboutAkathRef, isAboutAkathVisible] =
-    useIntersectionReveal<HTMLElement>();
-
-  // Smooth whole-page scroll theme engine: active on desktop lg+ only (zero scroll re-renders on mobile/tablet)
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') return;
-    if (window.matchMedia?.('(max-width: 1023px)').matches) return;
-    const sectionPairs: Array<[HomepageThemeSectionId, HTMLElement | null]> = [
-      ['hero', heroRef.current],
-      ['what-we-do', whatWeDoRef.current],
-      ['how-we-publish', howWePublishRef.current],
-      ['our-books', ourBooksRef.current],
-      ['for-authors', forAuthorsRef.current],
-      ['about-akath', aboutAkathRef.current],
-    ];
-
-    const ratios = new Map<HomepageThemeSectionId, number>();
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          const sectionId = entry.target.getAttribute(
-            'data-theme-section'
-          ) as HomepageThemeSectionId | null;
-          if (!sectionId) continue;
-          ratios.set(
-            sectionId,
-            entry.isIntersecting ? entry.intersectionRatio : 0
-          );
-        }
-
-        let bestId: HomepageThemeSectionId | null = null;
-        let bestRatio = 0.08;
-        ratios.forEach((ratio, id) => {
-          if (ratio > bestRatio) {
-            bestRatio = ratio;
-            bestId = id;
-          }
-        });
-        if (bestId) {
-          setActiveThemeSection(bestId);
-        }
-      },
-      {
-        threshold: [0.05, 0.18, 0.35, 0.55],
-        rootMargin: '-12% 0px -18% 0px',
-      }
-    );
-
-    for (const [id, node] of sectionPairs) {
-      if (node) {
-        node.setAttribute('data-theme-section', id);
-        observer.observe(node);
-      }
-    }
-
-    return () => observer.disconnect();
-  }, [
-    heroRef,
-    whatWeDoRef,
-    howWePublishRef,
-    ourBooksRef,
-    forAuthorsRef,
-    aboutAkathRef,
-  ]);
 
   const handleCatalogRailScroll = () => {
     if (catalogScrollRafRef.current !== null) return;
@@ -400,9 +275,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
     }
   };
 
-  const activeTheme =
-    HOMEPAGE_SECTION_THEMES[activeThemeSection] || HOMEPAGE_SECTION_THEMES.hero;
-
   const activeHeroBook =
     books.find((b) => b.id === selectedBookId) || books[0];
   const activeHeroIndex = activeHeroBook
@@ -423,38 +295,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
   return (
     <div
       style={{
-        backgroundColor: activeTheme.canvasBg,
-        transition: 'background-color 700ms cubic-bezier(0.22, 1, 0.36, 1)',
+        backgroundColor: '#FAF9FF',
         overflowX: 'clip',
       }}
       className="relative text-[#1C1917] w-full max-w-[100vw] overflow-x-hidden"
     >
-      {/* Continuous Ambient Concentric Orbit Backdrop (Desktop lg+ only — zero mobile/tablet full-viewport SVG overdraw) */}
-      <div
-        aria-hidden="true"
-        className={`hidden lg:flex pointer-events-none fixed inset-0 z-0 overflow-hidden items-center justify-center transition-opacity duration-700 ${
-          activeThemeSection === 'hero' ? 'opacity-0' : 'opacity-45'
-        }`}
-      >
-        <div className="w-[1240px] h-[1240px]">
-          <ConcentricOrbitRings
-            primaryStroke={activeTheme.orbitPrimary}
-            secondaryStroke={activeTheme.orbitSecondary}
-            glowColor={activeTheme.glowColor}
-            className="w-full h-full"
-          />
-        </div>
-      </div>
-
       {/* =====================================================================
           1. HERO — GODAVARI RIVERFRONT DUSK LANDSCAPE & FEATURED EDITION PLINTH
           ===================================================================== */}
       <section
-        ref={heroRef}
         data-testid="home-publishing-hero"
-        className={`akath-io-section ${
-          isHeroVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden border-b border-[#E5DEC9]/75 bg-gradient-to-b from-[#FAF8F0] via-[#FAF8F1] to-[#F3F6FC] pb-9 sm:pb-11 lg:pb-12`}
+        className="akath-io-section is-visible relative z-10 w-full overflow-hidden border-b border-[#E5DEC9]/75 bg-gradient-to-b from-[#FAF8F0] via-[#FAF8F1] to-[#F3F6FC] pb-9 sm:pb-11 lg:pb-12"
       >
         {/* Dedicated Full-Bleed Luminous Godavari River & Sahyadri Hero Stage (Richly Visible Across All Devices) */}
         <div className="relative w-full min-h-[600px] sm:min-h-[560px] lg:min-h-[610px] xl:min-h-[640px] flex flex-col justify-start pt-8 sm:pt-11 lg:pt-12 pb-56 sm:pb-36 lg:pb-40">
@@ -608,11 +459,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
           2. WHAT WE DO — UNIFIED 4-STAGE TABBED CRAFT SHOWCASE (COMPACT)
           ===================================================================== */}
       <section
-        ref={whatWeDoRef}
         data-testid="home-what-we-do"
-        className={`akath-io-section akath-cv-section ${
-          isWhatWeDoVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 border-b border-[#E5DEC9]/65 bg-[#F3F6FC] lg:bg-transparent`}
+        className="akath-io-section akath-cv-section is-visible relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 border-b border-[#E5DEC9]/65 bg-[#F3F6FC]"
       >
         <div className="max-w-[1280px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6 sm:space-y-7 min-w-0">
           {/* Center-Aligned Editorial Section Header */}
@@ -658,10 +506,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         setActiveCapabilityIdx(idx);
                       }
                     }}
-                    className={`relative snap-start shrink-0 w-[235px] sm:w-[255px] md:w-full cursor-pointer transition-colors duration-200 rounded-2xl border p-3.5 sm:p-4 flex flex-col justify-between md:backdrop-blur-sm ${
+                    className={`relative snap-start shrink-0 w-[235px] sm:w-[255px] md:w-full cursor-pointer transition-colors duration-200 rounded-2xl border p-3.5 sm:p-4 flex flex-col justify-between ${
                       isActive
                         ? 'bg-white border-[#243B8A]/45 shadow-[0_12px_28px_-16px_rgba(36,59,138,0.26)]'
-                        : 'bg-white/90 md:bg-white/70 border-[#DCD4C0]/75 hover:bg-white/95'
+                        : 'bg-white/95 border-[#DCD4C0]/75 hover:bg-white'
                     }`}
                   >
                     {isActive && (
@@ -739,11 +587,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
           3. HOW WE PUBLISH — DEEP INDIGO INK CONSTELLATION & SMOOTH COLOR SHIFT
           ===================================================================== */}
       <section
-        ref={howWePublishRef}
         data-testid="home-how-we-publish"
-        className={`akath-io-section akath-cv-section ${
-          isHowWePublishVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 border-b border-white/10 bg-[#121C45] lg:bg-[#121C45]/92 text-[#FFFDF7]`}
+        className="akath-io-section akath-cv-section is-visible relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 border-b border-white/10 bg-[#121C45] text-[#FFFDF7]"
       >
         <div
           aria-hidden="true"
@@ -969,11 +814,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
           4. OUR BOOKS — MIDDLE-OF-PAGE 3D ROTATING BOOK STAGE + SWIPEABLE FOLIO GRID
           ===================================================================== */}
       <section
-        ref={ourBooksRef}
         data-testid="home-published-books"
-        className={`akath-io-section akath-cv-section ${
-          isOurBooksVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 border-b border-[#E5DEC9]/75 bg-[#FFFDF7] lg:bg-transparent`}
+        className="akath-io-section akath-cv-section is-visible relative z-10 w-full overflow-hidden py-8 sm:py-11 lg:py-14 border-b border-[#E5DEC9]/75 bg-[#FFFDF7]"
       >
         <div className="max-w-[1340px] mx-auto px-4 sm:px-8 lg:px-12 space-y-5 sm:space-y-6 lg:space-y-7 min-w-0">
           {/* Center-Aligned Header */}
@@ -1102,10 +944,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   key={book.id}
                   data-testid={`home-book-showcase-${book.id}`}
                   onMouseEnter={() => setActiveBookRailIndex(idx)}
-                  className={`snap-start shrink-0 w-[302px] sm:w-[368px] md:w-[388px] lg:w-auto h-full rounded-2xl overflow-hidden border md:backdrop-blur-sm flex flex-col justify-between transition-colors duration-200 ${
+                  className={`snap-start shrink-0 w-[302px] sm:w-[368px] md:w-[388px] lg:w-auto h-full rounded-2xl overflow-hidden border flex flex-col justify-between transition-colors duration-200 ${
                     isHighlighted
                       ? 'border-[#243B8A]/40 bg-white shadow-[0_16px_40px_-22px_rgba(36,59,138,0.26)]'
-                      : 'border-[#DCD4C0]/85 bg-white/95 md:bg-white/85 hover:border-[#243B8A]/35'
+                      : 'border-[#DCD4C0]/85 bg-white/95 hover:border-[#243B8A]/35'
                   }`}
                 >
                   <div className="px-4 sm:px-5 py-2.5 sm:py-3 bg-[#FAF6EC]/80 border-b border-[#E5DEC9]/80 flex items-center justify-between text-[10.5px] sm:text-[11px] font-mono text-[#57534E]">
@@ -1211,11 +1053,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
           5. FOR AUTHORS — ILLUSTRATED ARCHIVAL LITERARY ATELIER & WRITER DESK
           ===================================================================== */}
       <section
-        ref={forAuthorsRef}
         data-testid="home-manuscript-desk"
-        className={`akath-io-section akath-cv-section ${
-          isForAuthorsVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden py-12 sm:py-16 lg:py-20 border-b border-[#DCD4C0]/80 bg-[#F4EDE0] text-[#1C1917]`}
+        className="akath-io-section akath-cv-section is-visible relative z-10 w-full overflow-hidden py-12 sm:py-16 lg:py-20 border-b border-[#DCD4C0]/80 bg-[#F4EDE0] text-[#1C1917]"
       >
         {/* Layered Sahyadri Mountains & Nanded Godavari Dusk Landscape (20–25% Opacity SVG) */}
         <AuthorsLandscapeBackdrop />
@@ -1264,11 +1103,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
           6. ABOUT AKATH PRAKASHAN — STREAMLINED LITERARY ETHOS & IMPRINT SEAL
           ===================================================================== */}
       <section
-        ref={aboutAkathRef}
         data-testid="home-about-akath"
-        className={`akath-io-section akath-cv-section ${
-          isAboutAkathVisible ? 'is-visible' : ''
-        } relative z-10 w-full overflow-hidden pt-12 pb-60 sm:pt-16 sm:pb-52 lg:pt-20 lg:pb-64 bg-[#FAF6EC]`}
+        className="akath-io-section akath-cv-section is-visible relative z-10 w-full overflow-hidden pt-12 pb-60 sm:pt-16 sm:pb-52 lg:pt-20 lg:pb-64 bg-[#FAF6EC]"
       >
         {/* Layered Sahyadri Mountains, Buddhist Stupa & Intergenerational Banyan Dusk Landscape */}
         <AboutLandscapeBackdrop />

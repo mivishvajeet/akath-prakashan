@@ -50,12 +50,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { lang, setLang, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [openDesktopDropdown, setOpenDesktopDropdown] = useState<
     null | '/books' | '/vachankatta'
   >(null);
   const prevCartCountRef = useRef<number>(cartCount);
   const [isCartPopping, setIsCartPopping] = useState(false);
+  const headerRef = useRef<HTMLElement | null>(null);
   const quickNavRef = useRef<HTMLElement | null>(null);
   const dropdownTimerRef = useRef<number | null>(null);
 
@@ -170,15 +170,32 @@ export const Navbar: React.FC<NavbarProps> = ({
     };
   }, [mobileMenuOpen]);
 
-  // Track subtle page scroll for lightweight glassmorphic elevation
+  // Track subtle page scroll via rAF + direct DOM attribute (zero React re-renders on scroll)
   useEffect(() => {
-    const onScroll = () => {
+    let rafId: number | null = null;
+    let lastScrolled: boolean | null = null;
+
+    const applyScrollState = () => {
+      rafId = null;
       const next = window.scrollY > 18;
-      setScrolled((prev) => (prev !== next ? next : prev));
+      if (next !== lastScrolled) {
+        lastScrolled = next;
+        headerRef.current?.setAttribute('data-scrolled', next ? 'true' : 'false');
+      }
     };
-    onScroll();
+
+    const onScroll = () => {
+      if (rafId === null) {
+        rafId = window.requestAnimationFrame(applyScrollState);
+      }
+    };
+
+    applyScrollState();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Center the active tab in the mobile/tablet quick-navigation rail on route transitions
@@ -339,14 +356,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       <header
+        ref={headerRef}
         data-testid="primary-navbar"
+        data-scrolled="false"
         data-immersive-hidden={immersiveHidden ? 'true' : 'false'}
         aria-hidden={immersiveHidden ? true : undefined}
-        className={`sticky top-0 z-50 text-[#1C1917] w-full transition-[background-color,box-shadow,transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-          scrolled
-            ? 'bg-[#FFFDF7]/97 md:bg-[#FFFDF7]/92 md:backdrop-blur-md border-b border-[#DCD4C0]/90 shadow-[0_10px_28px_-14px_rgba(36,59,138,0.14)]'
-            : 'bg-[#FAF9FF]/96 md:bg-[#FAF9FF]/86 md:backdrop-blur-md border-b border-[#E5DEC9]/65'
-        } ${
+        className={`akath-navbar-header sticky top-0 z-50 text-[#1C1917] w-full bg-[#FAF9FF]/98 border-b border-[#E5DEC9]/75 transition-[background-color,box-shadow,transform,opacity] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           immersiveHidden
             ? '-translate-y-full opacity-0 pointer-events-none'
             : 'opacity-100'
@@ -460,7 +475,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                               )
                             }
                             onMouseLeave={handleScheduleCloseDropdown}
-                            className="absolute left-0 top-full mt-2 w-[310px] rounded-2xl bg-[#FFFDF7]/98 backdrop-blur-2xl border border-[#DCD4C0] shadow-[0_24px_48px_-14px_rgba(36,59,138,0.18)] p-3 z-50 space-y-1.5"
+                            className="absolute left-0 top-full mt-2 w-[310px] rounded-2xl bg-[#FFFDF7] border border-[#DCD4C0] shadow-[0_24px_48px_-14px_rgba(36,59,138,0.18)] p-3 z-50 space-y-1.5"
                           >
                             {item.path === '/books' ? (
                               <>

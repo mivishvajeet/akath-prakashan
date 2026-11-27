@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../i18n/translations';
 
 interface WalkingTortoiseProps {
@@ -6,18 +6,25 @@ interface WalkingTortoiseProps {
   variant?: 'default' | 'hero';
 }
 
+const TORTOISE_WIDTH_PX = 84;
+const TRACK_EDGE_PADDING_PX = 4;
+
+/** Smooth cubic ease-in-out matching cubic-bezier(0.42, 0, 0.58, 1) */
+function easeInOutCubic(t: number): number {
+  const c = Math.max(0, Math.min(1, t));
+  return c < 0.5 ? 4 * c * c * c : 1 - Math.pow(-2 * c + 2, 3) / 2;
+}
+
 /**
- * Akath Patient Tortoise Traverse — Subtle Margin Horizon Animation
+ * Akath Patient Tortoise Traverse — requestAnimationFrame GPU-Composited Engine
  *
- * A refined, slow-moving CSS-based horizontal 'traverse' animation
- * that subtly cycles along an archival margin rule:
- * - GPU-composited CSS keyframes (`akath-patient-traverse` + `akath-patient-turn`)
- *   using container query units (`100cqw`) move the Heritage Forest (#174D3A) tortoise
- *   smoothly across mobile (320px–430px), tablet (768px), and desktop viewports.
- * - A miniature open Smyth-sewn manuscript rests atop its hexagonal woodcut carapace,
- *   with softly breathing pages and alternating slow leg strides.
- * - Includes an explicit Pause/Walk toggle for touch devices and pointer-fine hover pause.
+ * Refactored away from multi-layer CSS keyframes to a single `requestAnimationFrame`
+ * clock inside ONE `will-change: transform` GPU container (`.akath-patient-tortoise-runner`)
+ * within a layout-contained track (`contain: layout style paint`):
+ * - Track bounds are measured once via ResizeObserver (never inside rAF — zero layout thrash).
+ * - Off-screen instances automatically suspend their rAF loop via IntersectionObserver.
  * - Full `prefers-reduced-motion: reduce` support centers the tortoise in a calm static pose.
+ * - Pointer-fine hover pause + explicit Pause/Walk toggle for touch devices.
  */
 export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
   className = '',
@@ -27,6 +34,227 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const isHero = variant === 'hero';
 
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const runnerRef = useRef<HTMLDivElement | null>(null);
+  const flipRef = useRef<HTMLDivElement | null>(null);
+  const bodyRef = useRef<SVGGElement | null>(null);
+  const legARef = useRef<SVGGElement | null>(null);
+  const legBRef = useRef<SVGGElement | null>(null);
+  const headRef = useRef<SVGGElement | null>(null);
+  const pageLeftRef = useRef<SVGGElement | null>(null);
+  const pageRightRef = useRef<SVGGElement | null>(null);
+  const glyphARef = useRef<SVGGElement | null>(null);
+  const glyphBRef = useRef<SVGGElement | null>(null);
+  const glyphCRef = useRef<SVGGElement | null>(null);
+
+  const isPausedRef = useRef(isPaused);
+  const isHoveredRef = useRef(false);
+  const isVisibleRef = useRef(true);
+  const trackWidthRef = useRef(320);
+
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const trackEl = trackRef.current;
+    const stageEl = stageRef.current;
+    const runnerEl = runnerRef.current;
+    if (!trackEl || !stageEl || !runnerEl) return;
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const finePointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+    const updateTrackWidth = () => {
+      const measured = trackEl.clientWidth;
+      if (measured > 0) {
+        trackWidthRef.current = measured;
+      }
+      if (reducedMotionQuery.matches && runnerRef.current) {
+        const centerX = Math.max(
+          TRACK_EDGE_PADDING_PX,
+          (trackWidthRef.current - TORTOISE_WIDTH_PX) / 2
+        );
+        runnerRef.current.style.transform = `translate3d(${centerX.toFixed(2)}px, 0, 0)`;
+        if (flipRef.current) {
+          flipRef.current.style.transform = 'scaleX(1)';
+        }
+      }
+    };
+
+    updateTrackWidth();
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(updateTrackWidth);
+      resizeObserver.observe(trackEl);
+    } else {
+      window.addEventListener('resize', updateTrackWidth, { passive: true });
+    }
+
+    let intersectionObserver: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          isVisibleRef.current = entries.some((entry) => entry.isIntersecting);
+        },
+        { threshold: 0.01 }
+      );
+      intersectionObserver.observe(stageEl);
+    }
+
+    const onMouseEnter = () => {
+      if (finePointerQuery.matches) {
+        isHoveredRef.current = true;
+      }
+    };
+    const onMouseLeave = () => {
+      isHoveredRef.current = false;
+    };
+    stageEl.addEventListener('mouseenter', onMouseEnter);
+    stageEl.addEventListener('mouseleave', onMouseLeave);
+
+    if (reducedMotionQuery.matches) {
+      return () => {
+        resizeObserver?.disconnect();
+        if (!resizeObserver) window.removeEventListener('resize', updateTrackWidth);
+        intersectionObserver?.disconnect();
+        stageEl.removeEventListener('mouseenter', onMouseEnter);
+        stageEl.removeEventListener('mouseleave', onMouseLeave);
+      };
+    }
+
+    let rafId = 0;
+    let lastTs = performance.now();
+    let elapsedMs = 0;
+
+    const getCycleDurationMs = (width: number) => {
+      if (width >= 1024) return 32000;
+      if (width >= 640) return 26000;
+      return 20000;
+    };
+
+    const tick = (now: number) => {
+      const rawDt = now - lastTs;
+      lastTs = now;
+      // Clamp frame delta to prevent large visual jumps after tab switches
+      const dt = Math.min(Math.max(rawDt, 0), 50);
+
+      const running =
+        !isPausedRef.current &&
+        !isHoveredRef.current &&
+        isVisibleRef.current &&
+        !document.hidden;
+
+      if (running) {
+        elapsedMs += dt;
+        const width = trackWidthRef.current;
+        const durationMs = getCycleDurationMs(width);
+        const phase = (elapsedMs % durationMs) / durationMs;
+
+        // Horizontal traverse: 0..44% forward, 44..50% pause+turn, 50..94% return, 94..100% pause+turn
+        const maxX = Math.max(
+          TRACK_EDGE_PADDING_PX,
+          width - TORTOISE_WIDTH_PX - TRACK_EDGE_PADDING_PX
+        );
+        let progress = 0;
+        let isTurningOrPaused = false;
+        let facing = 1;
+
+        if (phase < 0.44) {
+          progress = easeInOutCubic(phase / 0.44);
+          facing = 1;
+        } else if (phase < 0.5) {
+          progress = 1;
+          isTurningOrPaused = true;
+          const turnT = Math.min(1, Math.max(0, (phase - 0.45) / 0.04));
+          facing = 1 - 2 * easeInOutCubic(turnT);
+        } else if (phase < 0.94) {
+          progress = 1 - easeInOutCubic((phase - 0.5) / 0.44);
+          facing = -1;
+        } else {
+          progress = 0;
+          isTurningOrPaused = true;
+          const turnT = Math.min(1, Math.max(0, (phase - 0.95) / 0.04));
+          facing = -1 + 2 * easeInOutCubic(turnT);
+        }
+
+        const x = TRACK_EDGE_PADDING_PX + progress * (maxX - TRACK_EDGE_PADDING_PX);
+        if (runnerRef.current) {
+          runnerRef.current.style.transform = `translate3d(${x.toFixed(2)}px, 0, 0)`;
+        }
+        if (flipRef.current) {
+          const safeScaleX = Math.abs(facing) < 0.06 ? (facing >= 0 ? 0.06 : -0.06) : facing;
+          flipRef.current.style.transform = `scaleX(${safeScaleX.toFixed(3)})`;
+        }
+
+        // Synchronized stride, body sway, head nod, page breathe & rising Akshara glyphs
+        const tSec = elapsedMs * 0.001;
+        const strideAmp = isTurningOrPaused ? 0.2 : 1;
+        const strideWave = Math.sin((tSec * Math.PI * 2) / 1.8) * strideAmp;
+        const swayY = -0.65 * (1 - Math.cos((tSec * Math.PI * 2) / 1.8)) * strideAmp;
+        const headWave = 0.5 - 0.5 * Math.cos((tSec * Math.PI * 2) / 3.6);
+        const pageWave = Math.sin((tSec * Math.PI * 2) / 4.8);
+
+        if (legARef.current) {
+          const deg = (strideWave * 7).toFixed(2);
+          const lift = ((-0.6 - 0.6 * strideWave) * strideAmp).toFixed(2);
+          legARef.current.style.transform = `translate3d(0, ${lift}px, 0) rotate(${deg}deg)`;
+        }
+        if (legBRef.current) {
+          const deg = (-strideWave * 7).toFixed(2);
+          const lift = ((-0.6 + 0.6 * strideWave) * strideAmp).toFixed(2);
+          legBRef.current.style.transform = `translate3d(0, ${lift}px, 0) rotate(${deg}deg)`;
+        }
+        if (bodyRef.current) {
+          bodyRef.current.style.transform = `translate3d(0, ${swayY.toFixed(2)}px, 0)`;
+        }
+        if (headRef.current) {
+          const hx = (headWave * 1.0).toFixed(2);
+          const hy = (-headWave * 0.8).toFixed(2);
+          const hRot = (-headWave * 1.5).toFixed(2);
+          headRef.current.style.transform = `translate3d(${hx}px, ${hy}px, 0) rotate(${hRot}deg)`;
+        }
+        if (pageLeftRef.current) {
+          pageLeftRef.current.style.transform = `rotate(${(pageWave * -2.2).toFixed(2)}deg)`;
+        }
+        if (pageRightRef.current) {
+          pageRightRef.current.style.transform = `rotate(${(pageWave * 2.2).toFixed(2)}deg)`;
+        }
+
+        const updateGlyph = (
+          el: SVGGElement | null,
+          period: number,
+          delay: number
+        ) => {
+          if (!el) return;
+          const gWave = 0.5 - 0.5 * Math.cos(((tSec + delay) * Math.PI * 2) / period);
+          el.style.transform = `translate3d(0, ${(-gWave * 3.2).toFixed(2)}px, 0)`;
+          el.style.opacity = (0.48 + gWave * 0.44).toFixed(3);
+        };
+        updateGlyph(glyphARef.current, 4.2, 0);
+        updateGlyph(glyphBRef.current, 4.8, 1.1);
+        updateGlyph(glyphCRef.current, 5.3, 2.2);
+      }
+
+      rafId = window.requestAnimationFrame(tick);
+    };
+
+    rafId = window.requestAnimationFrame(tick);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      resizeObserver?.disconnect();
+      if (!resizeObserver) window.removeEventListener('resize', updateTrackWidth);
+      intersectionObserver?.disconnect();
+      stageEl.removeEventListener('mouseenter', onMouseEnter);
+      stageEl.removeEventListener('mouseleave', onMouseLeave);
+    };
+  }, []);
+
   const stations =
     lang === 'mr'
       ? ['हस्तलिखित', 'संपादन', 'अक्षरजुळणी', 'वाचक संवाद']
@@ -34,6 +262,7 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
 
   return (
     <div
+      ref={stageRef}
       data-testid={isHero ? 'hero-walking-tortoise' : 'about-walking-tortoise'}
       aria-label={
         lang === 'mr'
@@ -80,8 +309,9 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
         </div>
       </div>
 
-      {/* Horizontal Marginalia Traverse Track (Container Query Enabled for Mobile/Tablet/Desktop) */}
+      {/* Horizontal Marginalia Traverse Track (Layout-Contained for Zero Mobile Shift) */}
       <div
+        ref={trackRef}
         data-testid={
           isHero
             ? 'hero-tortoise-colophon-seal'
@@ -98,15 +328,12 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
           aria-hidden="true"
           className="absolute inset-x-3 sm:inset-x-6 top-2 flex items-center justify-between pointer-events-none"
         >
-          {stations.map((station, idx) => (
+          {stations.map((station) => (
             <span
               key={station}
               className="inline-flex items-center gap-1 font-mono text-[8.5px] sm:text-[9.5px] uppercase tracking-[0.1em] sm:tracking-[0.16em] text-[#5A5F72]/85"
             >
-              <span
-                className="w-1 h-1 rounded-full bg-[#174D3A]/60 akath-traverse-footstep shrink-0"
-                style={{ animationDelay: `${idx * 0.9}s` }}
-              />
+              <span className="w-1 h-1 rounded-full bg-[#174D3A]/60 shrink-0" />
               <span>{station}</span>
             </span>
           ))}
@@ -118,27 +345,27 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
           aria-hidden="true"
           className="relative w-full pb-2.5"
         >
-          <div className="flex items-center justify-between px-4 sm:px-8 mb-1 opacity-60">
+          <div className="flex items-center justify-between px-4 sm:px-8 mb-1 opacity-55">
             {Array.from({ length: 9 }).map((_, idx) => (
               <span
                 key={idx}
-                className="w-1 h-1 rounded-full bg-[#C89D54] akath-traverse-footstep"
-                style={{ animationDelay: `${idx * 0.4}s` }}
+                className="w-1 h-1 rounded-full bg-[#C89D54]"
               />
             ))}
           </div>
 
           {/* Primary Archival Horizon Hairline */}
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-[#174D3A]/50 to-transparent akath-traverse-horizon-line" />
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-[#174D3A]/50 to-transparent" />
         </div>
 
-        {/* Slow-Cycling Patient Tortoise Runner (GPU-accelerated cqw traverse) */}
+        {/* Single will-change: transform GPU Container Driven by requestAnimationFrame */}
         <div
+          ref={runnerRef}
           data-testid="about-tortoise-traverse-runner"
           className="akath-patient-tortoise-runner pointer-events-none"
           aria-hidden="true"
         >
-          <div className="akath-patient-tortoise-flip">
+          <div ref={flipRef} className="akath-patient-tortoise-flip">
             <svg
               viewBox="0 0 112 58"
               className="w-[84px] h-[44px] overflow-visible"
@@ -171,7 +398,7 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
               />
 
               {/* Subtle Rising Devanagari Akshara Motes ("अ · क · थ") */}
-              <g className="akath-colophon-glyph-a">
+              <g ref={glyphARef} className="akath-tortoise-svg-part">
                 <text
                   x="34"
                   y="11"
@@ -185,7 +412,7 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
                   अ
                 </text>
               </g>
-              <g className="akath-colophon-glyph-b">
+              <g ref={glyphBRef} className="akath-tortoise-svg-part">
                 <text
                   x="50"
                   y="8"
@@ -199,7 +426,7 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
                   क
                 </text>
               </g>
-              <g className="akath-colophon-glyph-c">
+              <g ref={glyphCRef} className="akath-tortoise-svg-part">
                 <text
                   x="66"
                   y="11"
@@ -216,7 +443,11 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
 
               {/* Miniature Open Smyth-Sewn Book Resting Atop the Shell */}
               <g>
-                <g className="akath-colophon-page-left">
+                <g
+                  ref={pageLeftRef}
+                  className="akath-tortoise-svg-part"
+                  style={{ transformOrigin: 'right bottom' }}
+                >
                   <path
                     d="M50 20 C42 16 33 16 26 19 L28 13 C35 10 43 11 50 15 Z"
                     fill="#FFFDF7"
@@ -225,7 +456,11 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
                     strokeLinejoin="round"
                   />
                 </g>
-                <g className="akath-colophon-page-right">
+                <g
+                  ref={pageRightRef}
+                  className="akath-tortoise-svg-part"
+                  style={{ transformOrigin: 'left bottom' }}
+                >
                   <path
                     d="M50 20 C58 16 67 16 74 19 L72 13 C65 10 57 11 50 15 Z"
                     fill="#FFFDF7"
@@ -246,7 +481,11 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
               </g>
 
               {/* Walking Tortoise Body, Alternating Stride Legs & Carapace */}
-              <g className="akath-walking-tortoise-body">
+              <g
+                ref={bodyRef}
+                className="akath-tortoise-svg-part"
+                style={{ transformOrigin: 'center center' }}
+              >
                 {/* Tail */}
                 <path
                   d="M22 41 C17 41 13 43 11 45 C15 45.5 19 44 23 43 Z"
@@ -256,7 +495,11 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
                 />
 
                 {/* Back Leg B & Front Leg B (Far-side stride pair) */}
-                <g className="akath-walking-tortoise-leg-b">
+                <g
+                  ref={legBRef}
+                  className="akath-tortoise-svg-part"
+                  style={{ transformOrigin: 'top center' }}
+                >
                   <path
                     d="M31 42 L29 50 L35 50 L36 42 Z"
                     fill="#856D4F"
@@ -274,7 +517,11 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
                 </g>
 
                 {/* Back Leg A & Front Leg A (Near-side stride pair) */}
-                <g className="akath-walking-tortoise-leg-a">
+                <g
+                  ref={legARef}
+                  className="akath-tortoise-svg-part"
+                  style={{ transformOrigin: 'top center' }}
+                >
                   <path
                     d="M25 42 L23 50.5 L30 50.5 L31 42 Z"
                     fill="#9C8262"
@@ -292,7 +539,11 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
                 </g>
 
                 {/* Gentle Observant Head & Neck */}
-                <g className="akath-walking-tortoise-head">
+                <g
+                  ref={headRef}
+                  className="akath-tortoise-svg-part"
+                  style={{ transformOrigin: 'left center' }}
+                >
                   <path
                     d="M74 38 C80 37 85 33 90 32 C95 31 99 33 99 37 C99 41 94 43 88 43 C83 43 78 42 74 41 Z"
                     fill="#9C8262"
@@ -305,7 +556,7 @@ export const WalkingTortoise: React.FC<WalkingTortoiseProps> = ({
                 </g>
 
                 {/* Heritage Forest (#174D3A) Woodcut Dome Carapace */}
-                <g className="akath-colophon-shell-pulse">
+                <g>
                   <path
                     d="M21 41 C21 24 34 17 50 17 C66 17 78 25 79 41 Z"
                     fill="url(#akathColophonShellGrad)"
