@@ -1023,20 +1023,20 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
         className={`bg-white border-b border-[#E6DFCE] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           isImmersiveActive
             ? '-translate-y-full opacity-0 pointer-events-none max-h-0 overflow-hidden border-b-0'
-            : 'translate-y-0 opacity-100 max-h-28'
+            : 'translate-y-0 opacity-100 max-h-[320px] sm:max-h-28'
         }`}
       >
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3 text-[13.5px] text-[#5A5F72]">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5 flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-2.5 sm:gap-3 text-[13.5px] text-[#5A5F72]">
           <button
             type="button"
             onClick={() => onNavigate('/vachankatta')}
-            className="inline-flex items-center gap-2 font-medium hover:text-[#243B8A] cursor-pointer"
+            className="inline-flex items-center gap-2 min-h-[36px] font-medium hover:text-[#243B8A] cursor-pointer shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>{t.nav.vachankatta}</span>
           </button>
 
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+          <div className="w-full sm:w-auto flex flex-wrap items-center gap-2 sm:gap-3.5">
             <span className="hidden md:inline text-[12.5px] text-[#5A5F72]">
               {viewportTierLabel} · LH {dynamicLineHeight}
             </span>
@@ -1141,7 +1141,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35 }}
-              className={`rounded-3xl border p-6 sm:p-10 lg:p-12 transition-colors duration-200 ${
+              className={`rounded-3xl border p-4 sm:p-8 lg:p-12 transition-colors duration-200 ${
                 readingSurface === 'ink'
                   ? 'bg-[#18181B] text-[#F4EFE4] border-[#27272A]'
                   : readingSurface === 'sepia'
@@ -1149,7 +1149,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
                   : 'bg-white text-[#252832] border-[#E6DFCE]'
               }`}
             >
-              <header className="space-y-4 border-b border-current/15 pb-8 mb-8">
+              <header className="space-y-4 border-b border-current/15 pb-6 sm:pb-8 mb-6 sm:mb-8">
                 <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-[#243B8A]">
                   <span>{article.categoryMarathi}</span>
                   <span aria-hidden="true">·</span>
@@ -1166,7 +1166,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
                   {article.title}
                 </h1>
 
-                <p className="font-serif text-[20px] opacity-80 leading-[1.65]">
+                <p className="font-serif text-[17px] sm:text-[20px] opacity-80 leading-[1.65]">
                   {article.subtitle}
                 </p>
 
@@ -1390,7 +1390,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
       {/* Floating Minimal Restore Dock when Immersive Reading Mode is Active */}
       <div
         data-testid="immersive-floating-controls"
-        className={`fixed bottom-5 right-5 z-40 flex items-center gap-2 transition-all duration-300 ${
+        className={`fixed bottom-4 left-3 right-3 sm:left-auto sm:right-5 sm:bottom-5 z-40 flex flex-wrap items-center justify-end gap-2 transition-all duration-300 ${
           isImmersiveActive
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 translate-y-3 pointer-events-none'

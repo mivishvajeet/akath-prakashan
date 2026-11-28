@@ -255,7 +255,7 @@ export const BooksCatalogueView: React.FC<BooksCatalogueViewProps> = ({
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 shrink-0">
+            <div className="w-full md:w-auto flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between md:justify-end gap-3.5 sm:gap-4 shrink-0">
               <div className="text-left md:text-right">
                 <span className="block text-[11px] font-mono uppercase text-[#525665]">
                   {lang === 'mr' ? 'एकूण संच मूल्य' : 'Complete Set Total'}
@@ -268,7 +268,7 @@ export const BooksCatalogueView: React.FC<BooksCatalogueViewProps> = ({
               <button
                 type="button"
                 onClick={handleAddCompleteBundle}
-                className={`px-5 py-3 rounded-xl text-[13.5px] font-semibold text-[#FFFDF7] inline-flex items-center gap-2 transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                className={`w-full sm:w-auto min-h-[44px] px-5 py-3 rounded-xl text-[13.5px] font-semibold text-[#FFFDF7] inline-flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
                   bundleAdded
                     ? 'bg-[#15803D]'
                     : 'bg-[#243B8A] hover:bg-[#1B2D6B]'
@@ -550,16 +550,16 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
     <div className="bg-[#FFFDF7] text-[#252832] min-h-screen">
       {/* Breadcrumb Navigation */}
       <div className="bg-white border-b border-[#E6E1D6]">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between text-[14px] text-[#525665]">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-3 text-[13px] sm:text-[14px] text-[#525665]">
           <button
             type="button"
             onClick={() => onNavigate('/books')}
-            className="inline-flex items-center gap-2 hover:text-[#243B8A] font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 sm:gap-2 hover:text-[#243B8A] font-medium transition-colors shrink-0 min-h-[36px] cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 shrink-0" />
             <span>{t.nav.books}</span>
           </button>
-          <span className="truncate max-w-xs sm:max-w-md">
+          <span className="truncate min-w-0 text-right">
             {book.category} ·{' '}
             <strong className="text-[#252832]">{book.title}</strong>
           </span>
@@ -693,10 +693,10 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
             </div>
 
             {/* Contiguous Purchase Card */}
-            <div className="bg-white rounded-2xl border border-[#E6E1D6] p-6 space-y-5">
+            <div className="bg-white rounded-2xl border border-[#E6E1D6] p-4 sm:p-6 space-y-5">
               <div className="flex flex-wrap items-baseline justify-between gap-4">
                 <div>
-                  <span className="text-[30px] font-bold text-[#252832] tabular-nums">
+                  <span className="text-[28px] sm:text-[30px] font-bold text-[#252832] tabular-nums">
                     ₹{book.price}
                   </span>
                 </div>
@@ -719,101 +719,107 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
               </div>
 
               {isAvailable && (
-                <div className="flex flex-wrap items-center gap-3.5 pt-2">
-                  {/* Quantity Selector */}
-                  <div className="inline-flex items-center rounded-xl border border-[#E6E1D6] bg-[#FFFDF7] p-0.5">
+                <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:gap-3 pt-1">
+                  {/* Primary Purchase Row on Mobile: Quantity + Full-Width Add to Cart */}
+                  <div className="flex items-stretch sm:items-center gap-2.5 sm:contents">
+                    {/* Quantity Selector */}
+                    <div className="inline-flex items-center rounded-xl border border-[#E6E1D6] bg-[#FFFDF7] p-0.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        disabled={quantity <= 1}
+                        aria-label={t.cart.decreaseQty}
+                        className="w-10 h-10 sm:w-9 sm:h-9 rounded-lg text-[16px] font-bold text-[#252832] hover:bg-white disabled:opacity-40 cursor-pointer"
+                      >
+                        −
+                      </button>
+                      <span className="min-w-[36px] text-center text-[15px] font-bold text-[#252832] tabular-nums">
+                        {quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setQuantity((q) => Math.min(maxQty, q + 1))
+                        }
+                        disabled={quantity >= maxQty}
+                        aria-label={t.cart.increaseQty}
+                        className="w-10 h-10 sm:w-9 sm:h-9 rounded-lg text-[16px] font-bold text-[#252832] hover:bg-white disabled:opacity-40 cursor-pointer"
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    {/* Add to Cart in Coral Red (#EF6855) */}
                     <button
                       type="button"
-                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                      disabled={quantity <= 1}
-                      aria-label={t.cart.decreaseQty}
-                      className="w-9 h-9 rounded-lg text-[16px] font-bold text-[#252832] hover:bg-white disabled:opacity-40"
+                      onClick={() => onAddToCart(book.id, quantity)}
+                      className={`flex-1 sm:flex-none min-h-[46px] px-5 sm:px-6 py-3 rounded-xl text-[14.5px] sm:text-[15px] font-semibold transition-colors inline-flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer ${
+                        recentlyAddedBookId === book.id
+                          ? 'bg-[#243B8A] text-[#FFFDF7]'
+                          : 'bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7]'
+                      }`}
                     >
-                      −
-                    </button>
-                    <span className="min-w-[38px] text-center text-[15px] font-bold text-[#252832] tabular-nums">
-                      {quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setQuantity((q) => Math.min(maxQty, q + 1))
-                      }
-                      disabled={quantity >= maxQty}
-                      aria-label={t.cart.increaseQty}
-                      className="w-9 h-9 rounded-lg text-[16px] font-bold text-[#252832] hover:bg-white disabled:opacity-40"
-                    >
-                      +
+                      {recentlyAddedBookId === book.id ? (
+                        <>
+                          <Check className="w-4 h-4 text-[#FFD966]" />
+                          <span>{t.book.addedToCart}</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingBag className="w-4 h-4" />
+                          <span>{t.book.addToCart}</span>
+                        </>
+                      )}
                     </button>
                   </div>
 
-                  {/* Add to Cart in Coral Red (#EF6855) */}
-                  <button
-                    type="button"
-                    onClick={() => onAddToCart(book.id, quantity)}
-                    className={`px-6 py-3 rounded-xl text-[15px] font-semibold transition-colors inline-flex items-center gap-2 whitespace-nowrap shrink-0 ${
-                      recentlyAddedBookId === book.id
-                        ? 'bg-[#243B8A] text-[#FFFDF7]'
-                        : 'bg-[#EF6855] hover:bg-[#DE5542] text-[#FFFDF7]'
-                    }`}
-                  >
-                    {recentlyAddedBookId === book.id ? (
-                      <>
-                        <Check className="w-4 h-4 text-[#FFD966]" />
-                        <span>{t.book.addedToCart}</span>
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingBag className="w-4 h-4" />
-                        <span>{t.book.addToCart}</span>
-                      </>
-                    )}
-                  </button>
+                  {/* Secondary Actions Row on Mobile: Buy Now + Wishlist */}
+                  <div className="grid grid-cols-2 gap-2.5 sm:contents">
+                    {/* Buy Now in Midnight Cobalt (#243B8A) */}
+                    <button
+                      type="button"
+                      onClick={handleBuyNow}
+                      className="min-h-[44px] px-4 sm:px-5 py-3 rounded-xl bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[14px] sm:text-[15px] font-semibold transition-colors whitespace-nowrap text-center cursor-pointer"
+                    >
+                      {t.book.buyNow}
+                    </button>
 
-                  {/* Buy Now in Midnight Cobalt (#243B8A) */}
-                  <button
-                    type="button"
-                    onClick={handleBuyNow}
-                    className="px-5 py-3 rounded-xl bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[15px] font-semibold transition-colors whitespace-nowrap shrink-0"
-                  >
-                    {t.book.buyNow}
-                  </button>
-
-                  {/* Wishlist Button */}
-                  <button
-                    type="button"
-                    data-testid="book-wishlist-btn"
-                    onClick={handleToggleWishlist}
-                    className={`px-4 py-3 rounded-xl border text-[14px] font-semibold inline-flex items-center gap-2 transition-colors whitespace-nowrap shrink-0 ${
-                      isWishlisted
-                        ? 'bg-[#EF6855]/15 border-[#EF6855] text-[#EF6855]'
-                        : 'bg-[#FFFDF7] border-[#E6E1D6] text-[#252832] hover:border-[#243B8A]'
-                    }`}
-                  >
-                    <Heart
-                      className={`w-4 h-4 ${
-                        isWishlisted ? 'fill-[#EF6855] text-[#EF6855]' : 'text-[#EF6855]'
+                    {/* Wishlist Button */}
+                    <button
+                      type="button"
+                      data-testid="book-wishlist-btn"
+                      onClick={handleToggleWishlist}
+                      className={`min-h-[44px] px-3.5 sm:px-4 py-3 rounded-xl border text-[13.5px] sm:text-[14px] font-semibold inline-flex items-center justify-center gap-2 transition-colors whitespace-nowrap cursor-pointer ${
+                        isWishlisted
+                          ? 'bg-[#EF6855]/15 border-[#EF6855] text-[#EF6855]'
+                          : 'bg-[#FFFDF7] border-[#E6E1D6] text-[#252832] hover:border-[#243B8A]'
                       }`}
-                    />
-                    <span>
-                      {isWishlisted
-                        ? lang === 'mr'
-                          ? 'इच्छायादीत आहे'
-                          : 'Saved'
-                        : lang === 'mr'
-                        ? 'इच्छायादी'
-                        : 'Wishlist'}
-                    </span>
-                  </button>
+                    >
+                      <Heart
+                        className={`w-4 h-4 shrink-0 ${
+                          isWishlisted ? 'fill-[#EF6855] text-[#EF6855]' : 'text-[#EF6855]'
+                        }`}
+                      />
+                      <span>
+                        {isWishlisted
+                          ? lang === 'mr'
+                            ? 'इच्छायादीत आहे'
+                            : 'Saved'
+                          : lang === 'mr'
+                          ? 'इच्छायादी'
+                          : 'Wishlist'}
+                      </span>
+                    </button>
+                  </div>
 
                   {/* Open Dedicated First Page Excerpt Reading Room */}
                   {linkedExcerpt && (
                     <button
                       type="button"
                       onClick={() => onNavigate('/vachankatta/first-page')}
-                      className="px-4 py-3 rounded-xl bg-[#FFD966]/35 hover:bg-[#FFD966] text-[14px] font-semibold text-[#252832] inline-flex items-center gap-2 transition-colors whitespace-nowrap shrink-0"
+                      className="w-full sm:w-auto min-h-[44px] px-4 py-3 rounded-xl bg-[#FFD966]/35 hover:bg-[#FFD966] text-[14px] font-semibold text-[#252832] inline-flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                     >
-                      <BookOpen className="w-4 h-4 text-[#243B8A]" />
+                      <BookOpen className="w-4 h-4 text-[#243B8A] shrink-0" />
                       <span>{t.book.readExcerpt}</span>
                     </button>
                   )}

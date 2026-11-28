@@ -128,28 +128,58 @@ export const HeroInteractiveBookPlinth: React.FC<
     >
       <div className="relative rounded-3xl bg-white/98 border border-[#E5DEC9] p-4 sm:p-7 lg:p-8 shadow-[0_24px_60px_-30px_rgba(36,59,138,0.2)] overflow-hidden">
         {/* Top Interactive Control Ribbon */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#E5DEC9]/80">
-          <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 pb-4 border-b border-[#E5DEC9]/80">
+          <div className="flex items-center justify-between sm:justify-start gap-2.5 min-w-0">
             <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.14em] text-[#174D3A] truncate">
               {activeCategory}
             </span>
+
+            {/* Mobile Prev / Counter / Next inline with category */}
+            <div className="flex sm:hidden items-center gap-1.5 shrink-0 text-[11px] font-mono">
+              <button
+                type="button"
+                onClick={() => {
+                  const prevIdx =
+                    (activeHeroIndex - 1 + books.length) % books.length;
+                  if (books[prevIdx]) switchBook(books[prevIdx].id);
+                }}
+                aria-label={isMr ? 'मागील पुस्तक' : 'Previous edition'}
+                className="w-9 h-9 rounded-full border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="tabular-nums font-semibold text-[#243B8A] px-1">
+                0{activeHeroIndex + 1} / 0{books.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const nextIdx = (activeHeroIndex + 1) % books.length;
+                  if (books[nextIdx]) switchBook(books[nextIdx].id);
+                }}
+                aria-label={isMr ? 'पुढील पुस्तक' : 'Next edition'}
+                className="w-9 h-9 rounded-full border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Interactive Inspection Mode Switcher */}
-          <div className="flex items-center gap-1 p-1 rounded-full bg-[#FAF6EC] border border-[#E5DEC9]">
+          <div className="flex items-center gap-1 p-1 rounded-full bg-[#FAF6EC] border border-[#E5DEC9] max-w-full overflow-x-auto no-scrollbar self-start sm:self-auto">
             <button
               type="button"
               onClick={() => {
                 setShowFullSpread(false);
                 setInspectMode('cover3d');
               }}
-              className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap ${
+              className={`min-h-[34px] px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                 effectiveMode === 'cover3d'
                   ? 'bg-[#243B8A] text-[#FFFDF7] shadow-xs'
                   : 'text-[#57534E] hover:text-[#1C1917]'
               }`}
             >
-              <Sparkles className="w-3 h-3" />
+              <Sparkles className="w-3 h-3 shrink-0" />
               <span>{isMr ? '३डी पुस्तक' : '3D Edition'}</span>
             </button>
 
@@ -159,13 +189,13 @@ export const HeroInteractiveBookPlinth: React.FC<
                 setShowFullSpread(false);
                 setInspectMode('pages');
               }}
-              className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap ${
+              className={`min-h-[34px] px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                 effectiveMode === 'pages'
                   ? 'bg-[#243B8A] text-[#FFFDF7] shadow-xs'
                   : 'text-[#57534E] hover:text-[#1C1917]'
               }`}
             >
-              <Eye className="w-3 h-3" />
+              <Eye className="w-3 h-3 shrink-0" />
               <span>{isMr ? 'आत डोकावून पहा' : 'Peek Inside'}</span>
             </button>
 
@@ -178,20 +208,20 @@ export const HeroInteractiveBookPlinth: React.FC<
                   setShowFullSpread(next);
                   setInspectMode(next ? 'jacket' : 'cover3d');
                 }}
-                className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap ${
+                className={`min-h-[34px] px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                   effectiveMode === 'jacket'
                     ? 'bg-[#243B8A] text-[#FFFDF7] shadow-xs'
                     : 'text-[#57534E] hover:text-[#1C1917]'
                 }`}
               >
-                <Layers className="w-3 h-3" />
+                <Layers className="w-3 h-3 shrink-0" />
                 <span>{isMr ? 'पूर्ण वेष्टन' : 'Full Jacket'}</span>
               </button>
             )}
           </div>
 
-          {/* Prev / Counter / Next */}
-          <div className="flex items-center gap-2 shrink-0 text-[11px] font-mono">
+          {/* Desktop/Tablet Prev / Counter / Next */}
+          <div className="hidden sm:flex items-center gap-2 shrink-0 text-[11px] font-mono">
             <button
               type="button"
               onClick={() => {
@@ -200,9 +230,9 @@ export const HeroInteractiveBookPlinth: React.FC<
                 if (books[prevIdx]) switchBook(books[prevIdx].id);
               }}
               aria-label={isMr ? 'मागील पुस्तक' : 'Previous edition'}
-              className="w-7 h-7 rounded-full border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-9 h-9 rounded-full border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
             <span className="tabular-nums font-semibold text-[#243B8A]">
               0{activeHeroIndex + 1} / 0{books.length}
@@ -214,9 +244,9 @@ export const HeroInteractiveBookPlinth: React.FC<
                 if (books[nextIdx]) switchBook(books[nextIdx].id);
               }}
               aria-label={isMr ? 'पुढील पुस्तक' : 'Next edition'}
-              className="w-7 h-7 rounded-full border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-9 h-9 rounded-full border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer"
             >
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>

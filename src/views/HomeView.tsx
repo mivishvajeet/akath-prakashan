@@ -308,7 +308,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         className="akath-io-section is-visible relative z-10 w-full overflow-hidden border-b border-[#E5DEC9]/75 bg-gradient-to-b from-[#FAF8F0] via-[#FAF8F1] to-[#F3F6FC] pb-9 sm:pb-11 lg:pb-12"
       >
         {/* Dedicated Full-Bleed Luminous Godavari River & Sahyadri Hero Stage (Richly Visible Across All Devices) */}
-        <div className="relative w-full min-h-[600px] sm:min-h-[560px] lg:min-h-[610px] xl:min-h-[640px] flex flex-col justify-start pt-8 sm:pt-11 lg:pt-12 pb-56 sm:pb-36 lg:pb-40">
+        <div className="relative w-full min-h-[500px] sm:min-h-[560px] lg:min-h-[610px] xl:min-h-[640px] flex flex-col justify-start pt-7 sm:pt-11 lg:pt-12 pb-36 sm:pb-36 lg:pb-40">
           <HeroPublicationWatermark />
 
           <div className="w-full max-w-[1120px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10 min-w-0">
@@ -369,12 +369,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
               {/* Focused Dual Actions */}
               <motion.div
                 variants={heroRevealItem}
-                className="w-full flex flex-wrap items-center justify-center gap-3.5 pt-2"
+                className="w-full flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3 sm:gap-3.5 pt-2 max-w-sm sm:max-w-none mx-auto"
               >
                 <button
                   type="button"
                   onClick={() => onNavigate('/books')}
-                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] font-medium text-sm shadow-[0_12px_26px_-10px_rgba(36,59,138,0.5)] transition-all cursor-pointer whitespace-nowrap shrink-0"
+                  className="w-full sm:w-auto min-h-[46px] inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] font-medium text-sm shadow-[0_12px_26px_-10px_rgba(36,59,138,0.5)] transition-all cursor-pointer whitespace-nowrap shrink-0"
                 >
                   <BookOpen className="w-4 h-4 text-[#FFD966]" />
                   <span>{isMr ? 'आमची पुस्तके पहा' : 'Explore Our Books'}</span>
@@ -384,7 +384,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate('/submit-manuscript')}
-                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#FFFDF7]/95 hover:bg-[#1C1917] text-[#1C1917] hover:text-[#FFFDF7] border border-[#1C1917]/25 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                  className="w-full sm:w-auto min-h-[46px] inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#FFFDF7]/95 hover:bg-[#1C1917] text-[#1C1917] hover:text-[#FFFDF7] border border-[#1C1917]/25 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap shrink-0"
                 >
                   <Feather className="w-4 h-4 text-[#EF6855]" />
                   <span>
@@ -401,7 +401,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="w-full min-w-0">
             <div
               data-testid="home-hero-anchors-rail"
-              className="akath-swipe-rail flex flex-wrap sm:flex-nowrap items-center justify-center gap-x-5 gap-y-2 overflow-x-auto sm:overflow-visible snap-x snap-mandatory w-full pb-1 sm:pb-0 border-b border-[#E5DEC9]/80 max-w-2xl mx-auto"
+              className="akath-swipe-rail flex flex-nowrap items-center justify-start sm:justify-center gap-x-5 gap-y-2 overflow-x-auto sm:overflow-visible no-scrollbar snap-x snap-mandatory w-full pb-1 sm:pb-0 border-b border-[#E5DEC9]/80 max-w-2xl mx-auto"
             >
               {books.map((book, idx) => {
                 const isSelected = book.id === activeHeroBook?.id;
@@ -414,7 +414,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       setSelectedBookId(book.id);
                       setShowFullSpread(false);
                     }}
-                    className={`snap-start shrink-0 pb-2.5 text-xs sm:text-[13px] font-serif transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 border-b-2 -mb-px ${
+                    className={`snap-start shrink-0 min-h-[38px] pb-2.5 text-xs sm:text-[13px] font-serif transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 border-b-2 -mb-px ${
                       isSelected
                         ? 'border-[#243B8A] text-[#243B8A] font-semibold'
                         : 'border-transparent text-[#57534E] hover:text-[#1C1917]'
@@ -423,7 +423,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <span className="font-mono text-[10.5px] opacity-70 tabular-nums">
                       0{idx + 1}
                     </span>
-                    <span className="max-w-[215px] sm:max-w-none truncate">
+                    <span className="max-w-[180px] sm:max-w-none truncate">
                       {isMr ? book.title : enMeta?.titleEn || book.title}
                     </span>
                   </button>
@@ -506,7 +506,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         setActiveCapabilityIdx(idx);
                       }
                     }}
-                    className={`relative snap-start shrink-0 w-[235px] sm:w-[255px] md:w-full cursor-pointer transition-colors duration-200 rounded-2xl border p-3.5 sm:p-4 flex flex-col justify-between ${
+                    className={`relative snap-start shrink-0 w-[78vw] max-w-[260px] sm:w-[255px] md:w-full cursor-pointer transition-colors duration-200 rounded-2xl border p-3.5 sm:p-4 flex flex-col justify-between ${
                       isActive
                         ? 'bg-white border-[#243B8A]/45 shadow-[0_12px_28px_-16px_rgba(36,59,138,0.26)]'
                         : 'bg-white/95 border-[#DCD4C0]/75 hover:bg-white'
@@ -606,8 +606,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <p className="text-[11px] sm:text-xs font-mono font-semibold uppercase tracking-[0.18em] text-[#FFD966]">
                 {isMr ? '०२ · प्रकाशन प्रवास' : '02 · HOW WE PUBLISH'}
               </p>
-              <span className="md:hidden text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-[#FFD966]">
-                {isMr ? 'स्वाइप करा →' : 'Swipe →'}
+              <span className="lg:hidden text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-[#FFD966]">
+                {isMr ? 'टप्पे निवडा' : 'Tap a Stage'}
               </span>
             </div>
             <h2 className="text-2xl sm:text-4xl lg:text-[42px] font-serif not-italic font-medium text-[#FFFDF7] tracking-tight leading-tight">
@@ -619,22 +619,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           <div className="relative">
-            {/* Tablet Continuous Thread */}
-            <div
-              aria-hidden="true"
-              className="hidden md:block lg:hidden pointer-events-none absolute top-6 inset-x-[10%] h-[1.5px] bg-[#FFD966]/30 z-0"
-            >
-              <div
-                className="h-full bg-[#FFD966] transition-all duration-300"
-                style={{
-                  width: `${
-                    (activeJourneyIdx /
-                      (PUBLISHING_JOURNEY_STAGES.length - 1)) *
-                    100
-                  }%`,
-                }}
-              />
-            </div>
 
             {/* Desktop Undulating Ink Thread */}
             <svg
@@ -671,25 +655,29 @@ export const HomeView: React.FC<HomeViewProps> = ({
               />
             </svg>
 
-            {/* Mobile Vertical Connected Milestone List (<md) & Tablet/Desktop 5-Col Constellation Wave (md+) */}
+            {/* Mobile Vertical List (<md), Tablet 2-Col Editorial Grid (md–lg), & Desktop 5-Col Constellation Wave (lg+) */}
             <ol
               data-testid="how-we-publish-swipe-rail"
-              className="relative z-10 flex flex-col gap-3 md:grid md:grid-cols-5 md:gap-4 lg:gap-6 items-stretch md:items-start w-full max-w-full"
+              className="relative z-10 flex flex-col gap-3 md:grid md:grid-cols-2 lg:grid-cols-5 md:gap-4 lg:gap-6 items-stretch lg:items-start w-full max-w-full"
             >
               {PUBLISHING_JOURNEY_STAGES.map((stage, idx) => {
                 const isActive = idx === activeJourneyIdx;
                 const isReached = idx <= activeJourneyIdx;
                 const isLowerArc = idx % 2 === 1;
+                const isLastOddTabletCard =
+                  idx === PUBLISHING_JOURNEY_STAGES.length - 1;
                 return (
                   <li
                     key={stage.step}
                     data-testid={`publishing-journey-step-${stage.step}`}
                     onClick={() => setActiveJourneyIdx(idx)}
                     onMouseEnter={() => setActiveJourneyIdx(idx)}
-                    className={`relative w-full md:w-auto flex flex-row md:flex-col items-start md:items-center md:text-center gap-3.5 md:gap-0 p-3.5 md:p-0 rounded-2xl md:rounded-none border md:border-0 transition-colors cursor-pointer group ${
+                    className={`relative w-full lg:w-auto flex flex-row lg:flex-col items-start lg:items-center lg:text-center gap-3.5 lg:gap-0 p-3.5 sm:p-4 lg:p-0 rounded-2xl lg:rounded-none border lg:border-0 transition-colors cursor-pointer group ${
+                      isLastOddTabletCard ? 'md:col-span-2 lg:col-span-1' : ''
+                    } ${
                       isActive
-                        ? 'bg-white/[0.08] md:bg-transparent border-[#FFD966]/50'
-                        : 'bg-white/[0.02] md:bg-transparent border-white/10 hover:bg-white/[0.05] md:hover:bg-transparent'
+                        ? 'bg-white/[0.08] lg:bg-transparent border-[#FFD966]/50'
+                        : 'bg-white/[0.03] lg:bg-transparent border-white/10 hover:bg-white/[0.06] lg:hover:bg-transparent'
                     } ${isLowerArc ? 'lg:pt-14' : 'lg:pt-0'}`}
                   >
                     {/* Mobile Vertical Connector Thread */}
@@ -705,7 +693,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       onClick={() => setActiveJourneyIdx(idx)}
                       aria-label={`${stage.step}. ${stage.label}`}
                       aria-current={isActive ? 'step' : undefined}
-                      className={`relative z-10 w-11 h-11 md:w-12 md:h-12 shrink-0 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer border ${
+                      className={`relative z-10 w-11 h-11 lg:w-12 lg:h-12 shrink-0 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer border ${
                         isActive
                           ? 'bg-[#FFD966] border-[#FFD966] shadow-[0_0_24px_rgba(255,217,102,0.45)] scale-105'
                           : isReached
@@ -718,35 +706,35 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
                     <span
                       aria-hidden="true"
-                      className={`hidden md:block w-px h-4 lg:h-5 my-2 transition-colors ${
+                      className={`hidden lg:block w-px h-5 my-2 transition-colors ${
                         isActive ? 'bg-[#FFD966]' : 'bg-[#FFFDF7]/25'
                       }`}
                     />
 
-                    <div className="flex-1 min-w-0 space-y-1 md:pt-0">
-                      <div className="flex items-center justify-between md:justify-center gap-1.5 lg:gap-2">
-                        <div className="flex items-center gap-1.5">
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center justify-between lg:justify-center gap-1.5 lg:gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 min-w-0">
                           <span
-                            className={`font-serif text-lg md:text-lg lg:text-2xl font-medium leading-none tabular-nums transition-colors ${
+                            className={`font-serif text-lg lg:text-2xl font-medium leading-none tabular-nums transition-colors ${
                               isActive ? 'text-[#FFD966]' : 'text-[#FFFDF7]/45'
                             }`}
                           >
                             {stage.step}
                           </span>
-                          <h3 className="font-mono text-xs md:text-[11px] lg:text-sm font-semibold uppercase tracking-[0.12em] lg:tracking-[0.14em] text-[#FFFDF7] whitespace-nowrap">
+                          <h3 className="font-mono text-xs sm:text-[13px] lg:text-sm font-semibold uppercase tracking-[0.1em] lg:tracking-[0.14em] text-[#FFFDF7]">
                             {stage.step}. {stage.label}
                           </h3>
                         </div>
-                        <span className="md:hidden text-[10px] font-mono uppercase tracking-[0.12em] text-[#FFD966]/85">
+                        <span className="lg:hidden text-[10px] font-mono uppercase tracking-[0.12em] text-[#FFD966]/85 shrink-0">
                           {isMr ? `टप्पा ${stage.step}` : `0${idx + 1}/05`}
                         </span>
                       </div>
 
-                      <p className="text-[13px] md:text-[12px] lg:text-[13.5px] text-[#FFFDF7]/85 leading-relaxed max-w-none md:max-w-[24ch] md:mx-auto">
+                      <p className="text-[13px] lg:text-[13.5px] text-[#FFFDF7]/85 leading-relaxed max-w-none lg:max-w-[24ch] lg:mx-auto">
                         {isMr ? stage.descriptionMr : stage.descriptionEn}
                       </p>
 
-                      <div className="pt-0.5 md:pt-1 flex items-center md:justify-center gap-2 text-[10px] lg:text-[10.5px] font-mono uppercase tracking-[0.1em] lg:tracking-[0.12em] text-[#FFD966]/90">
+                      <div className="pt-0.5 lg:pt-1 flex items-center lg:justify-center gap-2 text-[10px] lg:text-[10.5px] font-mono uppercase tracking-[0.1em] lg:tracking-[0.12em] text-[#FFD966]/90">
                         <span
                           aria-hidden="true"
                           className={`hidden sm:inline-block w-3 lg:w-4 h-px ${
@@ -944,7 +932,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   key={book.id}
                   data-testid={`home-book-showcase-${book.id}`}
                   onMouseEnter={() => setActiveBookRailIndex(idx)}
-                  className={`snap-start shrink-0 w-[302px] sm:w-[368px] md:w-[388px] lg:w-auto h-full rounded-2xl overflow-hidden border flex flex-col justify-between transition-colors duration-200 ${
+                  className={`snap-start shrink-0 w-[85vw] max-w-[330px] sm:w-[368px] md:w-[388px] lg:w-auto h-full rounded-2xl overflow-hidden border flex flex-col justify-between transition-colors duration-200 ${
                     isHighlighted
                       ? 'border-[#243B8A]/40 bg-white shadow-[0_16px_40px_-22px_rgba(36,59,138,0.26)]'
                       : 'border-[#DCD4C0]/85 bg-white/95 hover:border-[#243B8A]/35'
@@ -1013,14 +1001,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
                           <button
                             type="button"
                             onClick={() => onNavigate(`/books/${book.slug}`)}
-                            className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-medium text-[#1C1917] hover:text-[#243B8A] border border-[#DCD4C0] hover:border-[#243B8A] transition-colors cursor-pointer whitespace-nowrap"
+                            className="min-h-[38px] px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-[11.5px] sm:text-xs font-medium text-[#1C1917] hover:text-[#243B8A] border border-[#DCD4C0] hover:border-[#243B8A] transition-colors cursor-pointer whitespace-nowrap"
                           >
                             {isMr ? 'पहा' : 'View'}
                           </button>
                           <button
                             type="button"
                             onClick={() => onAddToCart(book.id)}
-                            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-medium transition-colors inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer whitespace-nowrap ${
+                            className={`min-h-[38px] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[11.5px] sm:text-xs font-medium transition-colors inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer whitespace-nowrap ${
                               isAdded
                                 ? 'bg-[#174D3A] text-[#FFFDF7]'
                                 : 'bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7]'
@@ -1104,7 +1092,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           ===================================================================== */}
       <section
         data-testid="home-about-akath"
-        className="akath-io-section akath-cv-section is-visible relative z-10 w-full overflow-hidden pt-12 pb-60 sm:pt-16 sm:pb-52 lg:pt-20 lg:pb-64 bg-[#FAF6EC]"
+        className="akath-io-section akath-cv-section is-visible relative z-10 w-full overflow-hidden pt-10 pb-40 sm:pt-16 sm:pb-52 lg:pt-20 lg:pb-64 bg-[#FAF6EC]"
       >
         {/* Layered Sahyadri Mountains, Buddhist Stupa & Intergenerational Banyan Dusk Landscape */}
         <AboutLandscapeBackdrop />
@@ -1141,12 +1129,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </p>
             </div>
 
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-3 pointer-events-auto">
+            <div className="pt-2 w-full sm:w-auto flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3 pointer-events-auto max-w-sm sm:max-w-none mx-auto">
               <button
                 type="button"
                 data-testid="brand-film-discover-books"
                 onClick={() => onNavigate('/books')}
-                className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 rounded-full bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] text-xs sm:text-sm font-medium transition-colors cursor-pointer whitespace-nowrap"
+                className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 rounded-full bg-[#EF6855] hover:bg-[#d95643] text-[#FFFDF7] text-xs sm:text-sm font-medium transition-colors cursor-pointer whitespace-nowrap"
               >
                 <BookOpen className="w-4 h-4 shrink-0" />
                 <span>{isMr ? 'आमची पुस्तके पहा' : 'Discover Our Books'}</span>
@@ -1155,9 +1143,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigate('/about')}
-                className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-xs sm:text-sm font-medium transition-colors cursor-pointer whitespace-nowrap"
+                className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-xs sm:text-sm font-medium transition-colors cursor-pointer whitespace-nowrap"
               >
-                <span>
+                <span className="truncate">
                   {isMr
                     ? 'अकथ प्रकाशनविषयी · About Akath Prakashan'
                     : 'About Akath Prakashan'}

@@ -372,30 +372,30 @@ export const Navbar: React.FC<NavbarProps> = ({
               MAIN LIGHTWEIGHT GLASSMORPHIC HEADER ROW (DESKTOP lg+)
               Zone 1: Brand Identity | Zone 2: Nav Links + Mega-Popovers | Zone 3: Utilities
               ================================================================= */}
-          <div className="min-h-[58px] sm:min-h-[64px] py-1.5 flex items-center justify-between gap-2 sm:gap-3 lg:gap-5">
+          <div className="min-h-[58px] sm:min-h-[64px] py-1.5 flex items-center justify-between gap-1.5 sm:gap-3 lg:gap-3 xl:gap-5">
             {/* ZONE 1: Brand Identity */}
             <button
               type="button"
               onClick={() => handleNav('/')}
-              className="group flex items-center gap-2.5 text-left focus:outline-none shrink-0 cursor-pointer"
+              className="group flex items-center gap-2 sm:gap-2.5 text-left focus:outline-none shrink-0 cursor-pointer min-w-0"
               aria-label={
                 lang === 'mr'
                   ? 'अकथ प्रकाशन — मुख्यपृष्ठ'
                   : 'Akath Prakashan — Home'
               }
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 border border-[#DCD4C0] group-hover:border-[#243B8A] group-hover:scale-105 flex items-center justify-center p-0.5 transition-all duration-200 shrink-0 shadow-xs">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 border border-[#DCD4C0] group-hover:border-[#243B8A] group-hover:scale-105 flex items-center justify-center p-0.5 transition-all duration-200 shrink-0 shadow-xs">
                 <AnimatedTortoiseEmblem
-                  className="w-8 h-8 sm:w-9 sm:h-9 shrink-0"
+                  className="w-7 h-7 sm:w-9 sm:h-9 shrink-0"
                   variant="indigo"
                   animate={true}
                 />
               </div>
-              <div className="flex flex-col">
-                <span className="font-serif not-italic text-[17.5px] sm:text-[19.5px] font-semibold text-[#1C1917] group-hover:text-[#243B8A] transition-colors leading-none tracking-tight whitespace-nowrap">
+              <div className="flex flex-col min-w-0">
+                <span className="font-serif not-italic text-[15.5px] sm:text-[19.5px] font-semibold text-[#1C1917] group-hover:text-[#243B8A] transition-colors leading-none tracking-tight whitespace-nowrap">
                   अकथ प्रकाशन
                 </span>
-                <span className="mt-1 text-[9px] sm:text-[9.5px] font-mono uppercase tracking-[0.16em] text-[#57534E] whitespace-nowrap">
+                <span className="mt-0.5 sm:mt-1 text-[8.5px] sm:text-[9.5px] font-mono uppercase tracking-[0.12em] sm:tracking-[0.16em] text-[#57534E] whitespace-nowrap">
                   {lang === 'mr'
                     ? 'मराठी प्रकाशन संस्था'
                     : 'PUBLISHING HOUSE'}
@@ -408,7 +408,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               aria-label={
                 lang === 'mr' ? 'मुख्य नेव्हिगेशन' : 'Primary Navigation'
               }
-              className="hidden lg:flex items-center gap-0.5 xl:gap-1 relative"
+              className="hidden lg:flex items-center gap-0 xl:gap-1 relative min-w-0"
             >
               {navItems.map((item) => {
                 const active = isActive(item.path);
@@ -433,7 +433,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         onClick={() => handleNav(item.path)}
                         aria-current={active ? 'page' : undefined}
                         aria-expanded={isDropdownOpen}
-                        className={`relative px-2.5 xl:px-3 py-1.5 rounded-full text-[13px] xl:text-[13.5px] transition-colors whitespace-nowrap shrink-0 cursor-pointer inline-flex items-center gap-1 ${
+                        className={`relative px-2 xl:px-3 py-1.5 rounded-full text-[12.5px] xl:text-[13.5px] transition-colors whitespace-nowrap shrink-0 cursor-pointer inline-flex items-center gap-1 ${
                           active || isDropdownOpen
                             ? 'text-[#243B8A] font-semibold bg-[#243B8A]/[0.06]'
                             : 'text-[#292524] font-medium hover:text-[#243B8A] hover:bg-[#243B8A]/[0.04]'
@@ -612,7 +612,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     type="button"
                     onClick={() => handleNav(item.path)}
                     aria-current={active ? 'page' : undefined}
-                    className={`relative px-2.5 xl:px-3 py-1.5 rounded-full text-[13px] xl:text-[13.5px] transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                    className={`relative px-2 xl:px-3 py-1.5 rounded-full text-[12.5px] xl:text-[13.5px] transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                       active
                         ? 'text-[#243B8A] font-semibold bg-[#243B8A]/[0.06]'
                         : 'text-[#292524] font-medium hover:text-[#243B8A] hover:bg-[#243B8A]/[0.04]'
@@ -643,9 +643,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={onOpenSearch}
                 aria-label={t.nav.searchAria}
                 data-testid="navbar-search-btn"
-                className="inline-flex items-center justify-center gap-1.5 min-h-[36px] px-2.5 py-1.5 rounded-full bg-white/80 hover:bg-[#FAF6EC] border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] text-[12px] font-medium transition-colors shrink-0 cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 min-h-[40px] min-w-[40px] sm:min-h-[38px] sm:min-w-0 px-2.5 py-1.5 rounded-full bg-white/80 hover:bg-[#FAF6EC] border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] text-[12px] font-medium transition-colors shrink-0 cursor-pointer"
               >
-                <Search className="w-3.5 h-3.5 text-[#243B8A] shrink-0" />
+                <Search className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#243B8A] shrink-0" />
                 <span className="hidden xl:inline max-w-[96px] truncate text-[#57534E]">
                   {t.nav.search}
                 </span>
@@ -777,9 +777,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => handleNav('/cart')}
                 aria-label={`${t.nav.cart} (${cartCount})`}
                 data-testid="navbar-cart-btn"
-                className="relative inline-flex items-center gap-1.5 min-h-[36px] px-3.5 py-1.5 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[12px] font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer shadow-xs"
+                className="relative inline-flex items-center justify-center gap-1.5 min-h-[40px] sm:min-h-[38px] px-3 sm:px-3.5 py-1.5 rounded-full bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[12px] font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer shadow-xs"
               >
-                <ShoppingBag className="w-3.5 h-3.5 text-[#FFD966] shrink-0" />
+                <ShoppingBag className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#FFD966] shrink-0" />
                 <span className="hidden sm:inline">{t.nav.cart}</span>
                 <motion.span
                   data-testid="navbar-cart-count"
@@ -817,7 +817,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     : 'Open navigation menu'
                 }
                 data-testid="navbar-mobile-menu-btn"
-                className={`lg:hidden inline-flex items-center gap-1.5 min-h-[36px] px-2.5 py-1.5 rounded-lg border transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] shrink-0 cursor-pointer ${
+                className={`lg:hidden inline-flex items-center justify-center gap-1.5 min-h-[40px] min-w-[40px] sm:min-h-[38px] sm:min-w-0 px-2.5 py-1.5 rounded-lg border transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] shrink-0 cursor-pointer ${
                   mobileMenuOpen
                     ? 'bg-[#1C1917] text-[#FFFDF7] border-[#1C1917]'
                     : 'bg-[#FAF6EC] border-[#DCD4C0] text-[#1C1917] hover:border-[#243B8A]'
@@ -879,7 +879,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       type="button"
                       onClick={() => handleLanguageChange(item.code)}
                       aria-pressed={active}
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold transition-colors cursor-pointer ${
+                      className={`min-h-[30px] px-2 py-1 rounded-md text-[10.5px] font-mono font-bold transition-colors cursor-pointer ${
                         active
                           ? 'bg-[#243B8A] text-[#FFFDF7]'
                           : 'text-[#57534E]'
@@ -909,7 +909,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     type="button"
                     data-active-quick-link={active ? 'true' : 'false'}
                     onClick={() => handleNav(item.path)}
-                    className={`snap-center px-2.5 py-1 rounded-md text-[11px] sm:text-[11.5px] transition-colors whitespace-nowrap shrink-0 cursor-pointer border ${
+                    className={`snap-center min-h-[34px] px-2.5 py-1 rounded-md text-[11.5px] sm:text-[12px] transition-colors whitespace-nowrap shrink-0 cursor-pointer border ${
                       active
                         ? 'bg-[#243B8A] text-[#FFFDF7] border-[#243B8A] font-semibold'
                         : 'bg-[#FAF6EC] text-[#292524] border-[#E5DEC9] hover:border-[#243B8A]'
@@ -976,7 +976,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               dragDirectionLock={true}
               dragElastic={{ left: 0.02, right: 0.45 }}
               onDragEnd={handleDrawerDragEnd}
-              className="fixed top-0 right-0 bottom-0 h-[100dvh] max-h-[100dvh] w-[90vw] max-w-[360px] rounded-l-xl archival-drawer-surface bg-[#FAF6EC] text-[#1C1917] border-l border-[#DCD4C0] flex flex-col overflow-hidden z-10 shadow-2xl"
+              className="fixed top-0 right-0 bottom-0 h-[100dvh] max-h-[100dvh] w-[min(92vw,360px)] rounded-l-xl archival-drawer-surface bg-[#FAF6EC] text-[#1C1917] border-l border-[#DCD4C0] flex flex-col overflow-hidden z-10 shadow-2xl"
             >
               {/* Left-Edge Tactile Grab Handle */}
               <div

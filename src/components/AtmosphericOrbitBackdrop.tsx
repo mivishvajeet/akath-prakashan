@@ -308,7 +308,7 @@ export const RotatingBookOrbitStage: React.FC<RotatingBookOrbitStageProps> = ({
             onChangeIndex((activeIndex - 1 + books.length) % books.length)
           }
           aria-label={isMr ? 'मागील पुस्तक' : 'Previous rotating book'}
-          className="w-8 h-8 rounded-full bg-white/95 border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+          className="w-9 h-9 rounded-full bg-white/95 border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer shadow-xs"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -322,7 +322,7 @@ export const RotatingBookOrbitStage: React.FC<RotatingBookOrbitStageProps> = ({
                 type="button"
                 onClick={() => onChangeIndex(idx)}
                 aria-label={`Focus ${b.title}`}
-                className={`px-2 py-0.5 rounded-full font-bold tabular-nums transition-all cursor-pointer ${
+                className={`min-h-[28px] px-2.5 py-0.5 rounded-full font-bold tabular-nums transition-all cursor-pointer ${
                   active
                     ? 'bg-[#243B8A] text-[#FFFDF7]'
                     : 'text-[#57534E] hover:text-[#243B8A]'
@@ -339,12 +339,12 @@ export const RotatingBookOrbitStage: React.FC<RotatingBookOrbitStageProps> = ({
             aria-label={
               isAutoRotating ? 'Pause book rotation' : 'Play book rotation'
             }
-            className="inline-flex items-center gap-1 text-[#243B8A] font-semibold hover:opacity-80 cursor-pointer"
+            className="min-w-[28px] min-h-[28px] inline-flex items-center justify-center gap-1 text-[#243B8A] font-semibold hover:opacity-80 cursor-pointer"
           >
             {isAutoRotating ? (
-              <Pause className="w-3 h-3" />
+              <Pause className="w-3.5 h-3.5" />
             ) : (
-              <Play className="w-3 h-3" />
+              <Play className="w-3.5 h-3.5" />
             )}
           </button>
         </div>
@@ -353,7 +353,7 @@ export const RotatingBookOrbitStage: React.FC<RotatingBookOrbitStageProps> = ({
           type="button"
           onClick={() => onChangeIndex((activeIndex + 1) % books.length)}
           aria-label={isMr ? 'पुढील पुस्तक' : 'Next rotating book'}
-          className="w-8 h-8 rounded-full bg-white/95 border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+          className="w-9 h-9 rounded-full bg-white/95 border border-[#DCD4C0] hover:border-[#243B8A] text-[#1C1917] flex items-center justify-center transition-colors cursor-pointer shadow-xs"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -750,18 +750,18 @@ export const AuthorStudioExperience: React.FC<AuthorStudioExperienceProps> = ({
           </div>
 
           {/* Right 7 Columns: Clean Archival Editorial Checklist Cards */}
-          <div className="lg:col-span-7 bg-[#FFFDF7] p-5 sm:p-7 flex flex-col justify-between space-y-4">
-            <div className="flex items-center justify-between gap-3 pb-3.5 border-b border-[#E8E0CE]">
+          <div className="lg:col-span-7 bg-[#FFFDF7] p-4 sm:p-7 flex flex-col justify-between space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 pb-3.5 border-b border-[#E8E0CE]">
               <div className="flex items-center gap-2.5 min-w-0">
                 <BookOpen className="w-4 h-4 text-[#243B8A] shrink-0" />
-                <span className="text-sm sm:text-base font-serif font-semibold text-[#1C1917] truncate">
+                <span className="text-sm sm:text-base font-serif font-semibold text-[#1C1917]">
                   {isMr ? activeTab.panelTitleMr : activeTab.panelTitleEn}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={handleCopyChecklist}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF5EA] hover:bg-[#F1E8D5] border border-[#DCD2BC] text-[11px] font-medium text-[#243B8A] transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                className="min-h-[34px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF5EA] hover:bg-[#F1E8D5] border border-[#DCD2BC] text-[11px] font-medium text-[#243B8A] transition-colors cursor-pointer whitespace-nowrap shrink-0"
               >
                 {copied ? (
                   <>

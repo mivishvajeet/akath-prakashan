@@ -974,7 +974,7 @@ export const AdminDashboardView: React.FC<{
                   </blockquote>
 
                   {app.status === 'pending' && (
-                    <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 pt-2">
                       <input
                         type="text"
                         value={moderationNotes[app.id] || ''}
@@ -989,26 +989,28 @@ export const AdminDashboardView: React.FC<{
                             ? 'संपादकीय निर्णय टीप...'
                             : 'Editorial decision note...'
                         }
-                        className="flex-1 min-w-[200px] px-3.5 py-2 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] text-[13.5px]"
+                        className="w-full sm:w-auto sm:flex-1 min-w-0 sm:min-w-[200px] px-3.5 py-2.5 rounded-xl border border-[#E6DFCE] bg-[#FFFDF7] text-[13.5px]"
                       />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleAuthorApplicationDecision(app.id, 'approved')
-                        }
-                        className="px-4 py-2 rounded-xl bg-emerald-700 text-white text-[13px] font-semibold"
-                      >
-                        {lang === 'mr' ? 'लेखक म्हणून मंजूर करा' : 'Approve as Author'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleAuthorApplicationDecision(app.id, 'rejected')
-                        }
-                        className="px-4 py-2 rounded-xl bg-[#B42318] text-white text-[13px] font-semibold"
-                      >
-                        {lang === 'mr' ? 'अस्वीकृत करा' : 'Reject'}
-                      </button>
+                      <div className="grid grid-cols-2 sm:flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleAuthorApplicationDecision(app.id, 'approved')
+                          }
+                          className="min-h-[40px] px-4 py-2 rounded-xl bg-emerald-700 text-white text-[13px] font-semibold cursor-pointer"
+                        >
+                          {lang === 'mr' ? 'लेखक म्हणून मंजूर करा' : 'Approve as Author'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleAuthorApplicationDecision(app.id, 'rejected')
+                          }
+                          className="min-h-[40px] px-4 py-2 rounded-xl bg-[#B42318] text-white text-[13px] font-semibold cursor-pointer"
+                        >
+                          {lang === 'mr' ? 'अस्वीकृत करा' : 'Reject'}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

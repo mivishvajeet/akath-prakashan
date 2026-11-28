@@ -678,7 +678,7 @@ export const AuthPageView: React.FC<{
                 ? 'प्रवेशद्वार निवडा (एकात्मिक सुरक्षा प्रणाली):'
                 : 'Select Entry Point (Unified Identity System):'}
             </p>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {(
                 [
                   { id: 'reader', mr: 'वाचक', en: 'Reader' },
@@ -695,7 +695,7 @@ export const AuthPageView: React.FC<{
                       setMode('login');
                     }
                   }}
-                  className={`px-3 py-2.5 rounded-xl text-[13px] font-semibold border transition-colors ${
+                  className={`min-h-[42px] px-2 sm:px-3 py-2 rounded-xl text-[12px] sm:text-[13px] font-semibold border transition-colors cursor-pointer ${
                     entryContext === item.id
                       ? 'bg-[#FFD966] text-[#252832] border-[#FFD966]'
                       : 'bg-[#1B2D6B] text-[#FFFDF7] border-white/15 hover:border-[#FFD966]/60'
@@ -731,12 +731,12 @@ export const AuthPageView: React.FC<{
                   : 'Instant Role Preview (Dev Sandbox):'}
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"
                 data-testid="sandbox-login-reader"
                 onClick={() => handleSandboxSwitch('reader')}
-                className="px-2.5 py-2 rounded-xl bg-white/10 hover:bg-[#FFD966] hover:text-[#252832] text-[12px] font-semibold transition-colors"
+                className="min-h-[40px] px-2.5 py-2 rounded-xl bg-white/10 hover:bg-[#FFD966] hover:text-[#252832] text-[12px] font-semibold transition-colors cursor-pointer"
               >
                 {lang === 'mr' ? 'वाचक डेमो' : 'Reader Demo'}
               </button>
@@ -744,7 +744,7 @@ export const AuthPageView: React.FC<{
                 type="button"
                 data-testid="sandbox-login-author"
                 onClick={() => handleSandboxSwitch('author')}
-                className="px-2.5 py-2 rounded-xl bg-white/10 hover:bg-[#FFD966] hover:text-[#252832] text-[12px] font-semibold transition-colors"
+                className="min-h-[40px] px-2.5 py-2 rounded-xl bg-white/10 hover:bg-[#FFD966] hover:text-[#252832] text-[12px] font-semibold transition-colors cursor-pointer"
               >
                 {lang === 'mr' ? 'लेखक डेमो' : 'Author Demo'}
               </button>
@@ -752,7 +752,7 @@ export const AuthPageView: React.FC<{
                 type="button"
                 data-testid="sandbox-login-admin"
                 onClick={() => handleSandboxSwitch('admin')}
-                className="px-2.5 py-2 rounded-xl bg-white/10 hover:bg-[#FFD966] hover:text-[#252832] text-[12px] font-semibold transition-colors"
+                className="min-h-[40px] px-2.5 py-2 rounded-xl bg-white/10 hover:bg-[#FFD966] hover:text-[#252832] text-[12px] font-semibold transition-colors cursor-pointer"
               >
                 {lang === 'mr' ? 'अॅडमिन डेमो' : 'Admin Demo'}
               </button>
@@ -2696,7 +2696,7 @@ export const AuthorPortalView: React.FC<{
           </div>
 
           {royalties && (
-            <div className="grid grid-cols-3 gap-3 bg-[#1B2D6B] p-3.5 rounded-2xl border border-white/15 text-center">
+            <div className="w-full sm:w-auto grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#1B2D6B] p-3.5 rounded-2xl border border-white/15 text-center">
               <div>
                 <p className="text-[11px] text-[#FFD966]">
                   {lang === 'mr' ? 'विक्री प्रती' : 'Copies Sold'}
@@ -2898,7 +2898,7 @@ export const AuthorPortalView: React.FC<{
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label htmlFor="dr-cat" className="block ui-label mb-1">
                   {lang === 'mr' ? 'प्रकार' : 'Category'}

@@ -353,7 +353,7 @@ export const CartView: React.FC<CartViewProps> = ({
                     <article
                       key={line.bookId}
                       data-testid={`cart-item-${line.bookId}`}
-                      className="p-5 sm:p-6 flex flex-col sm:flex-row gap-5 items-start"
+                      className="p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-5 items-start"
                     >
                       {/* 1. Book Cover Art */}
                       {fullBook && (
@@ -368,14 +368,14 @@ export const CartView: React.FC<CartViewProps> = ({
                       )}
 
                       {/* 2. Title, Author, Unit Price, Availability & Controls */}
-                      <div className="flex-1 w-full space-y-3">
+                      <div className="flex-1 min-w-0 w-full space-y-3">
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                          <div>
-                            <h2 className="type-book-title text-[#252832]">
+                          <div className="min-w-0">
+                            <h2 className="type-book-title text-[#252832] break-words">
                               <button
                                 type="button"
                                 onClick={() => onNavigate(`/books/${line.slug}`)}
-                                className="text-left hover:text-[#243B8A] transition-colors"
+                                className="text-left hover:text-[#243B8A] transition-colors cursor-pointer"
                               >
                                 {line.title}
                               </button>
@@ -386,7 +386,7 @@ export const CartView: React.FC<CartViewProps> = ({
                           </div>
 
                           {/* Line Total */}
-                          <div className="sm:text-right">
+                          <div className="sm:text-right shrink-0">
                             <span className="text-[12px] text-[#525665] block">
                               {t.cart.lineTotal}
                             </span>
@@ -452,13 +452,13 @@ export const CartView: React.FC<CartViewProps> = ({
                                 }
                                 disabled={line.approvedQuantity <= 1}
                                 aria-label={`${t.cart.decreaseQty} — ${line.title}`}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-[16px] font-bold text-[#252832] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                className="w-10 h-10 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center text-[16px] font-bold text-[#252832] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
                               >
                                 −
                               </button>
                               <span
                                 data-testid={`cart-qty-${line.bookId}`}
-                                className="min-w-[36px] h-8 px-2 flex items-center justify-center text-[14px] font-bold text-[#252832]"
+                                className="min-w-[36px] h-10 sm:h-9 px-2 flex items-center justify-center text-[14px] font-bold text-[#252832] tabular-nums"
                               >
                                 {line.approvedQuantity}
                               </span>
@@ -474,7 +474,7 @@ export const CartView: React.FC<CartViewProps> = ({
                                 }
                                 disabled={line.approvedQuantity >= maxAllowed}
                                 aria-label={`${t.cart.increaseQty} — ${line.title}`}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-[16px] font-bold text-[#252832] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                className="w-10 h-10 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center text-[16px] font-bold text-[#252832] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
                               >
                                 +
                               </button>
@@ -487,7 +487,7 @@ export const CartView: React.FC<CartViewProps> = ({
                             data-testid={`cart-remove-${line.bookId}`}
                             onClick={() => onRemoveItem(line.bookId)}
                             aria-label={`${t.cart.removeAria} — ${line.title}`}
-                            className="px-3 py-1.5 rounded-lg text-[13px] font-semibold text-[#525665] hover:text-[#EF6855] hover:bg-[#EF6855]/10 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                            className="min-h-[40px] px-3 py-1.5 rounded-lg text-[13px] font-semibold text-[#525665] hover:text-[#EF6855] hover:bg-[#EF6855]/10 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             <span>{t.cart.remove}</span>
@@ -521,7 +521,7 @@ export const CartView: React.FC<CartViewProps> = ({
                         onClick={() => {
                           missingCatalogueBooks.forEach((b) => onAddToCart(b.id, 1));
                         }}
-                        className="px-4 py-2 rounded-xl bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[13px] font-semibold transition-colors cursor-pointer"
+                        className="w-full sm:w-auto min-h-[42px] px-4 py-2 rounded-xl bg-[#243B8A] hover:bg-[#1B2D6B] text-[#FFFDF7] text-[13px] font-semibold transition-colors cursor-pointer text-center"
                       >
                         {lang === 'mr'
                           ? `+ सर्व ${missingCatalogueBooks.length} पुस्तके एकत्र जोडा`
@@ -1078,7 +1078,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           {/* LEFT COLUMN: Single-Column Logical Checkout Form */}
           <div className="lg:col-span-8 space-y-6">
-            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-6 sm:p-10">
+            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-4 sm:p-8 lg:p-10">
               <div className="border-b border-slate-100 pb-5 mb-6">
                 <h1 className="type-page-heading text-slate-900">{t.checkout.title}</h1>
                 <p className="text-[15px] text-slate-600 mt-1">{t.checkout.subtitle}</p>
@@ -1086,7 +1086,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
               {pendingOrder ? (
                 <div className="space-y-6">
-                  <div className="p-5 rounded-2xl bg-[#FAF8F3] border border-[#E5E0D5] space-y-2">
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#FAF8F3] border border-[#E5E0D5] space-y-2">
                     <p className="text-[13px] font-bold text-[#312E81]">
                       {lang === 'mr'
                         ? 'पायरी २: सर्व्हर पेमेंट पडताळणी'
@@ -1118,12 +1118,12 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                     </div>
                   )}
 
-                  <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
                     <button
                       type="button"
                       disabled={submitting}
                       onClick={() => handlePaymentVerification('success')}
-                      className="px-6 py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-[15px] font-semibold transition-colors shadow-xs"
+                      className="w-full sm:w-auto min-h-[46px] px-6 py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-[15px] font-semibold transition-colors shadow-xs text-center cursor-pointer"
                     >
                       {lang === 'mr'
                         ? `पेमेंट यशस्वी करा (₹${pendingOrder.grandTotal})`
@@ -1134,7 +1134,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                       type="button"
                       disabled={submitting}
                       onClick={() => handlePaymentVerification('failed')}
-                      className="px-5 py-3.5 rounded-xl bg-white border border-red-300 text-red-700 text-[14px] font-semibold"
+                      className="w-full sm:w-auto min-h-[46px] px-5 py-3.5 rounded-xl bg-white border border-red-300 text-red-700 text-[14px] font-semibold text-center cursor-pointer"
                     >
                       {lang === 'mr'
                         ? 'पेमेंट अपयश तपासा (Retry चाचणी)'
@@ -1144,7 +1144,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                     <button
                       type="button"
                       onClick={() => setPendingOrder(null)}
-                      className="text-[14px] font-medium text-slate-600 hover:text-slate-900 underline"
+                      className="min-h-[40px] text-[14px] font-medium text-slate-600 hover:text-slate-900 underline cursor-pointer"
                     >
                       {lang === 'mr' ? 'पत्ता संपादित करा' : 'Edit Shipping Address'}
                     </button>

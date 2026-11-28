@@ -492,7 +492,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({
                 aria-expanded={openReaderServices}
                 aria-controls="footer-reader-services-panel"
                 data-testid="footer-accordion-reader-services"
-                className="sm:hidden w-full flex items-center justify-between gap-2 py-1.5 text-left cursor-pointer"
+                className="sm:hidden w-full min-h-[44px] flex items-center justify-between gap-2 py-2 text-left cursor-pointer"
               >
                 <span className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]">
                   {t.footer.readerServices}
@@ -562,7 +562,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({
                 aria-expanded={openContact}
                 aria-controls="footer-contact-panel"
                 data-testid="footer-accordion-contact"
-                className="sm:hidden w-full flex items-center justify-between gap-2 py-1.5 text-left cursor-pointer"
+                className="sm:hidden w-full min-h-[44px] flex items-center justify-between gap-2 py-2 text-left cursor-pointer"
               >
                 <span className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-[#FFD966]">
                   {t.nav.contact}
@@ -730,8 +730,8 @@ export const Footer: React.FC<FooterProps> = React.memo(({
           </div>
 
           {/* Right: Clean Unboxed Attribution & Imprint Year */}
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1 text-[12.5px]">
-            <p className="text-[#F5EBDD]/80 inline-flex items-center gap-1.5 whitespace-nowrap">
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-2.5 gap-y-1.5 text-[12px] sm:text-[12.5px]">
+            <p className="text-[#F5EBDD]/80 inline-flex flex-wrap items-center justify-center gap-1.5">
               <span>Thoughtfully crafted by</span>
               <a
                 href="https://github.com/mivishvajeet"
@@ -746,12 +746,12 @@ export const Footer: React.FC<FooterProps> = React.memo(({
                 </span>
               </a>
             </p>
-            <span aria-hidden="true" className="text-[#E8BC69]/45">
+            <span aria-hidden="true" className="hidden sm:inline text-[#E8BC69]/45">
               ·
             </span>
             <p
               data-testid="footer-copyright"
-              className="font-mono text-[11.5px] sm:text-[12px] tracking-[0.1em] text-[#E8BC69]/90 tabular-nums whitespace-nowrap"
+              className="font-mono text-[11px] sm:text-[12px] tracking-[0.1em] text-[#E8BC69]/90 tabular-nums"
             >
               Akath Prakashan · 2026
             </p>
@@ -783,11 +783,11 @@ export const Footer: React.FC<FooterProps> = React.memo(({
           href="/"
           onClick={(e) => handleNavClick(e, '/')}
           aria-label="अकथ प्रकाशन — मुख्यपृष्ठ"
-          className="relative z-10 block w-full text-center focus:outline-none px-4 sm:px-6 -mb-8 sm:-mb-12 lg:-mb-16"
+          className="relative z-10 block w-full text-center focus:outline-none px-2 sm:px-6 -mb-6 sm:-mb-12 lg:-mb-16"
         >
           <span
             data-testid="footer-monumental-marathi-text"
-            className="akath-sarvam-wordmark-text inline-flex items-baseline justify-center gap-[0.18em] sm:gap-[0.22em] font-serif font-bold whitespace-nowrap tracking-[-0.02em] leading-[0.9] text-[clamp(2.6rem,11vw,8.5rem)] opacity-85"
+            className="akath-sarvam-wordmark-text inline-flex items-baseline justify-center gap-[0.16em] sm:gap-[0.22em] font-serif font-bold whitespace-nowrap tracking-[-0.02em] leading-[0.9] text-[clamp(2.15rem,11.5vw,8.5rem)] opacity-85"
           >
             <span className="akath-wordmark-part akath-wordmark-part-1 inline-block">
               अकथ
