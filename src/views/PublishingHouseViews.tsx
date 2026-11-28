@@ -612,8 +612,8 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
             </h2>
           </div>
 
-          {/* Calm Imprint Seal & 4-Stage Literary Craft Progression (Static — No Tortoise Animation) */}
-          <div className="rounded-2xl bg-[#FFFDF7]/96 border border-[#DCD4C0]/85 p-5 sm:p-8 space-y-6 min-w-0">
+          {/* Calm Imprint Seal (Static — No Tortoise Animation) */}
+          <div className="rounded-2xl bg-[#FFFDF7]/96 border border-[#DCD4C0]/85 p-5 sm:p-8 min-w-0">
             <div className="flex flex-col items-center justify-center text-center space-y-3">
               {/* Calm Static Tortoise Seal */}
               <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#FAF6EC] border border-[#C89D54]/75 flex items-center justify-center shrink-0">
@@ -636,24 +636,6 @@ export const AboutAkathView: React.FC<AboutAkathViewProps> = ({
                 <p className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.12em] sm:tracking-[0.16em] text-[#57534E]">
                   One Manuscript · One Book · One Reader at a Time
                 </p>
-              </div>
-            </div>
-
-            {/* Clean Static 4-Stage Editorial Craft Strip (2x2 on Mobile, 4 Cols on sm+) */}
-            <div className="rounded-xl bg-[#FAF6EC]/85 border border-[#E5DEC9] p-3.5 sm:px-5 sm:py-4 min-w-0">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.08em] sm:tracking-[0.14em] text-[#243B8A]">
-                <span className="px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate">
-                  01 · MANUSCRIPT
-                </span>
-                <span className="px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate">
-                  02 · EDITING
-                </span>
-                <span className="px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate">
-                  03 · PRESSWORK
-                </span>
-                <span className="px-2.5 py-2 rounded-lg bg-[#FFFDF7] border border-[#E5DEC9] text-center truncate">
-                  04 · READER
-                </span>
               </div>
             </div>
           </div>

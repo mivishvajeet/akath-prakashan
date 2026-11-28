@@ -2286,8 +2286,9 @@ async function runTests() {
     'About page Why the Tortoise walking tortoise animation must be removed per user request'
   );
   assert.ok(
-    publishingViewsSource.includes('grid grid-cols-2 sm:grid-cols-4'),
-    'Why the tortoise 4 stage labels must use responsive 2x2 grid on mobile (grid-cols-2 sm:grid-cols-4)'
+    !publishingViewsSource.includes('01 · MANUSCRIPT') &&
+      !publishingViewsSource.includes('03 · PRESSWORK'),
+    'Why the tortoise 4-stage MANUSCRIPT/EDITING/PRESSWORK/READER labels must be removed per user request'
   );
   assert.ok(
     !publishingViewsSource.includes('100% Merit-Based'),
@@ -2303,7 +2304,7 @@ async function runTests() {
     'Redesigned Founder section must feature Pooja Vasantrao Dhawale (पूजा वसंतराव ढवळे)'
   );
   console.log(
-    '  [PASS] RESP-04 (About Page Mobile UI & Static Seal): Tortoise animation removed cleanly from Why the Tortoise, 2x2 stage grid, Founder portrait card, and removal of "100% Merit-Based" verified'
+    '  [PASS] RESP-04 (About Page Mobile UI & Static Seal): Tortoise animation and 4-stage strip removed cleanly from Why the Tortoise, Founder portrait card, and removal of "100% Merit-Based" verified'
   );
 
   // --------------------------------------------------------------------------
