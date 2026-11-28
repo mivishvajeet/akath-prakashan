@@ -98,6 +98,18 @@ export default function App() {
   );
   const [searchOpen, setSearchOpen] = useState(false);
 
+  // Global Cmd+K / Ctrl+K shortcut for keyboard-only search opening/closing
+  useEffect(() => {
+    const handleGlobalSearchShortcut = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalSearchShortcut);
+    return () => window.removeEventListener('keydown', handleGlobalSearchShortcut);
+  }, []);
+
   // Authentication & Session state
   const [authUser, setAuthUser] = useState<PublicUserProfile | null>(null);
   const [csrfToken, setCsrfToken] = useState<string | null>(null);
@@ -955,16 +967,14 @@ export default function App() {
           onSubscribeNewsletter={handleSubscribeNewsletter}
         />
 
-        {searchOpen && (
-          <SearchModal
-            isOpen={searchOpen}
-            onClose={() => setSearchOpen(false)}
-            books={books}
-            authors={authors}
-            articles={articles}
-            onNavigate={navigate}
-          />
-        )}
+        <SearchModal
+          isOpen={searchOpen}
+          onClose={() => setSearchOpen(false)}
+          books={books}
+          authors={authors}
+          articles={articles}
+          onNavigate={navigate}
+        />
 
         {/* Interactive Added-to-Bag Floating Mini-Cart Notification Bar */}
         {recentlyAddedBookId && currentPath !== '/cart' && currentPath !== '/checkout' && (() => {

@@ -287,7 +287,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     [query, recordRecentSearch, onClose, onNavigate]
   );
 
-  // Sync focus and reset active highlight when modal opens
+  // Sync focus, reload localStorage recent searches on open, and clear query on close
   useEffect(() => {
     if (isOpen) {
       setRecentSearches(loadRecentSearches());
@@ -295,6 +295,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       const timer = window.setTimeout(() => inputRef.current?.focus(), 40);
       return () => window.clearTimeout(timer);
     }
+    setQuery('');
   }, [isOpen]);
 
   // Keep activeIndex in bounds whenever query or results change
@@ -320,21 +321,14 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        onClose();
-        return;
-      }
-
       if (e.key === 'Escape') {
         e.preventDefault();
         onClose();
         return;
       }
 
-      if (navigableItems.length === 0) return;
-
       if (e.key === 'ArrowDown') {
+        if (navigableItems.length === 0) return;
         e.preventDefault();
         isKeyboardNavRef.current = true;
         setActiveIndex((prev) =>
@@ -344,6 +338,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       }
 
       if (e.key === 'ArrowUp') {
+        if (navigableItems.length === 0) return;
         e.preventDefault();
         isKeyboardNavRef.current = true;
         setActiveIndex((prev) =>
@@ -359,6 +354,19 @@ export const SearchModal: React.FC<SearchModalProps> = ({
           activeEl.getAttribute('role') !== 'option';
         if (isUtilityButton) return;
 
+        if (navigableItems.length === 0) {
+          const trimmed = query.trim();
+          if (trimmed.length >= 2) {
+            e.preventDefault();
+            recordRecentSearch({
+              id: `query:${trimmed.toLowerCase()}`,
+              kind: 'query',
+              label: trimmed,
+            });
+          }
+          return;
+        }
+
         const targetIndex =
           activeIndex >= 0 && activeIndex < navigableItems.length
             ? activeIndex
@@ -373,7 +381,15 @@ export const SearchModal: React.FC<SearchModalProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, navigableItems, activeIndex, handleSelectItem]);
+  }, [
+    isOpen,
+    onClose,
+    navigableItems,
+    activeIndex,
+    handleSelectItem,
+    query,
+    recordRecentSearch,
+  ]);
 
   // Compute starting index offsets for each section to map directly to navigableItems
   const recentOffset = 0;
